@@ -8,6 +8,7 @@ import { StreamLanguage } from '@codemirror/language';
 import { stex } from '@codemirror/legacy-modes/mode/stex';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { updateResume } from '@/lib/actions/resume-actions';
+import { compileLatex } from '@/lib/latex-compiler';
 
 interface Props {
   resumeId: string;
@@ -19,15 +20,24 @@ export function LatexEditor({ resumeId, initialSource }: Props) {
   const viewRef = useRef<EditorView | null>(null);
   const [saving, setSaving] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [compileError, setCompileError] = useState<string | null>(null);
 
   const save = useCallback(async () => {
     if (!viewRef.current) return;
     const source = viewRef.current.state.doc.toString();
     setSaving(true);
+    setCompileError(null);
     await updateResume(resumeId, source);
-    // TODO: Task 6 will add WASM compilation here
+    try {
+      const url = await compileLatex(source);
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(url);
+    } catch (err) {
+      console.error('Compilation failed:', err);
+      setCompileError(err instanceof Error ? err.message : 'Compilation failed');
+    }
     setSaving(false);
-  }, [resumeId]);
+  }, [resumeId, pdfUrl]);
 
   useEffect(() => {
     if (!editorContainerRef.current || viewRef.current) return;
@@ -77,6 +87,11 @@ export function LatexEditor({ resumeId, initialSource }: Props) {
         )}
         {pdfUrl ? (
           <iframe src={pdfUrl} className="w-full h-full" title="PDF Preview" />
+        ) : compileError ? (
+          <div className="p-4 max-w-full overflow-auto">
+            <p className="text-red-500 font-medium mb-2">Compilation Error</p>
+            <pre className="text-xs text-red-400 whitespace-pre-wrap">{compileError}</pre>
+          </div>
         ) : (
           <p className="text-gray-400">Press Cmd+S to save and compile</p>
         )}
