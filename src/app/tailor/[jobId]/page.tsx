@@ -1,6 +1,7 @@
 import { getJobApplication, getTailoredResumes } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { TailorFlow } from '@/components/tailor-flow';
 
 export default async function TailorPage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -20,7 +21,7 @@ export default async function TailorPage({ params }: { params: Promise<{ jobId: 
           <h1 className="font-semibold">{job.role}</h1>
           <p className="text-sm text-gray-500">{job.company}</p>
         </div>
-        <a href="/" className="text-sm text-gray-500 hover:text-gray-700">Back</a>
+        <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">Back</Link>
       </header>
       <TailorFlow job={job} resume={resume} existingTailored={tailored} />
     </main>

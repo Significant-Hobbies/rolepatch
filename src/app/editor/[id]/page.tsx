@@ -1,5 +1,6 @@
 import { getResume } from '@/lib/actions/resume-actions';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { LatexEditor } from '@/components/latex-editor';
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +12,7 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
     <main className="h-screen flex flex-col">
       <header className="flex items-center justify-between px-6 py-3 border-b">
         <h1 className="font-semibold">{resume.name}</h1>
-        <a href="/" className="text-sm text-gray-500 hover:text-gray-700">Back</a>
+        <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">Back</Link>
       </header>
       <div className="flex-1 flex overflow-hidden">
         <LatexEditor resumeId={resume.id} initialSource={resume.latex_source} />

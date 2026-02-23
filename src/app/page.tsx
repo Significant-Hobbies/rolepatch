@@ -5,6 +5,12 @@ import { CreateResumeButton } from '@/components/create-resume-button';
 import { NewJobButton } from '@/components/new-job-button';
 import Link from 'next/link';
 
+const statusStyles: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+  tailored: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  applied: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+};
+
 export default async function Dashboard() {
   const resumes = await listResumes();
   const jobs = await listJobApplications();
@@ -46,7 +52,7 @@ export default async function Dashboard() {
               >
                 <h3 className="font-semibold truncate">{job.role || 'Untitled Role'}</h3>
                 <p className="text-sm text-gray-500 mt-1">{job.company || 'Unknown Company'}</p>
-                <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full ${statusStyles[job.status] ?? statusStyles.draft}`}>
                   {job.status}
                 </span>
               </Link>
