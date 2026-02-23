@@ -5,7 +5,7 @@ export async function initCompiler(): Promise<void> {
   if (typeof window === 'undefined') return;
 
   const script = document.createElement('script');
-  script.src = 'https://texlive.swiftlatex.com/PdfTeXEngine.js';
+  script.src = '/PdfTeXEngine.js';
   document.head.appendChild(script);
 
   await new Promise<void>((resolve, reject) => {
