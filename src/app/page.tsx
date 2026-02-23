@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { listResumes } from '@/lib/actions/resume-actions';
 import { listJobApplications } from '@/lib/actions/job-actions';
 import { ResumeCard } from '@/components/resume-card';

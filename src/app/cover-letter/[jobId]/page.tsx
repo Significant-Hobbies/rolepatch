@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getJobApplication } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
 import { getCoverLetter } from '@/lib/actions/cover-letter-action';

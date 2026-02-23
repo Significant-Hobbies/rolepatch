@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getResume } from '@/lib/actions/resume-actions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';

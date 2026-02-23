@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getJobApplication, getTailoredResumes } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
 import { notFound } from 'next/navigation';
