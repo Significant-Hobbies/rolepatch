@@ -64,6 +64,9 @@ export async function convertLatexToTypst(latexSource: string): Promise<string> 
   // \emph{X} → _X_
   s = replaceCommand(s, 'emph', (content) => `_${content}_`);
 
+  // $|$ (LaTeX inline math pipe separator) → |
+  s = s.replace(/\$\|\$/g, '|');
+
   // \small X — just remove \small
   s = s.replace(/\\small\b\s*/g, '');
 
