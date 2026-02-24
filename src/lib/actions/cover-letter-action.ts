@@ -17,7 +17,7 @@ async function researchCompany(companyUrl: string): Promise<string> {
 }
 
 export async function generateCoverLetter(
-  resumeLatex: string,
+  resumeSource: string,
   jdText: string,
   company: string,
   jobId: string,
@@ -43,7 +43,7 @@ export async function generateCoverLetter(
   const { text } = await generateText({
     model: provider(model),
     system: `You are a professional cover letter writer. Using the candidate's resume, the job description, and research about the company, write a compelling cover letter. Return ONLY the cover letter text, no explanation.`,
-    prompt: `## Resume:\n${resumeLatex}\n\n## Job Description:\n${jdText}\n\n## Company Research:\n${companyResearch || 'No research available.'}\n\n## Instructions:\n- Connect candidate's experience to the specific role\n- Reference company values/mission where genuine\n- Keep it concise (3-4 paragraphs)\n- Professional but not generic`,
+    prompt: `## Resume:\n${resumeSource}\n\n## Job Description:\n${jdText}\n\n## Company Research:\n${companyResearch || 'No research available.'}\n\n## Instructions:\n- Connect candidate's experience to the specific role\n- Reference company values/mission where genuine\n- Keep it concise (3-4 paragraphs)\n- Professional but not generic`,
   });
 
   // Save to DB

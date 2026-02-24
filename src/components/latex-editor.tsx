@@ -4,11 +4,9 @@ import { useRef, useCallback, useState, useEffect } from 'react';
 import { EditorView, keymap } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
-import { StreamLanguage } from '@codemirror/language';
-import { stex } from '@codemirror/legacy-modes/mode/stex';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { updateResume } from '@/lib/actions/resume-actions';
-import { compileLatex } from '@/lib/latex-compiler';
+import { compileTypst } from '@/lib/typst-compiler';
 
 interface Props {
   resumeId: string;
@@ -29,7 +27,7 @@ export function LatexEditor({ resumeId, initialSource }: Props) {
     setCompileError(null);
     await updateResume(resumeId, source);
     try {
-      const url = await compileLatex(source);
+      const url = await compileTypst(source);
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
       setPdfUrl(url);
     } catch (err) {
@@ -57,7 +55,6 @@ export function LatexEditor({ resumeId, initialSource }: Props) {
       doc: initialSource,
       extensions: [
         basicSetup,
-        StreamLanguage.define(stex),
         oneDark,
         saveKeymap,
         EditorView.theme({

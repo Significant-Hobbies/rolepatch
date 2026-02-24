@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.30",
+    "@brief-jetzt/wasm-typst": "^0.13.1",
     "@codemirror/language": "^6.12.1",
-    "@codemirror/legacy-modes": "^6.5.2",
     "@codemirror/state": "^6.5.4",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.39.15",
@@ -20,7 +20,6 @@
     "@mozilla/readability": "^0.6.0",
     "ai": "^6.0.97",
     "codemirror": "^6.0.2",
-    "codemirror-lang-latex": "^0.2.0",
     "linkedom": "^0.18.12",
     "next": "16.1.6",
     "react": "19.2.3",
