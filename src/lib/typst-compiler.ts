@@ -14,6 +14,7 @@ export async function compileTypst(source: string): Promise<string> {
   world.setSourcesAndFiles([src], []);
 
   const diagnostics = world.compile({});
+  console.log('Typst diagnostics:', diagnostics);
   if (diagnostics.includes('Error')) {
     throw new Error(diagnostics);
   }

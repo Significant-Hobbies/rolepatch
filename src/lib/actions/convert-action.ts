@@ -101,8 +101,7 @@ export async function convertLatexToTypst(latexSource: string): Promise<string> 
   s = s.replace(/\\\\\s*$/gm, ' \\');
   s = s.replace(/\\\\/g, ' \\');
 
-  // \& → &
-  s = s.replace(/\\&/g, '&');
+  // \& → & (keep escaped — & is special in Typst for alignment)
 
   // \% → %
   s = s.replace(/\\%/g, '%');
@@ -131,13 +130,12 @@ export async function convertLatexToTypst(latexSource: string): Promise<string> 
   const header = `#set page(paper: "us-letter", margin: (x: 0.5in, y: 0.5in))
 #set text(size: 10pt)
 #set par(leading: 0.5em)
-#show heading.where(level: 1): it => {
-  v(-4pt)
-  text(size: 12pt, weight: "bold", smallcaps(it.body))
-  v(-8pt)
-  line(length: 100%, stroke: 0.5pt)
-  v(-5pt)
-}
+#show heading.where(level: 1): it => block(width: 100%, below: 0.6em, above: 0.8em)[
+  #set text(size: 12pt, weight: "bold")
+  #smallcaps(it.body)
+  #v(-8pt)
+  #line(length: 100%, stroke: 0.5pt)
+]
 
 `;
 
