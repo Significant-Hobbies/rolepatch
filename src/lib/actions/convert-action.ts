@@ -117,8 +117,9 @@ export async function convertLatexToTypst(latexSource: string): Promise<string> 
   s = s.replace(/\\begin\{tabular\*?\}[^\n]*\n?/g, '');
   s = s.replace(/\\end\{tabular\*?\}[^\n]*/g, '');
 
-  // Remove @ in email by escaping
-  s = s.replace(/mailto:([^\]"]*)/g, (m) => m.replace(/@/g, '\\@'));
+  // Escape @ signs that Typst would interpret as labels
+  // In quoted strings (URLs) they're fine, but in content text they need escaping
+  s = s.replace(/(?<!")@(?!")/g, '\\@');
 
   // Clean up stray LaTeX commands
   s = s.replace(/\\(?:centering|noindent|par)\b/g, '');
