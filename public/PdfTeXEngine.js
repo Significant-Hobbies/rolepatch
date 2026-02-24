@@ -60,7 +60,7 @@ var EngineStatus;
     EngineStatus[EngineStatus["Busy"] = 3] = "Busy";
     EngineStatus[EngineStatus["Error"] = 4] = "Error";
 })(EngineStatus = exports.EngineStatus || (exports.EngineStatus = {}));
-var ENGINE_PATH = 'swiftlatexpdftex.js';
+var ENGINE_PATH = '/swiftlatexpdftex.js';
 var CompileResult = /** @class */ (function () {
     function CompileResult() {
         this.pdf = undefined;
@@ -96,8 +96,12 @@ var PdfTeXEngine = /** @class */ (function () {
                                     }
                                     else {
                                         _this.latexWorkerStatus = EngineStatus.Error;
-                                        reject();
+                                        reject(new Error('Engine init failed'));
                                     }
+                                };
+                                _this.latexWorker.onerror = function (e) {
+                                    _this.latexWorkerStatus = EngineStatus.Error;
+                                    reject(new Error('Worker failed to load: ' + e.message));
                                 };
                             })];
                     case 1:
