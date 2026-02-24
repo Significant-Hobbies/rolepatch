@@ -77,11 +77,20 @@ export function LatexEditor({ resumeId, initialSource }: Props) {
 
   return (
     <>
-      <div ref={editorContainerRef} className="w-1/2 overflow-hidden border-r" />
+      <div className="w-1/2 flex flex-col overflow-hidden border-r">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b bg-gray-50">
+          <span className="text-xs text-gray-500">{saving ? 'Saving...' : 'Typst'}</span>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            Compile
+          </button>
+        </div>
+        <div ref={editorContainerRef} className="flex-1 overflow-hidden" />
+      </div>
       <div className="w-1/2 flex items-center justify-center bg-gray-100 relative">
-        {saving && (
-          <span className="absolute top-3 right-3 text-xs text-gray-500">Saving...</span>
-        )}
         {pdfUrl ? (
           <iframe src={pdfUrl} className="w-full h-full" title="PDF Preview" />
         ) : compileError ? (
@@ -90,7 +99,7 @@ export function LatexEditor({ resumeId, initialSource }: Props) {
             <pre className="text-xs text-red-400 whitespace-pre-wrap">{compileError}</pre>
           </div>
         ) : (
-          <p className="text-gray-400">Press Cmd+S to save and compile</p>
+          <p className="text-gray-400">Press Cmd+S or click Compile</p>
         )}
       </div>
     </>
