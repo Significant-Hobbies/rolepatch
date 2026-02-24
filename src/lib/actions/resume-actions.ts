@@ -15,13 +15,13 @@ export async function getResume(id: string): Promise<Resume | null> {
   return (result.rows[0] as unknown as Resume) ?? null;
 }
 
-const DEFAULT_TYPST_TEMPLATE = `#set page(margin: (x: 1.2cm, y: 1.2cm))
-#set text(size: 10pt, font: "Linux Libertine")
+const DEFAULT_TYPST_TEMPLATE = String.raw`#set page(margin: (x: 1.2cm, y: 1.2cm))
+#set text(size: 10pt)
 
 #align(center)[
   #text(size: 18pt, weight: "bold")[Your Name]
 
-  your.email\\@example.com | (555) 123-4567 | City, ST
+  your.email#"@"example.com | (555) 123-4567 | City, ST
 
   #link("https://linkedin.com/in/yourprofile")[LinkedIn] | #link("https://github.com/yourprofile")[GitHub]
 ]
@@ -30,7 +30,7 @@ const DEFAULT_TYPST_TEMPLATE = `#set page(margin: (x: 1.2cm, y: 1.2cm))
 
 == Experience
 
-*Job Title* #h(1fr) _Company Name_ \\
+*Job Title* #h(1fr) _Company Name_ \
 Location #h(1fr) _Start -- End_
 
 - Accomplishment or responsibility
@@ -38,13 +38,13 @@ Location #h(1fr) _Start -- End_
 
 == Education
 
-*Degree, Major* #h(1fr) _University Name_ \\
+*Degree, Major* #h(1fr) _University Name_ \
 Relevant coursework or honors #h(1fr) _Graduation Year_
 
 == Skills
 
-*Languages:* JavaScript, TypeScript, Python \\
-*Frameworks:* React, Next.js, Node.js \\
+*Languages:* JavaScript, TypeScript, Python \
+*Frameworks:* React, Next.js, Node.js \
 *Tools:* Git, Docker, AWS
 `;
 

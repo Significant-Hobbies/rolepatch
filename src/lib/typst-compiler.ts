@@ -13,9 +13,9 @@ export async function compileTypst(source: string): Promise<string> {
   const src = SourceInput.new('main.typ', source);
   world.setSourcesAndFiles([src], []);
 
-  const result = world.compile({});
-  if (result && result.length > 0 && !result.startsWith('ok')) {
-    throw new Error(result);
+  const diagnostics = world.compile({});
+  if (diagnostics.includes('Error')) {
+    throw new Error(diagnostics);
   }
 
   const pdfBytes = world.render_pdf();
