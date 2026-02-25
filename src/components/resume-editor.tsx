@@ -64,6 +64,8 @@ function calculateBreakPoints(el: HTMLElement): number[] {
         break;
       }
     }
+    // Skip if remaining content after this break is trivially small
+    if (total - adjusted < 30) break;
     breaks.push(adjusted);
     idealBreak = adjusted + PAGE_CONTENT_PX;
   }
