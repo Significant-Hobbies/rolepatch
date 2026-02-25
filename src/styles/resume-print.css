@@ -11,7 +11,6 @@
   height: 11in;
   margin: 0 auto 24px;
   padding: 0.5in var(--resume-margin);
-  overflow: hidden;
   background: white;
   color: #222;
   font-family: var(--resume-font-family);
@@ -19,7 +18,12 @@
   line-height: var(--resume-line-height);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
   border-radius: 2px;
-  position: relative;
+}
+
+/* Clip at content box so padding stays visible on every page */
+.resume-page-clip {
+  height: 100%;
+  overflow: hidden;
 }
 
 .resume-page:last-child {

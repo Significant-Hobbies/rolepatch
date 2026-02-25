@@ -287,8 +287,10 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
         {/* Visible page cards */}
         {Array.from({ length: pageCount }, (_, i) => (
           <div key={i} className="resume-page" style={cssVars}>
-            <div style={i > 0 ? { marginTop: `${-i * PAGE_CONTENT_HEIGHT_IN}in` } : undefined}>
-              <Markdown>{source}</Markdown>
+            <div className="resume-page-clip">
+              <div style={i > 0 ? { marginTop: `${-i * PAGE_CONTENT_HEIGHT_IN}in` } : undefined}>
+                <Markdown>{source}</Markdown>
+              </div>
             </div>
           </div>
         ))}
