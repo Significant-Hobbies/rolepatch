@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { getResume } from '@/lib/actions/resume-actions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { LatexEditor } from '@/components/latex-editor';
+import { ResumeEditor } from '@/components/resume-editor';
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,7 +17,7 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
         <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">Back</Link>
       </header>
       <div className="flex-1 flex overflow-hidden">
-        <LatexEditor resumeId={resume.id} initialSource={resume.latex_source} />
+        <ResumeEditor resumeId={resume.id} initialSource={resume.source} />
       </div>
     </main>
   );

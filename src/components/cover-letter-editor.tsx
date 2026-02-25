@@ -27,7 +27,7 @@ export function CoverLetterEditor({ job, resume, existingLetter }: CoverLetterEd
       try {
         const aiConfig = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
         const result = await generateCoverLetter(
-          resume.latex_source,
+          resume.source,
           job.jd_text,
           job.company,
           job.id,

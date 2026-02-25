@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS resumes (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  latex_source TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   id TEXT PRIMARY KEY,
   job_id TEXT NOT NULL REFERENCES job_applications(id),
   resume_id TEXT NOT NULL REFERENCES resumes(id),
-  latex_source TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL DEFAULT '',
   accepted INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())

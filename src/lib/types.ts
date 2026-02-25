@@ -1,7 +1,7 @@
 export interface Resume {
   id: string;
   name: string;
-  latex_source: string;
+  source: string;
   created_at: number;
   updated_at: number;
 }
@@ -23,7 +23,7 @@ export interface TailoredResume {
   id: string;
   job_id: string;
   resume_id: string;
-  latex_source: string;
+  source: string;
   accepted: number;
   created_at: number;
   updated_at: number;

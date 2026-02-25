@@ -8,11 +8,11 @@ interface Props {
   onModifiedChange: (value: string) => void;
 }
 
-export function LatexDiff({ original, modified, onModifiedChange }: Props) {
+export function ResumeDiff({ original, modified, onModifiedChange }: Props) {
   return (
     <DiffEditor
       height="100%"
-      language="latex"
+      language="markdown"
       original={original}
       modified={modified}
       onMount={(editor) => {

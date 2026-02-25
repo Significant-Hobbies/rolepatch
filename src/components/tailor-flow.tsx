@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { JobApplication, Resume, TailoredResume } from '@/lib/types';
 import { tailorResume } from '@/lib/actions/tailor-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
-import { LatexDiff } from '@/components/latex-diff';
+import { ResumeDiff } from '@/components/resume-diff';
 
 interface TailorFlowProps {
   job: JobApplication;
@@ -16,7 +16,7 @@ interface TailorFlowProps {
 export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
   const latestTailored = existingTailored[0] ?? null;
   const [tailoredSource, setTailoredSource] = useState<string | null>(
-    latestTailored?.latex_source ?? null,
+    latestTailored?.source ?? null,
   );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
     startTransition(async () => {
       try {
         const aiConfig = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
-        const result = await tailorResume(resume.latex_source, job.jd_text, aiConfig);
+        const result = await tailorResume(resume.source, job.jd_text, aiConfig);
         setTailoredSource(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to generate tailored resume');
@@ -112,15 +112,15 @@ export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
 
         <div className="flex-1 overflow-hidden">
           {tailoredSource ? (
-            <LatexDiff
-              original={resume.latex_source}
+            <ResumeDiff
+              original={resume.source}
               modified={tailoredSource}
               onModifiedChange={setTailoredSource}
             />
           ) : (
             <div className="h-full overflow-y-auto p-4">
               <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">
-                {resume.latex_source}
+                {resume.source}
               </pre>
             </div>
           )}

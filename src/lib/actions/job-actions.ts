@@ -36,13 +36,13 @@ export async function listJobApplications(): Promise<JobApplication[]> {
 export async function saveTailoredResume(
   jobId: string,
   resumeId: string,
-  latexSource: string,
+  source: string,
 ): Promise<string> {
   const id = uuid();
   await db.execute({
-    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, latex_source)
+    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source)
           VALUES (?, ?, ?, ?)`,
-    args: [id, jobId, resumeId, latexSource],
+    args: [id, jobId, resumeId, source],
   });
   await db.execute({
     sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ?`,

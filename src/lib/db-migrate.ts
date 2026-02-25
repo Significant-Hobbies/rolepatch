@@ -48,6 +48,16 @@ async function migrate() {
     await db.execute(statement);
   }
 
+  // Rename latex_source → source (if column still has old name)
+  for (const table of ['resumes', 'tailored_resumes']) {
+    try {
+      await db.execute(`ALTER TABLE ${table} RENAME COLUMN latex_source TO source`);
+      console.log(`Renamed latex_source → source in ${table}`);
+    } catch {
+      // Column already renamed or doesn't exist — safe to ignore
+    }
+  }
+
   console.log('Migration complete');
 }
 
