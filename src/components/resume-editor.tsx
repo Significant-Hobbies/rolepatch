@@ -33,41 +33,72 @@ const STORAGE_KEY = 'resume-tailor-config';
 const PAGE_CONTENT_PX = 10 * 96; // 960px
 
 /** Walk the measurement div and find smart page break offsets (in px).
- *  Avoids orphaning headings at the bottom of a page. */
+ *  Never cuts through elements — always breaks between block boundaries.
+ *  Keeps headings together with their first content block. */
 function calculateBreakPoints(el: HTMLElement): number[] {
   const total = el.scrollHeight;
   if (total <= PAGE_CONTENT_PX) return [0];
 
-  // Collect positions of h2/h3 headings — never break right before these
-  const headings = el.querySelectorAll('h2, h3');
-  const avoidBreakAfter: { top: number; safeTop: number }[] = [];
-  for (const h of headings) {
-    const hEl = h as HTMLElement;
+  // Collect block elements with their top edges and bottom edges.
+  // A break at edge.top means that element moves to the next page.
+  const blocks: { top: number; bottom: number }[] = [];
+  const children = el.children;
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i] as HTMLElement;
+    if (child.tagName === 'UL' || child.tagName === 'OL') {
+      // Use individual list items for finer-grained breaks
+      for (let j = 0; j < child.children.length; j++) {
+        const li = child.children[j] as HTMLElement;
+        blocks.push({ top: li.offsetTop, bottom: li.offsetTop + li.offsetHeight });
+      }
+    } else {
+      blocks.push({ top: child.offsetTop, bottom: child.offsetTop + child.offsetHeight });
+    }
+  }
+  blocks.sort((a, b) => a.top - b.top);
+
+  // Build heading zones: heading through all its content until next heading
+  const headings = Array.from(el.querySelectorAll('h2, h3'));
+  const headingZones: { top: number; safeTop: number }[] = [];
+  for (let i = 0; i < headings.length; i++) {
+    const hEl = headings[i] as HTMLElement;
     const top = hEl.offsetTop;
-    // Keep heading + at least its next sibling together
-    const next = hEl.nextElementSibling as HTMLElement | null;
-    const bottom = next
-      ? next.offsetTop + Math.min(next.offsetHeight, 60)
-      : top + hEl.offsetHeight;
-    avoidBreakAfter.push({ top, safeTop: bottom });
+    // Find the bottom of all content until the next heading (or end)
+    const nextH = headings[i + 1] as HTMLElement | undefined;
+    const sectionEnd = nextH ? nextH.offsetTop : total;
+    // Only keep together if the section is small enough (< half a page)
+    const safeTop = (sectionEnd - top) < PAGE_CONTENT_PX / 2 ? sectionEnd : top + hEl.offsetHeight + 60;
+    headingZones.push({ top, safeTop });
   }
 
   const breaks: number[] = [0];
-  let idealBreak = PAGE_CONTENT_PX;
+  let pageStart = 0;
 
-  while (idealBreak < total) {
-    let adjusted = idealBreak;
-    // If the break falls inside a heading zone, move it before the heading
-    for (const zone of avoidBreakAfter) {
-      if (idealBreak > zone.top && idealBreak < zone.safeTop) {
-        adjusted = zone.top;
+  while (pageStart + PAGE_CONTENT_PX < total) {
+    const pageEnd = pageStart + PAGE_CONTENT_PX;
+    // Find the last block whose bottom fits within this page
+    let breakAt = pageEnd;
+    for (const block of blocks) {
+      if (block.top <= pageStart) continue;
+      if (block.bottom > pageEnd) {
+        // This block overflows — break before it
+        breakAt = block.top;
         break;
       }
     }
-    // Skip if remaining content after this break is trivially small
-    if (total - adjusted < 30) break;
-    breaks.push(adjusted);
-    idealBreak = adjusted + PAGE_CONTENT_PX;
+
+    // If break falls inside a heading zone, move before the heading
+    for (const zone of headingZones) {
+      if (breakAt > zone.top && breakAt <= zone.safeTop) {
+        breakAt = zone.top;
+        break;
+      }
+    }
+
+    // Safety: ensure forward progress
+    if (breakAt <= pageStart) breakAt = pageEnd;
+    breaks.push(breakAt);
+    pageStart = breakAt;
   }
 
   return breaks;
