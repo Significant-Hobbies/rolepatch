@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { scrapeJobUrl } from '@/lib/actions/scrape-action';
 import { createJobApplication } from '@/lib/actions/job-actions';
-import type { Resume } from '@/lib/types';
 
 interface NewJobButtonProps {
-  resumes: Resume[];
+  resumes: { id: string; name: string }[];
 }
 
 export function NewJobButton({ resumes }: NewJobButtonProps) {
@@ -17,11 +16,33 @@ export function NewJobButton({ resumes }: NewJobButtonProps) {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [toast, setToast] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open && inputRef.current) inputRef.current.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
+  function close() {
+    if (loading) return;
+    setOpen(false);
+    setUrl('');
+    setError('');
+  }
 
   function handleOpen() {
     if (resumes.length === 0) {
-      setError('Create a resume first before adding a job.');
-      setTimeout(() => setError(''), 3000);
+      setToast('Create a resume first before adding a job.');
+      setTimeout(() => setToast(''), 3000);
       return;
     }
     setResumeId(resumes[0].id);
@@ -45,8 +66,7 @@ export function NewJobButton({ resumes }: NewJobButtonProps) {
         scraped.html,
         scraped.text,
       );
-      setOpen(false);
-      setUrl('');
+      close();
       router.push(`/tailor/${jobId}`);
     } catch (err) {
       setError(`Failed to scrape job: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -55,74 +75,78 @@ export function NewJobButton({ resumes }: NewJobButtonProps) {
     }
   }
 
-  if (!open) {
-    return (
-      <div>
-        <button
-          onClick={handleOpen}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          Add Job
-        </button>
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 border rounded-lg p-4 max-w-md">
-      {resumes.length > 1 && (
-        <div>
-          <label className="block text-sm font-medium mb-1">Resume</label>
-          <select
-            value={resumeId}
-            onChange={(e) => setResumeId(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            {resumes.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
+    <>
+      <button
+        onClick={handleOpen}
+        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+      >
+        Add Job
+      </button>
+
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-50 bg-red-600 text-white text-sm px-4 py-2 rounded-lg shadow-lg">
+          {toast}
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium mb-1">Job URL</label>
-        <input
-          autoFocus
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://boards.greenhouse.io/..."
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setOpen(false);
-              setUrl('');
-              setError('');
-            }
-          }}
-        />
-      </div>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={close} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Job Application</h2>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {resumes.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Resume</label>
+                  <select
+                    value={resumeId}
+                    onChange={(e) => setResumeId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    {resumes.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-      <div className="flex items-center gap-2">
-        <button
-          type="submit"
-          disabled={loading || !url.trim()}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm"
-        >
-          {loading ? 'Scraping...' : 'Add Job'}
-        </button>
-        <button
-          type="button"
-          onClick={() => { setOpen(false); setUrl(''); setError(''); }}
-          className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Job URL</label>
+                <input
+                  ref={inputRef}
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://boards.greenhouse.io/..."
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={close}
+                  disabled={loading}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !url.trim()}
+                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                >
+                  {loading ? 'Scraping...' : 'Add Job'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

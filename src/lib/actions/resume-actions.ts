@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function listResumes(): Promise<Resume[]> {
   const result = await db.execute('SELECT * FROM resumes ORDER BY updated_at DESC');
-  return result.rows as unknown as Resume[];
+  return JSON.parse(JSON.stringify(result.rows)) as Resume[];
 }
 
 export async function getResume(id: string): Promise<Resume | null> {

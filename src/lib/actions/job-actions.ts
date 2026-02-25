@@ -30,7 +30,7 @@ export async function getJobApplication(id: string): Promise<JobApplication | nu
 
 export async function listJobApplications(): Promise<JobApplication[]> {
   const result = await db.execute('SELECT * FROM job_applications ORDER BY created_at DESC');
-  return result.rows as unknown as JobApplication[];
+  return JSON.parse(JSON.stringify(result.rows)) as JobApplication[];
 }
 
 export async function saveTailoredResume(

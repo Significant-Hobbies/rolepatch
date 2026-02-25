@@ -40,7 +40,7 @@ export default async function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold">Job Applications</h1>
-          <NewJobButton resumes={resumes} />
+          <NewJobButton resumes={resumes.map(r => ({ id: r.id, name: r.name }))} />
         </div>
         {jobs.length === 0 ? (
           <p className="text-gray-500">No job applications yet. Add one to start tailoring.</p>
