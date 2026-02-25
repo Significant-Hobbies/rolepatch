@@ -85,7 +85,7 @@ export function ResumeEditor({ resumeId, initialSource }: Props) {
 
   return (
     <>
-      <div className="w-1/2 flex flex-col overflow-hidden border-r print:hidden">
+      <div className="w-1/2 flex flex-col overflow-hidden border-r print-hide">
         <div className="flex items-center justify-between px-3 py-1.5 border-b bg-gray-50">
           <span className="text-xs text-gray-500">{saving ? 'Saving...' : 'Markdown'}</span>
           <div className="flex gap-1.5">
@@ -106,7 +106,7 @@ export function ResumeEditor({ resumeId, initialSource }: Props) {
         </div>
         <div ref={editorContainerRef} className="flex-1 overflow-hidden" />
       </div>
-      <div className="w-1/2 overflow-y-auto bg-gray-100 p-6 print:w-full print:p-0 print:bg-white" id="resume-print-target">
+      <div className="w-1/2 overflow-y-auto bg-gray-100 p-6" id="resume-print-target">
         <div className="resume-preview">
           <Markdown>{source}</Markdown>
         </div>
