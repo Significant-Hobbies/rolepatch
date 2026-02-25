@@ -323,15 +323,21 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
         </div>
 
         {/* Visible page cards */}
-        {breakPoints.map((offsetPx, i) => (
-          <div key={i} className="resume-page" style={cssVars}>
-            <div className="resume-page-clip">
-              <div style={offsetPx > 0 ? { marginTop: `-${offsetPx}px` } : undefined}>
-                <Markdown>{source}</Markdown>
+        {breakPoints.map((offsetPx, i) => {
+          const nextOffset = breakPoints[i + 1];
+          const clipStyle = nextOffset != null
+            ? { height: `${nextOffset - offsetPx}px` }
+            : undefined;
+          return (
+            <div key={i} className="resume-page" style={cssVars}>
+              <div className="resume-page-clip" style={clipStyle}>
+                <div style={offsetPx > 0 ? { marginTop: `-${offsetPx}px` } : undefined}>
+                  <Markdown>{source}</Markdown>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Hidden print target — continuous flow for browser pagination */}
