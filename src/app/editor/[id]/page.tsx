@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import { getResume } from '@/lib/actions/resume-actions';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { ResumeEditor } from '@/components/resume-editor';
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,14 +10,11 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   if (!resume) notFound();
 
   return (
-    <main className="h-screen flex flex-col">
-      <header className="flex items-center justify-between px-6 py-3 border-b">
-        <h1 className="font-semibold">{resume.name}</h1>
-        <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">Back</Link>
-      </header>
-      <div className="flex-1 flex overflow-hidden">
-        <ResumeEditor resumeId={resume.id} initialSource={resume.source} />
+    <>
+      <style>{`nav { display: none !important; }`}</style>
+      <div className="h-screen flex overflow-hidden">
+        <ResumeEditor resumeId={resume.id} initialSource={resume.source} resumeName={resume.name} />
       </div>
-    </main>
+    </>
   );
 }

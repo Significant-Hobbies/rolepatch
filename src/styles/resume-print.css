@@ -1,101 +1,149 @@
-/* Resume preview — screen styles */
-.resume-preview {
+/* ─── Screen preview — paginated view ─── */
+
+/* Individual page card (screen only) */
+.resume-page {
   --resume-font-size: 10.5pt;
   --resume-line-height: 1.35;
   --resume-font-family: 'Charter', 'Georgia', 'Times New Roman', serif;
   --resume-margin: 0.5in;
 
-  max-width: 8.5in;
-  min-height: 11in;
-  margin: 0 auto;
-  padding: 0.4in var(--resume-margin);
+  width: 8.5in;
+  height: 11in;
+  margin: 0 auto 24px;
+  padding: 0.5in var(--resume-margin);
+  overflow: hidden;
   background: white;
   color: #222;
   font-family: var(--resume-font-family);
   font-size: var(--resume-font-size);
   line-height: var(--resume-line-height);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
   border-radius: 2px;
+  position: relative;
 }
 
+.resume-page:last-child {
+  margin-bottom: 0;
+}
+
+/* Hidden measurement div — same width/font but unconstrained height */
+.resume-measure {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  visibility: hidden;
+  pointer-events: none;
+  width: 8.5in;
+  padding: 0 var(--resume-margin, 0.5in);
+  font-family: var(--resume-font-family, serif);
+  font-size: var(--resume-font-size, 10.5pt);
+  line-height: var(--resume-line-height, 1.35);
+  color: #222;
+}
+
+/* ─── Print-only continuous view ─── */
+.resume-preview {
+  font-family: var(--resume-font-family, 'Charter', 'Georgia', 'Times New Roman', serif);
+  font-size: var(--resume-font-size, 10.5pt);
+  line-height: var(--resume-line-height, 1.35);
+  color: #222;
+}
+
+/* ─── Shared typography (both .resume-page and .resume-preview) ─── */
+
 /* Name */
+.resume-page h1,
 .resume-preview h1 {
-  font-size: 24pt;
+  font-size: 22pt;
   font-weight: 700;
   margin: 0 0 2px;
   text-align: center;
   color: #111;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 /* Section headings */
+.resume-page h2,
 .resume-preview h2 {
   font-size: inherit;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin: 12px 0 4px;
+  letter-spacing: 0.1em;
+  margin: 10px 0 4px;
   padding-bottom: 2px;
   border-bottom: 1px solid #333;
   color: #111;
 }
 
+.resume-page h3,
 .resume-preview h3 {
   font-size: inherit;
   font-weight: 700;
   margin: 6px 0 1px;
 }
 
+.resume-page p,
 .resume-preview p {
   margin: 1px 0;
   white-space: pre-line;
 }
 
-/* Contact line right after h1 — centered, smaller */
+/* Contact line right after h1 */
+.resume-page h1 + p,
 .resume-preview h1 + p {
   text-align: center;
-  font-size: 9.5pt;
-  color: #333;
+  font-size: 9pt;
+  color: #444;
   margin-bottom: 0;
 }
 
-/* Hide the first <hr> after contact info — we use h2 borders instead */
+/* ─── Separators ─── */
+.resume-page h1 + p + hr,
+.resume-page h1 + p + p + hr,
 .resume-preview h1 + p + hr,
 .resume-preview h1 + p + p + hr {
   display: none;
 }
 
-/* All other <hr> separators — hidden since sections have border-bottom */
+.resume-page hr,
 .resume-preview hr {
   border: none;
   margin: 2px 0;
   height: 0;
 }
 
+/* ─── Links ─── */
+.resume-page a,
 .resume-preview a {
   color: #1a5276;
   text-decoration: none;
 }
 
+.resume-page a:hover,
 .resume-preview a:hover {
   text-decoration: underline;
 }
 
+/* ─── Inline ─── */
+.resume-page strong,
 .resume-preview strong {
   font-weight: 700;
 }
 
+.resume-page em,
 .resume-preview em {
   font-style: italic;
 }
 
-/* Bullet lists */
+/* ─── Lists ─── */
+.resume-page ul,
 .resume-preview ul {
   margin: 1px 0 4px 0;
   padding-left: 1.1em;
   list-style: disc outside;
 }
 
+.resume-page li,
 .resume-preview li {
   margin-bottom: 0;
   font-size: inherit;
@@ -103,56 +151,80 @@
   display: list-item;
 }
 
+.resume-page li::marker,
 .resume-preview li::marker {
-  color: #333;
+  color: #444;
 }
 
-/* Job title paragraphs (bold + em pattern) — tighter spacing */
+/* Job title paragraphs — tighter spacing */
+.resume-page h2 + p,
 .resume-preview h2 + p {
   margin-top: 6px;
 }
 
-/* Subheading for projects/jobs — reduce gap before bullets */
+/* Reduce gap before bullets */
+.resume-page p + ul,
 .resume-preview p + ul {
   margin-top: 0;
 }
 
-/* Skills section — tighter line height for the key:value lines */
+/* Skills section — preserve newlines */
+.resume-page p > br,
 .resume-preview p > br {
   display: block;
   content: '';
   margin-top: 1px;
 }
 
-/* Print styles */
+/* Also style the measurement div with same typography */
+.resume-measure h1 { font-size: 22pt; font-weight: 700; margin: 0 0 2px; text-align: center; color: #111; letter-spacing: 0.01em; }
+.resume-measure h2 { font-size: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin: 10px 0 4px; padding-bottom: 2px; border-bottom: 1px solid #333; color: #111; }
+.resume-measure h3 { font-size: inherit; font-weight: 700; margin: 6px 0 1px; }
+.resume-measure p { margin: 1px 0; white-space: pre-line; }
+.resume-measure h1 + p { text-align: center; font-size: 9pt; color: #444; margin-bottom: 0; }
+.resume-measure h1 + p + hr, .resume-measure h1 + p + p + hr { display: none; }
+.resume-measure hr { border: none; margin: 2px 0; height: 0; }
+.resume-measure strong { font-weight: 700; }
+.resume-measure em { font-style: italic; }
+.resume-measure ul { margin: 1px 0 4px 0; padding-left: 1.1em; list-style: disc outside; }
+.resume-measure li { margin-bottom: 0; font-size: inherit; line-height: inherit; display: list-item; }
+.resume-measure h2 + p { margin-top: 6px; }
+.resume-measure p + ul { margin-top: 0; }
+.resume-measure p > br { display: block; content: ''; margin-top: 1px; }
+
+/* ─── Print styles ─── */
 @media print {
-  /* Hide all UI chrome — nav, header, editor pane */
   nav, header, .print-hide {
     display: none !important;
   }
 
-  /* Remove all layout constraints on ancestor wrappers */
-  body, main, main > div {
+  .print-show {
     display: block !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    margin: 0 !important;
   }
 
-  #resume-print-target {
-    width: 100% !important;
+  body, main, main > div, html {
+    display: block !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
     padding: 0 !important;
     margin: 0 !important;
     background: white !important;
-    overflow: visible !important;
+  }
+
+  #resume-print-target {
+    display: none !important;
+  }
+
+  #resume-print-only {
+    display: block !important;
   }
 
   .resume-preview {
     box-shadow: none;
     padding: 0;
     margin: 0;
-    max-width: none;
+    width: auto;
     min-height: auto;
     border-radius: 0;
   }
@@ -164,5 +236,15 @@
 
   .resume-preview a {
     color: inherit;
+  }
+
+  .resume-preview h2 {
+    break-after: avoid;
+  }
+  .resume-preview h3 {
+    break-after: avoid;
+  }
+  .resume-preview li {
+    break-inside: avoid;
   }
 }

@@ -7,12 +7,14 @@ import { basicSetup } from 'codemirror';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { markdown } from '@codemirror/lang-markdown';
 import Markdown from 'react-markdown';
+import Link from 'next/link';
 import { updateResume } from '@/lib/actions/resume-actions';
 import '@/styles/resume-print.css';
 
 interface Props {
   resumeId: string;
   initialSource: string;
+  resumeName: string;
 }
 
 const FONT_OPTIONS = [
@@ -26,17 +28,69 @@ const FONT_OPTIONS = [
   { label: 'System Sans', value: "system-ui, -apple-system, sans-serif" },
 ];
 
-export function ResumeEditor({ resumeId, initialSource }: Props) {
+const STORAGE_KEY = 'resume-tailor-config';
+// Content area per page: 11in page - 0.5in top padding - 0.5in bottom padding
+const PAGE_CONTENT_HEIGHT_IN = 10;
+
+function loadConfig() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveConfig(cfg: { fontSize: number; lineHeight: number; fontFamily: string; margin: number }) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch {}
+}
+
+export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
   const [source, setSource] = useState(initialSource);
   const [showConfig, setShowConfig] = useState(false);
+  const [pageCount, setPageCount] = useState(1);
+  const configRef = useRef<HTMLDivElement>(null);
 
-  const [fontSize, setFontSize] = useState(10.5);
-  const [lineHeight, setLineHeight] = useState(1.35);
-  const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0].value);
-  const [margin, setMargin] = useState(0.5);
+  const stored = loadConfig();
+  const [fontSize, setFontSize] = useState(stored?.fontSize ?? 10.5);
+  const [lineHeight, setLineHeight] = useState(stored?.lineHeight ?? 1.35);
+  const [fontFamily, setFontFamily] = useState(stored?.fontFamily ?? FONT_OPTIONS[0].value);
+  const [margin, setMargin] = useState(stored?.margin ?? 0.5);
+
+  // Persist config changes
+  useEffect(() => {
+    saveConfig({ fontSize, lineHeight, fontFamily, margin });
+  }, [fontSize, lineHeight, fontFamily, margin]);
+
+  // Track page count via ResizeObserver on the measurement div
+  useEffect(() => {
+    const el = measureRef.current;
+    if (!el) return;
+    const update = () => {
+      const contentHeightPx = el.scrollHeight;
+      const pageContentPx = PAGE_CONTENT_HEIGHT_IN * 96;
+      setPageCount(Math.max(1, Math.ceil(contentHeightPx / pageContentPx)));
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    update();
+    return () => observer.disconnect();
+  }, []);
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!showConfig) return;
+    const handler = (e: MouseEvent) => {
+      if (configRef.current && !configRef.current.contains(e.target as Node)) {
+        setShowConfig(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showConfig]);
 
   const save = useCallback(async () => {
     if (!viewRef.current) return;
@@ -109,88 +163,126 @@ export function ResumeEditor({ resumeId, initialSource }: Props) {
 
   return (
     <>
-      <div className="w-1/2 flex flex-col overflow-hidden border-r print-hide">
-        <div className="flex items-center justify-between px-3 py-1.5 border-b bg-gray-50">
-          <span className="text-xs text-gray-500">{saving ? 'Saving...' : 'Markdown'}</span>
-          <div className="flex gap-1.5">
-            <button
-              onClick={() => setShowConfig((v) => !v)}
-              className={`px-3 py-1 text-xs rounded ${showConfig ? 'bg-gray-300 text-gray-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-            >
-              Settings
-            </button>
+      {/* Editor pane */}
+      <div className="w-1/2 flex flex-col overflow-hidden border-r border-gray-200 print-hide">
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-200 bg-white">
+          <Link
+            href="/"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            title="Back to dashboard"
+          >
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
+          </Link>
+          <span className="text-sm font-medium text-gray-700 truncate">{resumeName}</span>
+
+          <span className={`text-xs tabular-nums ${pageCount > 1 ? 'text-amber-600 font-medium' : 'text-gray-400'}`}>
+            {pageCount === 1 ? '1 page' : `${pageCount} pages`}
+          </span>
+
+          <span className="text-xs text-gray-400">
+            {saving ? 'Saving...' : ''}
+          </span>
+
+          <div className="ml-auto flex items-center gap-2">
+            <div className="relative" ref={configRef}>
+              <button
+                onClick={() => setShowConfig((v) => !v)}
+                className={`p-1.5 rounded transition-colors ${showConfig ? 'bg-gray-200 text-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                title="Format settings"
+              >
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>
+              </button>
+
+              {showConfig && (
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Font Family</label>
+                      <select
+                        value={fontFamily}
+                        onChange={(e) => setFontFamily(e.target.value)}
+                        className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        {FONT_OPTIONS.map((f) => (
+                          <option key={f.label} value={f.value}>{f.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Size (pt)</label>
+                        <input
+                          type="number"
+                          min={8} max={14} step={0.5}
+                          value={fontSize}
+                          onChange={(e) => setFontSize(Number(e.target.value))}
+                          className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Leading</label>
+                        <input
+                          type="number"
+                          min={1} max={2} step={0.05}
+                          value={lineHeight}
+                          onChange={(e) => setLineHeight(Number(e.target.value))}
+                          className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Margin (in)</label>
+                        <input
+                          type="number"
+                          min={0.25} max={1} step={0.05}
+                          value={margin}
+                          onChange={(e) => setMargin(Number(e.target.value))}
+                          className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button
               onClick={handlePrint}
-              className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
-              Print / Export PDF
+              Export PDF
             </button>
             <button
               onClick={save}
               disabled={saving}
-              className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
-              Save
+              {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
-        {showConfig && (
-          <div className="flex flex-wrap gap-x-4 gap-y-2 px-3 py-2 border-b bg-gray-50 text-xs">
-            <label className="flex items-center gap-1.5">
-              <span className="text-gray-500">Font</span>
-              <select
-                value={fontFamily}
-                onChange={(e) => setFontFamily(e.target.value)}
-                className="border rounded px-1.5 py-0.5 bg-white text-gray-700"
-              >
-                {FONT_OPTIONS.map((f) => (
-                  <option key={f.label} value={f.value}>{f.label}</option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-1.5">
-              <span className="text-gray-500">Size</span>
-              <input
-                type="number"
-                min={8}
-                max={14}
-                step={0.5}
-                value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
-                className="border rounded px-1.5 py-0.5 w-14 bg-white text-gray-700"
-              />
-              <span className="text-gray-400">pt</span>
-            </label>
-            <label className="flex items-center gap-1.5">
-              <span className="text-gray-500">Line height</span>
-              <input
-                type="number"
-                min={1}
-                max={2}
-                step={0.05}
-                value={lineHeight}
-                onChange={(e) => setLineHeight(Number(e.target.value))}
-                className="border rounded px-1.5 py-0.5 w-14 bg-white text-gray-700"
-              />
-            </label>
-            <label className="flex items-center gap-1.5">
-              <span className="text-gray-500">Margin</span>
-              <input
-                type="number"
-                min={0.25}
-                max={1}
-                step={0.05}
-                value={margin}
-                onChange={(e) => setMargin(Number(e.target.value))}
-                className="border rounded px-1.5 py-0.5 w-14 bg-white text-gray-700"
-              />
-              <span className="text-gray-400">in</span>
-            </label>
-          </div>
-        )}
         <div ref={editorContainerRef} className="flex-1 overflow-hidden" />
       </div>
-      <div className="w-1/2 overflow-y-auto bg-gray-100 p-6" id="resume-print-target">
+
+      {/* Preview pane — paginated */}
+      <div className="w-1/2 overflow-y-auto bg-gray-100 py-8 px-6 print-hide" id="resume-print-target">
+        {/* Hidden measurement div — same styling, unconstrained height */}
+        <div ref={measureRef} className="resume-measure" style={cssVars} aria-hidden="true">
+          <Markdown>{source}</Markdown>
+        </div>
+
+        {/* Visible page cards */}
+        {Array.from({ length: pageCount }, (_, i) => (
+          <div key={i} className="resume-page" style={cssVars}>
+            <div style={i > 0 ? { marginTop: `${-i * PAGE_CONTENT_HEIGHT_IN}in` } : undefined}>
+              <Markdown>{source}</Markdown>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Hidden print target — continuous flow for browser pagination */}
+      <div className="hidden print-show" id="resume-print-only">
         <div className="resume-preview" style={cssVars}>
           <Markdown>{source}</Markdown>
         </div>
