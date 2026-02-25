@@ -54,14 +54,27 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   const [pageCount, setPageCount] = useState(1);
   const configRef = useRef<HTMLDivElement>(null);
 
-  const stored = loadConfig();
-  const [fontSize, setFontSize] = useState(stored?.fontSize ?? 10.5);
-  const [lineHeight, setLineHeight] = useState(stored?.lineHeight ?? 1.35);
-  const [fontFamily, setFontFamily] = useState(stored?.fontFamily ?? FONT_OPTIONS[0].value);
-  const [margin, setMargin] = useState(stored?.margin ?? 0.5);
+  const [fontSize, setFontSize] = useState(10.5);
+  const [lineHeight, setLineHeight] = useState(1.35);
+  const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0].value);
+  const [margin, setMargin] = useState(0.5);
+  const configLoaded = useRef(false);
 
-  // Persist config changes
+  // Load config from localStorage after hydration
   useEffect(() => {
+    const stored = loadConfig();
+    if (stored) {
+      if (stored.fontSize != null) setFontSize(stored.fontSize);
+      if (stored.lineHeight != null) setLineHeight(stored.lineHeight);
+      if (stored.fontFamily != null) setFontFamily(stored.fontFamily);
+      if (stored.margin != null) setMargin(stored.margin);
+    }
+    configLoaded.current = true;
+  }, []);
+
+  // Persist config changes (skip initial load)
+  useEffect(() => {
+    if (!configLoaded.current) return;
     saveConfig({ fontSize, lineHeight, fontFamily, margin });
   }, [fontSize, lineHeight, fontFamily, margin]);
 
