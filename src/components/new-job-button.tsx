@@ -93,17 +93,17 @@ export function NewJobButton({ resumes }: NewJobButtonProps) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={close} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Job Application</h2>
+          <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-lg font-semibold mb-4">Add Job Application</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {resumes.length > 1 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Resume</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resume</label>
                   <select
                     value={resumeId}
                     onChange={(e) => setResumeId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     {resumes.map((r) => (
                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -113,14 +113,14 @@ export function NewJobButton({ resumes }: NewJobButtonProps) {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Job URL</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Job URL</label>
                 <input
                   ref={inputRef}
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://boards.greenhouse.io/..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
 
@@ -131,7 +131,7 @@ export function NewJobButton({ resumes }: NewJobButtonProps) {
                   type="button"
                   onClick={close}
                   disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                 >
                   Cancel
                 </button>

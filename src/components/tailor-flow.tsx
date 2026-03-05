@@ -49,8 +49,8 @@ export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
     <div className="flex flex-1 overflow-hidden">
       {/* Left panel: Job Description */}
       <div className="w-1/3 border-r flex flex-col">
-        <div className="px-4 py-3 border-b bg-gray-50">
-          <h2 className="text-sm font-semibold text-gray-700">Job Description</h2>
+        <div className="px-4 py-3 border-b bg-gray-50 dark:bg-gray-900">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Job Description</h2>
           {job.url && (
             <a
               href={job.url}
@@ -63,7 +63,7 @@ export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
           )}
         </div>
         <div className="flex-1 overflow-y-auto p-4">
-          <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans leading-relaxed">
+          <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-sans leading-relaxed">
             {job.jd_text}
           </pre>
         </div>
@@ -71,9 +71,9 @@ export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
 
       {/* Right panel: Resume / Tailored output */}
       <div className="w-2/3 flex flex-col">
-        <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+        <div className="px-4 py-3 border-b bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-gray-700">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               {tailoredSource ? 'Tailored Resume (diff)' : 'Original Resume'}
             </h2>
             <p className="text-xs text-gray-500">{resume.name}</p>
@@ -81,7 +81,7 @@ export function TailorFlow({ job, resume, existingTailored }: TailorFlowProps) {
           <div className="flex items-center gap-2">
             <Link
               href={`/cover-letter/${job.id}`}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100"
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Generate Cover Letter
             </Link>
