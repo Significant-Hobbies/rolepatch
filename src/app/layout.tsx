@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { AuthProvider } from "@/components/auth-provider";
+import { UserMenu } from "@/components/user-menu";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -51,6 +52,9 @@ export default async function RootLayout({
               >
                 Stash
               </Link>
+              <div className="ml-auto">
+                <UserMenu />
+              </div>
             </div>
           </nav>
           {children}
