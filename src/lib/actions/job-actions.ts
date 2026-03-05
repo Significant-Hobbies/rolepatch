@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
 import type { JobApplication, TailoredResume } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { getCurrentUserId } from '@/lib/auth-utils';
 
 export async function createJobApplication(
   resumeId: string,
@@ -13,24 +14,33 @@ export async function createJobApplication(
   jdRaw: string,
   jdText: string,
 ): Promise<string> {
+  const userId = await getCurrentUserId();
   const id = uuid();
   await db.execute({
-    sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, resumeId, url, company, role, jdRaw, jdText],
+    sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, resumeId, url, company, role, jdRaw, jdText, userId],
   });
   revalidatePath('/');
   return id;
 }
 
 export async function getJobApplication(id: string): Promise<JobApplication | null> {
-  const result = await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ?', args: [id] });
+  const userId = await getCurrentUserId();
+  const result = userId
+    ? await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ? AND user_id = ?', args: [id, userId] })
+    : await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ? AND user_id IS NULL', args: [id] });
   const row = result.rows[0];
   return row ? (JSON.parse(JSON.stringify(row)) as JobApplication) : null;
 }
 
 export async function listJobApplications(): Promise<JobApplication[]> {
-  const result = await db.execute('SELECT * FROM job_applications ORDER BY created_at DESC');
+  const userId = await getCurrentUserId();
+  if (!userId) return [];
+  const result = await db.execute({
+    sql: 'SELECT * FROM job_applications WHERE user_id = ? ORDER BY created_at DESC',
+    args: [userId],
+  });
   return JSON.parse(JSON.stringify(result.rows)) as JobApplication[];
 }
 
@@ -39,11 +49,12 @@ export async function saveTailoredResume(
   resumeId: string,
   source: string,
 ): Promise<string> {
+  const userId = await getCurrentUserId();
   const id = uuid();
   await db.execute({
-    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source)
-          VALUES (?, ?, ?, ?)`,
-    args: [id, jobId, resumeId, source],
+    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, user_id)
+          VALUES (?, ?, ?, ?, ?)`,
+    args: [id, jobId, resumeId, source, userId],
   });
   await db.execute({
     sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ?`,
@@ -54,9 +65,15 @@ export async function saveTailoredResume(
 }
 
 export async function getTailoredResumes(jobId: string): Promise<TailoredResume[]> {
-  const result = await db.execute({
-    sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? ORDER BY created_at DESC',
-    args: [jobId],
-  });
+  const userId = await getCurrentUserId();
+  const result = userId
+    ? await db.execute({
+        sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC',
+        args: [jobId, userId],
+      })
+    : await db.execute({
+        sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id IS NULL ORDER BY created_at DESC',
+        args: [jobId],
+      });
   return JSON.parse(JSON.stringify(result.rows)) as TailoredResume[];
 }

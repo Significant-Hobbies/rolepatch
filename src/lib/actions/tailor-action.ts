@@ -9,11 +9,16 @@ export async function tailorResume(
   resumeSource: string,
   jdText: string,
   aiConfig?: Partial<AIProviderConfig>,
+  stashContent?: string,
 ): Promise<string> {
   const { provider, model } = getAIProvider(aiConfig);
 
-  const stashEntries = await listStashEntries();
   let stashSection = '';
+  if (stashContent) {
+    stashSection = `\n\n## Additional Content Available (not currently in resume):\nThe following are extra content blocks the user has stashed. You may incorporate any of these into the tailored resume if they are relevant to the job description. Only use them if they genuinely strengthen the resume for this specific role.\n\n${stashContent}`;
+  }
+
+  const stashEntries = stashContent ? [] : await listStashEntries();
   if (stashEntries.length > 0) {
     const formatted = stashEntries
       .map((e) => `### [${e.category}] ${e.label}\n${e.content}`)
