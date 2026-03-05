@@ -39,6 +39,12 @@ export default function RootLayout({
             >
               Settings
             </Link>
+            <Link
+              href="/stash"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+            >
+              Stash
+            </Link>
           </div>
         </nav>
         {children}
