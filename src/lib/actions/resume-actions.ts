@@ -12,7 +12,8 @@ export async function listResumes(): Promise<Resume[]> {
 
 export async function getResume(id: string): Promise<Resume | null> {
   const result = await db.execute({ sql: 'SELECT * FROM resumes WHERE id = ?', args: [id] });
-  return (result.rows[0] as unknown as Resume) ?? null;
+  const row = result.rows[0];
+  return row ? (JSON.parse(JSON.stringify(row)) as Resume) : null;
 }
 
 const DEFAULT_MARKDOWN_TEMPLATE = `# Your Name

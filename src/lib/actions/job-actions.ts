@@ -25,7 +25,8 @@ export async function createJobApplication(
 
 export async function getJobApplication(id: string): Promise<JobApplication | null> {
   const result = await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ?', args: [id] });
-  return (result.rows[0] as unknown as JobApplication) ?? null;
+  const row = result.rows[0];
+  return row ? (JSON.parse(JSON.stringify(row)) as JobApplication) : null;
 }
 
 export async function listJobApplications(): Promise<JobApplication[]> {
@@ -57,5 +58,5 @@ export async function getTailoredResumes(jobId: string): Promise<TailoredResume[
     sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? ORDER BY created_at DESC',
     args: [jobId],
   });
-  return result.rows as unknown as TailoredResume[];
+  return JSON.parse(JSON.stringify(result.rows)) as TailoredResume[];
 }
