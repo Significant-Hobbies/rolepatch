@@ -7,6 +7,16 @@ import { createStashEntry, updateStashEntry, deleteStashEntry } from '@/lib/acti
 
 const CATEGORIES = ['experience', 'skills', 'projects', 'education', 'certifications', 'other'];
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/^#+\s*/gm, '')
+    .replace(/^[-*]\s+/gm, '- ')
+    .replace(/\n{2,}/g, '\n');
+}
+
 interface StashListProps {
   entries: StashEntry[];
 }
@@ -114,15 +124,12 @@ export function StashList({ entries }: StashListProps) {
                   <div
                     key={entry.id}
                     onClick={() => openEdit(entry)}
-                    className="border rounded-lg p-4 hover:border-green-500 transition-colors cursor-pointer"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-green-500 dark:hover:border-green-500 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <span className="font-bold text-sm">{entry.label}</span>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize whitespace-nowrap">
-                        {entry.category}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 line-clamp-3">{entry.content}</p>
+                    <h3 className="font-semibold text-sm mb-2">{entry.label}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 whitespace-pre-line">
+                      {stripMarkdown(entry.content)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -133,19 +140,19 @@ export function StashList({ entries }: StashListProps) {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={close} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="absolute inset-0 bg-black/50" onClick={close} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-lg font-semibold mb-4">
               {editing ? 'Edit Entry' : 'Add Entry'}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -156,24 +163,24 @@ export function StashList({ entries }: StashListProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Label</label>
                 <input
                   type="text"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
                   placeholder="e.g., ML Engineer at Startup X"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
                 <textarea
                   rows={6}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Markdown content..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
 
@@ -182,7 +189,7 @@ export function StashList({ entries }: StashListProps) {
                   type="button"
                   onClick={close}
                   disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
