@@ -1,10 +1,10 @@
-import NextAuth from 'next-auth';
-import Google from 'next-auth/providers/google';
+import type { NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 import { db } from '@/lib/db';
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
-    Google({
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
@@ -17,13 +17,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         sql: `INSERT INTO users (id, email, name, image)
               VALUES (?, ?, ?, ?)
               ON CONFLICT(email) DO UPDATE SET name = ?, image = ?, updated_at = unixepoch()`,
-        args: [crypto.randomUUID(), user.email, user.name ?? '', user.image ?? '', user.name ?? '', user.image ?? ''],
+        args: [
+          crypto.randomUUID(),
+          user.email,
+          user.name ?? '',
+          user.image ?? '',
+          user.name ?? '',
+          user.image ?? '',
+        ],
       });
       return true;
     },
     async jwt({ token, user }) {
       if (user?.email) {
-        const result = await db.execute({ sql: 'SELECT id FROM users WHERE email = ?', args: [user.email] });
+        const result = await db.execute({
+          sql: 'SELECT id FROM users WHERE email = ?',
+          args: [user.email],
+        });
         const row = result.rows[0];
         if (row) token.userId = row.id as string;
       }
@@ -36,4 +46,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-});
+};
