@@ -123,7 +123,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
         <button
           onClick={handleGenerate}
           disabled={isLoading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm"
+          className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 text-sm font-medium transition-colors"
         >
           {generating ? 'Generating...' : content ? 'Regenerate' : 'Generate Cover Letter'}
         </button>
@@ -132,7 +132,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm"
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 text-sm font-medium transition-colors"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>

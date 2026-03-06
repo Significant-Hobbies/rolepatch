@@ -54,7 +54,7 @@ export function SettingsForm() {
             setSaved(false);
           }}
           placeholder="https://api.openai.com/v1"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
         />
         <p className="text-xs text-gray-500 mt-1">Any OpenAI-compatible API endpoint</p>
       </div>
@@ -69,7 +69,7 @@ export function SettingsForm() {
             setSaved(false);
           }}
           placeholder="sk-..."
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
         />
       </div>
 
@@ -83,13 +83,13 @@ export function SettingsForm() {
             setSaved(false);
           }}
           placeholder="auto"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
         />
       </div>
 
       <button
         onClick={handleSave}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+        className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 text-sm font-medium transition-colors"
       >
         {saved ? 'Saved!' : 'Save Settings'}
       </button>

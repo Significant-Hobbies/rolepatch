@@ -137,7 +137,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
           <div className="flex items-center gap-2">
             <Link
               href={`/cover-letter/${job.id}`}
-              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               Generate Cover Letter
             </Link>
@@ -145,7 +145,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
               <button
                 onClick={handleSave}
                 disabled={isPending}
-                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
               >
                 {isPending ? 'Saving...' : 'Accept & Save'}
               </button>
@@ -153,7 +153,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
             <button
               onClick={handleGenerate}
               disabled={isPending}
-              className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
             >
               {isPending ? 'Generating...' : 'Generate Tailored Resume'}
             </button>

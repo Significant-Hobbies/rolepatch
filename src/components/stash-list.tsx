@@ -137,9 +137,9 @@ export function StashList({ serverEntries }: StashListProps) {
       <div className="flex justify-end mb-6">
         <button
           onClick={openNew}
-          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+          className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
-          Add Entry
+          + Add Entry
         </button>
       </div>
 
@@ -183,7 +183,7 @@ export function StashList({ serverEntries }: StashListProps) {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -200,7 +200,7 @@ export function StashList({ serverEntries }: StashListProps) {
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
                   placeholder="e.g., ML Engineer at Startup X"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
                 />
               </div>
 
@@ -211,7 +211,7 @@ export function StashList({ serverEntries }: StashListProps) {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Markdown content..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
                 />
               </div>
 
@@ -229,7 +229,7 @@ export function StashList({ serverEntries }: StashListProps) {
                     type="button"
                     onClick={handleDelete}
                     disabled={loading}
-                    className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                    className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
                   >
                     {loading ? 'Deleting...' : 'Delete'}
                   </button>
@@ -238,7 +238,7 @@ export function StashList({ serverEntries }: StashListProps) {
                   type="button"
                   onClick={handleSave}
                   disabled={loading || !label.trim() || !content.trim()}
-                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
                 >
                   {loading ? 'Saving...' : 'Save'}
                 </button>

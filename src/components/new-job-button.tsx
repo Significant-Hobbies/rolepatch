@@ -95,9 +95,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
     <>
       <button
         onClick={handleOpen}
-        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+        className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
-        Add Job
+        + Add Job
       </button>
 
       {toast && (
@@ -119,7 +119,7 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
                   <select
                     value={resumeId}
                     onChange={(e) => setResumeId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
                   >
                     {resumes.map((r) => (
                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -136,7 +136,7 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://boards.greenhouse.io/..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
                 />
               </div>
 
@@ -154,7 +154,7 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
                 <button
                   type="submit"
                   disabled={loading || !url.trim()}
-                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
                 >
                   {loading ? 'Scraping...' : 'Add Job'}
                 </button>

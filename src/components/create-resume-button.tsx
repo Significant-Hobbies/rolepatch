@@ -83,9 +83,9 @@ export function CreateResumeButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
-        New Resume
+        + New Resume
       </button>
 
       {open && (
@@ -103,7 +103,7 @@ export function CreateResumeButton() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Software Engineer Resume"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
                 />
               </div>
 
@@ -119,7 +119,7 @@ export function CreateResumeButton() {
                 <button
                   type="submit"
                   disabled={loading || !name.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
                 >
                   {loading ? 'Creating...' : 'Create'}
                 </button>

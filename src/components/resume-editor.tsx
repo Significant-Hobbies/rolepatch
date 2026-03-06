@@ -363,14 +363,14 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
 
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               Export PDF
             </button>
             <button
               onClick={save}
               disabled={saving}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
