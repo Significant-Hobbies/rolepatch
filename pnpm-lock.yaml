@@ -35,6 +35,9 @@ importers:
       '@mozilla/readability':
         specifier: ^0.6.0
         version: 0.6.0
+      '@saas-maker/sdk':
+        specifier: 0.2.0
+        version: 0.2.0
       ai:
         specifier: ^6.0.97
         version: 6.0.97(zod@4.3.6)
@@ -625,6 +628,9 @@ packages:
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
+
+  '@saas-maker/sdk@0.2.0':
+    resolution: {integrity: sha512-lkb/0WGZzLuYwz6pt9i594YorORrW9FUObZxg9ell8gKz0IQA71d+bYSNgSfnQ42kU4BmKXO5UUf9lNW+O9g4g==}
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
@@ -3207,6 +3213,8 @@ snapshots:
   '@panva/hkdf@1.2.1': {}
 
   '@rtsao/scc@1.1.0': {}
+
+  '@saas-maker/sdk@0.2.0': {}
 
   '@standard-schema/spec@1.1.0': {}
 

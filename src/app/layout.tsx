@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { AuthProvider } from "@/components/auth-provider";
 import { UserMenu } from "@/components/user-menu";
+import { SaasMakerAnalytics } from "@/components/SaasMakerAnalytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +35,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SaasMakerAnalytics />
         <AuthProvider session={session}>
           <nav className="border-b border-gray-200 dark:border-gray-800">
             <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-6">
