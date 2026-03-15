@@ -209,7 +209,9 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   }, [resumeId, isGuest]);
 
   const saveRef = useRef(save);
-  saveRef.current = save;
+  useEffect(() => {
+    saveRef.current = save;
+  }, [save]);
 
   useEffect(() => {
     if (!editorContainerRef.current || viewRef.current || !ready) return;
@@ -255,6 +257,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
       viewRef.current?.destroy();
       viewRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only initialize editor once when ready; source is captured at init time
   }, [ready]);
 
   const handlePrint = useCallback(() => {

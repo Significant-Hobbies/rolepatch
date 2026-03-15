@@ -21,7 +21,7 @@ export default function LandingPage() {
             href="/"
             className="bg-green-600 hover:bg-green-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
-            Get started free →
+            {"Get started free →"}
           </Link>
         </div>
       </header>
@@ -60,7 +60,7 @@ export default function LandingPage() {
               href="/"
               className="bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-3 rounded-xl text-lg shadow-lg shadow-green-600/20 transition-all hover:shadow-green-500/30 hover:-translate-y-0.5"
             >
-              Start tailoring — it's free
+              {"Start tailoring — it's free"}
             </Link>
             <a
               href="#how-it-works"
@@ -285,7 +285,7 @@ export default function LandingPage() {
                 key={t.name}
                 className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-4"
               >
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">"{t.quote}"</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
                 <div>
                   <p className="font-semibold text-sm">{t.name}</p>
                   <p className="text-gray-400 text-xs">{t.role}</p>
@@ -310,7 +310,7 @@ export default function LandingPage() {
               href="/"
               className="inline-block bg-white text-green-700 font-bold px-10 py-4 rounded-xl text-lg hover:bg-green-50 transition-colors shadow-lg"
             >
-              Get started free →
+              {"Get started free →"}
             </Link>
           </div>
         </div>

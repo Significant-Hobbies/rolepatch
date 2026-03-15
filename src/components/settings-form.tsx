@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface Settings {
   baseURL: string;
@@ -16,25 +16,27 @@ const DEFAULT_SETTINGS: Settings = {
 
 const STORAGE_KEY = 'ai-settings';
 
-export function SettingsForm() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
+function loadInitialSettings(): Settings {
+  if (typeof window === 'undefined') return DEFAULT_SETTINGS;
+  try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        setSettings({
-          baseURL: parsed.baseURL || DEFAULT_SETTINGS.baseURL,
-          apiKey: parsed.apiKey || '',
-          model: parsed.model || 'auto',
-        });
-      } catch {
-        // ignore corrupt data
-      }
+      const parsed = JSON.parse(raw);
+      return {
+        baseURL: parsed.baseURL || DEFAULT_SETTINGS.baseURL,
+        apiKey: parsed.apiKey || '',
+        model: parsed.model || 'auto',
+      };
     }
-  }, []);
+  } catch {
+    // ignore corrupt data
+  }
+  return DEFAULT_SETTINGS;
+}
+
+export function SettingsForm() {
+  const [settings, setSettings] = useState<Settings>(loadInitialSettings);
+  const [saved, setSaved] = useState(false);
 
   function handleSave() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));

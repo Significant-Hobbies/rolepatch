@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createResume } from '@/lib/actions/resume-actions';
 import { useAuth } from '@/components/auth-provider';
@@ -41,6 +41,12 @@ export function CreateResumeButton() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const close = useCallback(() => {
+    if (loading) return;
+    setOpen(false);
+    setName('');
+  }, [loading]);
+
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
@@ -52,13 +58,7 @@ export function CreateResumeButton() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [open]);
-
-  function close() {
-    if (loading) return;
-    setOpen(false);
-    setName('');
-  }
+  }, [open, close]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

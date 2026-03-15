@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { scrapeJobUrl } from '@/lib/actions/scrape-action';
 import { createJobApplication } from '@/lib/actions/job-actions';
@@ -31,6 +31,13 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
     }
   }, [isGuest]);
 
+  const close = useCallback(() => {
+    if (loading) return;
+    setOpen(false);
+    setUrl('');
+    setError('');
+  }, [loading]);
+
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
@@ -42,14 +49,7 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [open]);
-
-  function close() {
-    if (loading) return;
-    setOpen(false);
-    setUrl('');
-    setError('');
-  }
+  }, [open, close]);
 
   function handleOpen() {
     if (resumes.length === 0) {

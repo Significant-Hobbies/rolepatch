@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
 import { localListResumes, localListJobs, localListStashEntries } from '@/lib/local-storage';
@@ -17,30 +17,23 @@ function getLocalItems<T>(key: string): T[] {
 
 export function MigrationBanner() {
   const { isGuest } = useAuth();
-  const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [counts, setCounts] = useState({ resumes: 0, jobs: 0, stash: 0 });
+  const [dismissed, setDismissed] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem(DISMISSED_KEY) === '1'
+  );
 
-  useEffect(() => {
-    if (isGuest) return;
-    if (localStorage.getItem(DISMISSED_KEY)) return;
-
-    const resumes = localListResumes();
-    const jobs = localListJobs();
-    const stash = localListStashEntries();
-
-    if (resumes.length + jobs.length + stash.length === 0) return;
-
-    setCounts({ resumes: resumes.length, jobs: jobs.length, stash: stash.length });
-    setVisible(true);
-  }, [isGuest]);
+  const resumes = !isGuest && !dismissed ? localListResumes() : [];
+  const jobs = !isGuest && !dismissed ? localListJobs() : [];
+  const stash = !isGuest && !dismissed ? localListStashEntries() : [];
+  const total = resumes.length + jobs.length + stash.length;
+  const visible = !isGuest && !dismissed && total > 0;
 
   if (!visible) return null;
 
   const parts: string[] = [];
-  if (counts.resumes > 0) parts.push(`${counts.resumes} resume${counts.resumes > 1 ? 's' : ''}`);
-  if (counts.jobs > 0) parts.push(`${counts.jobs} job${counts.jobs > 1 ? 's' : ''}`);
-  if (counts.stash > 0) parts.push(`${counts.stash} stash entr${counts.stash > 1 ? 'ies' : 'y'}`);
+  if (resumes.length > 0) parts.push(`${resumes.length} resume${resumes.length > 1 ? 's' : ''}`);
+  if (jobs.length > 0) parts.push(`${jobs.length} job${jobs.length > 1 ? 's' : ''}`);
+  if (stash.length > 0) parts.push(`${stash.length} stash entr${stash.length > 1 ? 'ies' : 'y'}`);
 
   async function handleImport() {
     setLoading(true);
@@ -68,7 +61,7 @@ export function MigrationBanner() {
 
   function handleDismiss() {
     localStorage.setItem(DISMISSED_KEY, '1');
-    setVisible(false);
+    setDismissed(true);
   }
 
   return (

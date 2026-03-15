@@ -25,16 +25,16 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
   const [resume, setResume] = useState<Resume | null>(serverResume);
   const [tailoredList, setTailoredList] = useState(existingTailored);
 
-  // For guests, resolve resume and tailored from localStorage
+  // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
     if (isGuest) {
       if (!serverResume) {
         const local = localGetResume(job.resume_id);
-        if (local) setResume(local);
+        if (local) setResume(local); // eslint-disable-line react-hooks/set-state-in-effect -- hydrate from localStorage for guests
       }
       const localTailored = localGetTailoredResumes(job.id);
       if (localTailored.length > 0) {
-        setTailoredList(localTailored);
+        setTailoredList(localTailored); // eslint-disable-line react-hooks/set-state-in-effect -- hydrate from localStorage for guests
       }
     }
   }, [isGuest, serverResume, job.resume_id, job.id]);
@@ -50,8 +50,9 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
   useEffect(() => {
     const latest = tailoredList[0] ?? null;
     if (latest?.source && !tailoredSource) {
-      setTailoredSource(latest.source);
+      setTailoredSource(latest.source); // eslint-disable-line react-hooks/set-state-in-effect -- sync derived state from localStorage hydration
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when tailoredList changes, not when tailoredSource changes
   }, [tailoredList]);
 
   function handleGenerate() {

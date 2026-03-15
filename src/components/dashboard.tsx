@@ -34,17 +34,20 @@ export function Dashboard({ serverResumes, serverJobs }: DashboardProps) {
   const [resumes, setResumes] = useState(serverResumes);
   const [jobs, setJobs] = useState<Pick<JobApplication, 'id' | 'company' | 'role' | 'status' | 'created_at'>[]>(serverJobs);
 
+  // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
     if (isGuest) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setResumes(localListResumes());
       setJobs(localListJobs());
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [isGuest]);
 
   async function handleStatusChange(jobId: string, newStatus: string) {
     setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus as JobApplication['status'] } : j));
     if (isGuest) {
-      localUpdateJobStatus(jobId, newStatus);
+      localUpdateJobStatus(jobId, newStatus as JobApplication['status']);
     } else {
       await updateJobStatus(jobId, newStatus);
     }

@@ -1,13 +1,22 @@
 'use client';
 
+import Image from 'next/image';
 import { useAuth } from '@/components/auth-provider';
 import { signIn, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 
+interface SessionData {
+  user?: {
+    name?: string;
+    email?: string;
+    image?: string;
+  };
+}
+
 export function UserMenu() {
-  const { isGuest, userId } = useAuth();
+  const { isGuest } = useAuth();
   const [open, setOpen] = useState(false);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<SessionData | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,7 +58,7 @@ export function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button onClick={() => setOpen(!open)} className="flex items-center gap-2">
         {image ? (
-          <img src={image} alt="" className="w-7 h-7 rounded-full" />
+          <Image src={image} alt="" width={28} height={28} className="rounded-full" />
         ) : (
           <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-medium">
             {name[0] ?? '?'}

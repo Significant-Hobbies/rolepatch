@@ -78,20 +78,30 @@ export function localDeleteStashEntry(id: string): void {
 }
 
 // --- Job Applications (guest metadata) ---
+interface LocalJob {
+  id: string;
+  company: string;
+  role: string;
+  resume_id: string;
+  status: JobApplication['status'];
+  created_at: number;
+  updated_at?: number;
+}
+
 export function localListJobs(): Pick<JobApplication, 'id' | 'company' | 'role' | 'status' | 'created_at'>[] {
-  return getItems<any>(KEYS.jobs).sort((a: any, b: any) => b.created_at - a.created_at);
+  return getItems<LocalJob>(KEYS.jobs).sort((a, b) => b.created_at - a.created_at);
 }
 
 export function localSaveJob(id: string, company: string, role: string, resumeId: string): void {
   const now = Math.floor(Date.now() / 1000);
-  const jobs = getItems<any>(KEYS.jobs);
+  const jobs = getItems<LocalJob>(KEYS.jobs);
   jobs.push({ id, company, role, resume_id: resumeId, status: 'draft', created_at: now });
   setItems(KEYS.jobs, jobs);
 }
 
-export function localUpdateJobStatus(id: string, status: string): void {
-  const jobs = getItems<any>(KEYS.jobs);
-  const idx = jobs.findIndex((j: any) => j.id === id);
+export function localUpdateJobStatus(id: string, status: JobApplication['status']): void {
+  const jobs = getItems<LocalJob>(KEYS.jobs);
+  const idx = jobs.findIndex((j) => j.id === id);
   if (idx >= 0) {
     jobs[idx].status = status;
     jobs[idx].updated_at = Math.floor(Date.now() / 1000);

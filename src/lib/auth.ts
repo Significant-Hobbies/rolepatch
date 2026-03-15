@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from 'next-auth';
+import type { NextAuthOptions, Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { db } from '@/lib/db';
 
@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token.userId) {
-        (session as any).userId = token.userId;
+        (session as Session & { userId?: string }).userId = token.userId as string;
       }
       return session;
     },

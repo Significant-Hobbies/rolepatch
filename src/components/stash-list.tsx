@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { StashEntry } from '@/lib/types';
 import { createStashEntry, updateStashEntry, deleteStashEntry } from '@/lib/actions/stash-actions';
@@ -45,6 +45,15 @@ export function StashList({ serverEntries }: StashListProps) {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const close = useCallback(() => {
+    if (loading) return;
+    setModalOpen(false);
+    setEditing(null);
+    setCategory(CATEGORIES[0]);
+    setLabel('');
+    setContent('');
+  }, [loading]);
+
   useEffect(() => {
     if (!modalOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -52,16 +61,7 @@ export function StashList({ serverEntries }: StashListProps) {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [modalOpen, loading]);
-
-  function close() {
-    if (loading) return;
-    setModalOpen(false);
-    setEditing(null);
-    setCategory(CATEGORIES[0]);
-    setLabel('');
-    setContent('');
-  }
+  }, [modalOpen, loading, close]);
 
   function openNew() {
     setEditing(null);
