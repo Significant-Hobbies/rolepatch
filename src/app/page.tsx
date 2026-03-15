@@ -37,6 +37,7 @@ export default function LandingPage() {
           <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
+            <Link href="/tools" className="hover:text-white transition-colors">Free Tools</Link>
             <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
           </nav>
           <Link
