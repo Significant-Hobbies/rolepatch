@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resume Tailor",
-  description: "Tailor your resume to job descriptions with AI",
+  title: "RolePatch",
+  description: "AI-powered resume tailoring — see every change",
 };
 
 const NAV_LINKS = [
@@ -55,8 +55,8 @@ export default async function RootLayout({
             <nav className="sticky top-0 z-40 border-b border-gray-800/80 bg-[#0a0a0a]/80 backdrop-blur-xl">
               <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-1">
                 <Link href="/" className="font-semibold text-white mr-6 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">R</span>
-                  Resume Tailor
+                  <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">RP</span>
+                  RolePatch
                 </Link>
                 {NAV_LINKS.map((link) => {
                   const isActive = pathname === link.href || pathname.startsWith(link.href + "/");

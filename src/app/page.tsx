@@ -31,8 +31,8 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-gray-800/80 bg-[#0a0a0a]/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">R</span>
-            <span className="font-bold text-lg tracking-tight text-white">Resume Tailor</span>
+            <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">RP</span>
+            <span className="font-bold text-lg tracking-tight text-white">RolePatch</span>
           </div>
           <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
@@ -106,7 +106,7 @@ export default function LandingPage() {
               <span className="w-3 h-3 rounded-full bg-gray-700" />
               <span className="w-3 h-3 rounded-full bg-gray-700" />
               <span className="ml-3 flex-1 text-xs text-center text-gray-500 bg-gray-800/50 rounded px-4 py-1">
-                resume-tailor.app/tailor
+                rolepatch.com/tailor
               </span>
             </div>
             {/* diff content */}
@@ -206,7 +206,7 @@ export default function LandingPage() {
             {[
               {
                 icon: "AI",
-                title: "AI Resume Tailoring",
+                title: "AI RolePatching",
                 desc: "Paste any job description and AI rewrites your resume to highlight the most relevant skills and experience.",
               },
               {
@@ -256,7 +256,7 @@ export default function LandingPage() {
               See every change. Keep what you like.
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              Unlike black-box tools, Resume Tailor shows exactly what AI changed — word
+              Unlike black-box tools, RolePatch shows exactly what AI changed — word
               by word. Additions in green, removals in red. Accept everything, or edit
               individual changes.
             </p>
@@ -475,9 +475,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-[8px] font-bold text-white">R</span>
-            <span className="font-semibold text-gray-300">Resume Tailor</span>
+            <span className="font-semibold text-gray-300">RolePatch</span>
           </div>
-          <span>{"\u00a9"} {new Date().getFullYear()} Resume Tailor</span>
+          <span>{"\u00a9"} {new Date().getFullYear()} RolePatch</span>
           <div className="flex gap-6">
             <Link href="/dashboard" className="hover:text-gray-200 transition-colors">App</Link>
             <Link href="/pricing" className="hover:text-gray-200 transition-colors">Pricing</Link>
