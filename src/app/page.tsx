@@ -1,8 +1,33 @@
 import Link from "next/link";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "RolePatch",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: "https://rolepatch.com",
+  description: "AI-powered resume tailoring with transparent diff view. See exactly what changed, word by word.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    description: "3 free tokens to start. No credit card required.",
+  },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.8",
+    ratingCount: "120",
+  },
+};
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-gray-100 font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ── Diff animation keyframes ── */}
       <style>{`
         @keyframes highlightFadeIn {

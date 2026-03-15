@@ -22,8 +22,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RolePatch",
-  description: "AI-powered resume tailoring — see every change",
+  title: {
+    default: "RolePatch — AI Resume Tailoring with Diff View",
+    template: "%s | RolePatch",
+  },
+  description: "Tailor your resume to any job description with AI. See exactly what changed word by word. Free ATS scoring, cover letters, and keyword analysis.",
+  keywords: ["resume tailor", "AI resume", "ATS score", "resume diff", "job application", "cover letter generator", "resume keywords", "resume optimizer"],
+  authors: [{ name: "RolePatch" }],
+  creator: "RolePatch",
+  metadataBase: new URL("https://rolepatch.com"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://rolepatch.com",
+    siteName: "RolePatch",
+    title: "RolePatch — AI Resume Tailoring with Diff View",
+    description: "Tailor your resume to any job description with AI. See exactly what changed word by word.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RolePatch — See every change in your resume" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RolePatch — AI Resume Tailoring with Diff View",
+    description: "Tailor your resume to any job description with AI. See exactly what changed.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 },
+  },
+  alternates: {
+    canonical: "https://rolepatch.com",
+  },
 };
 
 const NAV_LINKS = [

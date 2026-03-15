@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import { getTokenBalance } from '@/lib/actions/token-actions';
 import { PricingCards } from '@/components/pricing-cards';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Pricing',
+  description: 'Token-based pricing for AI resume tailoring. Start with 3 free tokens. No subscription required.',
+  alternates: { canonical: 'https://rolepatch.com/pricing' },
+};
 
 const FAQ = [
   {
