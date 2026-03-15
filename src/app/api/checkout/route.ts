@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from 'next/server';
+import DodoPayments from 'dodopayments';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { getProductId } from '@/lib/token-config';
+import type { Session } from 'next-auth';
+
+const client = new DodoPayments({
+  bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
+  environment:
+    (process.env.DODO_PAYMENTS_ENVIRONMENT as 'test_mode' | 'live_mode') ??
+    'test_mode',
+});
+
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  const { packId } = await request.json();
+  const productId = getProductId(packId);
+  if (!productId) {
+    return NextResponse.json({ error: 'Invalid pack' }, { status: 400 });
+  }
+
+  const userId = (session as Session & { userId?: string }).userId;
+  if (!userId) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
+
+  const checkoutSession = await client.checkoutSessions.create({
+    product_cart: [{ product_id: productId, quantity: 1 }],
+    customer: { email: session.user.email, name: session.user.name ?? '' },
+    return_url: process.env.DODO_PAYMENTS_RETURN_URL!,
+    metadata: { user_id: userId },
+  });
+
+  return NextResponse.json({ checkout_url: checkoutSession.checkout_url });
+}
