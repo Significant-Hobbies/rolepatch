@@ -49,8 +49,6 @@ export interface CoverLetter {
 }
 
 export interface AIProviderConfig {
-  baseURL: string;
-  apiKey: string;
   model: string;
 }
 
