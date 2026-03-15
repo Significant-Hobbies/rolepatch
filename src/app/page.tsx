@@ -3,6 +3,30 @@ import Link from "next/link";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-gray-100 font-sans">
+      {/* ── Diff animation keyframes ── */}
+      <style>{`
+        @keyframes highlightFadeIn {
+          0% { opacity: 0; background-color: transparent; }
+          100% { opacity: 1; background-color: #0d2818; }
+        }
+        @keyframes badgeCountUp {
+          0% { opacity: 0; transform: translateY(6px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .diff-highlight {
+          animation: highlightFadeIn 0.6s ease-out forwards;
+          opacity: 0;
+          color: #4ade80;
+          background-color: transparent;
+          border-radius: 3px;
+          padding: 1px 4px;
+        }
+        .diff-badge {
+          animation: badgeCountUp 0.5s ease-out 2.8s forwards;
+          opacity: 0;
+        }
+      `}</style>
+
       {/* ── Nav ── */}
       <header className="sticky top-0 z-50 border-b border-gray-800/80 bg-[#0a0a0a]/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -13,12 +37,13 @@ export default function LandingPage() {
           <nav className="hidden sm:flex items-center gap-8 text-sm text-gray-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
           </nav>
           <Link
             href="/dashboard"
             className="bg-white text-gray-900 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            {"Get started free →"}
+            {"Get started free \u2192"}
           </Link>
         </div>
       </header>
@@ -57,7 +82,7 @@ export default function LandingPage() {
               className="group bg-white text-gray-900 font-semibold px-8 py-3.5 rounded-xl text-lg transition-all hover:shadow-lg hover:shadow-green-500/10 hover:-translate-y-0.5"
             >
               Start tailoring
-              <span className="inline-block ml-1 transition-transform group-hover:translate-x-0.5">→</span>
+              <span className="inline-block ml-1 transition-transform group-hover:translate-x-0.5">{"\u2192"}</span>
             </Link>
             <a
               href="#how-it-works"
@@ -68,69 +93,72 @@ export default function LandingPage() {
           </div>
 
           <p className="text-sm text-gray-600">
-            No credit card required · Works as a guest
+            3 free tokens to start. No credit card required.
           </p>
         </div>
 
-        {/* ── Mock UI Preview ── */}
+        {/* ── Animated Diff Preview ── */}
         <div className="relative max-w-5xl mx-auto mt-20">
           <div className="rounded-2xl border border-gray-800 bg-gray-900/80 shadow-2xl shadow-black/40 overflow-hidden backdrop-blur">
             {/* browser bar */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800 bg-gray-950/50">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800 bg-gray-950/60">
               <span className="w-3 h-3 rounded-full bg-gray-700" />
               <span className="w-3 h-3 rounded-full bg-gray-700" />
               <span className="w-3 h-3 rounded-full bg-gray-700" />
               <span className="ml-3 flex-1 text-xs text-center text-gray-500 bg-gray-800/50 rounded px-4 py-1">
-                resume-tailor.app
+                resume-tailor.app/tailor
               </span>
             </div>
-            {/* app content */}
-            <div className="grid grid-cols-2 divide-x divide-gray-800 min-h-[320px]">
+            {/* diff content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-800 min-h-[280px]">
               {/* left: original */}
-              <div className="p-6 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Original Resume</p>
-                <div className="space-y-2.5">
-                  {[80, 65, 90, 55, 75].map((w, i) => (
-                    <div key={i} className="h-3.5 rounded bg-gray-800" style={{ width: `${w}%` }} />
-                  ))}
-                  <div className="mt-5 space-y-2">
-                    {[85, 60, 75, 45, 70].map((w, i) => (
-                      <div key={i} className="h-2.5 rounded bg-gray-800/60" style={{ width: `${w}%` }} />
-                    ))}
-                  </div>
+              <div className="p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-4">Original</p>
+                <div className="space-y-3 text-sm font-mono leading-relaxed text-gray-500">
+                  <p>{"\u2022"} Led development of microservices architecture serving 2M+ users</p>
+                  <p>{"\u2022"} Managed team of 5 engineers across frontend and backend</p>
+                  <p>{"\u2022"} Reduced API latency by 40% through caching optimization</p>
+                  <p>{"\u2022"} Built CI/CD pipeline reducing deploy time from 2hrs to 15min</p>
                 </div>
               </div>
-              {/* right: tailored */}
-              <div className="p-6 space-y-3">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-green-400">Tailored Resume</p>
+              {/* right: tailored with animated highlights */}
+              <div className="p-5 sm:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-green-400">Tailored</p>
                   <span className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <span className="text-[8px] text-green-400">✓</span>
+                    <span className="text-[8px] text-green-400">{"\u2713"}</span>
                   </span>
                 </div>
-                <div className="space-y-2.5">
-                  {[
-                    { w: 80, highlight: true },
-                    { w: 70, highlight: true },
-                    { w: 90, highlight: false },
-                    { w: 60, highlight: true },
-                    { w: 85, highlight: false },
-                  ].map((line, i) => (
-                    <div
-                      key={i}
-                      className={`h-3.5 rounded ${line.highlight ? 'bg-green-500/20 border border-green-500/10' : 'bg-gray-800'}`}
-                      style={{ width: `${line.w}%` }}
-                    />
-                  ))}
-                  <div className="mt-5 space-y-2">
-                    {[85, 60, 75, 45, 70].map((w, i) => (
-                      <div key={i} className="h-2.5 rounded bg-gray-800/60" style={{ width: `${w}%` }} />
-                    ))}
-                  </div>
+                <div className="space-y-3 text-sm font-mono leading-relaxed text-gray-400">
+                  <p>
+                    {"\u2022"} Led development of{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "0.3s" }}>cloud-native</span>{" "}
+                    microservices architecture serving 2M+{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "0.6s" }}>daily active</span>{" "}
+                    users
+                  </p>
+                  <p>
+                    {"\u2022"} Managed{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "0.9s" }}>cross-functional</span>{" "}
+                    team of 5 engineers{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "1.2s" }}>delivering full-stack solutions</span>
+                  </p>
+                  <p>
+                    {"\u2022"} Reduced API latency by 40% through{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "1.5s" }}>Redis caching and query</span>{" "}
+                    optimization
+                  </p>
+                  <p>
+                    {"\u2022"}{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "1.8s" }}>Architected</span>{" "}
+                    CI/CD pipeline{" "}
+                    <span className="diff-highlight" style={{ animationDelay: "2.1s" }}>with automated testing</span>{" "}
+                    reducing deploy time to 15min
+                  </p>
                 </div>
-                <div className="flex justify-end pt-3">
-                  <span className="text-[11px] font-medium bg-green-500/15 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20">
-                    +12 improvements
+                <div className="flex justify-end pt-4">
+                  <span className="diff-badge text-[11px] font-medium bg-green-500/15 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20">
+                    +8 improvements
                   </span>
                 </div>
               </div>
@@ -147,10 +175,10 @@ export default function LandingPage() {
       <section className="py-10 border-y border-gray-800/50">
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap justify-center gap-8 text-sm text-gray-500">
           {[
-            "🎯 Matches keywords automatically",
-            "⚡ Results in under 10 seconds",
-            "📄 Keeps your formatting",
-            "🔒 Your data stays private",
+            "Matches keywords automatically",
+            "Results in under 10 seconds",
+            "Keeps your formatting",
+            "Your data stays private",
           ].map((item) => (
             <span key={item} className="font-medium">{item}</span>
           ))}
@@ -170,32 +198,32 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
-                icon: "✨",
+                icon: "AI",
                 title: "AI Resume Tailoring",
                 desc: "Paste any job description and AI rewrites your resume to highlight the most relevant skills and experience.",
               },
               {
-                icon: "🔍",
+                icon: "Diff",
                 title: "Live Diff View",
-                desc: "See exactly what changed — additions in green, removals in red. Full transparency, no surprises.",
+                desc: "See exactly what changed \u2014 additions in green, removals in red. Full transparency, no surprises.",
               },
               {
-                icon: "📝",
+                icon: "CL",
                 title: "Cover Letter Generator",
                 desc: "Generate a compelling, personalised cover letter for each application with one click.",
               },
               {
-                icon: "📋",
+                icon: "RM",
                 title: "Resume Manager",
                 desc: "Store multiple versions of your resume. Create tailored variants without touching your original.",
               },
               {
-                icon: "💼",
+                icon: "AT",
                 title: "Application Tracker",
-                desc: "Track every application — draft, tailored, applied, interview, offer. Never lose track.",
+                desc: "Track every application \u2014 draft, tailored, applied, interview, offer. Never lose track.",
               },
               {
-                icon: "🗂️",
+                icon: "St",
                 title: "Stash",
                 desc: "Save your best resume snippets and reuse them across applications.",
               },
@@ -204,11 +232,105 @@ export default function LandingPage() {
                 key={f.title}
                 className="group rounded-xl border border-gray-800 p-6 hover:border-green-500/40 hover:bg-green-500/[0.02] transition-all duration-200"
               >
-                <div className="text-2xl mb-3 w-10 h-10 rounded-lg bg-gray-800/50 flex items-center justify-center">{f.icon}</div>
+                <div className="text-xs font-bold mb-3 w-10 h-10 rounded-lg bg-gray-800/50 flex items-center justify-center text-gray-400">{f.icon}</div>
                 <h3 className="font-semibold text-white mb-2">{f.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── See Every Change ── */}
+      <section className="py-28 px-6 border-t border-gray-800/50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14 space-y-4">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">
+              See every change. Keep what you like.
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+              Unlike black-box tools, Resume Tailor shows exactly what AI changed — word
+              by word. Additions in green, removals in red. Accept everything, or edit
+              individual changes.
+            </p>
+          </div>
+
+          {/* Detailed diff mock */}
+          <div className="rounded-2xl border border-gray-800 bg-gray-900/80 shadow-2xl shadow-black/40 overflow-hidden">
+            {/* toolbar */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 bg-gray-950/60">
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-green-400 font-medium">+14 additions</span>
+                <span className="text-red-400 font-medium">-6 removals</span>
+              </div>
+              <div className="flex items-center gap-1 rounded-lg border border-gray-700 overflow-hidden text-xs">
+                <span className="px-3 py-1.5 bg-gray-800 text-white font-medium">Split view</span>
+                <span className="px-3 py-1.5 text-gray-500">Inline view</span>
+              </div>
+            </div>
+
+            {/* diff body */}
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-800">
+              {/* before */}
+              <div className="p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">Before</p>
+                <div className="space-y-4 text-sm font-mono leading-relaxed">
+                  <div className="flex gap-3">
+                    <span className="text-gray-600 text-xs w-5 text-right shrink-0 pt-0.5">1</span>
+                    <p className="text-gray-500">
+                      {"\u2022"} Developed{" "}
+                      <span className="bg-[#2d1215] text-red-400 rounded px-1">web applications</span>{" "}
+                      using React and Node.js
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-gray-600 text-xs w-5 text-right shrink-0 pt-0.5">2</span>
+                    <p className="text-gray-500">
+                      {"\u2022"}{" "}
+                      <span className="bg-[#2d1215] text-red-400 rounded px-1">Worked on</span>{" "}
+                      database optimization improving query performance
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-gray-600 text-xs w-5 text-right shrink-0 pt-0.5">3</span>
+                    <p className="text-gray-500">
+                      {"\u2022"} Collaborated with design team to{" "}
+                      <span className="bg-[#2d1215] text-red-400 rounded px-1">implement UI features</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {/* after */}
+              <div className="p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-widest text-green-400 mb-5">After</p>
+                <div className="space-y-4 text-sm font-mono leading-relaxed">
+                  <div className="flex gap-3">
+                    <span className="text-gray-600 text-xs w-5 text-right shrink-0 pt-0.5">1</span>
+                    <p className="text-gray-400">
+                      {"\u2022"} Developed{" "}
+                      <span className="diff-highlight" style={{ animationDelay: "0.4s" }}>production-grade SaaS applications</span>{" "}
+                      using React and Node.js
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-gray-600 text-xs w-5 text-right shrink-0 pt-0.5">2</span>
+                    <p className="text-gray-400">
+                      {"\u2022"}{" "}
+                      <span className="diff-highlight" style={{ animationDelay: "0.8s" }}>Led</span>{" "}
+                      database optimization improving query performance{" "}
+                      <span className="diff-highlight" style={{ animationDelay: "1.2s" }}>by 60%</span>
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-gray-600 text-xs w-5 text-right shrink-0 pt-0.5">3</span>
+                    <p className="text-gray-400">
+                      {"\u2022"} Collaborated with design team to{" "}
+                      <span className="diff-highlight" style={{ animationDelay: "1.6s" }}>deliver accessible, responsive interfaces using Figma-to-code workflow</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -285,7 +407,7 @@ export default function LandingPage() {
               >
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <span key={s} className="text-green-400 text-sm">★</span>
+                    <span key={s} className="text-green-400 text-sm">{"\u2605"}</span>
                   ))}
                 </div>
                 <p className="text-gray-300 text-sm leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
@@ -317,14 +439,22 @@ export default function LandingPage() {
                 Start tailoring today
               </h2>
               <p className="text-gray-400 text-lg">
-                Free to use. No account needed to try it out.
+                3 free tokens to start. No credit card required.
               </p>
-              <Link
-                href="/dashboard"
-                className="inline-block bg-white text-gray-900 font-bold px-10 py-4 rounded-xl text-lg hover:bg-gray-200 transition-colors"
-              >
-                {"Get started free →"}
-              </Link>
+              <div className="flex flex-col items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="inline-block bg-white text-gray-900 font-bold px-10 py-4 rounded-xl text-lg hover:bg-gray-200 transition-colors"
+                >
+                  {"Get started free \u2192"}
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="text-sm text-gray-400 hover:text-green-400 transition-colors underline underline-offset-4 decoration-gray-700 hover:decoration-green-400/50"
+                >
+                  View pricing
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -337,9 +467,10 @@ export default function LandingPage() {
             <span className="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-[8px] font-bold text-white">R</span>
             <span className="font-semibold text-gray-300">Resume Tailor</span>
           </div>
-          <span>© {new Date().getFullYear()} Resume Tailor</span>
+          <span>{"\u00a9"} {new Date().getFullYear()} Resume Tailor</span>
           <div className="flex gap-6">
             <Link href="/dashboard" className="hover:text-gray-200 transition-colors">App</Link>
+            <Link href="/pricing" className="hover:text-gray-200 transition-colors">Pricing</Link>
             <Link href="/settings" className="hover:text-gray-200 transition-colors">Settings</Link>
             <Link href="/stash" className="hover:text-gray-200 transition-colors">Stash</Link>
           </div>
