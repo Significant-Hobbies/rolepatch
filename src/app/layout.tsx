@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { AuthProvider } from "@/components/auth-provider";
 import { UserMenu } from "@/components/user-menu";
+import { TokenBalance } from "@/components/token-balance";
 import { SaasMakerAnalytics } from "@/components/SaasMakerAnalytics";
 import { SaaSMakerFeedback } from "@/components/saasmaker-feedback";
 import "./globals.css";
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/stash", label: "Stash" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -72,7 +74,8 @@ export default async function RootLayout({
                     </Link>
                   );
                 })}
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-3">
+                  <TokenBalance />
                   <UserMenu />
                 </div>
               </div>
