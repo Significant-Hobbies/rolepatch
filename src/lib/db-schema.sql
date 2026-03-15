@@ -56,3 +56,33 @@ CREATE TABLE IF NOT EXISTS stash_entries (
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
+
+CREATE TABLE IF NOT EXISTS token_balances (
+  user_id TEXT PRIMARY KEY REFERENCES users(id),
+  balance INTEGER NOT NULL DEFAULT 3,
+  total_purchased INTEGER NOT NULL DEFAULT 0,
+  total_used INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS token_transactions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  amount INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  reference_id TEXT,
+  balance_after INTEGER NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  product_id TEXT NOT NULL,
+  amount_cents INTEGER NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  tokens_granted INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  dodo_payload TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
