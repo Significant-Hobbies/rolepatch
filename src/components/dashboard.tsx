@@ -9,6 +9,7 @@ import type { Resume, JobApplication } from '@/lib/types';
 import { CreateResumeButton } from '@/components/create-resume-button';
 import { NewJobButton } from '@/components/new-job-button';
 import { MigrationBanner } from '@/components/migration-banner';
+import { ATSScoreMini } from '@/components/ats-score-badge';
 
 const STATUS_OPTIONS: JobApplication['status'][] = [
   'draft', 'tailored', 'applied', 'interview', 'offer', 'rejected',
@@ -41,6 +42,7 @@ export function Dashboard({ serverResumes, serverJobs }: DashboardProps) {
   const { isGuest } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
   const [jobs, setJobs] = useState<Pick<JobApplication, 'id' | 'company' | 'role' | 'status' | 'created_at'>[]>(serverJobs);
+  const [atsScores, setAtsScores] = useState<Record<string, { original: number; tailored: number }>>({});
 
   // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
@@ -51,6 +53,16 @@ export function Dashboard({ serverResumes, serverJobs }: DashboardProps) {
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [isGuest]);
+
+  // Load cached ATS scores from localStorage
+  useEffect(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem('rt-ats-scores') ?? '{}');
+      if (Object.keys(cached).length > 0) {
+        setAtsScores(cached); // eslint-disable-line react-hooks/set-state-in-effect -- hydrate from localStorage
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   async function handleStatusChange(jobId: string, newStatus: string) {
     setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus as JobApplication['status'] } : j));
@@ -188,20 +200,22 @@ export function Dashboard({ serverResumes, serverJobs }: DashboardProps) {
         ) : (
           <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
             {/* Table header */}
-            <div className="grid grid-cols-[1fr_1fr_140px_100px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="grid grid-cols-[1fr_1fr_140px_80px_100px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               <span>Role</span>
               <span>Company</span>
               <span>Status</span>
+              <span>ATS</span>
               <span className="text-right">Added</span>
             </div>
             {/* Table rows */}
             {jobs.map((job, i) => {
               const cfg = statusConfig[job.status] ?? statusConfig.draft;
+              const ats = atsScores[job.id];
               return (
                 <Link
                   key={job.id}
                   href={`/tailor/${job.id}`}
-                  className={`group grid grid-cols-[1fr_1fr_140px_100px] gap-4 px-5 py-4 items-center hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors ${i < jobs.length - 1 ? 'border-b border-gray-100 dark:border-gray-800/50' : ''}`}
+                  className={`group grid grid-cols-[1fr_1fr_140px_80px_100px] gap-4 px-5 py-4 items-center hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors ${i < jobs.length - 1 ? 'border-b border-gray-100 dark:border-gray-800/50' : ''}`}
                 >
                   <span className="font-medium truncate text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                     {job.role || 'Untitled Role'}
@@ -225,6 +239,9 @@ export function Dashboard({ serverResumes, serverJobs }: DashboardProps) {
                       ))}
                     </select>
                   </div>
+                  <span>
+                    {ats ? <ATSScoreMini score={ats.tailored} /> : <span className="text-xs text-gray-600">--</span>}
+                  </span>
                   <span className="text-xs text-gray-400 dark:text-gray-500 text-right">
                     {timeAgo(job.created_at)}
                   </span>

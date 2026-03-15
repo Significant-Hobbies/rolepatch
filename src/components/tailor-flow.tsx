@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useMemo, useTransition } from 'react';
 import Link from 'next/link';
 import type { JobApplication, Resume, TailoredResume } from '@/lib/types';
 import { tailorResume } from '@/lib/actions/tailor-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
 import { getTokenBalance } from '@/lib/actions/token-actions';
 import { ResumeDiff } from '@/components/resume-diff';
+import { ATSScoreBadge } from '@/components/ats-score-badge';
+import { calculateATSScore } from '@/lib/ats-score';
 import { useAuth } from '@/components/auth-provider';
 import {
   localGetResume,
@@ -63,6 +65,28 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when tailoredList changes, not when tailoredSource changes
   }, [tailoredList]);
+
+  // ATS scores -- recalculate when resume/tailored/JD changes
+  const originalATS = useMemo(
+    () => resume ? calculateATSScore(resume.source, job.jd_text) : null,
+    [resume, job.jd_text],
+  );
+
+  const tailoredATS = useMemo(
+    () => tailoredSource ? calculateATSScore(tailoredSource, job.jd_text) : null,
+    [tailoredSource, job.jd_text],
+  );
+
+  // Cache ATS scores to localStorage so the dashboard can display them
+  useEffect(() => {
+    if (tailoredATS && tailoredATS.totalKeywords > 0) {
+      try {
+        const cache = JSON.parse(localStorage.getItem('rt-ats-scores') ?? '{}');
+        cache[job.id] = { original: originalATS?.score ?? 0, tailored: tailoredATS.score };
+        localStorage.setItem('rt-ats-scores', JSON.stringify(cache));
+      } catch { /* ignore */ }
+    }
+  }, [job.id, originalATS, tailoredATS]);
 
   function handleGenerate() {
     if (!resume) return;
@@ -158,11 +182,36 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
       {/* Right panel: Resume / Tailored output */}
       <div className="w-2/3 flex flex-col">
         <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/50 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-gray-300">
-              {tailoredSource ? 'Tailored Resume (diff)' : 'Original Resume'}
-            </h2>
-            <p className="text-xs text-gray-500">{resume.name}</p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-300">
+                {tailoredSource ? 'Tailored Resume (diff)' : 'Original Resume'}
+              </h2>
+              <p className="text-xs text-gray-500">{resume.name}</p>
+            </div>
+
+            {/* ATS Score badges */}
+            {originalATS && originalATS.totalKeywords > 0 && (
+              <div className="flex items-center gap-2">
+                <ATSScoreBadge
+                  score={originalATS.score}
+                  matchedKeywords={originalATS.matchedKeywords}
+                  missingKeywords={originalATS.missingKeywords}
+                  label="Original"
+                />
+                {tailoredATS && (
+                  <>
+                    <span className="text-gray-600 text-xs">{'\u2192'}</span>
+                    <ATSScoreBadge
+                      score={tailoredATS.score}
+                      matchedKeywords={tailoredATS.matchedKeywords}
+                      missingKeywords={tailoredATS.missingKeywords}
+                      label="Tailored"
+                    />
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {/* Token balance indicator for signed-in users */}
