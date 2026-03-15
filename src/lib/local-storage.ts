@@ -89,6 +89,16 @@ export function localSaveJob(id: string, company: string, role: string, resumeId
   setItems(KEYS.jobs, jobs);
 }
 
+export function localUpdateJobStatus(id: string, status: string): void {
+  const jobs = getItems<any>(KEYS.jobs);
+  const idx = jobs.findIndex((j: any) => j.id === id);
+  if (idx >= 0) {
+    jobs[idx].status = status;
+    jobs[idx].updated_at = Math.floor(Date.now() / 1000);
+    setItems(KEYS.jobs, jobs);
+  }
+}
+
 // --- Tailored Resumes ---
 export function localGetTailoredResumes(jobId: string): TailoredResume[] {
   return getItems<TailoredResume>(KEYS.tailored).filter(t => t.job_id === jobId);

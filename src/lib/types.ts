@@ -23,7 +23,7 @@ export interface JobApplication {
   role: string;
   jd_raw: string;
   jd_text: string;
-  status: 'draft' | 'tailored' | 'applied';
+  status: 'draft' | 'tailored' | 'applied' | 'interview' | 'offer' | 'rejected';
   created_at: number;
   updated_at: number;
 }

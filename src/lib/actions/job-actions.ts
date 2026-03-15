@@ -44,6 +44,15 @@ export async function listJobApplications(): Promise<JobApplication[]> {
   return JSON.parse(JSON.stringify(result.rows)) as JobApplication[];
 }
 
+export async function updateJobStatus(id: string, status: string): Promise<void> {
+  const userId = await getCurrentUserId();
+  await db.execute({
+    sql: `UPDATE job_applications SET status = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?`,
+    args: [status, id, userId],
+  });
+  revalidatePath('/dashboard');
+}
+
 export async function saveTailoredResume(
   jobId: string,
   resumeId: string,
