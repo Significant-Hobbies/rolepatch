@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RolePatch OG Image</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Subtle grid */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Green ambient glow */
+  body::after {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: 0;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    padding: 80px;
+    height: 100%;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 44px;
+  }
+
+  .logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #22c55e, #4ade80);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .brand {
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  h1 {
+    font-size: 52px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .tagline {
+    font-size: 28px;
+    color: #4ade80;
+    margin-bottom: 44px;
+  }
+
+  .diff-panel {
+    background: #111111;
+    border: 1.5px solid #1e1e1e;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 220px;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-bottom: 1px solid #1e1e1e;
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red { background: #ef4444; opacity: 0.8; }
+  .dot-yellow { background: #eab308; opacity: 0.8; }
+  .dot-green { background: #22c55e; opacity: 0.8; }
+  .filename { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #555; margin-left: 12px; }
+
+  .diff-body {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    height: calc(100% - 42px);
+  }
+
+  .diff-col { padding: 12px 20px; }
+  .diff-col-header {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .divider { background: #1e1e1e; }
+
+  .diff-line {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+
+  .diff-remove {
+    background: rgba(127, 29, 29, 0.3);
+    color: #fca5a5;
+  }
+  .diff-remove .prefix { color: #ef4444; opacity: 0.5; }
+
+  .diff-add {
+    background: rgba(20, 83, 45, 0.3);
+    color: #86efac;
+  }
+  .diff-add .prefix { color: #22c55e; opacity: 0.5; }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  .ats-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 28px;
+    border-radius: 24px;
+    border: 2px solid #22c55e;
+    background: #0a0a0a;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .ats-badge .old { color: #ef4444; }
+  .ats-badge .arrow { color: #6b7280; }
+  .ats-badge .new { color: #22c55e; font-size: 20px; font-weight: 800; text-shadow: 0 0 16px rgba(34,197,94,0.5); }
+
+  .url {
+    font-size: 16px;
+    font-weight: 500;
+    color: #4b5563;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">RP</div>
+      <div class="brand">RolePatch</div>
+    </div>
+
+    <h1>AI Resume Tailoring</h1>
+    <div class="tagline">See Every Change</div>
+
+    <div class="diff-panel">
+      <div class="panel-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <span class="filename">resume-diff.patch</span>
+      </div>
+      <div class="diff-body">
+        <div class="diff-col">
+          <div class="diff-col-header">Original</div>
+          <div class="diff-line diff-remove"><span class="prefix">- </span>Managed a team of engineers</div>
+          <div class="diff-line diff-remove"><span class="prefix">- </span>Worked on backend systems</div>
+          <div class="diff-line diff-remove"><span class="prefix">- </span>Improved performance</div>
+        </div>
+        <div class="divider"></div>
+        <div class="diff-col">
+          <div class="diff-col-header">Tailored</div>
+          <div class="diff-line diff-add"><span class="prefix">+ </span>Led 8 cross-functional engineers</div>
+          <div class="diff-line diff-add"><span class="prefix">+ </span>Architected distributed microservices</div>
+          <div class="diff-line diff-add"><span class="prefix">+ </span>Reduced latency 40% via caching</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="ats-badge">
+        ATS: <span class="old">42</span> <span class="arrow">&rarr;</span> <span class="new">87</span>
+      </div>
+      <div class="url">rolepatch.com</div>
+    </div>
+  </div>
+</body>
+</html>
