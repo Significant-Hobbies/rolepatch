@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { JobApplication, Resume, TailoredResume } from '@/lib/types';
 import { tailorResume } from '@/lib/actions/tailor-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
+import { getTokenBalance } from '@/lib/actions/token-actions';
 import { ResumeDiff } from '@/components/resume-diff';
 import { useAuth } from '@/components/auth-provider';
 import {
@@ -24,6 +25,14 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
   const { isGuest } = useAuth();
   const [resume, setResume] = useState<Resume | null>(serverResume);
   const [tailoredList, setTailoredList] = useState(existingTailored);
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+
+  // Fetch token balance on mount for signed-in users
+  useEffect(() => {
+    if (!isGuest) {
+      getTokenBalance().then(setTokenBalance).catch(() => {});
+    }
+  }, [isGuest]);
 
   // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
@@ -57,10 +66,17 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
 
   function handleGenerate() {
     if (!resume) return;
+
+    // If signed-in user has no tokens, don't attempt generation
+    if (!isGuest && tokenBalance !== null && tokenBalance <= 0) {
+      setError('No tokens remaining.');
+      return;
+    }
+
     setError(null);
     startTransition(async () => {
       try {
-        const aiConfig = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
+        const settings = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
         // For guests, pass stash content from localStorage
         let stashContent: string | undefined;
         if (isGuest) {
@@ -71,10 +87,21 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
               .join('\n\n');
           }
         }
-        const result = await tailorResume(resume.source, job.jd_text, aiConfig, stashContent);
+        const result = await tailorResume(resume.source, job.jd_text, settings.model, stashContent);
         setTailoredSource(result);
+
+        // Refresh token balance after successful generation
+        if (!isGuest) {
+          getTokenBalance().then(setTokenBalance).catch(() => {});
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to generate tailored resume');
+        const message = err instanceof Error ? err.message : 'Failed to generate tailored resume';
+        if (message.includes('No tokens remaining') || message.includes('insufficient_tokens')) {
+          setError('No tokens remaining.');
+          setTokenBalance(0);
+        } else {
+          setError(message);
+        }
       }
     });
   }
@@ -102,12 +129,14 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
     );
   }
 
+  const showNoTokens = !isGuest && tokenBalance !== null && tokenBalance <= 0;
+
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Left panel: Job Description */}
-      <div className="w-1/3 border-r flex flex-col">
-        <div className="px-4 py-3 border-b bg-gray-50 dark:bg-gray-900">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Job Description</h2>
+      <div className="w-1/3 border-r border-gray-800 flex flex-col">
+        <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/50">
+          <h2 className="text-sm font-semibold text-gray-300">Job Description</h2>
           {job.url && (
             <a
               href={job.url}
@@ -120,7 +149,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
           )}
         </div>
         <div className="flex-1 overflow-y-auto p-4">
-          <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-sans leading-relaxed">
+          <pre className="whitespace-pre-wrap text-sm text-gray-200 font-sans leading-relaxed">
             {job.jd_text}
           </pre>
         </div>
@@ -128,17 +157,23 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
 
       {/* Right panel: Resume / Tailored output */}
       <div className="w-2/3 flex flex-col">
-        <div className="px-4 py-3 border-b bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
+        <div className="px-4 py-3 border-b border-gray-800 bg-gray-900/50 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <h2 className="text-sm font-semibold text-gray-300">
               {tailoredSource ? 'Tailored Resume (diff)' : 'Original Resume'}
             </h2>
             <p className="text-xs text-gray-500">{resume.name}</p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Token balance indicator for signed-in users */}
+            {!isGuest && tokenBalance !== null && (
+              <span className="text-xs text-gray-500 mr-1">
+                Uses 1 token ({tokenBalance} remaining)
+              </span>
+            )}
             <Link
               href={`/cover-letter/${job.id}`}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-700 text-gray-200 hover:bg-gray-800 transition-colors"
             >
               Generate Cover Letter
             </Link>
@@ -146,24 +181,41 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
               <button
                 onClick={handleSave}
                 disabled={isPending}
-                className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
+                className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-700 text-gray-200 hover:bg-gray-800 disabled:opacity-40 transition-colors"
               >
                 {isPending ? 'Saving...' : 'Accept & Save'}
               </button>
             )}
-            <button
-              onClick={handleGenerate}
-              disabled={isPending}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
-            >
-              {isPending ? 'Generating...' : 'Generate Tailored Resume'}
-            </button>
+            {showNoTokens ? (
+              <Link
+                href="/pricing"
+                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-green-500 text-white hover:bg-green-400 transition-colors"
+              >
+                Buy Tokens
+              </Link>
+            ) : (
+              <button
+                onClick={handleGenerate}
+                disabled={isPending}
+                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-gray-900 hover:bg-gray-200 disabled:opacity-40 transition-colors"
+              >
+                {isPending ? 'Generating...' : 'Generate Tailored Resume'}
+              </button>
+            )}
           </div>
         </div>
 
         {error && (
-          <div className="px-4 py-2 bg-red-50 border-b border-red-200 text-sm text-red-700">
-            {error}
+          <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 text-sm text-red-400 flex items-center justify-between">
+            <span>{error}</span>
+            {error.includes('No tokens remaining') && (
+              <Link
+                href="/pricing"
+                className="text-xs font-medium text-green-400 hover:text-green-300 underline ml-3"
+              >
+                Buy more tokens
+              </Link>
+            )}
           </div>
         )}
 
@@ -176,7 +228,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
             />
           ) : (
             <div className="h-full overflow-y-auto p-4">
-              <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">
+              <pre className="whitespace-pre-wrap text-sm text-gray-200 font-mono leading-relaxed">
                 {resume.source}
               </pre>
             </div>

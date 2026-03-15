@@ -1,12 +1,13 @@
 'use server';
 
 import { generateText } from 'ai';
-import { getAIProvider } from '@/lib/ai';
+import { getAIModel } from '@/lib/ai';
 import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { AIProviderConfig, CoverLetter } from '@/lib/types';
+import type { CoverLetter } from '@/lib/types';
 import { scrapeJobUrl } from './scrape-action';
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { debitToken, creditTokens } from '@/lib/actions/token-actions';
 
 async function researchCompany(companyUrl: string): Promise<string> {
   try {
@@ -23,40 +24,60 @@ export async function generateCoverLetter(
   company: string,
   jobId: string,
   resumeId: string,
-  aiConfig?: Partial<AIProviderConfig>,
+  modelOverride?: string,
 ): Promise<string> {
-  const { provider, model } = getAIProvider(aiConfig);
-
-  // Research company
-  let companyResearch = '';
-  const domain = company.toLowerCase().replace(/\s+/g, '');
-  const searchUrls = [
-    `https://www.${domain}.com/about`,
-    `https://www.${domain}.com/careers`,
-  ];
-  for (const url of searchUrls) {
-    const research = await researchCompany(url);
-    if (research) {
-      companyResearch += research + '\n\n';
+  // Debit token before AI call
+  const userId = await getCurrentUserId();
+  let debited = false;
+  if (userId) {
+    const result = await debitToken('cover_letter', 'pending');
+    if (!result.success) {
+      throw new Error(
+        result.error === 'insufficient_tokens'
+          ? 'No tokens remaining. Purchase more to continue.'
+          : 'Authentication required to generate.',
+      );
     }
+    debited = true;
   }
 
-  const { text } = await generateText({
-    model: provider(model),
-    system: `You are a professional cover letter writer. Using the candidate's resume, the job description, and research about the company, write a compelling cover letter. Return ONLY the cover letter text, no explanation.`,
-    prompt: `## Resume:\n${resumeSource}\n\n## Job Description:\n${jdText}\n\n## Company Research:\n${companyResearch || 'No research available.'}\n\n## Instructions:\n- Connect candidate's experience to the specific role\n- Reference company values/mission where genuine\n- Keep it concise (3-4 paragraphs)\n- Professional but not generic`,
-  });
+  try {
+    // Research company
+    let companyResearch = '';
+    const domain = company.toLowerCase().replace(/\s+/g, '');
+    const searchUrls = [
+      `https://www.${domain}.com/about`,
+      `https://www.${domain}.com/careers`,
+    ];
+    for (const url of searchUrls) {
+      const research = await researchCompany(url);
+      if (research) {
+        companyResearch += research + '\n\n';
+      }
+    }
 
-  // Save to DB
-  const userId = await getCurrentUserId();
-  const id = uuid();
-  await db.execute({
-    sql: `INSERT INTO cover_letters (id, job_id, resume_id, content, company_research, user_id)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-    args: [id, jobId, resumeId, text, companyResearch, userId],
-  });
+    const { text } = await generateText({
+      model: getAIModel(modelOverride),
+      system: `You are a professional cover letter writer. Using the candidate's resume, the job description, and research about the company, write a compelling cover letter. Return ONLY the cover letter text, no explanation.`,
+      prompt: `## Resume:\n${resumeSource}\n\n## Job Description:\n${jdText}\n\n## Company Research:\n${companyResearch || 'No research available.'}\n\n## Instructions:\n- Connect candidate's experience to the specific role\n- Reference company values/mission where genuine\n- Keep it concise (3-4 paragraphs)\n- Professional but not generic`,
+    });
 
-  return text;
+    // Save to DB
+    const id = uuid();
+    await db.execute({
+      sql: `INSERT INTO cover_letters (id, job_id, resume_id, content, company_research, user_id)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [id, jobId, resumeId, text, companyResearch, userId],
+    });
+
+    return text;
+  } catch (err) {
+    // Refund token on AI failure
+    if (debited && userId) {
+      await creditTokens(userId, 1, 'refund', 'ai_failure');
+    }
+    throw err;
+  }
 }
 
 export async function getCoverLetter(jobId: string): Promise<CoverLetter | null> {
