@@ -156,7 +156,14 @@ export default function LandingPage() {
                     reducing deploy time to 15min
                   </p>
                 </div>
-                <div className="flex justify-end pt-4">
+                <div className="flex items-center justify-end gap-3 pt-4">
+                  <span className="diff-badge text-[11px] font-medium bg-red-500/15 text-red-400 px-2.5 py-1 rounded-full border border-red-500/20">
+                    ATS: 42
+                  </span>
+                  <span className="diff-badge text-gray-600 text-xs">{"\u2192"}</span>
+                  <span className="diff-badge text-[11px] font-medium bg-green-500/15 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20">
+                    ATS: 87
+                  </span>
                   <span className="diff-badge text-[11px] font-medium bg-green-500/15 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20">
                     +8 improvements
                   </span>
@@ -223,9 +230,9 @@ export default function LandingPage() {
                 desc: "Track every application \u2014 draft, tailored, applied, interview, offer. Never lose track.",
               },
               {
-                icon: "St",
-                title: "Stash",
-                desc: "Save your best resume snippets and reuse them across applications.",
+                icon: "ATS",
+                title: "ATS Score",
+                desc: "Instant keyword match score against the job description. See your score jump from 42 to 87 after tailoring \u2014 no AI tokens used.",
               },
             ].map((f) => (
               <div
@@ -262,6 +269,9 @@ export default function LandingPage() {
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-green-400 font-medium">+14 additions</span>
                 <span className="text-red-400 font-medium">-6 removals</span>
+                <span className="text-red-400/80 font-medium bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">ATS: 42</span>
+                <span className="text-gray-600">{"\u2192"}</span>
+                <span className="text-green-400 font-medium bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">ATS: 87</span>
               </div>
               <div className="flex items-center gap-1 rounded-lg border border-gray-700 overflow-hidden text-xs">
                 <span className="px-3 py-1.5 bg-gray-800 text-white font-medium">Split view</span>
