@@ -5,12 +5,19 @@ import { authOptions } from '@/lib/auth';
 import { getProductId } from '@/lib/token-config';
 import type { Session } from 'next-auth';
 
-const client = new DodoPayments({
-  bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
-  environment:
-    (process.env.DODO_PAYMENTS_ENVIRONMENT as 'test_mode' | 'live_mode') ??
-    'test_mode',
-});
+let _client: DodoPayments | null = null;
+
+function getClient() {
+  if (!_client) {
+    _client = new DodoPayments({
+      bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
+      environment:
+        (process.env.DODO_PAYMENTS_ENVIRONMENT as 'test_mode' | 'live_mode') ??
+        'test_mode',
+    });
+  }
+  return _client;
+}
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -29,6 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'User not found' }, { status: 401 });
   }
 
+  const client = getClient();
   const checkoutSession = await client.checkoutSessions.create({
     product_cart: [{ product_id: productId, quantity: 1 }],
     customer: { email: session.user.email, name: session.user.name ?? '' },
