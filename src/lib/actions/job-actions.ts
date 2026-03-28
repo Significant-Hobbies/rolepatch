@@ -15,6 +15,7 @@ export async function createJobApplication(
   jdText: string,
 ): Promise<string> {
   const userId = await getCurrentUserId();
+  if (!userId) throw new Error('Sign in to create job applications');
   const id = uuid();
   await db.execute({
     sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id)
@@ -27,9 +28,8 @@ export async function createJobApplication(
 
 export async function getJobApplication(id: string): Promise<JobApplication | null> {
   const userId = await getCurrentUserId();
-  const result = userId
-    ? await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ? AND user_id = ?', args: [id, userId] })
-    : await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ? AND user_id IS NULL', args: [id] });
+  if (!userId) return null;
+  const result = await db.execute({ sql: 'SELECT * FROM job_applications WHERE id = ? AND user_id = ?', args: [id, userId] });
   const row = result.rows[0];
   return row ? (JSON.parse(JSON.stringify(row)) as JobApplication) : null;
 }
@@ -59,6 +59,7 @@ export async function saveTailoredResume(
   source: string,
 ): Promise<string> {
   const userId = await getCurrentUserId();
+  if (!userId) throw new Error('Sign in to save tailored resumes');
   const id = uuid();
   await db.execute({
     sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, user_id)
@@ -75,14 +76,10 @@ export async function saveTailoredResume(
 
 export async function getTailoredResumes(jobId: string): Promise<TailoredResume[]> {
   const userId = await getCurrentUserId();
-  const result = userId
-    ? await db.execute({
-        sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC',
-        args: [jobId, userId],
-      })
-    : await db.execute({
-        sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id IS NULL ORDER BY created_at DESC',
-        args: [jobId],
-      });
+  if (!userId) return [];
+  const result = await db.execute({
+    sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC',
+    args: [jobId, userId],
+  });
   return JSON.parse(JSON.stringify(result.rows)) as TailoredResume[];
 }
