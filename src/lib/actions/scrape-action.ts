@@ -2,6 +2,23 @@
 
 import { Readability } from '@mozilla/readability';
 import { parseHTML } from 'linkedom';
+import { getCurrentUserId } from '@/lib/auth-utils';
+import { headers } from 'next/headers';
+
+// In-memory rate limiter: max 5 requests per 60 seconds per key
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 5;
+
+function checkRateLimit(key: string): void {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(key) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW);
+  if (timestamps.length >= RATE_LIMIT_MAX) {
+    throw new Error('Rate limit exceeded. Please wait before scraping again.');
+  }
+  timestamps.push(now);
+  rateLimitMap.set(key, timestamps);
+}
 
 interface ScrapeResult {
   title: string;
@@ -50,6 +67,12 @@ function validateUrl(raw: string): URL {
 }
 
 export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
+  // Rate limit by userId or IP
+  const userId = await getCurrentUserId();
+  const headersList = await headers();
+  const rateLimitKey = userId ?? headersList.get('x-forwarded-for') ?? 'anonymous';
+  checkRateLimit(rateLimitKey);
+
   validateUrl(url);
 
   // Primary: Jina Reader
