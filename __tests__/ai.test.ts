@@ -36,7 +36,12 @@ describe('getAIModel', () => {
 
   it('modelOverride takes precedence over env var', () => {
     process.env.AI_MODEL = 'gemini-2.0-flash';
-    getAIModel('gemini-2.5-pro-exp');
-    expect(mockGoogle).toHaveBeenCalledWith('gemini-2.5-pro-exp');
+    getAIModel('gemini-1.5-pro');
+    expect(mockGoogle).toHaveBeenCalledWith('gemini-1.5-pro');
+  });
+
+  it('rejects unknown model and falls back to default', () => {
+    getAIModel('evil-model-name');
+    expect(mockGoogle).toHaveBeenCalledWith('gemini-2.5-pro');
   });
 });
