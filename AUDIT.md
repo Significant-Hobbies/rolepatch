@@ -2,55 +2,59 @@
 
 ## Critical
 
-- [ ] **Guest data leak: unauthenticated writes** `src/lib/actions/job-actions.ts:17`
+- [x] **Guest data leak: unauthenticated writes** `src/lib/actions/job-actions.ts:17`
   `createJobApplication` does not reject when `userId` is null. Allows unauthenticated users to write directly to the database with `user_id = NULL`, creating orphan rows accessible to all guests.
   **Fix:** Throw if `userId` is null — guest writes should go through localStorage only.
 
-- [ ] **Guest data leak: unauthenticated writes (saveTailoredResume)** `src/lib/actions/job-actions.ts:56`
+- [x] **Guest data leak: unauthenticated writes (saveTailoredResume)** `src/lib/actions/job-actions.ts:56`
   Same issue — `saveTailoredResume` accepts null userId, writing unscoped rows to DB.
   **Fix:** Throw if `userId` is null.
 
-- [ ] **Guest data isolation: getCoverLetter** `src/lib/actions/cover-letter-action.ts:83-94`
+- [x] **Guest data isolation: getCoverLetter** `src/lib/actions/cover-letter-action.ts:83-94`
   `WHERE job_id = ? AND user_id IS NULL` returns any guest's cover letter for a given jobId. Any user who guesses/knows a jobId can read another guest's data.
-  **Fix:** Scope by both `id` (record) and `job_id`, or reject when not authenticated.
+  **Fix:** Return null for unauthenticated requests.
 
-- [ ] **Guest data isolation: getTailoredResumes** `src/lib/actions/job-actions.ts:76-88`
+- [x] **Guest data isolation: getTailoredResumes** `src/lib/actions/job-actions.ts:76-88`
   `WHERE job_id = ? AND user_id IS NULL` returns all guest tailored resumes for a given jobId.
-  **Fix:** Same — reject unauthenticated or scope to specific record ID.
+  **Fix:** Return empty array for unauthenticated requests.
 
-- [ ] **Guest data isolation: getJobApplication** `src/lib/actions/job-actions.ts:28-35`
+- [x] **Guest data isolation: getJobApplication** `src/lib/actions/job-actions.ts:28-35`
   `WHERE id = ? AND user_id IS NULL` — less severe since it requires the exact UUID, but still leaks any guest row by ID.
   **Fix:** Return null for unauthenticated requests (guest data lives in localStorage).
 
 ## High
 
-- [ ] **SSRF in scrape endpoint** `src/lib/actions/scrape-action.ts:14`
+- [x] **SSRF in scrape endpoint** `src/lib/actions/scrape-action.ts:14`
   `scrapeJobUrl` accepts any URL with no validation. Attacker can pass `http://169.254.169.254/...` (cloud metadata), `http://localhost:...`, or `file://` to probe internal network.
   Both the Jina proxy path (line 17) and the direct fetch fallback (line 37) are vulnerable.
   **Fix:** Validate URL: require `http(s)://`, block private/reserved IPs (10.x, 172.16-31.x, 192.168.x, 127.x, 169.254.x, ::1, 0.0.0.0), block `localhost`.
 
-- [ ] **Payment webhook: no transaction** `src/app/api/webhook/dodo-payments/route.ts:57-72`
+- [x] **Payment webhook: no transaction** `src/app/api/webhook/dodo-payments/route.ts:57-72`
   Payment INSERT and `creditTokens` are separate operations. If `creditTokens` fails, the payment is recorded but tokens are never granted — and the idempotency check prevents retry.
   **Fix:** Wrap payment insert + token credit in a single DB transaction.
 
-- [ ] **Client-side payment verification** `src/components/pricing-cards.tsx:36`
+- [x] **Client-side payment verification** `src/components/pricing-cards.tsx:36`
   Success banner is triggered solely by `?success=true` query param — anyone can append it to see "Payment successful!" without paying.
   **Fix:** Verify server-side that a recent payment exists for the user before showing success.
 
 ## Medium
 
-- [ ] **No AI model allowlist** `src/lib/ai.ts:4`
+- [x] **No AI model allowlist** `src/lib/ai.ts:4`
   `getAIModel(modelOverride)` passes a client-controlled string directly to `google()`. Attacker could pass arbitrary model identifiers, potentially accessing expensive models or triggering unexpected behavior.
   **Fix:** Validate `modelOverride` against an allowlist of known model IDs.
 
-- [ ] **No rate limiting on scrape endpoint** `src/lib/actions/scrape-action.ts:14`
+- [x] **No rate limiting on scrape endpoint** `src/lib/actions/scrape-action.ts:14`
   `scrapeJobUrl` has no rate limit. Attacker can abuse it as a free proxy to scrape arbitrary sites at scale.
   **Fix:** Add in-memory rate limiting (5 req/min per IP or user).
 
 ## Low / Informational
 
+- [x] **updateCoverLetter guest path** `src/lib/actions/cover-letter-action.ts:97-109`
+  `WHERE id = ? AND user_id IS NULL` allows updating any guest cover letter by ID. Same pattern as read isolation issue.
+  **Fix:** Reject unauthenticated requests.
+
 - [ ] **SaasMaker project key committed** `.saasmaker.json:4`
-  Contains `projectKey: "pk_90978682242b24623270e01eb129c4da7508454dfa1e0d58"`. This is a public-facing key (also in `NEXT_PUBLIC_SAASMAKER_API_KEY`), so likely low risk, but worth noting.
+  Contains `projectKey: "pk_..."`. This is a public-facing key (also in `NEXT_PUBLIC_SAASMAKER_API_KEY`), so likely low risk.
   **No fix needed** — public key by design.
 
 - [ ] **No CORS configuration**
@@ -68,7 +72,3 @@
 - [ ] **No secrets found in git history**
   Checked for API keys, tokens, and .env files in git history — none found. `.env*` is properly gitignored.
   **No fix needed.**
-
-- [ ] **updateCoverLetter guest path** `src/lib/actions/cover-letter-action.ts:97-109`
-  `WHERE id = ? AND user_id IS NULL` allows updating any guest cover letter by ID. Same pattern as read isolation issue.
-  **Fix:** Reject unauthenticated requests.
