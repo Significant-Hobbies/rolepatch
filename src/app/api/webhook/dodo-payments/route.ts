@@ -1,8 +1,8 @@
 import { Webhook } from 'standardwebhooks';
 import { headers } from 'next/headers';
 import { db } from '@/lib/db';
-import { creditTokens } from '@/lib/actions/token-actions';
 import { getTokensForProduct } from '@/lib/token-config';
+import { v4 as uuid } from 'uuid';
 
 export async function POST(request: Request) {
   const headersList = await headers();
@@ -53,23 +53,42 @@ export async function POST(request: Request) {
       return new Response('Already processed', { status: 200 });
     }
 
-    // Record payment with raw payload for dispute evidence
-    await db.execute({
-      sql: `INSERT INTO payments (id, user_id, product_id, amount_cents, currency, tokens_granted, status, dodo_payload)
-            VALUES (?, ?, ?, ?, ?, ?, 'completed', ?)`,
-      args: [
-        paymentId,
-        userId,
-        productId,
-        totalAmount,
-        currency,
-        tokensToGrant,
-        rawBody,
-      ],
-    });
+    // Record payment + credit tokens in a single transaction
+    const tx = await db.transaction('write');
+    try {
+      await tx.execute({
+        sql: `INSERT INTO payments (id, user_id, product_id, amount_cents, currency, tokens_granted, status, dodo_payload)
+              VALUES (?, ?, ?, ?, ?, ?, 'completed', ?)`,
+        args: [paymentId, userId, productId, totalAmount, currency, tokensToGrant, rawBody],
+      });
 
-    // Credit tokens to user
-    await creditTokens(userId, tokensToGrant, 'purchase', paymentId);
+      await tx.execute({
+        sql: `INSERT INTO token_balances (user_id, balance, total_purchased, total_used)
+              VALUES (?, ?, ?, 0)
+              ON CONFLICT(user_id) DO UPDATE SET
+                balance = balance + ?,
+                total_purchased = total_purchased + ?,
+                updated_at = unixepoch()`,
+        args: [userId, tokensToGrant, tokensToGrant, tokensToGrant, tokensToGrant],
+      });
+
+      const balResult = await tx.execute({
+        sql: 'SELECT balance FROM token_balances WHERE user_id = ?',
+        args: [userId],
+      });
+      const newBalance = balResult.rows[0].balance as number;
+
+      await tx.execute({
+        sql: `INSERT INTO token_transactions (id, user_id, amount, type, reference_id, balance_after)
+              VALUES (?, ?, ?, 'purchase', ?, ?)`,
+        args: [uuid(), userId, tokensToGrant, paymentId, newBalance],
+      });
+
+      await tx.commit();
+    } catch (err) {
+      await tx.rollback();
+      throw err;
+    }
   }
 
   if (eventType === 'refund.succeeded') {
