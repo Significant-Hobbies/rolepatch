@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTokenBalance } from '@/lib/actions/token-actions';
 import { PricingCards } from '@/components/pricing-cards';
+import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,8 +27,21 @@ const FAQ = [
   },
 ];
 
+async function hasRecentPayment(): Promise<boolean> {
+  const userId = await getCurrentUserId();
+  if (!userId) return false;
+  const result = await db.execute({
+    sql: `SELECT id FROM payments WHERE user_id = ? AND status = 'completed' AND created_at > unixepoch() - 300 LIMIT 1`,
+    args: [userId],
+  });
+  return result.rows.length > 0;
+}
+
 export default async function PricingPage() {
-  const balance = await getTokenBalance();
+  const [balance, paymentVerified] = await Promise.all([
+    getTokenBalance(),
+    hasRecentPayment(),
+  ]);
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
@@ -41,7 +56,7 @@ export default async function PricingPage() {
         </div>
       </div>
 
-      <PricingCards />
+      <PricingCards paymentVerified={paymentVerified} />
 
       {/* FAQ */}
       <div className="mt-16 space-y-6 max-w-2xl mx-auto">

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { signIn } from 'next-auth/react';
 
@@ -30,10 +29,8 @@ const TOKEN_PACKS = [
   },
 ];
 
-export function PricingCards() {
+export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) {
   const { isGuest } = useAuth();
-  const searchParams = useSearchParams();
-  const isSuccess = searchParams.get('success') === 'true';
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +57,7 @@ export function PricingCards() {
 
   return (
     <div>
-      {isSuccess && (
+      {paymentVerified && (
         <div className="mb-8 p-4 rounded-xl border border-green-500/30 bg-green-500/10 text-center">
           <p className="text-green-400 font-medium text-sm">
             Payment successful! Your tokens have been added to your account.
