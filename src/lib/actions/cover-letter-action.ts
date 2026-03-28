@@ -82,29 +82,19 @@ export async function generateCoverLetter(
 
 export async function getCoverLetter(jobId: string): Promise<CoverLetter | null> {
   const userId = await getCurrentUserId();
-  const result = userId
-    ? await db.execute({
-        sql: 'SELECT * FROM cover_letters WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC LIMIT 1',
-        args: [jobId, userId],
-      })
-    : await db.execute({
-        sql: 'SELECT * FROM cover_letters WHERE job_id = ? AND user_id IS NULL ORDER BY created_at DESC LIMIT 1',
-        args: [jobId],
-      });
+  if (!userId) return null;
+  const result = await db.execute({
+    sql: 'SELECT * FROM cover_letters WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC LIMIT 1',
+    args: [jobId, userId],
+  });
   return (result.rows[0] as unknown as CoverLetter) ?? null;
 }
 
 export async function updateCoverLetter(id: string, content: string): Promise<void> {
   const userId = await getCurrentUserId();
-  if (userId) {
-    await db.execute({
-      sql: 'UPDATE cover_letters SET content = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?',
-      args: [content, id, userId],
-    });
-  } else {
-    await db.execute({
-      sql: 'UPDATE cover_letters SET content = ?, updated_at = unixepoch() WHERE id = ? AND user_id IS NULL',
-      args: [content, id],
-    });
-  }
+  if (!userId) throw new Error('Sign in to update cover letters');
+  await db.execute({
+    sql: 'UPDATE cover_letters SET content = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?',
+    args: [content, id, userId],
+  });
 }
