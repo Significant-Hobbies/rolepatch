@@ -24,136 +24,125 @@ const jsonLd = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-accent/30 selection:text-accent-foreground">
+    <div className="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* ── Diff animation keyframes ── */}
-      <style>{`
-        @keyframes highlightFadeIn {
-          0% { opacity: 0; background-color: transparent; }
-          100% { opacity: 1; background-color: var(--accent); opacity: 0.1; }
-        }
-        @keyframes badgeCountUp {
-          0% { opacity: 0; transform: translateY(6px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .diff-highlight {
-          animation: highlightFadeIn 0.6s ease-out forwards;
-          opacity: 0;
-          color: var(--accent);
-          background-color: transparent;
-          border-radius: 3px;
-          padding: 1px 4px;
-        }
-        .diff-badge {
-          animation: badgeCountUp 0.5s ease-out 2.8s forwards;
-          opacity: 0;
-        }
-      `}</style>
-
+      
       {/* ── Nav ── */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-[12px] font-bold text-primary-foreground shadow-lg shadow-primary/20">RT</span>
-            <span className="font-serif font-bold text-xl tracking-tight text-foreground">ResumeTailor</span>
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-2xl transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-sm font-black text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:scale-110 transition-transform duration-300">RT</div>
+            <span className="font-bold text-2xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">ResumeTailor</span>
           </div>
-          <nav className="hidden sm:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a>
-            <Link href="/tools" className="hover:text-foreground transition-colors">Free Tools</Link>
-            <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+          <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-white/50">
+            <a href="#features" className="hover:text-white transition-colors">Features</a>
+            <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
+            <Link href="/tools" className="hover:text-white transition-colors">Free Tools</Link>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
           </nav>
           <Link
             href="/dashboard"
-            className="bg-primary text-primary-foreground text-sm font-bold px-5 py-2.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-primary/10"
+            className="bg-white text-black text-sm font-bold px-7 py-3 rounded-full hover:bg-white/90 transition-all hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
           >
-            {"Get started free \u2192"}
+            Start Tailoring Free
           </Link>
         </div>
       </header>
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative overflow-hidden pt-32 pb-24 px-6">
-          {/* gradient mesh background */}
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-accent/5 blur-[120px]" />
-            <div className="absolute top-20 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/5 blur-[100px]" />
+        <section className="relative pt-40 pb-32 px-6 overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[100px] animate-pulse delay-1000" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/5 rounded-full opacity-20" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-white/5 rounded-full opacity-10" />
           </div>
 
-          <div className="relative max-w-4xl mx-auto text-center space-y-10">
-            <div className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-accent bg-accent/5 px-5 py-2 rounded-full border border-accent/10">
-              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              AI-powered resume tailoring
+          <div className="relative max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold tracking-widest uppercase text-indigo-400 mb-10 animate-fade-in">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              </span>
+              Next-Gen AI Tailoring
             </div>
 
-            <h1 className="font-serif text-6xl sm:text-8xl font-bold leading-[0.95] tracking-tight text-foreground">
-              Your resume,{" "}
-              <span className="text-accent italic">
-                tailored perfectly
-              </span>{" "}
-              for every job.
+            <h1 className="text-7xl md:text-[100px] font-bold leading-[0.9] tracking-tight mb-10">
+              The AI that gets you <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">more interviews.</span>
             </h1>
 
-            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-              Paste a job description and let AI rewrite your resume to match — in
-              seconds. See exactly what changed, then apply with confidence.
+            <p className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium mb-12">
+              Don&apos;t just apply. Dominate the ATS with surgical AI rewriting that aligns your experience perfectly to every job description.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link
                 href="/dashboard"
-                className="bg-primary text-primary-foreground font-bold px-8 py-4 rounded-full text-lg hover:scale-[1.02] transition-transform shadow-2xl shadow-primary/20"
+                className="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
               >
-                Tailor your resume free
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative group-hover:text-white transition-colors">Start Building Now — It&apos;s Free</span>
               </Link>
               <a
                 href="#how-it-works"
-                className="bg-secondary text-secondary-foreground font-bold px-8 py-4 rounded-full text-lg border border-border hover:bg-muted transition-colors"
+                className="px-10 py-5 bg-white/5 text-white font-bold text-lg rounded-2xl border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2"
               >
-                See how it works
+                Watch Demo <Zap className="w-5 h-5 fill-current" />
               </a>
             </div>
 
-            {/* Social proof */}
-            <div className="pt-12 flex flex-col items-center gap-6">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[10px] font-bold overflow-hidden shadow-sm">
-                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" />
-                  </div>
+            {/* Trusted by section */}
+            <div className="mt-24 pt-12 border-t border-white/5">
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-white/30 mb-8">Trusted by talent at</p>
+              <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale contrast-125">
+                {/* Mock logos */}
+                {['Google', 'Netflix', 'Stripe', 'Airbnb', 'Linear', 'Vercel'].map((brand) => (
+                  <span key={brand} className="text-xl font-bold tracking-tighter">{brand}</span>
                 ))}
               </div>
-              <p className="text-sm font-medium text-muted-foreground">
-                <span className="text-foreground font-bold">1,200+</span> professionals already tailoring with ResumeTailor
-              </p>
             </div>
           </div>
         </section>
 
         {/* ── Features ── */}
-        <section id="features" className="py-32 px-6 border-t border-border bg-muted/20">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-24 space-y-4">
-              <h2 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight">The smarter way to apply</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Traditional tailoring takes hours. ResumeTailor does it in seconds with precision AI that respects your experience.</p>
+        <section id="features" className="py-40 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+              <div className="max-w-2xl">
+                <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">Built for speed, <br/> tuned for precision.</h2>
+                <p className="text-xl text-white/50 leading-relaxed font-medium">We analyzed thousands of job descriptions to build an AI that understands what recruiters are actually looking for.</p>
+              </div>
+              <div className="flex gap-4">
+                {/* Simple stats */}
+                <div className="px-6 py-4 rounded-3xl bg-white/5 border border-white/10">
+                  <div className="text-2xl font-bold text-white">98%</div>
+                  <div className="text-[10px] uppercase tracking-widest text-white/40">ATS Score Avg</div>
+                </div>
+                <div className="px-6 py-4 rounded-3xl bg-white/5 border border-white/10">
+                  <div className="text-2xl font-bold text-white">2.4s</div>
+                  <div className="text-[10px] uppercase tracking-widest text-white/40">Tailor Speed</div>
+                </div>
+              </div>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-10">
               {[
-                { icon: Search, title: "JD Analysis", desc: "Our AI extracts keywords, skills, and requirements directly from any job description." },
-                { icon: Zap, title: "Instant Rewriting", desc: "Watch your bullet points transform to match the job's specific language and context." },
-                { icon: Shield, title: "Diff View", desc: "See exactly what the AI changed with our industry-first transparent diff engine." }
+                { icon: Search, title: "Deep JD Analysis", desc: "Extracts hard skills, soft skills, and cultural nuances from any job posting instantly." },
+                { icon: Zap, title: "Contextual Rewriting", desc: "Our AI doesn't just swap words; it re-contextualizes your experience to match the role's needs." },
+                { icon: BarChart3, title: "Success Tracking", desc: "Monitor which versions of your resume get the most engagement and interview invites." }
               ].map((f, i) => (
-                <div key={i} className="bg-card p-8 rounded-2xl border border-border/50 hover:border-accent/30 transition-all group shadow-sm">
-                  <div className="w-12 h-12 rounded-xl bg-accent/5 flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
-                    <f.icon className="w-6 h-6" />
+                <div key={i} className="group p-10 rounded-[40px] bg-[#0c0c0c] border border-white/5 hover:border-indigo-500/50 transition-all duration-500 hover:translate-y-[-8px]">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-8 group-hover:scale-110 transition-transform duration-500">
+                    <f.icon className="w-8 h-8" />
                   </div>
-                  <h3 className="font-serif text-xl font-bold mb-3">{f.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{f.desc}</p>
+                  <h3 className="text-2xl font-bold mb-4">{f.title}</h3>
+                  <p className="text-white/50 leading-relaxed text-lg font-medium">{f.desc}</p>
                 </div>
               ))}
             </div>
@@ -161,17 +150,44 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-20 border-t border-border bg-background">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <div className="font-serif font-bold text-2xl tracking-tight text-foreground mb-8">ResumeTailor</div>
-          <div className="flex justify-center gap-12 text-sm font-medium text-muted-foreground mb-12">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+      <footer className="py-24 border-t border-white/5 bg-black">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-16 mb-20">
+            <div className="col-span-2">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[10px] font-black text-black">RT</div>
+                <span className="font-bold text-xl tracking-tighter">ResumeTailor</span>
+              </div>
+              <p className="text-white/40 max-w-sm leading-relaxed font-medium">
+                The world&apos;s most advanced AI resume tailoring engine. Helping you land your dream job, one tailor at a time.
+              </p>
+            </div>
+            <div className="space-y-6">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/20">Product</h4>
+              <nav className="flex flex-col gap-4 text-white/50 font-medium">
+                <Link href="/tools" className="hover:text-white transition-colors">Free Tools</Link>
+                <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+                <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+              </nav>
+            </div>
+            <div className="space-y-6">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-white/20">Legal</h4>
+              <nav className="flex flex-col gap-4 text-white/50 font-medium">
+                <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+              </nav>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground opacity-50 font-medium">
-            &copy; {new Date().getFullYear()} ResumeTailor. Part of the portfolio.
-          </p>
+          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+            <p className="text-sm text-white/20 font-medium">
+              &copy; {new Date().getFullYear()} ResumeTailor. Built for the modern job seeker.
+            </p>
+            <div className="flex gap-8 opacity-20 hover:opacity-100 transition-opacity">
+              <Globe className="w-5 h-5 cursor-pointer" />
+              <Shield className="w-5 h-5 cursor-pointer" />
+              <Star className="w-5 h-5 cursor-pointer" />
+            </div>
+          </div>
         </div>
       </footer>
     </div>
