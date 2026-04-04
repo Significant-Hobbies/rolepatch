@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Check, ArrowRight, Zap, Star, Shield, Search, FileText, Layout, BarChart3, Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const jsonLd = {
   "@context": "https://schema.org",
