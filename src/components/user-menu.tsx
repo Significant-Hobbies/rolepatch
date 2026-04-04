@@ -60,7 +60,7 @@ export function UserMenu() {
         {image ? (
           <Image src={image} alt="" width={28} height={28} className="rounded-full ring-2 ring-gray-700" />
         ) : (
-          <div className="w-7 h-7 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-medium ring-2 ring-gray-700">
+          <div className="w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-xs font-medium ring-2 ring-gray-700">
             {name[0] ?? '?'}
           </div>
         )}

@@ -94,7 +94,7 @@ main {
 /* Focus ring utility */
 .input-base {
   @apply w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-900/50 text-sm
-    focus:outline-none focus:ring-2 focus:ring-green-500/40 focus:border-green-500/50
+    focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 focus:border-[var(--accent)]/50
     placeholder:text-gray-500 transition-colors;
 }
 

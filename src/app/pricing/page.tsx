@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Pricing',
   description: 'Token-based pricing for AI resume tailoring. Start with 3 free tokens. No subscription required.',
-  alternates: { canonical: 'https://rolepatch.com/pricing' },
+  alternates: { canonical: 'https://resumetailor.ai/pricing' },
 };
 
 const FAQ = [
@@ -51,7 +51,7 @@ export default async function PricingPage() {
           Each token lets you tailor one resume or generate one cover letter.
         </p>
         <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 border border-gray-700">
-          <span className="text-green-400 font-bold text-lg">{balance}</span>
+          <span className="text-[var(--accent)] font-bold text-lg">{balance}</span>
           <span className="text-sm text-gray-400">tokens remaining</span>
         </div>
       </div>

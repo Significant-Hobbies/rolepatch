@@ -12,10 +12,10 @@ interface Props {
 const darkTheme = {
   variables: {
     dark: {
-      diffViewerBackground: '#0a0a0a',
+      diffViewerBackground: 'var(--background)',
       diffViewerColor: '#e5e5e5',
       addedBackground: '#0d2818',
-      addedColor: '#4ade80',
+      addedColor: 'var(--accent)',
       removedBackground: '#2d1215',
       removedColor: '#f87171',
       wordAddedBackground: '#166534',
@@ -28,9 +28,9 @@ const darkTheme = {
       highlightGutterBackground: '#1a1a1a',
       codeFoldGutterBackground: '#111111',
       codeFoldBackground: '#111111',
-      emptyLineBackground: '#0a0a0a',
+      emptyLineBackground: 'var(--background)',
       gutterColor: '#525252',
-      addedGutterColor: '#4ade80',
+      addedGutterColor: 'var(--accent)',
       removedGutterColor: '#f87171',
       codeFoldContentColor: '#737373',
       diffViewerTitleBackground: '#111111',
@@ -66,7 +66,7 @@ export function ResumeDiff({ original, modified, onModifiedChange }: Props) {
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-gray-900/50">
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-green-400">+{additions} additions</span>
+          <span className="text-[var(--accent)]">+{additions} additions</span>
           <span className="text-red-400">-{removals} removals</span>
         </div>
         <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function ResumeDiff({ original, modified, onModifiedChange }: Props) {
               </button>
               <button
                 onClick={handleSaveEdit}
-                className="text-xs px-2 py-1 rounded bg-green-600 text-white hover:bg-green-500 transition-colors"
+                className="text-xs px-2 py-1 rounded bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90 transition-colors"
               >
                 Apply
               </button>
@@ -108,7 +108,7 @@ export function ResumeDiff({ original, modified, onModifiedChange }: Props) {
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            className="w-full h-full p-4 bg-[#0a0a0a] text-gray-200 text-sm font-mono resize-none focus:outline-none"
+            className="w-full h-full p-4 bg-[var(--background)] text-gray-200 text-sm font-mono resize-none focus:outline-none"
           />
         ) : (
           <ReactDiffViewer

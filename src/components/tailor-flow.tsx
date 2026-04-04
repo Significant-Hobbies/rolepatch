@@ -238,7 +238,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
             {showNoTokens ? (
               <Link
                 href="/pricing"
-                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-green-500 text-white hover:bg-green-400 transition-colors"
+                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors"
               >
                 Buy Tokens
               </Link>
@@ -260,7 +260,7 @@ export function TailorFlow({ job, serverResume, existingTailored }: TailorFlowPr
             {error.includes('No tokens remaining') && (
               <Link
                 href="/pricing"
-                className="text-xs font-medium text-green-400 hover:text-green-300 underline ml-3"
+                className="text-xs font-medium text-[var(--accent)] hover:text-[var(--accent)]/80 underline ml-3"
               >
                 Buy more tokens
               </Link>

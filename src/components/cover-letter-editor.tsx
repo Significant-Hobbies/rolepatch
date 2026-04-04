@@ -139,7 +139,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
         )}
 
         {saveMessage && (
-          <span className="text-sm text-green-600">{saveMessage}</span>
+          <span className="text-sm text-[var(--accent)]">{saveMessage}</span>
         )}
 
         <Link

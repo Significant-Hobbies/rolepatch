@@ -7,10 +7,10 @@ import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 const darkTheme = {
   variables: {
     dark: {
-      diffViewerBackground: '#0a0a0a',
+      diffViewerBackground: 'var(--background)',
       diffViewerColor: '#e5e5e5',
       addedBackground: '#0d2818',
-      addedColor: '#4ade80',
+      addedColor: 'var(--accent)',
       removedBackground: '#2d1215',
       removedColor: '#f87171',
       wordAddedBackground: '#166534',
@@ -23,9 +23,9 @@ const darkTheme = {
       highlightGutterBackground: '#1a1a1a',
       codeFoldGutterBackground: '#111111',
       codeFoldBackground: '#111111',
-      emptyLineBackground: '#0a0a0a',
+      emptyLineBackground: 'var(--background)',
       gutterColor: '#525252',
-      addedGutterColor: '#4ade80',
+      addedGutterColor: 'var(--accent)',
       removedGutterColor: '#f87171',
       codeFoldContentColor: '#737373',
       diffViewerTitleBackground: '#111111',
@@ -50,13 +50,13 @@ export default function DiffToolPage() {
   const removals = compared ? aLines.filter((l, i) => l !== bLines[i]).length : 0;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-gray-100">
+    <div className="min-h-screen bg-[var(--background)] text-gray-100">
       {/* Nav */}
-      <header className="sticky top-0 z-50 border-b border-gray-800/80 bg-[#0a0a0a]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-gray-800/80 bg-[var(--background)]/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">RP</span>
-            <span className="font-bold text-lg tracking-tight text-white">RolePatch</span>
+            <span className="w-6 h-6 rounded-md bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">RP</span>
+            <span className="font-bold text-lg tracking-tight text-white">ResumeTailor</span>
           </Link>
           <Link
             href="/dashboard"
@@ -103,7 +103,7 @@ export default function DiffToolPage() {
           <button
             onClick={() => setCompared(true)}
             disabled={!canCompare}
-            className="bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-xl text-lg transition-colors"
+            className="bg-green-600 hover:bg-[var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-xl text-lg transition-colors"
           >
             Compare
           </button>
@@ -115,7 +115,7 @@ export default function DiffToolPage() {
             {/* Toolbar */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 bg-gray-950/60">
               <div className="flex items-center gap-4 text-xs">
-                <span className="text-green-400 font-medium">+{additions} additions</span>
+                <span className="text-[var(--accent)] font-medium">+{additions} additions</span>
                 <span className="text-red-400 font-medium">-{removals} removals</span>
               </div>
               <button
@@ -148,9 +148,9 @@ export default function DiffToolPage() {
             <p className="text-gray-400 mb-4">Want AI to tailor your resume automatically?</p>
             <Link
               href="/dashboard"
-              className="inline-block bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
+              className="inline-block bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
             >
-              Try RolePatch free &rarr;
+              Try ResumeTailor free &rarr;
             </Link>
           </div>
         </div>
