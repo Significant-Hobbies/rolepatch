@@ -10,7 +10,7 @@ interface ATSScoreBadgeProps {
 }
 
 function scoreColor(score: number) {
-  if (score > 70) return { stroke: '#22c55e', text: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/20' };
+  if (score > 70) return { stroke: 'var(--accent)', text: 'text-[var(--accent)]', bg: 'bg-[var(--accent)]/10', border: 'border-[var(--accent)]/20' };
   if (score >= 40) return { stroke: '#f59e0b', text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
   return { stroke: '#ef4444', text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' };
 }
@@ -62,10 +62,10 @@ export function ATSScoreBadge({ score, matchedKeywords, missingKeywords, label }
 
           {matchedKeywords.length > 0 && (
             <div className="mb-3">
-              <p className="text-[10px] font-medium text-green-400 mb-1.5">Matched ({matchedKeywords.length})</p>
+              <p className="text-[10px] font-medium text-[var(--accent)] mb-1.5">Matched ({matchedKeywords.length})</p>
               <div className="flex flex-wrap gap-1">
                 {matchedKeywords.map((kw) => (
-                  <span key={kw} className="px-2 py-0.5 text-[11px] rounded-full bg-green-500/15 text-green-400 border border-green-500/20">
+                  <span key={kw} className="px-2 py-0.5 text-[11px] rounded-full bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20">
                     {kw}
                   </span>
                 ))}

@@ -2,6 +2,23 @@
 
 import { Readability } from '@mozilla/readability';
 import { parseHTML } from 'linkedom';
+import { getCurrentUserId } from '@/lib/auth-utils';
+import { headers } from 'next/headers';
+
+// In-memory rate limiter: max 5 requests per 60 seconds per key
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 5;
+
+function checkRateLimit(key: string): void {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(key) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW);
+  if (timestamps.length >= RATE_LIMIT_MAX) {
+    throw new Error('Rate limit exceeded. Please wait before scraping again.');
+  }
+  timestamps.push(now);
+  rateLimitMap.set(key, timestamps);
+}
 
 interface ScrapeResult {
   title: string;
@@ -11,7 +28,53 @@ interface ScrapeResult {
   role: string;
 }
 
+function validateUrl(raw: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error('Invalid URL');
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Only http and https URLs are allowed');
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Block localhost variants
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') {
+    throw new Error('Internal URLs are not allowed');
+  }
+
+  // Block private/reserved IP ranges
+  const ipMatch = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipMatch) {
+    const [, a, b] = ipMatch.map(Number);
+    if (
+      a === 10 ||                              // 10.0.0.0/8
+      (a === 172 && b >= 16 && b <= 31) ||     // 172.16.0.0/12
+      (a === 192 && b === 168) ||              // 192.168.0.0/16
+      a === 127 ||                              // 127.0.0.0/8
+      (a === 169 && b === 254) ||              // 169.254.0.0/16 (link-local / cloud metadata)
+      a === 0                                   // 0.0.0.0/8
+    ) {
+      throw new Error('Internal URLs are not allowed');
+    }
+  }
+
+  return parsed;
+}
+
 export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
+  // Rate limit by userId or IP
+  const userId = await getCurrentUserId();
+  const headersList = await headers();
+  const rateLimitKey = userId ?? headersList.get('x-forwarded-for') ?? 'anonymous';
+  checkRateLimit(rateLimitKey);
+
+  validateUrl(url);
+
   // Primary: Jina Reader
   try {
     const res = await fetch(`https://r.jina.ai/${url}`, {

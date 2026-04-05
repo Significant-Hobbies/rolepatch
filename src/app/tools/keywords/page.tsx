@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { calculateATSScore, type ATSResult } from '@/lib/ats-score';
 
 function scoreColor(score: number) {
-  if (score > 70) return { stroke: '#22c55e', text: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/20' };
+  if (score > 70) return { stroke: 'var(--accent)', text: 'text-[var(--accent)]', bg: 'bg-[var(--accent)]/10', border: 'border-green-500/20' };
   if (score >= 40) return { stroke: '#f59e0b', text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
   return { stroke: '#ef4444', text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' };
 }
@@ -54,13 +54,13 @@ export default function KeywordsToolPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-gray-100">
+    <div className="min-h-screen bg-[var(--background)] text-gray-100">
       {/* Nav */}
-      <header className="sticky top-0 z-50 border-b border-gray-800/80 bg-[#0a0a0a]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-gray-800/80 bg-[var(--background)]/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">RP</span>
-            <span className="font-bold text-lg tracking-tight text-white">RolePatch</span>
+            <span className="w-6 h-6 rounded-md bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">RP</span>
+            <span className="font-bold text-lg tracking-tight text-white">ResumeTailor</span>
           </Link>
           <Link
             href="/dashboard"
@@ -107,7 +107,7 @@ export default function KeywordsToolPage() {
           <button
             onClick={handleAnalyze}
             disabled={!canAnalyze}
-            className="bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-xl text-lg transition-colors"
+            className="bg-green-600 hover:bg-[var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-xl text-lg transition-colors"
           >
             Analyze
           </button>
@@ -130,14 +130,14 @@ export default function KeywordsToolPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {result.matchedKeywords.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-green-400 mb-3">
+                  <p className="text-sm font-medium text-[var(--accent)] mb-3">
                     Matched keywords ({result.matchedKeywords.length})
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {result.matchedKeywords.map((kw) => (
                       <span
                         key={kw}
-                        className="px-2.5 py-1 text-xs rounded-full bg-green-500/15 text-green-400 border border-green-500/20"
+                        className="px-2.5 py-1 text-xs rounded-full bg-[var(--accent)]/15 text-[var(--accent)] border border-green-500/20"
                       >
                         {kw}
                       </span>
@@ -173,9 +173,9 @@ export default function KeywordsToolPage() {
             <p className="text-gray-400 mb-4">Let AI fix the gaps automatically.</p>
             <Link
               href="/dashboard"
-              className="inline-block bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
+              className="inline-block bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
             >
-              Try RolePatch free &rarr;
+              Try ResumeTailor free &rarr;
             </Link>
           </div>
         </div>

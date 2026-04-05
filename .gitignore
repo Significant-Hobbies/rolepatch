@@ -37,6 +37,10 @@ yarn-error.log*
 # playwright
 .playwright-mcp/
 
+# local tooling
+.claude/
+.metadata_never_index
+
 # vercel
 .vercel
 

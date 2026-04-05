@@ -3,8 +3,8 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Blog',
-  description: 'Resume tips, job search strategies, and AI-powered career advice from RolePatch.',
-  alternates: { canonical: 'https://rolepatch.com/blog' },
+  description: 'Resume tips, job search strategies, and AI-powered career advice from ResumeTailor.',
+  alternates: { canonical: 'https://resumetailor.ai/blog' },
 };
 
 interface BlogPost {
@@ -52,7 +52,7 @@ export default function BlogPage() {
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
-            className="block border border-gray-800 rounded-xl p-6 hover:border-green-500/40 hover:bg-green-500/[0.02] transition-all"
+            className="block border border-gray-800 rounded-xl p-6 hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/[0.02] transition-all"
           >
             <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
               <time dateTime={post.date}>{new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</time>

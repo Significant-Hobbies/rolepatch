@@ -176,9 +176,9 @@ export function StashList({ serverEntries }: StashListProps) {
                   <div
                     key={entry.id}
                     onClick={() => openEdit(entry)}
-                    className="group border border-gray-800 rounded-xl p-4 hover:border-green-500/50 hover:bg-gray-900/50 transition-all cursor-pointer"
+                    className="group border border-gray-800 rounded-xl p-4 hover:border-[var(--accent)]/50 hover:bg-gray-900/50 transition-all cursor-pointer"
                   >
-                    <h3 className="font-medium text-sm text-white group-hover:text-green-400 transition-colors">{entry.label}</h3>
+                    <h3 className="font-medium text-sm text-white group-hover:text-[var(--accent)] transition-colors">{entry.label}</h3>
                     <p className="text-xs text-gray-500 line-clamp-3 whitespace-pre-line mt-2 leading-relaxed">
                       {stripMarkdown(entry.content)}
                     </p>

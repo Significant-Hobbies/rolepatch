@@ -23,7 +23,7 @@ export function TokenBalance() {
       title="Token balance"
     >
       <span className="text-xs">&#9889;</span>
-      <span className="text-green-400 font-semibold text-xs">{balance}</span>
+      <span className="text-[var(--accent)] font-semibold text-xs">{balance}</span>
     </Link>
   );
 }

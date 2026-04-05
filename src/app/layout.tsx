@@ -23,26 +23,26 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "RolePatch — AI Resume Tailoring with Diff View",
-    template: "%s | RolePatch",
+    default: "ResumeTailor — AI Resume Tailoring with Diff View",
+    template: "%s | ResumeTailor",
   },
   description: "Tailor your resume to any job description with AI. See exactly what changed word by word. Free ATS scoring, cover letters, and keyword analysis.",
   keywords: ["resume tailor", "AI resume", "ATS score", "resume diff", "job application", "cover letter generator", "resume keywords", "resume optimizer"],
-  authors: [{ name: "RolePatch" }],
-  creator: "RolePatch",
-  metadataBase: new URL("https://rolepatch.com"),
+  authors: [{ name: "ResumeTailor" }],
+  creator: "ResumeTailor",
+  metadataBase: new URL("https://resumetailor.ai"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://rolepatch.com",
-    siteName: "RolePatch",
-    title: "RolePatch — AI Resume Tailoring with Diff View",
+    url: "https://resumetailor.ai",
+    siteName: "ResumeTailor",
+    title: "ResumeTailor — AI Resume Tailoring with Diff View",
     description: "Tailor your resume to any job description with AI. See exactly what changed word by word.",
-    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "RolePatch — See every change in your resume" }],
+    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "ResumeTailor — See every change in your resume" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RolePatch — AI Resume Tailoring with Diff View",
+    title: "ResumeTailor — AI Resume Tailoring with Diff View",
     description: "Tailor your resume to any job description with AI. See exactly what changed.",
     images: ["/og-image.svg"],
   },
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 },
   },
   alternates: {
-    canonical: "https://rolepatch.com",
+    canonical: "https://resumetailor.ai",
   },
 };
 
@@ -82,11 +82,11 @@ export default async function RootLayout({
         <SaaSMakerFeedback />
         <AuthProvider session={session}>
           {!isLanding && (
-            <nav className="sticky top-0 z-40 border-b border-gray-800/80 bg-[#0a0a0a]/80 backdrop-blur-xl">
+            <nav className="sticky top-0 z-40 border-b border-gray-800/80 bg-[var(--background)]/80 backdrop-blur-xl">
               <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-1">
                 <Link href="/" className="font-semibold text-white mr-6 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center text-[10px] font-bold text-white">RP</span>
-                  RolePatch
+                  <span className="w-6 h-6 rounded-md bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">RP</span>
+                  ResumeTailor
                 </Link>
                 {NAV_LINKS.map((link) => {
                   const isActive = pathname === link.href || pathname.startsWith(link.href + "/");

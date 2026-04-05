@@ -43,9 +43,9 @@ At 30 minutes per tailored resume, applying to 5 jobs per day means 2.5 hours ju
 
 ## The Solution: AI + Transparency
 
-Tools like [RolePatch](/) can tailor your resume in seconds. But the key differentiator is **seeing what changed**. A diff view shows you every word the AI modified, so you stay in control and your resume still sounds like you.
+Tools like [ResumeTailor](/) can tailor your resume in seconds. But the key differentiator is **seeing what changed**. A diff view shows you every word the AI modified, so you stay in control and your resume still sounds like you.
 
-[Try RolePatch free — 3 tokens, no credit card →](/dashboard)`,
+[Try ResumeTailor free — 3 tokens, no credit card →](/dashboard)`,
   },
   'ats-score-explained': {
     title: 'ATS Scores Explained: What They Are and Why They Matter',
@@ -73,7 +73,7 @@ Most ATS systems use a threshold — typically 60-80% — below which your resum
 
 ## How to Check Your Score
 
-You can use [RolePatch's free keyword checker](/tools/keywords) to see your match score instantly. Paste your resume and the job description, and see exactly which keywords you're matching and which you're missing.
+You can use [ResumeTailor's free keyword checker](/tools/keywords) to see your match score instantly. Paste your resume and the job description, and see exactly which keywords you're matching and which you're missing.
 
 ## How to Improve It
 
@@ -124,7 +124,7 @@ Every industry has jargon. Using it signals insider knowledge.
 1. **Read the JD three times** — once for overview, once for required skills, once for nice-to-haves
 2. **Look for repeated words** — if "data analysis" appears 4 times, it's critical
 3. **Check "requirements" vs. "nice to have"** — requirements are must-match keywords
-4. **Use the keyword checker** — [RolePatch's free tool](/tools/keywords) extracts and compares automatically
+4. **Use the keyword checker** — [ResumeTailor's free tool](/tools/keywords) extracts and compares automatically
 
 ## Common Mistakes
 
@@ -145,7 +145,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: `https://rolepatch.com/blog/${slug}` },
+    alternates: { canonical: `https://resumetailor.ai/blog/${slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
@@ -170,7 +170,7 @@ export default async function BlogPost({ params }: { params: Promise<Params> }) 
     .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-white mt-10 mb-4">$1</h2>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em class="text-gray-300">$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-green-400 hover:text-green-300 underline underline-offset-2">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[var(--accent)] hover:text-[var(--accent)]/80 underline underline-offset-2">$1</a>')
     .replace(/^- (.+)$/gm, '<li class="ml-4 text-gray-400 before:content-[\'•\'] before:mr-2 before:text-gray-600">$1</li>')
     .replace(/\n\n/g, '</p><p class="text-gray-400 leading-relaxed mb-4">')
     .replace(/^/, '<p class="text-gray-400 leading-relaxed mb-4">')
@@ -178,7 +178,7 @@ export default async function BlogPost({ params }: { params: Promise<Params> }) 
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-10">
-      <Link href="/blog" className="text-sm text-gray-500 hover:text-green-400 transition-colors mb-6 inline-block">
+      <Link href="/blog" className="text-sm text-gray-500 hover:text-[var(--accent)] transition-colors mb-6 inline-block">
         ← Back to blog
       </Link>
       <article>

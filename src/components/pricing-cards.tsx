@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { signIn } from 'next-auth/react';
 
@@ -30,10 +29,8 @@ const TOKEN_PACKS = [
   },
 ];
 
-export function PricingCards() {
+export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) {
   const { isGuest } = useAuth();
-  const searchParams = useSearchParams();
-  const isSuccess = searchParams.get('success') === 'true';
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,9 +57,9 @@ export function PricingCards() {
 
   return (
     <div>
-      {isSuccess && (
-        <div className="mb-8 p-4 rounded-xl border border-green-500/30 bg-green-500/10 text-center">
-          <p className="text-green-400 font-medium text-sm">
+      {paymentVerified && (
+        <div className="mb-8 p-4 rounded-xl border border-green-500/30 bg-[var(--accent)]/10 text-center">
+          <p className="text-[var(--accent)] font-medium text-sm">
             Payment successful! Your tokens have been added to your account.
           </p>
         </div>
@@ -80,12 +77,12 @@ export function PricingCards() {
             key={pack.id}
             className={`relative rounded-xl border p-6 flex flex-col transition-colors ${
               pack.popular
-                ? 'border-green-500/50 bg-green-500/5'
+                ? 'border-[var(--accent)]/50 bg-[var(--accent)]/5'
                 : 'border-gray-800 bg-gray-900/30 hover:border-gray-700'
             }`}
           >
             {pack.popular && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-green-500 text-[11px] font-semibold text-white uppercase tracking-wide">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[var(--accent)] text-[11px] font-semibold text-white uppercase tracking-wide">
                 Popular
               </span>
             )}
@@ -113,7 +110,7 @@ export function PricingCards() {
                 disabled={loadingPack !== null}
                 className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${
                   pack.popular
-                    ? 'bg-green-500 text-white hover:bg-green-400'
+                    ? 'bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90'
                     : 'bg-white text-gray-900 hover:bg-gray-200'
                 }`}
               >
