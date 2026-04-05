@@ -62,9 +62,10 @@ h1, h2, h3, .font-serif {
 
 /* Premium Focus ring */
 .input-base {
-  @apply w-full px-4 py-3 rounded-lg border border-border bg-card text-sm
+  @apply w-full px-4 py-3 rounded-lg border border-border text-sm
     focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
     placeholder:text-muted-foreground transition-all duration-200;
+  background-color: var(--card);
 }
 
 /* Smooth page transitions */
@@ -95,13 +96,6 @@ main {
 @keyframes modalIn {
   from { opacity: 0; transform: scale(0.95) translateY(8px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Focus ring utility */
-.input-base {
-  @apply w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-900/50 text-sm
-    focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 focus:border-[var(--accent)]/50
-    placeholder:text-gray-500 transition-colors;
 }
 
 /* Select styling for dark mode */
