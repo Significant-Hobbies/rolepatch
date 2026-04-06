@@ -78,7 +78,7 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
             className={`relative rounded-xl border p-6 flex flex-col transition-colors ${
               pack.popular
                 ? 'border-[var(--accent)]/50 bg-[var(--accent)]/5'
-                : 'border-gray-800 bg-gray-900/30 hover:border-gray-700'
+                : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--muted-foreground)]/30'
             }`}
           >
             {pack.popular && (
@@ -87,11 +87,11 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
               </span>
             )}
 
-            <h3 className="text-lg font-semibold text-white">{pack.name}</h3>
+            <h3 className="text-lg font-bold text-foreground">{pack.name}</h3>
             <div className="mt-3">
-              <span className="text-3xl font-bold text-white">{pack.priceLabel}</span>
+              <span className="text-3xl font-black text-foreground">{pack.priceLabel}</span>
             </div>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-[var(--muted-foreground)] mt-1">
               {pack.tokens} tokens &middot; {pack.perToken} each
             </p>
 
@@ -100,7 +100,7 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
             {isGuest ? (
               <button
                 onClick={() => signIn('google')}
-                className="w-full py-2.5 rounded-lg text-sm font-medium border border-gray-700 text-gray-300 hover:border-gray-500 hover:text-white transition-colors"
+                className="w-full py-2.5 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--muted-foreground)] hover:text-foreground transition-colors"
               >
                 Sign in to purchase
               </button>
