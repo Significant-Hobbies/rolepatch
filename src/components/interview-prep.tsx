@@ -43,7 +43,7 @@ function StoryCard({ story, index }: { story: InterviewStory; index: number }) {
           {/* JD Requirement */}
           <div className="pt-3">
             <p className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest mb-1">Addresses</p>
-            <p className="text-xs text-[var(--muted-foreground)] italic leading-relaxed">"{story.jd_requirement}"</p>
+            <p className="text-xs text-[var(--muted-foreground)] italic leading-relaxed">&ldquo;{story.jd_requirement}&rdquo;</p>
           </div>
 
           {/* STAR+R sections */}
