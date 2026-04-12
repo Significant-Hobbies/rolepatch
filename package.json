@@ -12,7 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/openai-compatible": "^2.0.41",
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/language": "^6.12.1",
     "@codemirror/state": "^6.5.4",
@@ -21,6 +21,7 @@
     "@dodopayments/nextjs": "^0.3.4",
     "@libsql/client": "^0.17.0",
     "@mozilla/readability": "^0.6.0",
+    "@saas-maker/ai": "file:../saas-maker/packages/ai",
     "@saas-maker/changelog-widget": "0.2.0",
     "@saas-maker/feedback": "0.2.0",
     "@saas-maker/sdk": "0.2.0",

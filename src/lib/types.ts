@@ -48,9 +48,7 @@ export interface CoverLetter {
   updated_at: number;
 }
 
-export interface AIProviderConfig {
-  model: string;
-}
+export type { AIConfig as AIProviderConfig } from '@saas-maker/ai/server';
 
 export interface FitScoreDimension {
   name: string;

@@ -19,7 +19,7 @@ Web app for maintaining LaTeX resumes and generating job-tailored versions using
 
 - **Guest vs Signed-in**: Full app works without auth via localStorage (`src/lib/local-storage.ts`). Signed-in users persist to Turso with user_id filtering.
 - **Server Actions**: All data mutations in `src/lib/actions/`. Each action checks `getCurrentUserId()` from `src/lib/auth-utils.ts`.
-- **AI Provider**: Single adapter in `src/lib/ai.ts` — supports free gateway, local CLI bridge, or BYOK.
+- **AI Provider**: Single adapter in `src/lib/ai.ts` — supports free gateway, local AI, or BYOK.
 - **SaaS Maker**: Feedback widget + analytics tracking integrated. CLI: `saasmaker` (installed via asdf). Config in `.saasmaker.json`.
 
 ## Project Structure

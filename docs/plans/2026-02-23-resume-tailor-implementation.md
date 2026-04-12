@@ -790,7 +790,7 @@ const PRESETS: Record<string, Omit<AIProviderConfig, 'model'>> = {
     baseURL: 'https://free-ai-gateway.sarthakagrawal927.workers.dev/v1',
     apiKey: process.env.AI_API_KEY ?? '',
   },
-  'cli-bridge': {
+  'local-ai': {
     baseURL: 'http://localhost:3456/api',
     apiKey: '',
   },
@@ -847,8 +847,8 @@ const PRESETS = {
     label: 'Free AI Gateway',
     baseURL: 'https://free-ai-gateway.sarthakagrawal927.workers.dev/v1',
   },
-  'cli-bridge': {
-    label: 'CLI Bridge (Local)',
+  'local-ai': {
+    label: 'Local AI',
     baseURL: 'http://localhost:3456/api',
   },
   custom: {
@@ -913,7 +913,7 @@ export function SettingsForm() {
         </div>
       )}
 
-      {settings.preset !== 'cli-bridge' && (
+      {settings.preset !== 'local-ai' && (
         <div>
           <label className="block text-sm font-medium mb-1">API Key</label>
           <input

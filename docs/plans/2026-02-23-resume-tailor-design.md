@@ -37,7 +37,7 @@ Next.js App
 │
 └── AI Provider (Vercel AI SDK, OpenAI adapter)
     ├── Free AI Gateway          — baseURL: CF worker (no key needed)
-    ├── CLI Bridge               — baseURL: localhost:3456 (local CLI auth)
+    ├── Local AI                 — baseURL: localhost:3456 (local auth)
     └── BYOK                     — baseURL: user-provided + API key
 ```
 
@@ -48,7 +48,7 @@ All providers are OpenAI-compatible. Single Vercel AI SDK OpenAI adapter with sw
 | Preset | Base URL | Auth |
 |--------|----------|------|
 | Free AI Gateway | `https://free-ai-gateway.sarthakagrawal927.workers.dev/v1` | Gateway key |
-| CLI Bridge | `http://localhost:3456/api` | None (local) |
+| Local AI | `http://localhost:3456/api` | None (local) |
 | BYOK | User-provided | User-provided API key |
 
 Settings UI lets user pick preset and optionally override model.
