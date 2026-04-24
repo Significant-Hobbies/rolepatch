@@ -24,6 +24,14 @@ CREATE TABLE IF NOT EXISTS job_applications (
   jd_raw TEXT NOT NULL DEFAULT '',
   jd_text TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'draft',
+  interview_date INTEGER,
+  follow_up_at INTEGER,
+  salary_min INTEGER,
+  salary_max INTEGER,
+  salary_currency TEXT,
+  offer_amount INTEGER,
+  notes TEXT,
+  rejection_reason TEXT,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );

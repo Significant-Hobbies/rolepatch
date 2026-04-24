@@ -1,4 +1,4 @@
-import type { Resume, StashEntry, TailoredResume, CoverLetter, JobApplication, FitScore, InterviewStory } from '@/lib/types';
+import type { Resume, StashEntry, TailoredResume, CoverLetter, JobApplication, JobDetailsPatch, FitScore, InterviewStory } from '@/lib/types';
 
 const KEYS = {
   resumes: 'rt-resumes',
@@ -88,10 +88,55 @@ interface LocalJob {
   status: JobApplication['status'];
   created_at: number;
   updated_at?: number;
+  interview_date?: number | null;
+  follow_up_at?: number | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_currency?: string | null;
+  offer_amount?: number | null;
+  notes?: string | null;
+  rejection_reason?: string | null;
 }
 
-export function localListJobs(): Pick<JobApplication, 'id' | 'company' | 'role' | 'status' | 'created_at'>[] {
-  return getItems<LocalJob>(KEYS.jobs).sort((a, b) => b.created_at - a.created_at);
+export type LocalJobSummary = Pick<
+  JobApplication,
+  | 'id'
+  | 'company'
+  | 'role'
+  | 'status'
+  | 'created_at'
+  | 'interview_date'
+  | 'follow_up_at'
+  | 'salary_min'
+  | 'salary_max'
+  | 'salary_currency'
+  | 'offer_amount'
+  | 'notes'
+  | 'rejection_reason'
+>;
+
+function toSummary(j: LocalJob): LocalJobSummary {
+  return {
+    id: j.id,
+    company: j.company,
+    role: j.role,
+    status: j.status,
+    created_at: j.created_at,
+    interview_date: j.interview_date ?? null,
+    follow_up_at: j.follow_up_at ?? null,
+    salary_min: j.salary_min ?? null,
+    salary_max: j.salary_max ?? null,
+    salary_currency: j.salary_currency ?? null,
+    offer_amount: j.offer_amount ?? null,
+    notes: j.notes ?? null,
+    rejection_reason: j.rejection_reason ?? null,
+  };
+}
+
+export function localListJobs(): LocalJobSummary[] {
+  return getItems<LocalJob>(KEYS.jobs)
+    .sort((a, b) => b.created_at - a.created_at)
+    .map(toSummary);
 }
 
 export function localSaveJob(id: string, company: string, role: string, resumeId: string): void {
@@ -107,6 +152,15 @@ export function localUpdateJobStatus(id: string, status: JobApplication['status'
   if (idx >= 0) {
     jobs[idx].status = status;
     jobs[idx].updated_at = Math.floor(Date.now() / 1000);
+    setItems(KEYS.jobs, jobs);
+  }
+}
+
+export function localUpdateJobDetails(id: string, patch: JobDetailsPatch): void {
+  const jobs = getItems<LocalJob>(KEYS.jobs);
+  const idx = jobs.findIndex((j) => j.id === id);
+  if (idx >= 0) {
+    jobs[idx] = { ...jobs[idx], ...patch, updated_at: Math.floor(Date.now() / 1000) };
     setItems(KEYS.jobs, jobs);
   }
 }

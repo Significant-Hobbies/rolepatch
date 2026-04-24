@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/auth-provider';
-import { localListResumes, localListJobs, localUpdateJobStatus } from '@/lib/local-storage';
-import { updateJobStatus } from '@/lib/actions/job-actions';
-import type { Resume, JobApplication } from '@/lib/types';
+import { localListResumes, localListJobs, localUpdateJobStatus, localUpdateJobDetails } from '@/lib/local-storage';
+import { updateJobStatus, updateJobDetails } from '@/lib/actions/job-actions';
+import type { Resume, JobApplication, JobDetailsPatch } from '@/lib/types';
 import { CreateResumeButton } from '@/components/create-resume-button';
 import { NewJobButton } from '@/components/new-job-button';
 import { MigrationBanner } from '@/components/migration-banner';
 import { ATSScoreMini } from '@/components/ats-score-badge';
 import { FitScoreBadge } from '@/components/fit-score-card';
-import { FileText, Globe, ArrowRight } from 'lucide-react';
+import { JobDetailsModal, type JobDetailsModalInitialValues } from '@/components/job-details-modal';
+import { FileText, Globe, ArrowRight, Calendar, AlertCircle } from 'lucide-react';
 
 const STATUS_OPTIONS: JobApplication['status'][] = [
   'draft', 'tailored', 'applied', 'interview', 'offer', 'rejected',
@@ -26,10 +27,45 @@ const statusConfig: Record<string, { label: string; dot: string; bg: string; tex
   rejected: { label: 'Rejected', dot: 'bg-destructive', bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
 };
 
+type DashboardJob = Pick<
+  JobApplication,
+  | 'id'
+  | 'company'
+  | 'role'
+  | 'status'
+  | 'created_at'
+  | 'interview_date'
+  | 'follow_up_at'
+  | 'salary_min'
+  | 'salary_max'
+  | 'salary_currency'
+  | 'offer_amount'
+  | 'notes'
+  | 'rejection_reason'
+>;
+
 interface DashboardProps {
   serverResumes: Resume[];
   serverJobs: JobApplication[];
   serverFitScores?: Record<string, number>;
+}
+
+function toDashboardJob(j: JobApplication): DashboardJob {
+  return {
+    id: j.id,
+    company: j.company,
+    role: j.role,
+    status: j.status,
+    created_at: j.created_at,
+    interview_date: j.interview_date ?? null,
+    follow_up_at: j.follow_up_at ?? null,
+    salary_min: j.salary_min ?? null,
+    salary_max: j.salary_max ?? null,
+    salary_currency: j.salary_currency ?? null,
+    offer_amount: j.offer_amount ?? null,
+    notes: j.notes ?? null,
+    rejection_reason: j.rejection_reason ?? null,
+  };
 }
 
 function timeAgo(unixSeconds: number): string {
@@ -44,9 +80,11 @@ function timeAgo(unixSeconds: number): string {
 export function Dashboard({ serverResumes, serverJobs, serverFitScores }: DashboardProps) {
   const { isGuest } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
-  const [jobs, setJobs] = useState<Pick<JobApplication, 'id' | 'company' | 'role' | 'status' | 'created_at'>[]>(serverJobs);
+  const [jobs, setJobs] = useState<DashboardJob[]>(serverJobs.map(toDashboardJob));
   const [atsScores, setAtsScores] = useState<Record<string, { original: number; tailored: number }>>({});
   const [fitScores] = useState<Record<string, number>>(serverFitScores ?? {});
+  const [detailsJobId, setDetailsJobId] = useState<string | null>(null);
+  const [nowSec, setNowSec] = useState<number>(0);
 
   // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
@@ -57,6 +95,11 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [isGuest]);
+
+  // Capture a stable "now" for alerts (client-only to avoid impure render)
+  useEffect(() => {
+    setNowSec(Math.floor(Date.now() / 1000)); // eslint-disable-line react-hooks/set-state-in-effect -- client-only seed
+  }, []);
 
   // Load cached ATS scores from localStorage
   useEffect(() => {
@@ -77,11 +120,52 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
     }
   }
 
+  async function handleDetailsSave(jobId: string, patch: JobDetailsPatch): Promise<void> {
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, ...patch } : j));
+    if (isGuest) {
+      localUpdateJobDetails(jobId, patch);
+    } else {
+      await updateJobDetails(jobId, patch);
+    }
+  }
+
   const stats = {
     total: jobs.length,
     active: jobs.filter(j => ['applied', 'interview'].includes(j.status)).length,
     offers: jobs.filter(j => j.status === 'offer').length,
   };
+
+  const alerts = useMemo(() => {
+    if (nowSec === 0) return { interviewsThisWeek: 0, overdueFollowUps: 0 };
+    const weekFromNow = nowSec + 7 * 24 * 60 * 60;
+    const interviewsThisWeek = jobs.filter(
+      j => j.interview_date != null && j.interview_date >= nowSec && j.interview_date <= weekFromNow,
+    ).length;
+    const overdueFollowUps = jobs.filter(
+      j => j.follow_up_at != null && j.follow_up_at < nowSec && j.status !== 'rejected' && j.status !== 'offer',
+    ).length;
+    return { interviewsThisWeek, overdueFollowUps };
+  }, [jobs, nowSec]);
+
+  const activeDetailsJob = useMemo(
+    () => jobs.find(j => j.id === detailsJobId) ?? null,
+    [jobs, detailsJobId],
+  );
+  // Stable reference keyed on jobId so the modal only resets when switching
+  // jobs, not on every parent re-render.
+  const detailsInitial = useMemo<JobDetailsModalInitialValues | null>(() => {
+    if (!activeDetailsJob) return null;
+    return {
+      interview_date: activeDetailsJob.interview_date,
+      follow_up_at: activeDetailsJob.follow_up_at,
+      salary_min: activeDetailsJob.salary_min,
+      salary_max: activeDetailsJob.salary_max,
+      salary_currency: activeDetailsJob.salary_currency,
+      offer_amount: activeDetailsJob.offer_amount,
+      notes: activeDetailsJob.notes,
+      rejection_reason: activeDetailsJob.rejection_reason,
+    };
+  }, [activeDetailsJob]);
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-12">
@@ -94,6 +178,24 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
           {isGuest ? 'Guest mode — sign in to save to the cloud' : 'Manage your professional assets'}
         </p>
       </div>
+
+      {/* Alerts — interviews this week, overdue follow-ups */}
+      {(alerts.interviewsThisWeek > 0 || alerts.overdueFollowUps > 0) && (
+        <div className="mb-8 flex flex-wrap gap-3">
+          {alerts.interviewsThisWeek > 0 && (
+            <div className="flex items-center gap-2.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] rounded-xl px-4 py-2.5 text-xs font-bold">
+              <Calendar className="w-4 h-4" />
+              <span>{alerts.interviewsThisWeek} interview{alerts.interviewsThisWeek === 1 ? '' : 's'} this week</span>
+            </div>
+          )}
+          {alerts.overdueFollowUps > 0 && (
+            <div className="flex items-center gap-2.5 bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 text-[var(--destructive)] rounded-xl px-4 py-2.5 text-xs font-bold">
+              <AlertCircle className="w-4 h-4" />
+              <span>{alerts.overdueFollowUps} overdue follow-up{alerts.overdueFollowUps === 1 ? '' : 's'}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Stats bar — only show when there are jobs */}
       {jobs.length > 0 && (
@@ -198,13 +300,14 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
         ) : (
           <div className="bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl overflow-hidden shadow-sm">
             {/* Table header */}
-            <div className="grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px] gap-4 px-6 py-4 bg-muted/30 border-b border-[var(--border)] text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">
+            <div className="grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px_40px] gap-4 px-6 py-4 bg-muted/30 border-b border-[var(--border)] text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">
               <span>Position</span>
               <span>Organization</span>
               <span>Status</span>
               <span>Fit</span>
               <span>ATS</span>
               <span className="text-right">Initiated</span>
+              <span />
             </div>
             {/* Table rows */}
             {jobs.map((job, i) => {
@@ -212,18 +315,25 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
               const ats = atsScores[job.id];
               const fit = fitScores[job.id];
               return (
-                <Link
+                <div
                   key={job.id}
-                  href={`/tailor/${job.id}`}
-                  className={`group grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px] gap-4 px-6 py-5 items-center hover:bg-muted/10 transition-colors ${i < jobs.length - 1 ? 'border-b border-[var(--border)]/40' : ''}`}
+                  className={`group grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px_40px] gap-4 px-6 py-5 items-center hover:bg-muted/10 transition-colors ${i < jobs.length - 1 ? 'border-b border-[var(--border)]/40' : ''}`}
                 >
-                  <span className="font-bold truncate text-foreground group-hover:text-accent transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => setDetailsJobId(job.id)}
+                    className="font-bold truncate text-foreground group-hover:text-accent transition-colors text-left"
+                  >
                     {job.role || 'Untitled Role'}
-                  </span>
-                  <span className="text-sm font-medium text-[var(--muted-foreground)] truncate opacity-80">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDetailsJobId(job.id)}
+                    className="text-sm font-medium text-[var(--muted-foreground)] truncate opacity-80 text-left"
+                  >
                     {job.company || 'Unknown Company'}
-                  </span>
-                  <div onClick={(e) => e.preventDefault()} onMouseDown={(e) => e.stopPropagation()}>
+                  </button>
+                  <div>
                     <select
                       value={job.status}
                       onChange={(e) => handleStatusChange(job.id, e.target.value)}
@@ -243,12 +353,30 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
                   <span className="text-[10px] font-bold text-[var(--muted-foreground)] text-right opacity-60">
                     {timeAgo(job.created_at)}
                   </span>
-                </Link>
+                  <Link
+                    href={`/tailor/${job.id}`}
+                    className="text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors justify-self-end"
+                    aria-label="Open tailor"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               );
             })}
           </div>
         )}
       </section>
+
+      {detailsInitial && activeDetailsJob && (
+        <JobDetailsModal
+          open={detailsJobId !== null}
+          jobTitle={activeDetailsJob.role}
+          company={activeDetailsJob.company}
+          initial={detailsInitial}
+          onClose={() => setDetailsJobId(null)}
+          onSave={(patch) => handleDetailsSave(activeDetailsJob.id, patch)}
+        />
+      )}
     </main>
   );
 }

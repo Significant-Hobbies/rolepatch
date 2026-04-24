@@ -77,6 +77,26 @@ async function migrate() {
     // Index already exists — safe to ignore
   }
 
+  // Add richer tracking columns to job_applications (nullable, backwards-compatible)
+  const jobExtraColumns: { name: string; type: string }[] = [
+    { name: 'interview_date', type: 'INTEGER' },
+    { name: 'follow_up_at', type: 'INTEGER' },
+    { name: 'salary_min', type: 'INTEGER' },
+    { name: 'salary_max', type: 'INTEGER' },
+    { name: 'salary_currency', type: 'TEXT' },
+    { name: 'offer_amount', type: 'INTEGER' },
+    { name: 'notes', type: 'TEXT' },
+    { name: 'rejection_reason', type: 'TEXT' },
+  ];
+  for (const col of jobExtraColumns) {
+    try {
+      await db.execute(`ALTER TABLE job_applications ADD COLUMN ${col.name} ${col.type}`);
+      console.log(`Added ${col.name} column to job_applications`);
+    } catch {
+      // Column already exists — safe to ignore
+    }
+  }
+
   console.log('Migration complete');
 }
 
