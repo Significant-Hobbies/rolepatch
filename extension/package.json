@@ -1,0 +1,20 @@
+{
+  "name": "@rolepatch/extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RolePatch Chrome extension (MV3): scrape job descriptions and send to RolePatch.",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "copy-static": "node scripts/copy-static.mjs",
+    "bundle": "esbuild src/background.ts src/content.ts src/popup.ts --bundle --format=iife --target=chrome120 --outdir=dist --log-level=warning",
+    "bundle:watch": "esbuild src/background.ts src/content.ts src/popup.ts --bundle --format=iife --target=chrome120 --outdir=dist --watch --log-level=info",
+    "build": "pnpm run clean && pnpm run typecheck && pnpm run bundle && pnpm run copy-static",
+    "dev": "pnpm run copy-static && pnpm run bundle:watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.281",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3"
+  }
+}

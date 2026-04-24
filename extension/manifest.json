@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "RolePatch",
+  "version": "0.1.0",
+  "description": "Scrape job descriptions from any job page and tailor your resume with RolePatch.",
+  "action": {
+    "default_title": "Tailor this job with RolePatch",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["activeTab", "scripting", "cookies", "storage"],
+  "host_permissions": [
+    "https://*.greenhouse.io/*",
+    "https://boards.greenhouse.io/*",
+    "https://*.lever.co/*",
+    "https://jobs.lever.co/*",
+    "https://*.linkedin.com/*",
+    "https://*.workday.com/*",
+    "https://*.myworkdayjobs.com/*",
+    "http://localhost:3000/*",
+    "https://rolepatch.com/*"
+  ]
+}
