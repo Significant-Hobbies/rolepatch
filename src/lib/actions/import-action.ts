@@ -41,9 +41,16 @@ Rules:
 - Preserve dates as written.
 - Return ONLY the Markdown. No commentary, no fences.`;
 
+const dynImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
+
 async function extractPdfText(buffer: Buffer): Promise<string> {
-  const { PDFParse } = await import('pdf-parse');
-  const parser = new PDFParse({ data: new Uint8Array(buffer) });
+  const mod = (await dynImport('pdf-parse')) as {
+    PDFParse: new (opts: { data: Uint8Array }) => {
+      getText(): Promise<{ text?: string }>;
+      destroy(): Promise<void>;
+    };
+  };
+  const parser = new mod.PDFParse({ data: new Uint8Array(buffer) });
   try {
     const result = await parser.getText();
     return result.text ?? '';
@@ -53,7 +60,9 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
 }
 
 async function extractDocxText(buffer: Buffer): Promise<string> {
-  const mammoth = await import('mammoth');
+  const mammoth = (await dynImport('mammoth')) as {
+    extractRawText(opts: { buffer: Buffer }): Promise<{ value?: string }>;
+  };
   const result = await mammoth.extractRawText({ buffer });
   return result.value ?? '';
 }
