@@ -51,9 +51,9 @@ export async function migrateGuestData(input: MigrationInput): Promise<Migration
   for (const t of input.tailoredResumes) {
     try {
       await db.execute({
-        sql: `INSERT OR IGNORE INTO tailored_resumes (id, job_id, resume_id, source, accepted, user_id, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        args: [t.id, t.job_id, t.resume_id, t.source, t.accepted, userId, t.created_at, t.updated_at],
+        sql: `INSERT OR IGNORE INTO tailored_resumes (id, job_id, resume_id, source, accepted, changes_json, user_id, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [t.id, t.job_id, t.resume_id, t.source, t.accepted, JSON.stringify(t.changes ?? []), userId, t.created_at, t.updated_at],
       });
       counts.tailoredResumes++;
     } catch { /* skip duplicates */ }

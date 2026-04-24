@@ -1,3 +1,7 @@
+packages:
+  - "extension"
+onlyBuiltDependencies:
+  - esbuild
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver

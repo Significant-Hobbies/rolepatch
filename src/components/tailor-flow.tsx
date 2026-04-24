@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useMemo, useTransition } from 'react';
 import Link from 'next/link';
-import type { JobApplication, Resume, TailoredResume } from '@/lib/types';
+import type { JobApplication, Resume, TailoredResume, TailorChange } from '@/lib/types';
 import { tailorResume } from '@/lib/actions/tailor-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
 import { getTokenBalance } from '@/lib/actions/token-actions';
 import { ResumeDiff } from '@/components/resume-diff';
 import { ATSScoreBadge } from '@/components/ats-score-badge';
 import { FitScoreCard } from '@/components/fit-score-card';
+import { ShareScoreButton } from '@/components/share-score-button';
+import { SkillsRoadmapPanel } from '@/components/skills-roadmap';
 import { calculateATSScore } from '@/lib/ats-score';
 import { generateFitScore } from '@/lib/actions/fit-score-action';
 import { useAuth } from '@/components/auth-provider';
@@ -60,6 +62,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
   const [tailoredSource, setTailoredSource] = useState<string | null>(
     latestTailored?.source ?? null,
   );
+  const [changes, setChanges] = useState<TailorChange[]>(latestTailored?.changes ?? []);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +71,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
     const latest = tailoredList[0] ?? null;
     if (latest?.source && !tailoredSource) {
       setTailoredSource(latest.source);
+      setChanges(latest.changes ?? []);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when tailoredList changes, not when tailoredSource changes
   }, [tailoredList]);
@@ -123,7 +127,8 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
           }
         }
         const result = await tailorResume(resume.source, job.jd_text, aiConfig, stashContent);
-        setTailoredSource(result);
+        setTailoredSource(result.tailored);
+        setChanges(result.changes ?? []);
 
         // Refresh token balance after successful generation
         if (!isGuest) {
@@ -146,9 +151,9 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
     startTransition(async () => {
       try {
         if (isGuest) {
-          localSaveTailoredResume(job.id, resume.id, tailoredSource);
+          localSaveTailoredResume(job.id, resume.id, tailoredSource, changes);
         } else {
-          await saveTailoredResume(job.id, resume.id, tailoredSource);
+          await saveTailoredResume(job.id, resume.id, tailoredSource, changes);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to save tailored resume');
@@ -228,6 +233,11 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
               Interview Prep (STAR Stories)
             </Link>
           </div>
+
+          {/* Skills gap learning roadmap */}
+          <div className="border-t border-[var(--border)] pt-4">
+            <SkillsRoadmapPanel job={job} resume={resume} />
+          </div>
         </div>
       </div>
 
@@ -287,6 +297,9 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
                 {isPending ? 'Saving...' : 'Accept & Save'}
               </button>
             )}
+            {!isGuest && latestTailored?.id && tailoredATS && (
+              <ShareScoreButton tailoredId={latestTailored.id} />
+            )}
             {showNoTokens ? (
               <Link
                 href="/pricing"
@@ -326,6 +339,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
               original={resume.source}
               modified={tailoredSource}
               onModifiedChange={setTailoredSource}
+              changes={changes}
             />
           ) : (
             <div className="h-full overflow-y-auto p-4">

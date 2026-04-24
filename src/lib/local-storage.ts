@@ -1,4 +1,4 @@
-import type { Resume, StashEntry, TailoredResume, CoverLetter, JobApplication, FitScore, InterviewStory } from '@/lib/types';
+import type { Resume, StashEntry, TailoredResume, TailorChange, CoverLetter, JobApplication, JobDetailsPatch, FitScore, InterviewStory, OutreachEmail, SkillsRoadmap } from '@/lib/types';
 
 const KEYS = {
   resumes: 'rt-resumes',
@@ -8,6 +8,8 @@ const KEYS = {
   jobs: 'rt-jobs',
   fitScores: 'rt-fit-scores',
   interviewStories: 'rt-interview-stories',
+  outreachEmails: 'rt-outreach-emails',
+  skillsRoadmaps: 'rt-skills-roadmaps',
 } as const;
 
 function getItems<T>(key: string): T[] {
@@ -88,10 +90,55 @@ interface LocalJob {
   status: JobApplication['status'];
   created_at: number;
   updated_at?: number;
+  interview_date?: number | null;
+  follow_up_at?: number | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_currency?: string | null;
+  offer_amount?: number | null;
+  notes?: string | null;
+  rejection_reason?: string | null;
 }
 
-export function localListJobs(): Pick<JobApplication, 'id' | 'company' | 'role' | 'status' | 'created_at'>[] {
-  return getItems<LocalJob>(KEYS.jobs).sort((a, b) => b.created_at - a.created_at);
+export type LocalJobSummary = Pick<
+  JobApplication,
+  | 'id'
+  | 'company'
+  | 'role'
+  | 'status'
+  | 'created_at'
+  | 'interview_date'
+  | 'follow_up_at'
+  | 'salary_min'
+  | 'salary_max'
+  | 'salary_currency'
+  | 'offer_amount'
+  | 'notes'
+  | 'rejection_reason'
+>;
+
+function toSummary(j: LocalJob): LocalJobSummary {
+  return {
+    id: j.id,
+    company: j.company,
+    role: j.role,
+    status: j.status,
+    created_at: j.created_at,
+    interview_date: j.interview_date ?? null,
+    follow_up_at: j.follow_up_at ?? null,
+    salary_min: j.salary_min ?? null,
+    salary_max: j.salary_max ?? null,
+    salary_currency: j.salary_currency ?? null,
+    offer_amount: j.offer_amount ?? null,
+    notes: j.notes ?? null,
+    rejection_reason: j.rejection_reason ?? null,
+  };
+}
+
+export function localListJobs(): LocalJobSummary[] {
+  return getItems<LocalJob>(KEYS.jobs)
+    .sort((a, b) => b.created_at - a.created_at)
+    .map(toSummary);
 }
 
 export function localSaveJob(id: string, company: string, role: string, resumeId: string): void {
@@ -111,16 +158,32 @@ export function localUpdateJobStatus(id: string, status: JobApplication['status'
   }
 }
 
-// --- Tailored Resumes ---
-export function localGetTailoredResumes(jobId: string): TailoredResume[] {
-  return getItems<TailoredResume>(KEYS.tailored).filter(t => t.job_id === jobId);
+export function localUpdateJobDetails(id: string, patch: JobDetailsPatch): void {
+  const jobs = getItems<LocalJob>(KEYS.jobs);
+  const idx = jobs.findIndex((j) => j.id === id);
+  if (idx >= 0) {
+    jobs[idx] = { ...jobs[idx], ...patch, updated_at: Math.floor(Date.now() / 1000) };
+    setItems(KEYS.jobs, jobs);
+  }
 }
 
-export function localSaveTailoredResume(jobId: string, resumeId: string, source: string): string {
+// --- Tailored Resumes ---
+export function localGetTailoredResumes(jobId: string): TailoredResume[] {
+  return getItems<TailoredResume>(KEYS.tailored)
+    .filter(t => t.job_id === jobId)
+    .map(t => ({ ...t, changes: Array.isArray(t.changes) ? t.changes : [] }));
+}
+
+export function localSaveTailoredResume(
+  jobId: string,
+  resumeId: string,
+  source: string,
+  changes: TailorChange[] = [],
+): string {
   const id = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
   const items = getItems<TailoredResume>(KEYS.tailored);
-  items.push({ id, job_id: jobId, resume_id: resumeId, source, accepted: 0, created_at: now, updated_at: now });
+  items.push({ id, job_id: jobId, resume_id: resumeId, source, accepted: 0, changes: changes ?? [], created_at: now, updated_at: now });
   setItems(KEYS.tailored, items);
   return id;
 }
@@ -178,4 +241,29 @@ export function localSaveInterviewStories(stories: InterviewStory[]): void {
   const jobId = stories[0].job_id;
   const existing = getItems<InterviewStory>(KEYS.interviewStories).filter(s => s.job_id !== jobId);
   setItems(KEYS.interviewStories, [...existing, ...stories]);
+}
+
+// --- Outreach Emails ---
+export function localGetOutreachEmail(jobId: string): OutreachEmail | null {
+  return getItems<OutreachEmail>(KEYS.outreachEmails).find(o => o.job_id === jobId) ?? null;
+}
+
+export function localSaveOutreachEmail(jobId: string, resumeId: string, subject: string, body: string): string {
+  const id = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+  const items = getItems<OutreachEmail>(KEYS.outreachEmails).filter(o => o.job_id !== jobId);
+  items.push({ id, job_id: jobId, resume_id: resumeId, subject, body, created_at: now });
+  setItems(KEYS.outreachEmails, items);
+  return id;
+}
+
+// --- Skills Roadmaps ---
+export function localGetSkillsRoadmap(jobId: string): SkillsRoadmap | null {
+  return getItems<SkillsRoadmap>(KEYS.skillsRoadmaps).find(r => r.job_id === jobId) ?? null;
+}
+
+export function localSaveSkillsRoadmap(roadmap: SkillsRoadmap): void {
+  const items = getItems<SkillsRoadmap>(KEYS.skillsRoadmaps).filter(r => r.job_id !== roadmap.job_id);
+  items.push(roadmap);
+  setItems(KEYS.skillsRoadmaps, items);
 }

@@ -264,6 +264,30 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     window.print();
   }, []);
 
+  const [downloading, setDownloading] = useState(false);
+  const handleDownloadPdf = useCallback(async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch(`/api/render/${resumeId}`);
+      if (!res.ok) throw new Error('Failed to render PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(resolvedName || 'resume').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      // Fallback to browser print if server PDF fails
+      window.print();
+    } finally {
+      setDownloading(false);
+    }
+  }, [resumeId, resolvedName]);
+
   const cssVars = {
     '--resume-font-size': `${fontSize}pt`,
     '--resume-line-height': String(lineHeight),
@@ -364,12 +388,23 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               )}
             </div>
 
-            <button
-              onClick={handlePrint}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              Export PDF
-            </button>
+            {isGuest ? (
+              <button
+                onClick={handlePrint}
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Guest mode — use browser print dialog to save as PDF"
+              >
+                Print
+              </button>
+            ) : (
+              <button
+                onClick={handleDownloadPdf}
+                disabled={downloading}
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
+              >
+                {downloading ? 'Generating...' : 'Download PDF'}
+              </button>
+            )}
             <button
               onClick={save}
               disabled={saving}

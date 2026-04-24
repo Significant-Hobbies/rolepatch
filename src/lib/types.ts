@@ -24,9 +24,37 @@ export interface JobApplication {
   jd_raw: string;
   jd_text: string;
   status: 'draft' | 'tailored' | 'applied' | 'interview' | 'offer' | 'rejected';
+  interview_date: number | null;
+  follow_up_at: number | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_currency: string | null;
+  offer_amount: number | null;
+  notes: string | null;
+  rejection_reason: string | null;
   created_at: number;
   updated_at: number;
 }
+
+export interface TailorChange {
+  snippet: string;
+  reason: string;
+  jd_match?: string;
+}
+
+export type JobDetailsPatch = Partial<
+  Pick<
+    JobApplication,
+    | 'interview_date'
+    | 'follow_up_at'
+    | 'salary_min'
+    | 'salary_max'
+    | 'salary_currency'
+    | 'offer_amount'
+    | 'notes'
+    | 'rejection_reason'
+  >
+>;
 
 export interface TailoredResume {
   id: string;
@@ -34,6 +62,7 @@ export interface TailoredResume {
   resume_id: string;
   source: string;
   accepted: number;
+  changes: TailorChange[];
   created_at: number;
   updated_at: number;
 }
@@ -46,6 +75,15 @@ export interface CoverLetter {
   company_research: string;
   created_at: number;
   updated_at: number;
+}
+
+export interface OutreachEmail {
+  id: string;
+  job_id: string;
+  resume_id: string;
+  subject: string;
+  body: string;
+  created_at: number;
 }
 
 export type { AIConfig as AIProviderConfig } from '@saas-maker/ai/server';
@@ -89,4 +127,31 @@ export interface StashEntry {
   content: string;
   created_at: number;
   updated_at: number;
+}
+
+export type SkillPriority = 'high' | 'medium' | 'low';
+export type SkillResourceType = 'course' | 'doc' | 'project' | 'book';
+
+export interface SkillResource {
+  type: SkillResourceType;
+  title: string;
+  url?: string;
+  estimated_hours?: number;
+}
+
+export interface SkillRoadmapItem {
+  skill: string;
+  priority: SkillPriority;
+  reason: string;
+  resources: SkillResource[];
+  milestone: string;
+}
+
+export interface SkillsRoadmap {
+  id: string;
+  job_id: string;
+  items: SkillRoadmapItem[];
+  total_estimated_hours: number;
+  summary: string;
+  created_at: number;
 }

@@ -24,6 +24,14 @@ CREATE TABLE IF NOT EXISTS job_applications (
   jd_raw TEXT NOT NULL DEFAULT '',
   jd_text TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'draft',
+  interview_date INTEGER,
+  follow_up_at INTEGER,
+  salary_min INTEGER,
+  salary_max INTEGER,
+  salary_currency TEXT,
+  offer_amount INTEGER,
+  notes TEXT,
+  rejection_reason TEXT,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -34,6 +42,11 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   resume_id TEXT NOT NULL REFERENCES resumes(id),
   source TEXT NOT NULL DEFAULT '',
   accepted INTEGER NOT NULL DEFAULT 0,
+  is_public INTEGER NOT NULL DEFAULT 0,
+  share_slug TEXT UNIQUE,
+  score_original INTEGER NOT NULL DEFAULT 0,
+  score_tailored INTEGER NOT NULL DEFAULT 0,
+  changes_json TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -99,6 +112,16 @@ CREATE TABLE IF NOT EXISTS fit_scores (
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+CREATE TABLE IF NOT EXISTS outreach_emails (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL REFERENCES job_applications(id),
+  resume_id TEXT NOT NULL REFERENCES resumes(id),
+  subject TEXT NOT NULL DEFAULT '',
+  body TEXT NOT NULL DEFAULT '',
+  user_id TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 CREATE TABLE IF NOT EXISTS interview_stories (
   id TEXT PRIMARY KEY,
   job_id TEXT NOT NULL REFERENCES job_applications(id),
@@ -111,5 +134,15 @@ CREATE TABLE IF NOT EXISTS interview_stories (
   result TEXT NOT NULL DEFAULT '',
   reflection TEXT NOT NULL DEFAULT '',
   best_for TEXT NOT NULL DEFAULT '[]',
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE TABLE IF NOT EXISTS skills_roadmaps (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL REFERENCES job_applications(id),
+  user_id TEXT,
+  items_json TEXT NOT NULL DEFAULT '[]',
+  total_estimated_hours INTEGER NOT NULL DEFAULT 0,
+  summary TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );

@@ -2,9 +2,22 @@
 
 import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { JobApplication, TailoredResume } from '@/lib/types';
+import type { JobApplication, JobDetailsPatch, TailoredResume, TailorChange } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUserId } from '@/lib/auth-utils';
+
+type SqlArg = string | number | null;
+
+const ALLOWED_DETAIL_FIELDS: ReadonlyArray<keyof JobDetailsPatch> = [
+  'interview_date',
+  'follow_up_at',
+  'salary_min',
+  'salary_max',
+  'salary_currency',
+  'offer_amount',
+  'notes',
+  'rejection_reason',
+];
 
 export async function createJobApplication(
   resumeId: string,
@@ -53,18 +66,45 @@ export async function updateJobStatus(id: string, status: string): Promise<void>
   revalidatePath('/dashboard');
 }
 
+export async function updateJobDetails(id: string, patch: JobDetailsPatch): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error('Sign in to update job details');
+
+  const sets: string[] = [];
+  const args: SqlArg[] = [];
+  for (const field of ALLOWED_DETAIL_FIELDS) {
+    if (field in patch) {
+      const value = patch[field];
+      if (value === undefined) continue;
+      sets.push(`${field} = ?`);
+      args.push(value);
+    }
+  }
+  if (sets.length === 0) return;
+
+  sets.push(`updated_at = unixepoch()`);
+  args.push(id, userId);
+
+  await db.execute({
+    sql: `UPDATE job_applications SET ${sets.join(', ')} WHERE id = ? AND user_id = ?`,
+    args,
+  });
+  revalidatePath('/dashboard');
+}
+
 export async function saveTailoredResume(
   jobId: string,
   resumeId: string,
   source: string,
+  changes: TailorChange[] = [],
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to save tailored resumes');
   const id = uuid();
   await db.execute({
-    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, user_id)
-          VALUES (?, ?, ?, ?, ?)`,
-    args: [id, jobId, resumeId, source, userId],
+    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, changes_json, user_id)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [id, jobId, resumeId, source, JSON.stringify(changes ?? []), userId],
   });
   await db.execute({
     sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ?`,
@@ -81,5 +121,17 @@ export async function getTailoredResumes(jobId: string): Promise<TailoredResume[
     sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC',
     args: [jobId, userId],
   });
-  return JSON.parse(JSON.stringify(result.rows)) as TailoredResume[];
+  const rows = JSON.parse(JSON.stringify(result.rows)) as Array<Omit<TailoredResume, 'changes'> & { changes_json?: string }>;
+  return rows.map((row) => {
+    let changes: TailorChange[] = [];
+    if (row.changes_json) {
+      try {
+        const parsed = JSON.parse(row.changes_json);
+        if (Array.isArray(parsed)) changes = parsed as TailorChange[];
+      } catch { /* ignore malformed json */ }
+    }
+    const { changes_json: _omit, ...rest } = row;
+    void _omit;
+    return { ...rest, changes } as TailoredResume;
+  });
 }

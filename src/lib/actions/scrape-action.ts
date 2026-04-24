@@ -1,9 +1,9 @@
 'use server';
 
-import { Readability } from '@mozilla/readability';
-import { parseHTML } from 'linkedom';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { headers } from 'next/headers';
+
+const dynImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
 
 // In-memory rate limiter: max 5 requests per 60 seconds per key
 const rateLimitMap = new Map<string, number[]>();
@@ -117,8 +117,12 @@ export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
   }
 
   const html = await response.text();
-  const { document } = parseHTML(html);
-  const reader = new Readability(document as unknown as Document);
+  const [linkedomMod, readabilityMod] = await Promise.all([
+    dynImport('linkedom') as Promise<{ parseHTML: (h: string) => { document: unknown } }>,
+    dynImport('@mozilla/readability') as Promise<{ Readability: new (d: unknown) => { parse(): { title?: string; textContent?: string; content?: string } | null } }>,
+  ]);
+  const { document } = linkedomMod.parseHTML(html);
+  const reader = new readabilityMod.Readability(document);
   const article = reader.parse();
 
   if (!article) throw new Error('Failed to parse job page content');
