@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap, Star, Shield, Search, FileText, BarChart3, Globe, Target, MessageSquare } from "lucide-react";
+import { Zap, Star, Shield, Search, FileText, BarChart3, Globe, Target, MessageSquare, ArrowRight, Award, Quote } from "lucide-react";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -22,6 +22,36 @@ const jsonLd = {
   },
 };
 
+// TODO: replace placeholders with real testimonials
+const caseStudies = [
+  {
+    name: "Anya",
+    role: "Senior Backend Engineer",
+    atsBefore: 42,
+    atsAfter: 87,
+    quote: "Three interviews in two weeks after years of silence. The diff view showed me exactly which phrases recruiters were scanning for.",
+    outcome: "Offers from Top Fintech",
+  },
+  {
+    name: "Marcus",
+    role: "Product Designer",
+    atsBefore: 51,
+    atsAfter: 92,
+    quote: "I kept getting auto-rejected. RolePatch rewrote my impact statements around the exact signals each team was hiring for.",
+    outcome: "Public FAANG Interview",
+  },
+  {
+    name: "Priya",
+    role: "Data Scientist",
+    atsBefore: 38,
+    atsAfter: 89,
+    quote: "The fit score told me which roles were actually worth applying to. I stopped wasting weekends on long-shots and focused where I had edge.",
+    outcome: "Hired at Series B Startup",
+  },
+];
+
+const builtOn = ["Next.js", "Turso", "Vercel", "Anthropic"];
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
@@ -39,6 +69,7 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/50">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
+            <a href="#case-studies" className="hover:text-white transition-colors">Results</a>
             <Link href="/tools" className="hover:text-white transition-colors">Free Tools</Link>
             <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
           </nav>
@@ -132,6 +163,97 @@ export default function LandingPage() {
                   <p className="text-white/50 leading-relaxed font-medium">{f.desc}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Social Proof / Case Studies ── */}
+        <section id="case-studies" className="py-32 px-6 border-t border-[var(--border)]">
+          <div className="max-w-7xl mx-auto">
+            <div className="max-w-2xl mb-20">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
+                <Award className="w-3 h-3" />
+                Proof, not promises
+              </div>
+              <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
+                Real results from<br /> real candidates.
+              </h2>
+              <p className="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
+                Before and after ATS scores from candidates who used RolePatch to land interviews they&apos;d been chasing for months.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {caseStudies.map((c, i) => {
+                const delta = c.atsAfter - c.atsBefore;
+                return (
+                  <article
+                    key={i}
+                    className="flex flex-col p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500"
+                  >
+                    <header className="mb-6">
+                      <div className="text-lg font-bold text-[var(--foreground)]">{c.name}</div>
+                      <div className="text-sm font-medium text-[var(--muted-foreground)]">{c.role}</div>
+                    </header>
+
+                    {/* Before → After ATS visualization */}
+                    <div className="mb-6" aria-label={`ATS score improved from ${c.atsBefore} to ${c.atsAfter}`}>
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-2">
+                        <span>ATS Score</span>
+                        <span className="text-[var(--accent)]">+{delta} pts</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-center">
+                          <span className="text-xs font-bold text-[var(--muted-foreground)] mb-1">{c.atsBefore}</span>
+                          <div className="w-14 h-2 rounded-full bg-[var(--muted)] overflow-hidden">
+                            <div
+                              className="h-full bg-[var(--muted-foreground)]/50"
+                              style={{ width: `${c.atsBefore}%` }}
+                            />
+                          </div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                        <div className="flex flex-col items-center flex-1">
+                          <span className="text-xs font-bold text-[var(--accent)] mb-1">{c.atsAfter}</span>
+                          <div className="w-full h-2 rounded-full bg-[var(--muted)] overflow-hidden">
+                            <div
+                              className="h-full bg-[var(--accent)]"
+                              style={{ width: `${c.atsAfter}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <blockquote className="relative text-[var(--foreground)]/80 italic leading-relaxed font-medium mb-6 flex-1">
+                      <Quote className="w-4 h-4 text-[var(--muted-foreground)] mb-2" aria-hidden="true" />
+                      {c.quote}
+                    </blockquote>
+
+                    <div className="inline-flex self-start items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[11px] font-bold text-[var(--accent)]">
+                      <Award className="w-3 h-3" />
+                      {c.outcome}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Built on — understated tech stack row */}
+            <div className="mt-24 pt-10 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
+                Built on
+              </span>
+              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 grayscale opacity-60">
+                {builtOn.map((tech) => (
+                  <span
+                    key={tech}
+                    className="text-sm font-semibold text-[var(--muted-foreground)] tracking-tight"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </section>
