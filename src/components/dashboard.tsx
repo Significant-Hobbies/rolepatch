@@ -13,7 +13,8 @@ import { MigrationBanner } from '@/components/migration-banner';
 import { ATSScoreMini } from '@/components/ats-score-badge';
 import { FitScoreBadge } from '@/components/fit-score-card';
 import { JobDetailsModal, type JobDetailsModalInitialValues } from '@/components/job-details-modal';
-import { FileText, Globe, ArrowRight, Calendar, AlertCircle } from 'lucide-react';
+import { JobDiscovery } from '@/components/job-discovery';
+import { FileText, Globe, ArrowRight, Calendar, AlertCircle, Sparkles } from 'lucide-react';
 
 const STATUS_OPTIONS: JobApplication['status'][] = [
   'draft', 'tailored', 'applied', 'interview', 'offer', 'rejected',
@@ -275,6 +276,22 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
             ))}
           </div>
         )}
+      </section>
+
+      {/* Discover jobs section */}
+      <section className="mb-16">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-serif text-2xl font-bold">Discover jobs</h2>
+            <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-60">
+              Live search across Indeed, LinkedIn, Google, Glassdoor, and ZipRecruiter
+            </p>
+          </div>
+        </div>
+        <JobDiscovery resumes={resumes.map(r => ({ id: r.id, name: r.name }))} />
       </section>
 
       {/* Job Applications section */}

@@ -36,6 +36,7 @@ See `.env.example`. Required for full use:
 - `AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — Google OAuth
 - `DODO_PAYMENTS_*`, `DODO_PRODUCT_*` — token purchases (optional)
 - `NEXT_PUBLIC_SAASMAKER_API_KEY` — feedback/analytics (optional)
+- `JOBSPY_SERVICE_URL`, `JOBSPY_SERVICE_KEY` — job discovery sidecar (optional; see below)
 
 ## Layout
 
@@ -44,8 +45,22 @@ See `.env.example`. Required for full use:
 - `src/lib/local-storage.ts` — guest data layer
 - `src/components/` — client UI
 - `__tests__/` — vitest · `e2e/` — playwright
+- `jobspy-service/` — Python sidecar for multi-platform job discovery
 
 More in `agents.md`.
+
+## Job discovery sidecar
+
+Live job search (Indeed / LinkedIn / Google / Glassdoor / ZipRecruiter) is
+served by a tiny Python FastAPI service under [`jobspy-service/`](./jobspy-service/)
+that wraps [python-jobspy](https://github.com/speedyapply/JobSpy).
+
+Kept out-of-process because jobspy pulls heavy scraping deps we don't want in
+the Next.js runtime. The web app talks to it via `/api/jobs/search` using
+`JOBSPY_SERVICE_URL` + `JOBSPY_SERVICE_KEY` (shared bearer secret).
+
+See [`jobspy-service/README.md`](./jobspy-service/README.md) for local dev
+and free-tier deploy notes (Render / Fly.io).
 
 ## Deploy
 
