@@ -1,4 +1,4 @@
-import type { Resume, StashEntry, TailoredResume, CoverLetter, JobApplication, FitScore, InterviewStory } from '@/lib/types';
+import type { Resume, StashEntry, TailoredResume, CoverLetter, JobApplication, FitScore, InterviewStory, SkillsRoadmap } from '@/lib/types';
 
 const KEYS = {
   resumes: 'rt-resumes',
@@ -8,6 +8,7 @@ const KEYS = {
   jobs: 'rt-jobs',
   fitScores: 'rt-fit-scores',
   interviewStories: 'rt-interview-stories',
+  skillsRoadmaps: 'rt-skills-roadmaps',
 } as const;
 
 function getItems<T>(key: string): T[] {
@@ -178,4 +179,15 @@ export function localSaveInterviewStories(stories: InterviewStory[]): void {
   const jobId = stories[0].job_id;
   const existing = getItems<InterviewStory>(KEYS.interviewStories).filter(s => s.job_id !== jobId);
   setItems(KEYS.interviewStories, [...existing, ...stories]);
+}
+
+// --- Skills Roadmaps ---
+export function localGetSkillsRoadmap(jobId: string): SkillsRoadmap | null {
+  return getItems<SkillsRoadmap>(KEYS.skillsRoadmaps).find(r => r.job_id === jobId) ?? null;
+}
+
+export function localSaveSkillsRoadmap(roadmap: SkillsRoadmap): void {
+  const items = getItems<SkillsRoadmap>(KEYS.skillsRoadmaps).filter(r => r.job_id !== roadmap.job_id);
+  items.push(roadmap);
+  setItems(KEYS.skillsRoadmaps, items);
 }

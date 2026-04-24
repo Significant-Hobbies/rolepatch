@@ -90,3 +90,30 @@ export interface StashEntry {
   created_at: number;
   updated_at: number;
 }
+
+export type SkillPriority = 'high' | 'medium' | 'low';
+export type SkillResourceType = 'course' | 'doc' | 'project' | 'book';
+
+export interface SkillResource {
+  type: SkillResourceType;
+  title: string;
+  url?: string;
+  estimated_hours?: number;
+}
+
+export interface SkillRoadmapItem {
+  skill: string;
+  priority: SkillPriority;
+  reason: string;
+  resources: SkillResource[];
+  milestone: string;
+}
+
+export interface SkillsRoadmap {
+  id: string;
+  job_id: string;
+  items: SkillRoadmapItem[];
+  total_estimated_hours: number;
+  summary: string;
+  created_at: number;
+}
