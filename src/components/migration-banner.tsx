@@ -1,18 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
 import { localListResumes, localListJobs, localListStashEntries } from '@/lib/local-storage';
 import type { Resume, JobApplication, TailoredResume, CoverLetter, StashEntry } from '@/lib/types';
 
 const DISMISSED_KEY = 'rt-migration-dismissed';
-const STORAGE_KEYS = ['rt-resumes', 'rt-jobs', 'rt-stash', 'rt-tailored', 'rt-cover-letters'];
+// leave localStorage intact as recovery backup
+const MIGRATED_KEY = 'rt-migrated';
+
+type Counts = { resumes: number; jobs: number; tailoredResumes: number; coverLetters: number; stashEntries: number };
 
 function getLocalItems<T>(key: string): T[] {
   if (typeof window === 'undefined') return [];
   const raw = localStorage.getItem(key);
   return raw ? JSON.parse(raw) : [];
+}
+
+function formatSuccessParts(counts: Counts): string[] {
+  const parts: string[] = [];
+  if (counts.resumes > 0) parts.push(`${counts.resumes} resume${counts.resumes > 1 ? 's' : ''}`);
+  if (counts.jobs > 0) parts.push(`${counts.jobs} job${counts.jobs > 1 ? 's' : ''}`);
+  if (counts.stashEntries > 0) parts.push(`${counts.stashEntries} stash entr${counts.stashEntries > 1 ? 'ies' : 'y'}`);
+  return parts;
 }
 
 export function MigrationBanner() {
@@ -21,13 +32,71 @@ export function MigrationBanner() {
   const [dismissed, setDismissed] = useState(() =>
     typeof window !== 'undefined' && localStorage.getItem(DISMISSED_KEY) === '1'
   );
+  const [autoResult, setAutoResult] = useState<{ counts: Counts } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const autoAttempted = useRef(false);
 
   const resumes = !isGuest && !dismissed ? localListResumes() : [];
   const jobs = !isGuest && !dismissed ? localListJobs() : [];
   const stash = !isGuest && !dismissed ? localListStashEntries() : [];
   const total = resumes.length + jobs.length + stash.length;
-  const visible = !isGuest && !dismissed && total > 0;
 
+  // Auto-migrate on first authenticated load when data exists and flag is not set
+  useEffect(() => {
+    if (isGuest) return;
+    if (autoAttempted.current) return;
+    if (typeof window === 'undefined') return;
+    if (localStorage.getItem(MIGRATED_KEY) === '1') return;
+    if (total === 0) return;
+
+    autoAttempted.current = true;
+
+    (async () => {
+      setLoading(true);
+      try {
+        const payload = {
+          resumes: getLocalItems<Resume>('rt-resumes'),
+          jobs: getLocalItems<JobApplication>('rt-jobs'),
+          tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
+          coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
+          stashEntries: getLocalItems<StashEntry>('rt-stash'),
+        };
+        const result = await migrateGuestData(payload);
+        if (result.success && result.counts) {
+          // leave localStorage intact as recovery backup
+          localStorage.setItem(MIGRATED_KEY, '1');
+          setAutoResult({ counts: result.counts });
+        } else {
+          setError(result.error ?? 'Migration failed');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Migration failed');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isGuest, total]);
+
+  // Success banner after auto-migration
+  if (autoResult) {
+    const parts = formatSuccessParts(autoResult.counts);
+    if (parts.length === 0) return null;
+    return (
+      <div className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p className="text-sm text-foreground">
+          {parts.join(', ')} moved to your account.
+        </p>
+        <button
+          onClick={() => setAutoResult(null)}
+          className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors shrink-0"
+        >
+          Dismiss
+        </button>
+      </div>
+    );
+  }
+
+  const visible = !isGuest && !dismissed && total > 0;
   if (!visible) return null;
 
   const parts: string[] = [];
@@ -37,24 +106,28 @@ export function MigrationBanner() {
 
   async function handleImport() {
     setLoading(true);
+    setError(null);
     try {
-      const resumes = getLocalItems<Resume>('rt-resumes');
-      const jobs = getLocalItems<JobApplication>('rt-jobs');
-      const tailoredResumes = getLocalItems<TailoredResume>('rt-tailored');
-      const coverLetters = getLocalItems<CoverLetter>('rt-cover-letters');
-      const stashEntries = getLocalItems<StashEntry>('rt-stash');
+      const payload = {
+        resumes: getLocalItems<Resume>('rt-resumes'),
+        jobs: getLocalItems<JobApplication>('rt-jobs'),
+        tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
+        coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
+        stashEntries: getLocalItems<StashEntry>('rt-stash'),
+      };
 
-      const result = await migrateGuestData({ resumes, jobs, tailoredResumes, coverLetters, stashEntries });
+      const result = await migrateGuestData(payload);
 
       if (result.success) {
-        STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+        // leave localStorage intact as recovery backup
+        localStorage.setItem(MIGRATED_KEY, '1');
         window.location.reload();
       } else {
-        console.error('Migration failed:', result.error);
+        setError(result.error ?? 'Migration failed');
         setLoading(false);
       }
     } catch (err) {
-      console.error('Migration error:', err);
+      setError(err instanceof Error ? err.message : 'Migration error');
       setLoading(false);
     }
   }
@@ -65,17 +138,24 @@ export function MigrationBanner() {
   }
 
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-      <p className="text-sm text-foreground">
-        We found {parts.join(', ')} saved locally. Import them to your account?
-      </p>
+    <div className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm text-foreground">
+          We found {parts.join(', ')} saved locally. Import them to your account?
+        </p>
+        {error && (
+          <p className="text-xs text-destructive" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
       <div className="flex gap-2 shrink-0">
         <button
           onClick={handleImport}
           disabled={loading}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-black hover:bg-neutral-200 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Importing...' : 'Import'}
+          {loading ? 'Importing...' : error ? 'Retry' : 'Import'}
         </button>
         <button
           onClick={handleDismiss}
