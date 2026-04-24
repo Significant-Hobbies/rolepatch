@@ -10,10 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "prepare": "husky",
-    "cf:build": "opennextjs-cloudflare build",
-    "cf:preview": "opennextjs-cloudflare build && wrangler dev",
-    "cf:deploy": "opennextjs-cloudflare build && wrangler deploy"
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.41",
@@ -24,13 +21,13 @@
     "@codemirror/view": "^6.39.15",
     "@dodopayments/nextjs": "^0.3.4",
     "@libsql/client": "^0.17.0",
-    "@libsql/isomorphic-ws": "^0.1.5",
     "@mozilla/readability": "^0.6.0",
     "@saas-maker/ai": "file:../saas-maker/packages/ai",
     "@saas-maker/changelog-widget": "0.2.0",
     "@saas-maker/feedback": "0.2.0",
     "@saas-maker/sdk": "0.3.1",
     "@saas-maker/testimonials": "0.2.0",
+    "@sparticuz/chromium": "^147.0.2",
     "ai": "^6.0.97",
     "codemirror": "^6.0.2",
     "dodopayments": "^2.23.2",
@@ -41,6 +38,7 @@
     "next": "16.1.6",
     "next-auth": "^4.24.13",
     "pdf-parse": "^2.4.5",
+    "puppeteer-core": "^24.42.0",
     "react": "19.2.3",
     "react-diff-viewer-continued": "^4.2.0",
     "react-dom": "19.2.3",
@@ -50,7 +48,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.19.4",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
@@ -68,7 +65,6 @@
     "jsdom": "^29.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.0",
-    "wrangler": "^4.85.0"
+    "vitest": "^4.1.0"
   }
 }

@@ -28,14 +28,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const serviceUrl = process.env.JOBSPY_SERVICE_URL;
-  const serviceKey = process.env.JOBSPY_SERVICE_KEY;
-  if (!serviceUrl || !serviceKey) {
+  const serviceKey = process.env.JOBSPY_API_KEY;
+  if (!serviceKey) {
     return NextResponse.json(
       { error: 'Job discovery is not configured on this deployment.' },
       { status: 503 },
     );
   }
+  // Same-origin Vercel Python function. VERCEL_URL is set on Vercel; fall back
+  // to request origin so local `vercel dev` works too.
+  const origin = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : new URL(req.url).origin;
+  const serviceUrl = `${origin}/api/python/jobs-search`;
 
   let body: unknown;
   try {
@@ -45,7 +50,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${serviceUrl.replace(/\/$/, '')}/search`, {
+    const res = await fetch(serviceUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

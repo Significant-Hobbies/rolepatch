@@ -91,12 +91,37 @@ function escapeHtml(s: string): string {
 }
 
 /**
- * PDF rendering on Cloudflare Workers: stubbed until we wire in
- * Cloudflare Browser Rendering (`@cloudflare/puppeteer`). Previously used
- * puppeteer-core + @sparticuz/chromium but those push the worker past the
- * 3 MiB free-tier limit. Client-side `window.print()` fallback works today.
+ * Render HTML to PDF bytes using puppeteer-core + @sparticuz/chromium.
+ * Works on Vercel serverless (x86_64 Lambda with provided Chromium binary).
+ * For local macOS dev, set PUPPETEER_EXECUTABLE_PATH to a local Chrome/Chromium.
  */
-export async function renderPdf(_html: string): Promise<Uint8Array> {
-  void _html;
-  throw new Error('PDF rendering not available on this deployment. Use client-side Print instead.');
+export async function renderPdf(html: string): Promise<Uint8Array> {
+  const [chromiumMod, puppeteerMod] = await Promise.all([
+    import('@sparticuz/chromium'),
+    import('puppeteer-core'),
+  ]);
+
+  const chromium = chromiumMod.default;
+  const executablePath =
+    process.env.PUPPETEER_EXECUTABLE_PATH || (await chromium.executablePath());
+
+  const browser = await puppeteerMod.launch({
+    args: chromium.args,
+    executablePath,
+    headless: true,
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdf = await page.pdf({
+      format: 'letter',
+      printBackground: true,
+      margin: { top: '1in', right: '1in', bottom: '1in', left: '1in' },
+      preferCSSPageSize: true,
+    });
+    return pdf;
+  } finally {
+    await browser.close();
+  }
 }
