@@ -9,6 +9,28 @@ import { scrapeJobUrl } from './scrape-action';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { debitToken, creditTokens } from '@/lib/actions/token-actions';
 
+export type CoverLetterTone = 'formal' | 'conversational' | 'enthusiastic';
+export type CoverLetterLength = 'short' | 'medium' | 'long';
+
+export interface CoverLetterOptions {
+  tone?: CoverLetterTone;
+  length?: CoverLetterLength;
+  userFeedback?: string;
+  previousDraft?: string;
+}
+
+const TONE_GUIDANCE: Record<CoverLetterTone, string> = {
+  formal: 'Use a formal, polished tone. Professional vocabulary, measured phrasing, no contractions.',
+  conversational: 'Use a warm, conversational tone. Natural phrasing, contractions allowed, approachable but professional.',
+  enthusiastic: 'Use an enthusiastic, high-energy tone. Convey genuine excitement about the role and company without sounding desperate.',
+};
+
+const LENGTH_GUIDANCE: Record<CoverLetterLength, { words: number; label: string }> = {
+  short: { words: 150, label: 'Concise — around 150 words, 2 tight paragraphs.' },
+  medium: { words: 250, label: 'Standard — around 250 words, 3 paragraphs.' },
+  long: { words: 400, label: 'Detailed — around 400 words, 3-4 substantial paragraphs.' },
+};
+
 async function researchCompany(companyUrl: string): Promise<string> {
   try {
     const result = await scrapeJobUrl(companyUrl);
@@ -25,7 +47,12 @@ export async function generateCoverLetter(
   jobId: string,
   resumeId: string,
   aiConfig: AIProviderConfig,
+  options: CoverLetterOptions = {},
 ): Promise<string> {
+  const tone: CoverLetterTone = options.tone ?? 'conversational';
+  const length: CoverLetterLength = options.length ?? 'medium';
+  const { userFeedback, previousDraft } = options;
+
   // Debit token before AI call
   const userId = await getCurrentUserId();
   let debited = false;
@@ -56,10 +83,46 @@ export async function generateCoverLetter(
       }
     }
 
+    const toneGuidance = TONE_GUIDANCE[tone];
+    const lengthGuidance = LENGTH_GUIDANCE[length];
+
+    const system = `You are a professional cover letter writer. Using the candidate's resume, the job description, and research about the company, write a compelling cover letter.
+Tone: ${toneGuidance}
+Length: ${lengthGuidance.label}
+Return ONLY the cover letter text, no explanation, no preamble, no sign-off placeholders like [Your Name].`;
+
+    const promptParts = [
+      `## Resume:\n${resumeSource}`,
+      `## Job Description:\n${jdText}`,
+      `## Company Research:\n${companyResearch || 'No research available.'}`,
+    ];
+
+    if (previousDraft) {
+      promptParts.push(`## Previous Draft:\n${previousDraft}`);
+    }
+    if (userFeedback) {
+      promptParts.push(`## User Feedback (apply these changes to the rewrite):\n${userFeedback}`);
+    }
+
+    promptParts.push(
+      [
+        '## Instructions:',
+        '- Connect candidate\'s experience to the specific role',
+        '- Reference company values/mission where genuine',
+        `- Target approximately ${lengthGuidance.words} words`,
+        '- Professional but not generic',
+        previousDraft
+          ? '- Rewrite the previous draft incorporating the user feedback; preserve what works, change what the feedback asks for'
+          : null,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    );
+
     const { text } = await generateText({
       model: getAIModel(aiConfig),
-      system: `You are a professional cover letter writer. Using the candidate's resume, the job description, and research about the company, write a compelling cover letter. Return ONLY the cover letter text, no explanation.`,
-      prompt: `## Resume:\n${resumeSource}\n\n## Job Description:\n${jdText}\n\n## Company Research:\n${companyResearch || 'No research available.'}\n\n## Instructions:\n- Connect candidate's experience to the specific role\n- Reference company values/mission where genuine\n- Keep it concise (3-4 paragraphs)\n- Professional but not generic`,
+      system,
+      prompt: promptParts.join('\n\n'),
     });
 
     // Save to DB
