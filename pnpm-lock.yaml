@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@ai-sdk/openai-compatible':
         specifier: ^2.0.41
-        version: 2.0.41(zod@4.3.6)
+        version: 2.0.41(zod@3.25.76)
       '@codemirror/lang-markdown':
         specifier: ^6.5.0
         version: 6.5.0
@@ -28,7 +28,7 @@ importers:
         version: 6.41.1
       '@dodopayments/nextjs':
         specifier: ^0.3.4
-        version: 0.3.6(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(zod@4.3.6)
+        version: 0.3.6(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(zod@3.25.76)
       '@libsql/client':
         specifier: ^0.17.0
         version: 0.17.3
@@ -37,7 +37,7 @@ importers:
         version: 0.6.0
       '@saas-maker/ai':
         specifier: file:../saas-maker/packages/ai
-        version: file:../saas-maker/packages/ai(@ai-sdk/openai-compatible@2.0.41(zod@4.3.6))(ai@6.0.168(zod@4.3.6))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: file:../saas-maker/packages/ai(@ai-sdk/openai-compatible@2.0.41(zod@3.25.76))(ai@6.0.168(zod@3.25.76))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@saas-maker/changelog-widget':
         specifier: 0.2.0
         version: 0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -55,7 +55,7 @@ importers:
         version: 147.0.2
       ai:
         specifier: ^6.0.97
-        version: 6.0.168(zod@4.3.6)
+        version: 6.0.168(zod@3.25.76)
       codemirror:
         specifier: ^6.0.2
         version: 6.0.2
@@ -104,6 +104,9 @@ importers:
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@playwright/test':
         specifier: ^1.58.2
@@ -4017,9 +4020,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.3.6:
-    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
-
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
@@ -4027,25 +4027,25 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/gateway@3.0.104(zod@4.3.6)':
+  '@ai-sdk/gateway@3.0.104(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.23(zod@3.25.76)
       '@vercel/oidc': 3.2.0
-      zod: 4.3.6
+      zod: 3.25.76
 
-  '@ai-sdk/openai-compatible@2.0.41(zod@4.3.6)':
+  '@ai-sdk/openai-compatible@2.0.41(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
-      zod: 4.3.6
+      '@ai-sdk/provider-utils': 4.0.23(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/provider-utils@4.0.23(zod@4.3.6)':
+  '@ai-sdk/provider-utils@4.0.23(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.8
-      zod: 4.3.6
+      zod: 3.25.76
 
   '@ai-sdk/provider@3.0.8':
     dependencies:
@@ -4296,17 +4296,17 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.0': {}
 
-  '@dodopayments/core@0.3.11(zod@4.3.6)':
+  '@dodopayments/core@0.3.11(zod@3.25.76)':
     dependencies:
       dodopayments: 2.28.2
       standardwebhooks: 1.0.0
-      zod: 4.3.6
+      zod: 3.25.76
 
-  '@dodopayments/nextjs@0.3.6(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(zod@4.3.6)':
+  '@dodopayments/nextjs@0.3.6(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(zod@3.25.76)':
     dependencies:
-      '@dodopayments/core': 0.3.11(zod@4.3.6)
+      '@dodopayments/core': 0.3.11(zod@3.25.76)
       next: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      zod: 4.3.6
+      zod: 3.25.76
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -4931,13 +4931,13 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
-  '@saas-maker/ai@file:../saas-maker/packages/ai(@ai-sdk/openai-compatible@2.0.41(zod@4.3.6))(ai@6.0.168(zod@4.3.6))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@saas-maker/ai@file:../saas-maker/packages/ai(@ai-sdk/openai-compatible@2.0.41(zod@3.25.76))(ai@6.0.168(zod@3.25.76))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
     optionalDependencies:
-      '@ai-sdk/openai-compatible': 2.0.41(zod@4.3.6)
-      ai: 6.0.168(zod@4.3.6)
+      '@ai-sdk/openai-compatible': 2.0.41(zod@3.25.76)
+      ai: 6.0.168(zod@3.25.76)
 
   '@saas-maker/changelog-widget@0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
@@ -5371,13 +5371,13 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@6.0.168(zod@4.3.6):
+  ai@6.0.168(zod@3.25.76):
     dependencies:
-      '@ai-sdk/gateway': 3.0.104(zod@4.3.6)
+      '@ai-sdk/gateway': 3.0.104(zod@3.25.76)
       '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.23(zod@3.25.76)
       '@opentelemetry/api': 1.9.0
-      zod: 4.3.6
+      zod: 3.25.76
 
   ajv@6.15.0:
     dependencies:
@@ -6092,8 +6092,8 @@ snapshots:
       '@babel/parser': 7.29.2
       eslint: 9.39.4(jiti@2.6.1)
       hermes-parser: 0.25.1
-      zod: 4.3.6
-      zod-validation-error: 4.0.2(zod@4.3.6)
+      zod: 3.25.76
+      zod-validation-error: 4.0.2(zod@3.25.76)
     transitivePeerDependencies:
       - supports-color
 
@@ -8225,12 +8225,10 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-validation-error@4.0.2(zod@4.3.6):
+  zod-validation-error@4.0.2(zod@3.25.76):
     dependencies:
-      zod: 4.3.6
+      zod: 3.25.76
 
   zod@3.25.76: {}
-
-  zod@4.3.6: {}
 
   zwitch@2.0.4: {}

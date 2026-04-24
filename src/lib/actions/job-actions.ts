@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { JobApplication, TailoredResume } from '@/lib/types';
+import type { JobApplication, TailoredResume, TailorChange } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUserId } from '@/lib/auth-utils';
 
@@ -57,14 +57,15 @@ export async function saveTailoredResume(
   jobId: string,
   resumeId: string,
   source: string,
+  changes: TailorChange[] = [],
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to save tailored resumes');
   const id = uuid();
   await db.execute({
-    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, user_id)
-          VALUES (?, ?, ?, ?, ?)`,
-    args: [id, jobId, resumeId, source, userId],
+    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, changes_json, user_id)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [id, jobId, resumeId, source, JSON.stringify(changes ?? []), userId],
   });
   await db.execute({
     sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ?`,
@@ -81,5 +82,17 @@ export async function getTailoredResumes(jobId: string): Promise<TailoredResume[
     sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC',
     args: [jobId, userId],
   });
-  return JSON.parse(JSON.stringify(result.rows)) as TailoredResume[];
+  const rows = JSON.parse(JSON.stringify(result.rows)) as Array<Omit<TailoredResume, 'changes'> & { changes_json?: string }>;
+  return rows.map((row) => {
+    let changes: TailorChange[] = [];
+    if (row.changes_json) {
+      try {
+        const parsed = JSON.parse(row.changes_json);
+        if (Array.isArray(parsed)) changes = parsed as TailorChange[];
+      } catch { /* ignore malformed json */ }
+    }
+    const { changes_json: _omit, ...rest } = row;
+    void _omit;
+    return { ...rest, changes } as TailoredResume;
+  });
 }

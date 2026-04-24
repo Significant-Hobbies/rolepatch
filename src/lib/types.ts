@@ -28,12 +28,19 @@ export interface JobApplication {
   updated_at: number;
 }
 
+export interface TailorChange {
+  snippet: string;
+  reason: string;
+  jd_match?: string;
+}
+
 export interface TailoredResume {
   id: string;
   job_id: string;
   resume_id: string;
   source: string;
   accepted: number;
+  changes: TailorChange[];
   created_at: number;
   updated_at: number;
 }

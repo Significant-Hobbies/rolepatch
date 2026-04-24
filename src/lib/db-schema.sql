@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   share_slug TEXT UNIQUE,
   score_original INTEGER NOT NULL DEFAULT 0,
   score_tailored INTEGER NOT NULL DEFAULT 0,
+  changes_json TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
