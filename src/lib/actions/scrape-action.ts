@@ -40,10 +40,16 @@ function validateUrl(raw: string): URL {
     throw new Error('Only http and https URLs are allowed');
   }
 
-  const hostname = parsed.hostname.toLowerCase();
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
 
-  // Block localhost variants
-  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') {
+  // Block localhost variants (IPv4 + IPv6 loopback + unspecified)
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '::' ||
+    hostname === '0.0.0.0'
+  ) {
     throw new Error('Internal URLs are not allowed');
   }
 
