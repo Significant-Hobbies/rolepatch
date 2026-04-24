@@ -9,6 +9,7 @@ import { getTokenBalance } from '@/lib/actions/token-actions';
 import { ResumeDiff } from '@/components/resume-diff';
 import { ATSScoreBadge } from '@/components/ats-score-badge';
 import { FitScoreCard } from '@/components/fit-score-card';
+import { ShareScoreButton } from '@/components/share-score-button';
 import { calculateATSScore } from '@/lib/ats-score';
 import { generateFitScore } from '@/lib/actions/fit-score-action';
 import { useAuth } from '@/components/auth-provider';
@@ -286,6 +287,9 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
               >
                 {isPending ? 'Saving...' : 'Accept & Save'}
               </button>
+            )}
+            {!isGuest && latestTailored?.id && tailoredATS && (
+              <ShareScoreButton tailoredId={latestTailored.id} />
             )}
             {showNoTokens ? (
               <Link

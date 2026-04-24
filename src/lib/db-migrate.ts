@@ -77,6 +77,32 @@ async function migrate() {
     // Index already exists — safe to ignore
   }
 
+  // tailored_resumes: share columns (is_public, share_slug, cached scores)
+  const tailoredShareColumns: Array<{ col: string; ddl: string }> = [
+    { col: 'is_public', ddl: 'ADD COLUMN is_public INTEGER NOT NULL DEFAULT 0' },
+    { col: 'share_slug', ddl: 'ADD COLUMN share_slug TEXT' },
+    { col: 'score_original', ddl: 'ADD COLUMN score_original INTEGER NOT NULL DEFAULT 0' },
+    { col: 'score_tailored', ddl: 'ADD COLUMN score_tailored INTEGER NOT NULL DEFAULT 0' },
+  ];
+  for (const { col, ddl } of tailoredShareColumns) {
+    try {
+      await db.execute(`ALTER TABLE tailored_resumes ${ddl}`);
+      console.log(`Added ${col} column to tailored_resumes`);
+    } catch {
+      // Column already exists — safe to ignore
+    }
+  }
+
+  // Unique index on share_slug (partial, since NULL is allowed for private rows)
+  try {
+    await db.execute(
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_tailored_resumes_share_slug ON tailored_resumes (share_slug) WHERE share_slug IS NOT NULL`,
+    );
+    console.log('Created idx_tailored_resumes_share_slug index');
+  } catch {
+    // Index already exists — safe to ignore
+  }
+
   console.log('Migration complete');
 }
 

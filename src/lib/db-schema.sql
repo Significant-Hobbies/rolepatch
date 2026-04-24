@@ -34,6 +34,10 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   resume_id TEXT NOT NULL REFERENCES resumes(id),
   source TEXT NOT NULL DEFAULT '',
   accepted INTEGER NOT NULL DEFAULT 0,
+  is_public INTEGER NOT NULL DEFAULT 0,
+  share_slug TEXT UNIQUE,
+  score_original INTEGER NOT NULL DEFAULT 0,
+  score_tailored INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
