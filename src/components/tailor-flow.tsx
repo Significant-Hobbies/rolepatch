@@ -47,11 +47,11 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
     if (isGuest) {
       if (!serverResume) {
         const local = localGetResume(job.resume_id);
-        if (local) setResume(local); // eslint-disable-line react-hooks/set-state-in-effect -- hydrate from localStorage for guests
+        if (local) setResume(local);
       }
       const localTailored = localGetTailoredResumes(job.id);
       if (localTailored.length > 0) {
-        setTailoredList(localTailored); // eslint-disable-line react-hooks/set-state-in-effect -- hydrate from localStorage for guests
+        setTailoredList(localTailored);
       }
     }
   }, [isGuest, serverResume, job.resume_id, job.id]);
@@ -67,7 +67,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
   useEffect(() => {
     const latest = tailoredList[0] ?? null;
     if (latest?.source && !tailoredSource) {
-      setTailoredSource(latest.source); // eslint-disable-line react-hooks/set-state-in-effect -- sync derived state from localStorage hydration
+      setTailoredSource(latest.source);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when tailoredList changes, not when tailoredSource changes
   }, [tailoredList]);
