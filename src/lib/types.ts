@@ -24,6 +24,14 @@ export interface JobApplication {
   jd_raw: string;
   jd_text: string;
   status: 'draft' | 'tailored' | 'applied' | 'interview' | 'offer' | 'rejected';
+  interview_date: number | null;
+  follow_up_at: number | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_currency: string | null;
+  offer_amount: number | null;
+  notes: string | null;
+  rejection_reason: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -33,6 +41,20 @@ export interface TailorChange {
   reason: string;
   jd_match?: string;
 }
+
+export type JobDetailsPatch = Partial<
+  Pick<
+    JobApplication,
+    | 'interview_date'
+    | 'follow_up_at'
+    | 'salary_min'
+    | 'salary_max'
+    | 'salary_currency'
+    | 'offer_amount'
+    | 'notes'
+    | 'rejection_reason'
+  >
+>;
 
 export interface TailoredResume {
   id: string;

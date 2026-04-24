@@ -2,9 +2,22 @@
 
 import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { JobApplication, TailoredResume, TailorChange } from '@/lib/types';
+import type { JobApplication, JobDetailsPatch, TailoredResume, TailorChange } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUserId } from '@/lib/auth-utils';
+
+type SqlArg = string | number | null;
+
+const ALLOWED_DETAIL_FIELDS: ReadonlyArray<keyof JobDetailsPatch> = [
+  'interview_date',
+  'follow_up_at',
+  'salary_min',
+  'salary_max',
+  'salary_currency',
+  'offer_amount',
+  'notes',
+  'rejection_reason',
+];
 
 export async function createJobApplication(
   resumeId: string,
@@ -49,6 +62,32 @@ export async function updateJobStatus(id: string, status: string): Promise<void>
   await db.execute({
     sql: `UPDATE job_applications SET status = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?`,
     args: [status, id, userId],
+  });
+  revalidatePath('/dashboard');
+}
+
+export async function updateJobDetails(id: string, patch: JobDetailsPatch): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error('Sign in to update job details');
+
+  const sets: string[] = [];
+  const args: SqlArg[] = [];
+  for (const field of ALLOWED_DETAIL_FIELDS) {
+    if (field in patch) {
+      const value = patch[field];
+      if (value === undefined) continue;
+      sets.push(`${field} = ?`);
+      args.push(value);
+    }
+  }
+  if (sets.length === 0) return;
+
+  sets.push(`updated_at = unixepoch()`);
+  args.push(id, userId);
+
+  await db.execute({
+    sql: `UPDATE job_applications SET ${sets.join(', ')} WHERE id = ? AND user_id = ?`,
+    args,
   });
   revalidatePath('/dashboard');
 }
