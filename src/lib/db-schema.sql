@@ -136,3 +136,13 @@ CREATE TABLE IF NOT EXISTS interview_stories (
   best_for TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
+
+CREATE TABLE IF NOT EXISTS skills_roadmaps (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL REFERENCES job_applications(id),
+  user_id TEXT,
+  items_json TEXT NOT NULL DEFAULT '[]',
+  total_estimated_hours INTEGER NOT NULL DEFAULT 0,
+  summary TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);

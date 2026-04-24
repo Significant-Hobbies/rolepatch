@@ -1,4 +1,4 @@
-import type { Resume, StashEntry, TailoredResume, TailorChange, CoverLetter, JobApplication, JobDetailsPatch, FitScore, InterviewStory, OutreachEmail } from '@/lib/types';
+import type { Resume, StashEntry, TailoredResume, TailorChange, CoverLetter, JobApplication, JobDetailsPatch, FitScore, InterviewStory, OutreachEmail, SkillsRoadmap } from '@/lib/types';
 
 const KEYS = {
   resumes: 'rt-resumes',
@@ -9,6 +9,7 @@ const KEYS = {
   fitScores: 'rt-fit-scores',
   interviewStories: 'rt-interview-stories',
   outreachEmails: 'rt-outreach-emails',
+  skillsRoadmaps: 'rt-skills-roadmaps',
 } as const;
 
 function getItems<T>(key: string): T[] {
@@ -254,4 +255,15 @@ export function localSaveOutreachEmail(jobId: string, resumeId: string, subject:
   items.push({ id, job_id: jobId, resume_id: resumeId, subject, body, created_at: now });
   setItems(KEYS.outreachEmails, items);
   return id;
+}
+
+// --- Skills Roadmaps ---
+export function localGetSkillsRoadmap(jobId: string): SkillsRoadmap | null {
+  return getItems<SkillsRoadmap>(KEYS.skillsRoadmaps).find(r => r.job_id === jobId) ?? null;
+}
+
+export function localSaveSkillsRoadmap(roadmap: SkillsRoadmap): void {
+  const items = getItems<SkillsRoadmap>(KEYS.skillsRoadmaps).filter(r => r.job_id !== roadmap.job_id);
+  items.push(roadmap);
+  setItems(KEYS.skillsRoadmaps, items);
 }

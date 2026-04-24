@@ -10,6 +10,7 @@ import { ResumeDiff } from '@/components/resume-diff';
 import { ATSScoreBadge } from '@/components/ats-score-badge';
 import { FitScoreCard } from '@/components/fit-score-card';
 import { ShareScoreButton } from '@/components/share-score-button';
+import { SkillsRoadmapPanel } from '@/components/skills-roadmap';
 import { calculateATSScore } from '@/lib/ats-score';
 import { generateFitScore } from '@/lib/actions/fit-score-action';
 import { useAuth } from '@/components/auth-provider';
@@ -231,6 +232,11 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
             >
               Interview Prep (STAR Stories)
             </Link>
+          </div>
+
+          {/* Skills gap learning roadmap */}
+          <div className="border-t border-[var(--border)] pt-4">
+            <SkillsRoadmapPanel job={job} resume={resume} />
           </div>
         </div>
       </div>

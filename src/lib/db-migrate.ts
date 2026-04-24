@@ -123,6 +123,24 @@ async function migrate() {
     }
   }
 
+  // skills_roadmaps — idempotent; schema file also declares it for fresh installs
+  try {
+    await db.execute(
+      `CREATE TABLE IF NOT EXISTS skills_roadmaps (
+        id TEXT PRIMARY KEY,
+        job_id TEXT NOT NULL REFERENCES job_applications(id),
+        user_id TEXT,
+        items_json TEXT NOT NULL DEFAULT '[]',
+        total_estimated_hours INTEGER NOT NULL DEFAULT 0,
+        summary TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL DEFAULT (unixepoch())
+      )`,
+    );
+    console.log('Ensured skills_roadmaps table');
+  } catch {
+    // Already exists — safe to ignore
+  }
+
   console.log('Migration complete');
 }
 
