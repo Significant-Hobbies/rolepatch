@@ -77,6 +77,14 @@ async function migrate() {
     // Index already exists — safe to ignore
   }
 
+  // Add changes_json column to tailored_resumes (JSON-encoded TailorChange[])
+  try {
+    await db.execute(`ALTER TABLE tailored_resumes ADD COLUMN changes_json TEXT NOT NULL DEFAULT '[]'`);
+    console.log('Added changes_json column to tailored_resumes');
+  } catch {
+    // Column already exists — safe to ignore
+  }
+
   console.log('Migration complete');
 }
 

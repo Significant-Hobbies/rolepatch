@@ -1,4 +1,4 @@
-import type { Resume, StashEntry, TailoredResume, CoverLetter, JobApplication, FitScore, InterviewStory } from '@/lib/types';
+import type { Resume, StashEntry, TailoredResume, TailorChange, CoverLetter, JobApplication, FitScore, InterviewStory } from '@/lib/types';
 
 const KEYS = {
   resumes: 'rt-resumes',
@@ -113,14 +113,21 @@ export function localUpdateJobStatus(id: string, status: JobApplication['status'
 
 // --- Tailored Resumes ---
 export function localGetTailoredResumes(jobId: string): TailoredResume[] {
-  return getItems<TailoredResume>(KEYS.tailored).filter(t => t.job_id === jobId);
+  return getItems<TailoredResume>(KEYS.tailored)
+    .filter(t => t.job_id === jobId)
+    .map(t => ({ ...t, changes: Array.isArray(t.changes) ? t.changes : [] }));
 }
 
-export function localSaveTailoredResume(jobId: string, resumeId: string, source: string): string {
+export function localSaveTailoredResume(
+  jobId: string,
+  resumeId: string,
+  source: string,
+  changes: TailorChange[] = [],
+): string {
   const id = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
   const items = getItems<TailoredResume>(KEYS.tailored);
-  items.push({ id, job_id: jobId, resume_id: resumeId, source, accepted: 0, created_at: now, updated_at: now });
+  items.push({ id, job_id: jobId, resume_id: resumeId, source, accepted: 0, changes: changes ?? [], created_at: now, updated_at: now });
   setItems(KEYS.tailored, items);
   return id;
 }

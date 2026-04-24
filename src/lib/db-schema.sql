@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   resume_id TEXT NOT NULL REFERENCES resumes(id),
   source TEXT NOT NULL DEFAULT '',
   accepted INTEGER NOT NULL DEFAULT 0,
+  changes_json TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
