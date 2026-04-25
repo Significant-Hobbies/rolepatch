@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
-import { signIn } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 
 const TOKEN_PACKS = [
   {
@@ -99,7 +99,7 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
 
             {isGuest ? (
               <button
-                onClick={() => signIn('google')}
+                onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: '/pricing' })}
                 className="w-full py-2.5 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--muted-foreground)] hover:text-foreground transition-colors"
               >
                 Sign in to purchase

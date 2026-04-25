@@ -1,32 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useAuth } from '@/components/auth-provider';
-import { signIn, signOut } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import { useState, useEffect, useRef } from 'react';
 
-interface SessionData {
-  user?: {
-    name?: string;
-    email?: string;
-    image?: string;
-  };
-}
-
 export function UserMenu() {
-  const { isGuest } = useAuth();
+  const { data: session } = authClient.useSession();
   const [open, setOpen] = useState(false);
-  const [session, setSession] = useState<SessionData | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isGuest) {
-      fetch('/api/auth/session')
-        .then((r) => r.json())
-        .then(setSession)
-        .catch(() => {});
-    }
-  }, [isGuest]);
 
   useEffect(() => {
     if (!open) return;
@@ -39,10 +20,10 @@ export function UserMenu() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
-  if (isGuest) {
+  if (!session?.user) {
     return (
       <button
-        onClick={() => signIn('google')}
+        onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: '/' })}
         className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-gray-900 hover:bg-gray-200 transition-colors"
       >
         Sign in
@@ -50,9 +31,7 @@ export function UserMenu() {
     );
   }
 
-  const name = session?.user?.name ?? '';
-  const email = session?.user?.email ?? '';
-  const image = session?.user?.image;
+  const { name, email, image } = session.user;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -61,7 +40,7 @@ export function UserMenu() {
           <Image src={image} alt="" width={28} height={28} className="rounded-full ring-2 ring-[var(--border)]" />
         ) : (
           <div className="w-7 h-7 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-xs font-medium ring-2 ring-[var(--border)]">
-            {name[0] ?? '?'}
+            {(name ?? '?')[0]}
           </div>
         )}
       </button>
@@ -71,7 +50,7 @@ export function UserMenu() {
             {email}
           </div>
           <button
-            onClick={() => signOut()}
+            onClick={() => authClient.signOut()}
             className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-[var(--muted)] transition-colors"
           >
             Sign out

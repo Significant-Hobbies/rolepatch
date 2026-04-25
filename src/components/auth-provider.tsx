@@ -1,8 +1,7 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { SessionProvider } from 'next-auth/react';
-import type { Session } from 'next-auth';
+import { authClient } from '@/lib/auth-client';
 
 interface AuthContextValue {
   userId: string | null;
@@ -14,14 +13,13 @@ const AuthContext = createContext<AuthContextValue>({
   isGuest: true,
 });
 
-export function AuthProvider({ session, children }: { session: Session | null; children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = authClient.useSession();
   const userId = session?.user?.id ?? null;
   return (
-    <SessionProvider session={session}>
-      <AuthContext.Provider value={{ isGuest: !userId, userId }}>
-        {children}
-      </AuthContext.Provider>
-    </SessionProvider>
+    <AuthContext.Provider value={{ isGuest: !userId, userId }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

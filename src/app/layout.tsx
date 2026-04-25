@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { auth } from "@/lib/auth";
 import { AuthProvider } from "@/components/auth-provider";
 import { SiteNav } from "@/components/site-nav";
 import { SaasMakerAnalytics } from "@/components/SaasMakerAnalytics";
@@ -52,13 +51,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-
   return (
     <html lang="en" className="dark">
       <body
@@ -66,7 +63,7 @@ export default async function RootLayout({
       >
         <SaasMakerAnalytics />
         <SaaSMakerFeedback />
-        <AuthProvider session={session}>
+        <AuthProvider>
           <SiteNav />
           {children}
         </AuthProvider>
