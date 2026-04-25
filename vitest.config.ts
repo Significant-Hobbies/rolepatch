@@ -15,4 +15,9 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     exclude: ['e2e/**', 'node_modules/**', '.claude/**', 'extension/**'],
   },
+coverage: {
+    provider: 'v8',
+    reporter: ['json', 'text-summary'],
+    exclude: ['node_modules', 'dist', '.next', 'coverage', '**/*.d.ts', '**/*.config.*', '**/test/**'],
+  },,
 });
