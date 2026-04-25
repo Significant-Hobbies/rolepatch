@@ -1,11 +1,9 @@
-name: Deploy to Cloudflare Workers
+name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  pull_request_target:
-    types: [closed]
 
 jobs:
   deploy-production:
@@ -20,10 +18,19 @@ jobs:
         with: { node-version: '20', cache: pnpm }
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm cf:build
+      - name: Prepare Pages deploy directory
+        run: |
+          mkdir -p .pages-deploy
+          cp -r .open-next/assets/. .pages-deploy/
+          cp -r .open-next/cloudflare .pages-deploy/
+          cp -r .open-next/middleware .pages-deploy/
+          cp -r .open-next/.build .pages-deploy/
+          cp -r .open-next/server-functions .pages-deploy/
+          cp .open-next/worker.js .pages-deploy/_worker.js
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: deploy
+          command: pages deploy --project-name=resume-tailor --branch=main
 
   deploy-preview:
     if: github.event_name == 'pull_request'
@@ -40,11 +47,20 @@ jobs:
         with: { node-version: '20', cache: pnpm }
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm cf:build
-      - name: Deploy preview worker
+      - name: Prepare Pages deploy directory
+        run: |
+          mkdir -p .pages-deploy
+          cp -r .open-next/assets/. .pages-deploy/
+          cp -r .open-next/cloudflare .pages-deploy/
+          cp -r .open-next/middleware .pages-deploy/
+          cp -r .open-next/.build .pages-deploy/
+          cp -r .open-next/server-functions .pages-deploy/
+          cp .open-next/worker.js .pages-deploy/_worker.js
+      - name: Deploy preview
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: deploy --name resume-tailor-pr-${{ github.event.number }}
+          command: pages deploy --project-name=resume-tailor --branch=${{ github.head_ref || github.ref_name }}
       - name: Comment preview URL on PR
         uses: actions/github-script@v7
         with:
@@ -53,14 +69,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 **Preview:** https://resume-tailor-pr-${{ github.event.number }}.${{ github.repository_owner }}.workers.dev`
+              body: `Preview deployed to Cloudflare Pages: https://${{ github.head_ref || github.ref_name }}.resume-tailor-6sx.pages.dev`
             })
-
-  cleanup-preview:
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: delete --name resume-tailor-pr-${{ github.event.number }} --force

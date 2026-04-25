@@ -1,9 +1,8 @@
 name = "resume-tailor"
+pages_build_output_dir = ".pages-deploy"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-main = ".open-next/worker.js"
-assets = { directory = ".open-next/assets" }
 
 [vars]
-NEXTAUTH_URL = "https://resume-tailor.sarthakagrawal927.workers.dev"
+NEXTAUTH_URL = "https://resume-tailor-6sx.pages.dev"
 NODE_ENV = "production"
