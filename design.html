@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Intelligent Curator | Editorial AI Resume Tailoring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#faf8ff",
+                    "on-secondary-fixed-variant": "#004e5d",
+                    "on-primary-fixed-variant": "#0040a2",
+                    "tertiary": "#432f9c",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#0c56d0",
+                    "secondary": "#00687b",
+                    "surface-variant": "#e1e2ec",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#c9bfff",
+                    "on-tertiary-fixed-variant": "#4633a0",
+                    "secondary-fixed-dim": "#48d7f9",
+                    "surface-container-highest": "#e1e2ec",
+                    "surface-container-high": "#e7e7f2",
+                    "surface-bright": "#faf8ff",
+                    "tertiary-container": "#5b49b5",
+                    "surface-container-low": "#f3f3fd",
+                    "outline-variant": "#c3c6d6",
+                    "inverse-primary": "#b2c5ff",
+                    "on-background": "#191b23",
+                    "surface-dim": "#d9d9e4",
+                    "on-surface-variant": "#434654",
+                    "on-surface": "#191b23",
+                    "surface-container": "#ededf8",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#e5deff",
+                    "secondary-container": "#50dcff",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#0052cc",
+                    "inverse-surface": "#2e3038",
+                    "primary-fixed-dim": "#b2c5ff",
+                    "on-tertiary-fixed": "#1a0063",
+                    "primary": "#003d9b",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#afecff",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#f0f0fb",
+                    "on-primary-container": "#c4d2ff",
+                    "primary-fixed": "#dae2ff",
+                    "on-tertiary-container": "#d5ccff",
+                    "on-primary-fixed": "#001848",
+                    "on-primary": "#ffffff",
+                    "background": "#faf8ff",
+                    "outline": "#737685",
+                    "on-secondary-fixed": "#001f27",
+                    "on-secondary-container": "#005f71"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "display": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-gradient {
+            background: linear-gradient(135deg, #003d9b 0%, #0052cc 100%);
+        }
+        .glass-panel {
+            background: rgba(225, 226, 236, 0.6);
+            backdrop-filter: blur(24px);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf8ff;
+            color: #191b23;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#faf8ff]/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-[0px_4px_20px_rgba(25,27,35,0.04)]">
+<nav class="flex justify-between items-center w-full px-8 md:px-16 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#003d9b] dark:text-[#50dcff]" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-['Manrope'] font-extrabold text-xl tracking-tighter text-[#191b23] dark:text-slate-50">The Intelligent Curator</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#003d9b] dark:text-[#50dcff] font-bold border-b-2 border-[#003d9b] pb-1 font-['Manrope'] tracking-tight text-sm" href="#">Editor</a>
+<a class="text-[#434654] dark:text-slate-400 font-medium hover:text-[#003d9b] transition-colors font-['Manrope'] tracking-tight text-sm" href="#">Insights</a>
+<a class="text-[#434654] dark:text-slate-400 font-medium hover:text-[#003d9b] transition-colors font-['Manrope'] tracking-tight text-sm" href="#">Templates</a>
+<a class="text-[#434654] dark:text-slate-400 font-medium hover:text-[#003d9b] transition-colors font-['Manrope'] tracking-tight text-sm" href="#">Pricing</a>
+</div>
+<button class="bg-[#003d9b] text-white px-6 py-2.5 rounded-xl font-['Manrope'] font-semibold tracking-tight text-sm hover:opacity-90 active:scale-[0.99] transition-all">
+                Get Started
+            </button>
+</nav>
+</header>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="relative px-8 md:px-16 py-24 md:py-32 max-w-screen-2xl mx-auto overflow-hidden">
+<div class="relative z-10 max-w-4xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-semibold uppercase tracking-wider mb-8">
+<span class="material-symbols-outlined text-[14px]" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                    AI-Powered Narrative Refinement
+                </div>
+<h1 class="text-6xl md:text-8xl font-extrabold tracking-tighter text-on-surface leading-[0.9] mb-8">
+                    Tailor your story with <span class="text-primary">editorial</span> precision.
+                </h1>
+<p class="text-xl md:text-2xl text-on-surface-variant max-w-2xl font-body leading-relaxed mb-12">
+                    Go beyond simple ATS optimization. Our AI-powered curator refines your narrative to match your dream role with the touch of a professional editor.
+                </p>
+<div class="flex flex-wrap gap-4">
+<button class="editorial-gradient text-on-primary px-10 py-5 rounded-xl font-headline font-bold text-lg shadow-lg hover:shadow-xl active:scale-[0.98] transition-all">
+                        Start Curating Free
+                    </button>
+<button class="bg-surface-container-highest text-on-surface px-10 py-5 rounded-xl font-headline font-bold text-lg hover:bg-surface-variant transition-all">
+                        See Sample
+                    </button>
+</div>
+</div>
+<!-- Abstract background shape -->
+<div class="absolute -right-20 top-20 w-[600px] h-[600px] bg-secondary-container/20 rounded-full blur-[120px] -z-10"></div>
+</section>
+<!-- Feature Showcase (The Editor) -->
+<section class="bg-surface-container-low py-24 px-8 md:px-16">
+<div class="max-w-screen-2xl mx-auto">
+<div class="mb-16 text-center md:text-left">
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-4">The Editorial Workspace</h2>
+<p class="text-on-surface-variant max-w-xl text-lg">Sophisticated controls for a more intentional career narrative.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[700px]">
+<!-- Original Text -->
+<div class="lg:col-span-3 bg-surface-container-lowest rounded-xl p-8 shadow-[0px_4px_20px_rgba(25,27,35,0.02)] flex flex-col">
+<div class="flex items-center gap-2 mb-6 text-on-surface-variant text-sm font-semibold uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="history">history</span>
+                            Original Draft
+                        </div>
+<div class="text-on-surface-variant font-body leading-relaxed space-y-4">
+<p class="p-3 rounded-lg hover:bg-surface-container transition-colors cursor-text">Led a team of 5 developers to build a new website using React and Node.js.</p>
+<p class="p-3 rounded-lg bg-secondary-container/10 border-l-4 border-secondary">Responsible for managing client budgets and project timelines for the marketing department.</p>
+<p class="p-3 rounded-lg hover:bg-surface-container transition-colors cursor-text">Helped improve the system performance by optimizing database queries.</p>
+</div>
+</div>
+<!-- AI Suggestions -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 shadow-[0px_12px_40px_rgba(25,27,35,0.06)] border border-primary/5 flex flex-col relative">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-2 text-primary text-sm font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                                Curator Insights
+                            </div>
+<div class="bg-tertiary-container text-on-tertiary-container text-[10px] font-bold px-2 py-0.5 rounded-full">AI ACTIVE</div>
+</div>
+<div class="space-y-6">
+<div class="p-5 rounded-xl bg-surface-container-low border-l-4 border-primary">
+<p class="text-xs font-bold text-primary mb-2 uppercase tracking-tighter">Impact-Focused Rewrite</p>
+<p class="text-on-surface font-semibold leading-snug mb-4">"Orchestrated a cross-functional squad of 5 engineers to architect a scalable ecosystem, resulting in a 40% uptick in user engagement."</p>
+<div class="flex gap-2">
+<button class="bg-primary text-white text-xs font-bold px-4 py-2 rounded-lg hover:opacity-90">Apply</button>
+<button class="bg-surface-variant text-on-surface text-xs font-bold px-4 py-2 rounded-lg">Iterate</button>
+</div>
+</div>
+<div class="p-5 rounded-xl bg-surface-container-lowest border border-outline-variant/30 opacity-60">
+<p class="text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-tighter">Action-Oriented</p>
+<p class="text-on-surface-variant font-medium leading-snug">"Spearheaded strategic financial modeling and project lifecycle management..."</p>
+</div>
+<div class="mt-auto pt-8">
+<p class="text-xs font-bold text-on-surface-variant mb-3 uppercase tracking-widest">Narration Style</p>
+<div class="grid grid-cols-2 gap-2">
+<button class="flex items-center gap-2 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                        Sophisticated
+                                    </button>
+<button class="flex items-center gap-2 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-lg text-xs font-bold">
+                                        Modern Pro
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Live Preview -->
+<div class="lg:col-span-5 bg-surface-container-highest/30 rounded-xl overflow-hidden flex flex-col">
+<div class="p-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-lowest">
+<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Live Portfolio Preview</span>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-error/20"></div>
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+<div class="w-2 h-2 rounded-full bg-primary/20"></div>
+</div>
+</div>
+<div class="p-12 bg-white flex-grow shadow-inner">
+<div class="max-w-md mx-auto space-y-8">
+<div class="border-b-2 border-on-surface pb-6">
+<h3 class="text-3xl font-extrabold tracking-tighter">ALEXANDER VANCE</h3>
+<p class="text-sm font-bold tracking-widest text-primary uppercase mt-1">Senior Product Architect</p>
+</div>
+<div class="space-y-4">
+<h4 class="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">Professional Narrative</h4>
+<p class="text-sm leading-relaxed text-on-surface italic">"Strategic innovator specializing in high-growth ecosystems. Orchestrated cross-functional squads to architect scalable digital solutions..."</p>
+</div>
+<div class="space-y-4">
+<h4 class="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">Experience</h4>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between items-baseline">
+<p class="text-sm font-bold">Lead Systems Engineer</p>
+<span class="text-[10px] font-bold text-on-surface-variant">2021 — PRESENT</span>
+</div>
+<p class="text-xs text-on-surface-variant">Global Tech Corp</p>
+<ul class="mt-2 text-[11px] leading-relaxed text-on-surface list-disc list-inside space-y-1">
+<li>Architected a scalable ecosystem resulting in a 40% uptick in user engagement.</li>
+<li>Spearheaded integration of AI-driven curation models.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Process Section -->
+<section class="py-24 px-8 md:px-16 max-w-screen-2xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-6 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" data-icon="upload_file">upload_file</span>
+</div>
+<h3 class="text-xl font-bold mb-2">1. Upload Resume</h3>
+<p class="text-on-surface-variant font-body text-sm leading-relaxed">Import your current career history from PDF, Word, or LinkedIn.</p>
+</div>
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-6 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" data-icon="link">link</span>
+</div>
+<h3 class="text-xl font-bold mb-2">2. Add Job Link</h3>
+<p class="text-on-surface-variant font-body text-sm leading-relaxed">Paste the job description you're targeting. Our AI maps the requirements.</p>
+</div>
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-6 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" data-icon="auto_fix_high">auto_fix_high</span>
+</div>
+<h3 class="text-xl font-bold mb-2">3. Review Curated Draft</h3>
+<p class="text-on-surface-variant font-body text-sm leading-relaxed">Approve AI-tailored bullet points and summaries in minutes.</p>
+</div>
+</div>
+</section>
+<!-- Pricing Section -->
+<section class="bg-surface py-24 px-8 md:px-16 border-t border-outline-variant/10">
+<div class="max-w-4xl mx-auto text-center mb-16">
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Investment in your Future</h2>
+<p class="text-on-surface-variant text-lg">Simple, transparent pricing for every career stage.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+<!-- Essential -->
+<div class="bg-surface-container-low rounded-2xl p-10 flex flex-col hover:bg-surface-container transition-colors">
+<div class="mb-8">
+<h3 class="text-2xl font-bold mb-2">Essential</h3>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-extrabold">$0</span>
+<span class="text-on-surface-variant font-medium">/forever</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 text-on-surface font-medium">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            3 AI-Curated Rewrites
+                        </li>
+<li class="flex items-center gap-3 text-on-surface font-medium">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Standard Portfolio Templates
+                        </li>
+<li class="flex items-center gap-3 text-on-surface font-medium opacity-50">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+                            Advanced Narrative Analysis
+                        </li>
+</ul>
+<button class="w-full py-4 bg-white text-on-surface font-bold rounded-xl border border-outline-variant hover:bg-surface-container-highest transition-all">
+                        Get Started
+                    </button>
+</div>
+<!-- Professional -->
+<div class="bg-on-surface text-surface rounded-2xl p-10 flex flex-col relative overflow-hidden shadow-2xl">
+<div class="absolute top-6 right-6">
+<div class="bg-primary-container text-on-primary-container text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest">Recommended</div>
+</div>
+<div class="mb-8">
+<h3 class="text-2xl font-bold mb-2">Professional</h3>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-extrabold">$19</span>
+<span class="text-surface-variant/60 font-medium">/month</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3 font-medium">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Unlimited Narrative Curation
+                        </li>
+<li class="flex items-center gap-3 font-medium">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            All Premium Editorial Templates
+                        </li>
+<li class="flex items-center gap-3 font-medium">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Job Market Insights Panel
+                        </li>
+<li class="flex items-center gap-3 font-medium">
+<span class="material-symbols-outlined text-secondary-container text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+                            Direct PDF &amp; DOCX Export
+                        </li>
+</ul>
+<button class="w-full py-4 editorial-gradient text-white font-bold rounded-xl hover:opacity-90 transition-all">
+                        Upgrade to Pro
+                    </button>
+</div>
+</div>
+</section>
+<!-- CTA Final -->
+<section class="py-24 px-8 md:px-16 text-center max-w-screen-2xl mx-auto">
+<div class="bg-primary-container/10 rounded-3xl p-16 md:p-24 relative overflow-hidden">
+<div class="relative z-10">
+<h2 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-8">Ready to curate your future?</h2>
+<button class="editorial-gradient text-on-primary px-12 py-6 rounded-xl font-headline font-bold text-xl hover:shadow-2xl transition-all">
+                        Get Started Now
+                    </button>
+</div>
+<div class="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-[80px]"></div>
+<div class="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 rounded-full blur-[80px]"></div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f3f3fd] dark:bg-slate-900">
+<div class="w-full py-12 px-8 md:px-16 flex flex-col md:flex-row justify-between items-center gap-6 max-w-screen-2xl mx-auto">
+<div class="flex flex-col items-center md:items-start gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#003d9b] dark:text-[#50dcff]" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-['Manrope'] font-bold text-[#191b23] dark:text-slate-50">The Intelligent Curator</span>
+</div>
+<p class="font-['Inter'] text-xs font-medium uppercase tracking-widest text-[#434654] dark:text-slate-500">© 2024 The Intelligent Curator. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-['Inter'] text-xs font-medium uppercase tracking-widest text-[#434654] dark:text-slate-500 hover:text-[#003d9b] dark:hover:text-[#50dcff] transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs font-medium uppercase tracking-widest text-[#434654] dark:text-slate-500 hover:text-[#003d9b] dark:hover:text-[#50dcff] transition-colors" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs font-medium uppercase tracking-widest text-[#434654] dark:text-slate-500 hover:text-[#003d9b] dark:hover:text-[#50dcff] transition-colors" href="#">Support</a>
+<a class="font-['Inter'] text-xs font-medium uppercase tracking-widest text-[#434654] dark:text-slate-500 hover:text-[#003d9b] dark:hover:text-[#50dcff] transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>
