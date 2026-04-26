@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import type { JobApplication, Resume, InterviewStory } from '@/lib/types';
-import { generateInterviewStories } from '@/lib/actions/interview-prep-action';
+import { useState, useTransition } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
+import { generateInterviewStories } from '@/lib/actions/interview-prep-action';
+import type { InterviewStory,JobApplication, Resume } from '@/lib/types';
 
 interface InterviewPrepProps {
   job: JobApplication;

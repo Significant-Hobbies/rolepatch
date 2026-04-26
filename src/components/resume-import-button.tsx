@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { importResumeFromFile } from '@/lib/actions/import-action';
+import { useRef, useState, useTransition } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
+import { importResumeFromFile } from '@/lib/actions/import-action';
 import { localCreateResume } from '@/lib/local-storage';
 
 const ACCEPTED = '.pdf,.doc,.docx,.txt,.md';

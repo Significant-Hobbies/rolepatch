@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
-import type { JobApplication, Resume, SkillPriority, SkillsRoadmap } from '@/lib/types';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+
+import { useAuth } from '@/components/auth-provider';
 import {
   generateSkillsRoadmap,
   getSkillsRoadmap,
@@ -11,7 +12,7 @@ import {
   localGetSkillsRoadmap,
   localSaveSkillsRoadmap,
 } from '@/lib/local-storage';
-import { useAuth } from '@/components/auth-provider';
+import type { JobApplication, Resume, SkillPriority, SkillsRoadmap } from '@/lib/types';
 
 const PRIORITY_ORDER: SkillPriority[] = ['high', 'medium', 'low'];
 

@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { AlertCircle, ArrowRight, Calendar, FileText, Globe, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/components/auth-provider';
-import { localListResumes, localListJobs, localUpdateJobStatus, localUpdateJobDetails } from '@/lib/local-storage';
-import { updateJobStatus, updateJobDetails } from '@/lib/actions/job-actions';
-import type { Resume, JobApplication, JobDetailsPatch } from '@/lib/types';
-import { CreateResumeButton } from '@/components/create-resume-button';
-import { ResumeImportButton } from '@/components/resume-import-button';
-import { NewJobButton } from '@/components/new-job-button';
-import { MigrationBanner } from '@/components/migration-banner';
+import { useEffect, useMemo,useState } from 'react';
+
 import { ATSScoreMini } from '@/components/ats-score-badge';
+import { useAuth } from '@/components/auth-provider';
+import { CreateResumeButton } from '@/components/create-resume-button';
 import { FitScoreBadge } from '@/components/fit-score-card';
 import { JobDetailsModal, type JobDetailsModalInitialValues } from '@/components/job-details-modal';
 import { JobDiscovery } from '@/components/job-discovery';
-import { FileText, Globe, ArrowRight, Calendar, AlertCircle, Sparkles } from 'lucide-react';
+import { MigrationBanner } from '@/components/migration-banner';
+import { NewJobButton } from '@/components/new-job-button';
+import { ResumeImportButton } from '@/components/resume-import-button';
+import { updateJobDetails,updateJobStatus } from '@/lib/actions/job-actions';
+import { localListJobs, localListResumes, localUpdateJobDetails,localUpdateJobStatus } from '@/lib/local-storage';
+import type { JobApplication, JobDetailsPatch,Resume } from '@/lib/types';
 
 const STATUS_OPTIONS: JobApplication['status'][] = [
   'draft', 'tailored', 'applied', 'interview', 'offer', 'rejected',

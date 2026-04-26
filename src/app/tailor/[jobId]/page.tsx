@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic';
 
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import { TailorFlow } from '@/components/tailor-flow';
+import { getFitScore } from '@/lib/actions/fit-score-action';
 import { getJobApplication, getTailoredResumes } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
-import { getFitScore } from '@/lib/actions/fit-score-action';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { TailorFlow } from '@/components/tailor-flow';
 
 export default async function TailorPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;

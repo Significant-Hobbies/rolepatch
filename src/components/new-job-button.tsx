@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { scrapeJobUrl } from '@/lib/actions/scrape-action';
-import { createJobApplication } from '@/lib/actions/job-actions';
+import { useCallback,useEffect, useRef, useState } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
-import { localSaveJob, localListResumes } from '@/lib/local-storage';
+import { createJobApplication } from '@/lib/actions/job-actions';
+import { scrapeJobUrl } from '@/lib/actions/scrape-action';
+import { localListResumes,localSaveJob } from '@/lib/local-storage';
 
 interface NewJobButtonProps {
   resumes: { id: string; name: string }[];

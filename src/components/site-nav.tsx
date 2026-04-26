@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserMenu } from '@/components/user-menu';
+
 import { TokenBalance } from '@/components/token-balance';
+import { UserMenu } from '@/components/user-menu';
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },

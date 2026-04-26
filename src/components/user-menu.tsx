@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useRef,useState } from 'react';
+
 import { authClient } from '@/lib/auth-client';
-import { useState, useEffect, useRef } from 'react';
 
 export function UserMenu() {
   const { data: session } = authClient.useSession();

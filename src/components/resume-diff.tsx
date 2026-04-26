@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
+
 import type { TailorChange } from '@/lib/types';
 
 interface Props {

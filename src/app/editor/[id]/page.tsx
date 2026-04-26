@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { getResume } from '@/lib/actions/resume-actions';
 import { ResumeEditor } from '@/components/resume-editor';
+import { getResume } from '@/lib/actions/resume-actions';
 
 export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

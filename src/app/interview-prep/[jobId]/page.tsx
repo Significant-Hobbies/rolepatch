@@ -1,10 +1,11 @@
 export const dynamic = 'force-dynamic';
 
+import { notFound } from 'next/navigation';
+
+import { InterviewPrep } from '@/components/interview-prep';
+import { getInterviewStories } from '@/lib/actions/interview-prep-action';
 import { getJobApplication } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
-import { getInterviewStories } from '@/lib/actions/interview-prep-action';
-import { notFound } from 'next/navigation';
-import { InterviewPrep } from '@/components/interview-prep';
 
 export default async function InterviewPrepPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;

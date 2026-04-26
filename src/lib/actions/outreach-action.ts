@@ -1,13 +1,14 @@
 'use server';
 
 import { generateObject } from 'ai';
-import { z } from 'zod';
-import { getAIModel } from '@/lib/ai';
-import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { OutreachEmail, AIProviderConfig } from '@/lib/types';
+import { z } from 'zod';
+
+import { creditTokens,debitToken } from '@/lib/actions/token-actions';
+import { getAIModel } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
-import { debitToken, creditTokens } from '@/lib/actions/token-actions';
+import { db } from '@/lib/db';
+import type { AIProviderConfig,OutreachEmail } from '@/lib/types';
 
 export interface OutreachJobInput {
   id: string;

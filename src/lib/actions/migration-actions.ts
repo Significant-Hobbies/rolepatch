@@ -1,8 +1,8 @@
 'use server';
 
-import { db } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth-utils';
-import type { Resume, JobApplication, TailoredResume, CoverLetter, StashEntry } from '@/lib/types';
+import { db } from '@/lib/db';
+import type { CoverLetter, JobApplication, Resume, StashEntry,TailoredResume } from '@/lib/types';
 
 interface MigrationInput {
   resumes: Resume[];

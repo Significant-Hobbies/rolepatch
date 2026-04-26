@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { calculateATSScore, type ATSResult } from '@/lib/ats-score';
+import { useState } from 'react';
+
+import { type ATSResult,calculateATSScore } from '@/lib/ats-score';
 
 function scoreColor(score: number) {
   if (score > 70) return { stroke: 'var(--accent)', text: 'text-[var(--accent)]' };

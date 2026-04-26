@@ -1,10 +1,11 @@
 'use server';
 
 import crypto from 'crypto';
-import { db } from '@/lib/db';
-import { getCurrentUserId } from '@/lib/auth-utils';
-import { calculateATSScore } from '@/lib/ats-score';
 import { revalidatePath } from 'next/cache';
+
+import { calculateATSScore } from '@/lib/ats-score';
+import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
 
 export interface PublicScore {
   score_original: number;

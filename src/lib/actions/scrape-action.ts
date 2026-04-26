@@ -1,7 +1,8 @@
 'use server';
 
-import { getCurrentUserId } from '@/lib/auth-utils';
 import { headers } from 'next/headers';
+
+import { getCurrentUserId } from '@/lib/auth-utils';
 
 const dynImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
 

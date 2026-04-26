@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback,useEffect, useState } from 'react';
+
 import type { JobDetailsPatch } from '@/lib/types';
 
 export interface JobDetailsModalInitialValues {

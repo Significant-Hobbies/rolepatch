@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import { markdownToHtml, renderPdf } from '@/lib/pdf';

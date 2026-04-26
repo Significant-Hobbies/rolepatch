@@ -1,8 +1,9 @@
 'use server';
 
-import { db } from '@/lib/db';
-import { getCurrentUserId } from '@/lib/auth-utils';
 import { v4 as uuid } from 'uuid';
+
+import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
 
 // ---------------------------------------------------------------------------
 // Types

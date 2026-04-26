@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef,useState } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
-import { localListResumes, localListJobs, localListStashEntries } from '@/lib/local-storage';
-import type { Resume, JobApplication, TailoredResume, CoverLetter, StashEntry } from '@/lib/types';
+import { localListJobs, localListResumes, localListStashEntries } from '@/lib/local-storage';
+import type { CoverLetter, JobApplication, Resume, StashEntry,TailoredResume } from '@/lib/types';
 
 const DISMISSED_KEY = 'rt-migration-dismissed';
 // leave localStorage intact as recovery backup

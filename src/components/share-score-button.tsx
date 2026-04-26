@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+
 import {
+  getShareStateForTailored,
   publishScore,
   unpublishScore,
-  getShareStateForTailored,
 } from '@/lib/actions/share-score-action';
 
 interface ShareScoreButtonProps {

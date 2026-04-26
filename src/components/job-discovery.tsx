@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { Building2, DollarSign, ExternalLink,MapPin, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, MapPin, Building2, DollarSign, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
 import { createJobApplication } from '@/lib/actions/job-actions';
 

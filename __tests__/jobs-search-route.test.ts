@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type * as JobsSearchRoute from '@/app/api/jobs/search/route';
 
 const mockGetCurrentUserId = vi.fn<() => Promise<string | null>>();
 vi.mock('@/lib/auth-utils', () => ({
@@ -27,7 +29,7 @@ function makeReq(body: unknown, origin = 'http://localhost') {
     method: 'POST',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
-  }) as unknown as Parameters<typeof import('@/app/api/jobs/search/route')['POST']>[0];
+  }) as unknown as Parameters<typeof JobsSearchRoute['POST']>[0];
 }
 
 function okFetch(payload: unknown) {

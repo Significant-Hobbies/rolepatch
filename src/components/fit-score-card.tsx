@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import type { FitScore } from '@/lib/types';
 
 function scoreColor(score: number) {

@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
-import type { JobApplication, Resume, CoverLetter } from '@/lib/types';
-import {
-  generateCoverLetter,
-  updateCoverLetter,
-  type CoverLetterTone,
-  type CoverLetterLength,
-} from '@/lib/actions/cover-letter-action';
+import { useEffect, useState, useTransition } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
 import {
-  localGetResume,
+  type CoverLetterLength,
+  type CoverLetterTone,
+  generateCoverLetter,
+  updateCoverLetter,
+} from '@/lib/actions/cover-letter-action';
+import {
   localGetCoverLetter,
+  localGetResume,
   localSaveCoverLetter,
   localUpdateCoverLetter,
 } from '@/lib/local-storage';
+import type { CoverLetter,JobApplication, Resume } from '@/lib/types';
 
 interface CoverLetterEditorProps {
   job: JobApplication;

@@ -1,12 +1,13 @@
 'use server';
 
 import { generateText } from 'ai';
-import { getAIModel } from '@/lib/ai';
-import { db } from '@/lib/db';
-import { v4 as uuid } from 'uuid';
-import type { AIProviderConfig } from '@/lib/types';
-import { getCurrentUserId } from '@/lib/auth-utils';
 import { revalidatePath } from 'next/cache';
+import { v4 as uuid } from 'uuid';
+
+import { getAIModel } from '@/lib/ai';
+import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
+import type { AIProviderConfig } from '@/lib/types';
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
 

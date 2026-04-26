@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 
-import { getJobApplication } from '@/lib/actions/job-actions';
-import { getResume } from '@/lib/actions/resume-actions';
-import { getCoverLetter } from '@/lib/actions/cover-letter-action';
-import { getOutreachEmail } from '@/lib/actions/outreach-action';
 import { notFound } from 'next/navigation';
+
 import { CoverLetterEditor } from '@/components/cover-letter-editor';
 import { OutreachPanel } from '@/components/outreach-panel';
+import { getCoverLetter } from '@/lib/actions/cover-letter-action';
+import { getJobApplication } from '@/lib/actions/job-actions';
+import { getOutreachEmail } from '@/lib/actions/outreach-action';
+import { getResume } from '@/lib/actions/resume-actions';
 
 export default async function CoverLetterPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;

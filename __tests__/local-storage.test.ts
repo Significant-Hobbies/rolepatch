@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it } from 'vitest';
+
 import {
   localCreateResume,
-  localListResumes,
-  localGetResume,
-  localUpdateResume,
-  localDeleteResume,
   localCreateStashEntry,
-  localListStashEntries,
-  localUpdateStashEntry,
+  localDeleteResume,
   localDeleteStashEntry,
+  localGetResume,
+  localListResumes,
+  localListStashEntries,
+  localUpdateResume,
+  localUpdateStashEntry,
 } from '@/lib/local-storage';
 
 describe('local-storage', () => {

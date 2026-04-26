@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { createAdapter } from 'better-auth/adapters';
+
 import { db } from '@/lib/db';
 
 // ---------------------------------------------------------------------------

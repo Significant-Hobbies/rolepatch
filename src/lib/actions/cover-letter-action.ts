@@ -1,13 +1,15 @@
 'use server';
 
 import { generateText } from 'ai';
-import { getAIModel } from '@/lib/ai';
-import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { CoverLetter, AIProviderConfig } from '@/lib/types';
-import { scrapeJobUrl } from './scrape-action';
+
+import { creditTokens,debitToken } from '@/lib/actions/token-actions';
+import { getAIModel } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
-import { debitToken, creditTokens } from '@/lib/actions/token-actions';
+import { db } from '@/lib/db';
+import type { AIProviderConfig,CoverLetter } from '@/lib/types';
+
+import { scrapeJobUrl } from './scrape-action';
 
 export type CoverLetterTone = 'formal' | 'conversational' | 'enthusiastic';
 export type CoverLetterLength = 'short' | 'medium' | 'long';

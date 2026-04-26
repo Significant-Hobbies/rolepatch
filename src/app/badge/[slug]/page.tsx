@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
 import { getPublicScoreBySlug } from '@/lib/actions/share-score-action';
 
 export const dynamic = 'force-dynamic';

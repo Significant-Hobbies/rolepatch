@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it, vi } from 'vitest';
 
 // Mock the auth helper — unauthenticated by default
 const mockGetCurrentUserId = vi.fn<() => Promise<string | null>>();

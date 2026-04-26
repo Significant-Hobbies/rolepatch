@@ -1,17 +1,19 @@
 'use client';
 
-import { useRef, useCallback, useState, useEffect } from 'react';
-import { EditorView, keymap } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
-import { basicSetup } from 'codemirror';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { markdown } from '@codemirror/lang-markdown';
-import Markdown from 'react-markdown';
-import Link from 'next/link';
-import { updateResume } from '@/lib/actions/resume-actions';
-import { useAuth } from '@/components/auth-provider';
-import { localGetResume, localUpdateResume } from '@/lib/local-storage';
 import '@/styles/resume-print.css';
+
+import { markdown } from '@codemirror/lang-markdown';
+import { EditorState } from '@codemirror/state';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView, keymap } from '@codemirror/view';
+import { basicSetup } from 'codemirror';
+import Link from 'next/link';
+import { useCallback, useEffect,useRef, useState } from 'react';
+import Markdown from 'react-markdown';
+
+import { useAuth } from '@/components/auth-provider';
+import { updateResume } from '@/lib/actions/resume-actions';
+import { localGetResume, localUpdateResume } from '@/lib/local-storage';
 
 interface Props {
   resumeId: string;

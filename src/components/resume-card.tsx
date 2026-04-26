@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import type { Resume } from '@/lib/types';
 
 export function ResumeCard({ resume }: { resume: Resume }) {

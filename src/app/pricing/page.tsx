@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import { getTokenBalance } from '@/lib/actions/token-actions';
+
 import { PricingCards } from '@/components/pricing-cards';
+import { getTokenBalance } from '@/lib/actions/token-actions';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 

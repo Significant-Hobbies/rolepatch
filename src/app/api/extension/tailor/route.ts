@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { v4 as uuid } from 'uuid';
-import { db } from '@/lib/db';
+
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
 
 // CORS: the extension origin is chrome-extension://<id>/ — unknown ahead of time.
 // Reflect the Origin when it's a chrome-extension scheme.

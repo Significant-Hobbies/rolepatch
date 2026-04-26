@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { linkedinSearchUrl, hiringManagerSearchUrl } from '@/lib/linkedin-search';
+import { describe, expect,it } from 'vitest';
+
+import { hiringManagerSearchUrl,linkedinSearchUrl } from '@/lib/linkedin-search';
 
 describe('linkedinSearchUrl', () => {
   it('uses "recruiter" as the default role', () => {

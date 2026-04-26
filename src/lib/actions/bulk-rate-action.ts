@@ -2,10 +2,11 @@
 
 import { generateObject } from 'ai';
 import { z } from 'zod';
+
+import { creditTokens,debitToken } from '@/lib/actions/token-actions';
 import { getAIModel } from '@/lib/ai';
-import type { AIProviderConfig } from '@/lib/types';
 import { getCurrentUserId } from '@/lib/auth-utils';
-import { debitToken, creditTokens } from '@/lib/actions/token-actions';
+import type { AIProviderConfig } from '@/lib/types';
 
 const BATCH_SIZE = 20;
 const DESC_CHAR_LIMIT = 1500;

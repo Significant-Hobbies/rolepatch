@@ -1,26 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo, useTransition } from 'react';
 import Link from 'next/link';
-import type { JobApplication, Resume, TailoredResume, TailorChange } from '@/lib/types';
-import { tailorResume } from '@/lib/actions/tailor-action';
-import { saveTailoredResume } from '@/lib/actions/job-actions';
-import { getTokenBalance } from '@/lib/actions/token-actions';
-import { ResumeDiff } from '@/components/resume-diff';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+
 import { ATSScoreBadge } from '@/components/ats-score-badge';
+import { useAuth } from '@/components/auth-provider';
 import { FitScoreCard } from '@/components/fit-score-card';
+import { ResumeDiff } from '@/components/resume-diff';
 import { ShareScoreButton } from '@/components/share-score-button';
 import { SkillsRoadmapPanel } from '@/components/skills-roadmap';
-import { calculateATSScore } from '@/lib/ats-score';
 import { generateFitScore } from '@/lib/actions/fit-score-action';
-import { useAuth } from '@/components/auth-provider';
-import type { FitScore } from '@/lib/types';
+import { saveTailoredResume } from '@/lib/actions/job-actions';
+import { tailorResume } from '@/lib/actions/tailor-action';
+import { getTokenBalance } from '@/lib/actions/token-actions';
+import { calculateATSScore } from '@/lib/ats-score';
 import {
   localGetResume,
   localGetTailoredResumes,
-  localSaveTailoredResume,
   localListStashEntries,
+  localSaveTailoredResume,
 } from '@/lib/local-storage';
+import type { JobApplication, Resume, TailorChange,TailoredResume } from '@/lib/types';
+import type { FitScore } from '@/lib/types';
 
 interface TailorFlowProps {
   job: JobApplication;

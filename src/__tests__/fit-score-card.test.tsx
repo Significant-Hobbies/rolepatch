@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FitScoreCard, FitScoreBadge } from '@/components/fit-score-card';
+import { describe, expect,it } from 'vitest';
+
+import { FitScoreBadge,FitScoreCard } from '@/components/fit-score-card';
 import type { FitScore } from '@/lib/types';
 
 const mockFitScore: FitScore = {

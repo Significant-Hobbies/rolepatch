@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
 import DodoPayments from 'dodopayments';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { auth } from '@/lib/auth';
 import { getProductId } from '@/lib/token-config';
 

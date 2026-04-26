@@ -1,8 +1,9 @@
-import { Webhook } from 'standardwebhooks';
 import { headers } from 'next/headers';
+import { Webhook } from 'standardwebhooks';
+import { v4 as uuid } from 'uuid';
+
 import { db } from '@/lib/db';
 import { getTokensForProduct } from '@/lib/token-config';
-import { v4 as uuid } from 'uuid';
 
 export async function POST(request: Request) {
   const headersList = await headers();

@@ -94,18 +94,32 @@ function escapeHtml(s: string): string {
  * Render HTML to PDF bytes using puppeteer-core + @sparticuz/chromium.
  * Works on Vercel serverless (x86_64 Lambda with provided Chromium binary).
  * For local macOS dev, set PUPPETEER_EXECUTABLE_PATH to a local Chrome/Chromium.
+ *
+ * Note: imports are performed via `Function(...)` to hide them from static
+ * bundlers (Next/OpenNext/esbuild). The Cloudflare Worker bundle must NOT
+ * include Chromium binaries — this route is only reachable in Node runtimes.
  */
 export async function renderPdf(html: string): Promise<Uint8Array> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dynImport: (m: string) => Promise<any> = new Function(
+    'm',
+    'return import(m)',
+  ) as (m: string) => Promise<unknown> as (m: string) => Promise<unknown> as (
+    m: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => Promise<any>;
+
   const [chromiumMod, puppeteerMod] = await Promise.all([
-    import('@sparticuz/chromium'),
-    import('puppeteer-core'),
+    dynImport('@sparticuz/chromium'),
+    dynImport('puppeteer-core'),
   ]);
 
-  const chromium = chromiumMod.default;
+  const chromium = chromiumMod.default ?? chromiumMod;
+  const puppeteer = puppeteerMod.default ?? puppeteerMod;
   const executablePath =
     process.env.PUPPETEER_EXECUTABLE_PATH || (await chromium.executablePath());
 
-  const browser = await puppeteerMod.launch({
+  const browser = await puppeteer.launch({
     args: chromium.args,
     executablePath,
     headless: true,

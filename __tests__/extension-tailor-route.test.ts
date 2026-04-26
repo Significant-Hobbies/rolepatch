@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it, vi } from 'vitest';
+
+import type * as ExtensionTailorRoute from '@/app/api/extension/tailor/route';
 
 const mockGetCurrentUserId = vi.fn<() => Promise<string | null>>();
 vi.mock('@/lib/auth-utils', () => ({
@@ -17,7 +19,7 @@ function makeReq(body: unknown) {
     method: 'POST',
     body: JSON.stringify(body),
     headers: { 'content-type': 'application/json' },
-  }) as unknown as Parameters<typeof import('@/app/api/extension/tailor/route')['POST']>[0];
+  }) as unknown as Parameters<typeof ExtensionTailorRoute['POST']>[0];
 }
 
 const longJd = 'Senior engineer role at '.repeat(20);

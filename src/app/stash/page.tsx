@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { listStashEntries } from '@/lib/actions/stash-actions';
 import { StashList } from '@/components/stash-list';
+import { listStashEntries } from '@/lib/actions/stash-actions';
 
 export default async function StashPage() {
   const entries = await listStashEntries();

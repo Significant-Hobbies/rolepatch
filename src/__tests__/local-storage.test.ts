@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach,describe, expect, it } from 'vitest';
+
 import {
-  localSaveFitScore,
   localGetFitScore,
-  localListFitScores,
-  localSaveInterviewStories,
   localGetInterviewStories,
+  localListFitScores,
+  localSaveFitScore,
+  localSaveInterviewStories,
 } from '@/lib/local-storage';
 import type { FitScore, InterviewStory } from '@/lib/types';
 

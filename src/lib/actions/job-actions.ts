@@ -1,10 +1,11 @@
 'use server';
 
-import { db } from '@/lib/db';
-import { v4 as uuid } from 'uuid';
-import type { JobApplication, JobDetailsPatch, TailoredResume, TailorChange } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { v4 as uuid } from 'uuid';
+
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
+import type { JobApplication, JobDetailsPatch, TailorChange,TailoredResume } from '@/lib/types';
 
 type SqlArg = string | number | null;
 

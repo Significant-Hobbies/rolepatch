@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { ArrowRight, GitCompare, Search } from 'lucide-react';
+import Link from 'next/link';
 
 const tools = [
   {

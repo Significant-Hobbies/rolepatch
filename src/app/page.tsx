@@ -1,5 +1,5 @@
+import { ArrowRight, Award, BarChart3, FileText, Globe, MessageSquare, Quote,Search, Shield, Star, Target, Zap } from "lucide-react";
 import Link from "next/link";
-import { Zap, Star, Shield, Search, FileText, BarChart3, Globe, Target, MessageSquare, ArrowRight, Award, Quote } from "lucide-react";
 
 const jsonLd = {
   "@context": "https://schema.org",

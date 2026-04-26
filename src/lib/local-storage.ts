@@ -1,4 +1,4 @@
-import type { Resume, StashEntry, TailoredResume, TailorChange, CoverLetter, JobApplication, JobDetailsPatch, FitScore, InterviewStory, OutreachEmail, SkillsRoadmap } from '@/lib/types';
+import type { CoverLetter, FitScore, InterviewStory, JobApplication, JobDetailsPatch, OutreachEmail, Resume, SkillsRoadmap,StashEntry, TailorChange, TailoredResume } from '@/lib/types';
 
 const KEYS = {
   resumes: 'rt-resumes',

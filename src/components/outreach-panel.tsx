@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
-import type { JobApplication, Resume, OutreachEmail } from '@/lib/types';
-import { generateOutreachEmail } from '@/lib/actions/outreach-action';
+import { useEffect, useState, useTransition } from 'react';
+
 import { useAuth } from '@/components/auth-provider';
+import { generateOutreachEmail } from '@/lib/actions/outreach-action';
+import { hiringManagerSearchUrl,linkedinSearchUrl } from '@/lib/linkedin-search';
 import {
-  localGetResume,
   localGetOutreachEmail,
+  localGetResume,
   localSaveOutreachEmail,
 } from '@/lib/local-storage';
-import { linkedinSearchUrl, hiringManagerSearchUrl } from '@/lib/linkedin-search';
+import type { JobApplication, OutreachEmail,Resume } from '@/lib/types';
 
 interface OutreachPanelProps {
   job: JobApplication;

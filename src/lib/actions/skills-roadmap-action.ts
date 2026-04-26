@@ -7,12 +7,13 @@ import { z } from 'zod';
 // build. Runtime validation still runs via schema.parse at the call site.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateObjectLoose = generateObject as unknown as (args: any) => Promise<{ object: unknown }>;
-import { getAIModel } from '@/lib/ai';
-import { db } from '@/lib/db';
 import { v4 as uuid } from 'uuid';
-import type { AIProviderConfig, SkillsRoadmap, SkillRoadmapItem } from '@/lib/types';
+
+import { creditTokens,debitToken } from '@/lib/actions/token-actions';
+import { getAIModel } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
-import { debitToken, creditTokens } from '@/lib/actions/token-actions';
+import { db } from '@/lib/db';
+import type { AIProviderConfig, SkillRoadmapItem,SkillsRoadmap } from '@/lib/types';
 
 const roadmapSchema = z.object({
   items: z
