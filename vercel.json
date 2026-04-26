@@ -1,9 +1,0 @@
-{
-  "framework": "nextjs",
-  "functions": {
-    "api/python/jobs-search.py": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  }
-}
