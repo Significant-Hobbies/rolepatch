@@ -23,6 +23,7 @@ NODE_ENV = "production"
 # All AI traffic routes through free-ai-gateway (single Fleet-wide Workers AI
 # chokepoint with daily Neuron budget). Override per-env if needed.
 AI_BASE_URL = "https://free-ai-gateway.sarthakagrawal927.workers.dev/v1"
+BETTER_AUTH_URL = "https://resume-tailor.sarthakagrawal927.workers.dev"
 
 # Browser Rendering binding — replaces broken puppeteer-core + @sparticuz/chromium.
 # Available on Workers Paid plan. Used by src/lib/pdf.ts renderPdf().
