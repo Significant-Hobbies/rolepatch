@@ -20,7 +20,7 @@ function getGatewayBaseUrl(): string {
 }
 
 function getGatewayApiKey(): string {
-  return process.env.AI_API_KEY?.trim() ?? '';
+  return (process.env.AI_GATEWAY_API_KEY ?? process.env.AI_API_KEY)?.trim() ?? '';
 }
 
 /**

@@ -58,8 +58,16 @@ export async function listJobApplications(): Promise<JobApplication[]> {
   return JSON.parse(JSON.stringify(result.rows)) as JobApplication[];
 }
 
+const ALLOWED_JOB_STATUSES = new Set([
+  'draft', 'tailored', 'applied', 'interview', 'offer', 'rejected',
+]);
+
 export async function updateJobStatus(id: string, status: string): Promise<void> {
+  if (!ALLOWED_JOB_STATUSES.has(status)) {
+    throw new Error(`Invalid status: ${status}`);
+  }
   const userId = await getCurrentUserId();
+  if (!userId) throw new Error('Sign in to update job status');
   await db.execute({
     sql: `UPDATE job_applications SET status = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?`,
     args: [status, id, userId],

@@ -54,12 +54,17 @@ Rules:
 - Each milestone must be a concrete, verifiable deliverable (build X, deploy Y, contribute to Z) — not "read about" or "understand".
 - Keep the plan realistic: 3-8 items, actionable in weeks not years.`;
 
+const MAX_RESUME_CHARS = 20_000;
+const MAX_JD_CHARS = 15_000;
+
 export async function generateSkillsRoadmap(
   resumeSource: string,
   jdText: string,
   jobId: string,
   aiConfig: AIProviderConfig,
 ): Promise<SkillsRoadmap> {
+  resumeSource = resumeSource.slice(0, MAX_RESUME_CHARS);
+  jdText = jdText.slice(0, MAX_JD_CHARS);
   const userId = await getCurrentUserId();
   let debited = false;
   if (userId) {

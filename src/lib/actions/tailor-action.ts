@@ -34,12 +34,19 @@ export interface TailorResult {
   changes: TailorChange[];
 }
 
+const MAX_RESUME_CHARS = 20_000;
+const MAX_JD_CHARS = 15_000;
+const MAX_STASH_CHARS = 10_000;
+
 export async function tailorResume(
   resumeSource: string,
   jdText: string,
   aiConfig: AIProviderConfig,
   stashContent?: string,
 ): Promise<TailorResult> {
+  resumeSource = resumeSource.slice(0, MAX_RESUME_CHARS);
+  jdText = jdText.slice(0, MAX_JD_CHARS);
+  if (stashContent) stashContent = stashContent.slice(0, MAX_STASH_CHARS);
   // Debit token before AI call
   const userId = await getCurrentUserId();
   let debited = false;

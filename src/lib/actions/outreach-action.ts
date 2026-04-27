@@ -23,11 +23,16 @@ const outreachSchema = z.object({
   body: z.string(),
 });
 
+const MAX_RESUME_CHARS = 20_000;
+const MAX_JD_CHARS = 15_000;
+
 export async function generateOutreachEmail(
   resumeSource: string,
   job: OutreachJobInput,
   aiConfig: AIProviderConfig,
 ): Promise<{ subject: string; body: string }> {
+  resumeSource = resumeSource.slice(0, MAX_RESUME_CHARS);
+  job = { ...job, jd_text: job.jd_text.slice(0, MAX_JD_CHARS) };
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to draft outreach emails.');
 

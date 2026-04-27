@@ -1,4 +1,5 @@
 import DodoPayments from 'dodopayments';
+import { headers } from 'next/headers';
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -20,8 +21,8 @@ function getClient() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.email) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
@@ -31,15 +32,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid pack' }, { status: 400 });
   }
 
-  const userId = session.user.id;
-  if (!userId) {
-    return NextResponse.json({ error: 'User not found' }, { status: 401 });
-  }
+  const { id: userId, email, name } = session.user;
 
   const client = getClient();
   const checkoutSession = await client.checkoutSessions.create({
     product_cart: [{ product_id: productId, quantity: 1 }],
-    customer: { email: session.user.email, name: session.user.name ?? '' },
+    customer: { email, name: name ?? '' },
     return_url: process.env.DODO_PAYMENTS_RETURN_URL!,
     metadata: { user_id: userId },
   });

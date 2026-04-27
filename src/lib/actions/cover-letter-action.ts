@@ -42,6 +42,11 @@ async function researchCompany(companyUrl: string): Promise<string> {
   }
 }
 
+const MAX_RESUME_CHARS = 20_000;
+const MAX_JD_CHARS = 15_000;
+const MAX_FEEDBACK_CHARS = 2_000;
+const MAX_DRAFT_CHARS = 5_000;
+
 export async function generateCoverLetter(
   resumeSource: string,
   jdText: string,
@@ -51,9 +56,12 @@ export async function generateCoverLetter(
   aiConfig: AIProviderConfig,
   options: CoverLetterOptions = {},
 ): Promise<string> {
+  resumeSource = resumeSource.slice(0, MAX_RESUME_CHARS);
+  jdText = jdText.slice(0, MAX_JD_CHARS);
   const tone: CoverLetterTone = options.tone ?? 'conversational';
   const length: CoverLetterLength = options.length ?? 'medium';
-  const { userFeedback, previousDraft } = options;
+  const userFeedback = options.userFeedback?.slice(0, MAX_FEEDBACK_CHARS);
+  const previousDraft = options.previousDraft?.slice(0, MAX_DRAFT_CHARS);
 
   // Debit token before AI call
   const userId = await getCurrentUserId();

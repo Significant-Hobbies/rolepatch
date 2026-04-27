@@ -85,11 +85,16 @@ async function rateBatch(
  * - Debits ceil(jobs.length / 20) tokens up front; refunds all on failure.
  * - Auth-guarded: signed-out callers receive the ratings but nothing is persisted and no tokens are touched.
  */
+const MAX_RESUME_CHARS = 20_000;
+const MAX_JOBS = 100;
+
 export async function rateJobsBulk(
   resumeSource: string,
   jobs: BulkRateJob[],
   aiConfig: AIProviderConfig,
 ): Promise<Record<string, BulkRateResult>> {
+  resumeSource = resumeSource.slice(0, MAX_RESUME_CHARS);
+  jobs = jobs.slice(0, MAX_JOBS);
   if (jobs.length === 0) return {};
 
   const batches: BulkRateJob[][] = [];
