@@ -20,3 +20,13 @@ simple = { limit = 100, period = 60 }
 
 [vars]
 NODE_ENV = "production"
+
+# Browser Rendering binding — replaces broken puppeteer-core + @sparticuz/chromium.
+# Available on Workers Paid plan. Used by src/lib/pdf.ts renderPdf().
+[browser]
+binding = "BROWSER"
+
+# Workers AI binding for resume tailoring + cover letter generation.
+# Replaces external AI_BASE_URL/AI_API_KEY (paid).
+[ai]
+binding = "AI"
