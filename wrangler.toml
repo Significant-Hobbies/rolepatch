@@ -5,6 +5,11 @@ compatibility_flags = ["nodejs_compat_v2"]
 
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
+routes = [
+  { pattern = "rolepatch.com/*", zone_name = "rolepatch.com" },
+  { pattern = "www.rolepatch.com/*", zone_name = "rolepatch.com" }
+]
+
 [observability]
 enabled = true
 head_sampling_rate = 0.1
@@ -23,7 +28,7 @@ NODE_ENV = "production"
 # All AI traffic routes through free-ai-gateway (single Fleet-wide Workers AI
 # chokepoint with daily Neuron budget). Override per-env if needed.
 AI_BASE_URL = "https://free-ai-gateway.sarthakagrawal927.workers.dev/v1"
-BETTER_AUTH_URL = "https://resume-tailor.sarthakagrawal927.workers.dev"
+BETTER_AUTH_URL = "https://rolepatch.com"
 
 # Browser Rendering binding — replaces broken puppeteer-core + @sparticuz/chromium.
 # Available on Workers Paid plan. Used by src/lib/pdf.ts renderPdf().
