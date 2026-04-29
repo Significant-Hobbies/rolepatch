@@ -171,4 +171,7 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [process.env.BETTER_AUTH_URL || ''],
+  rateLimit: {
+    enabled: false,
+  },
 });
