@@ -13,7 +13,7 @@ LaTeX resume tailoring tool — job scraping + AI diff + cover letter generation
 - AI: Vercel AI SDK with OpenAI-compatible adapter (swappable `baseURL`)
 - Scraping: Jina Reader (primary) + linkedom + Readability (fallback)
 - Testing: None configured
-- Deploy: Vercel
+- Deploy: Cloudflare Workers via OpenNext (`wrangler.toml` routes `rolepatch.com`)
 - Package manager: pnpm
 
 ## Repo structure

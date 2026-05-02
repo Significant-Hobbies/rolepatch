@@ -64,4 +64,5 @@ and free-tier deploy notes (Render / Fly.io).
 
 ## Deploy
 
-Vercel. `pnpm build` green, pre-push hook runs lint + secret scan.
+Cloudflare Workers via OpenNext. `pnpm deploy` builds `.open-next/worker.js`
+and deploys the Worker/routes configured in `wrangler.toml` for `rolepatch.com`.
