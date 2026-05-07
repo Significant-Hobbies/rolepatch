@@ -81,7 +81,8 @@ function coerceRow(cols: Array<{ name: string }>, row: TursoResultValue[]): Row 
   return out;
 }
 
-function httpUrlFromLibsqlUrl(raw: string): string {
+function httpUrlFromLibsqlUrl(raw: string | undefined): string {
+  if (!raw) return '';
   if (raw.startsWith('http://') || raw.startsWith('https://')) return raw.replace(/\/$/, '');
   if (raw.startsWith('libsql://')) return 'https://' + raw.slice('libsql://'.length).replace(/\/$/, '');
   if (raw.startsWith('wss://')) return 'https://' + raw.slice('wss://'.length).replace(/\/$/, '');
@@ -105,6 +106,9 @@ async function runPipeline(
     | { type: 'close' }
   >,
 ): Promise<{ baton: string | null; results: PipelineResponse['results'] }> {
+  if (!base) {
+    throw new Error('TURSO_DATABASE_URL is not set');
+  }
   const res = await fetch(base + '/v2/pipeline', {
     method: 'POST',
     headers: {
@@ -190,6 +194,6 @@ class TursoHttpClient {
 }
 
 export const db = new TursoHttpClient(
-  httpUrlFromLibsqlUrl(process.env.TURSO_DATABASE_URL!),
+  httpUrlFromLibsqlUrl(process.env.TURSO_DATABASE_URL),
   process.env.TURSO_AUTH_TOKEN,
 );
