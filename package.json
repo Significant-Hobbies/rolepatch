@@ -56,7 +56,7 @@
     "@axe-core/playwright": "^4.11.2",
     "@opennextjs/cloudflare": "^1.19.4",
     "@playwright/test": "^1.58.2",
-    "@saas-maker/eslint-config": "^1.0.1",
+    "@saas-maker/eslint-config": "^1.0.5",
     "@saas-maker/prettier-config": "^1.0.0",
     "@saas-maker/test-config": "^0.1.0",
     "@saas-maker/tsconfig": "^1.0.0",
