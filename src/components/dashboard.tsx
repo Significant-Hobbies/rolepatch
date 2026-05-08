@@ -4,6 +4,7 @@ import { AlertCircle, ArrowRight, Calendar, FileText, Globe, Sparkles } from 'lu
 import Link from 'next/link';
 import { useEffect, useMemo,useState } from 'react';
 
+import { ApplicationCampaignTracker } from '@/components/application-campaign-tracker';
 import { ATSScoreMini } from '@/components/ats-score-badge';
 import { useAuth } from '@/components/auth-provider';
 import { CreateResumeButton } from '@/components/create-resume-button';
@@ -218,6 +219,11 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores }: Dashbo
           ))}
         </div>
       )}
+
+      <ApplicationCampaignTracker
+        jobs={jobs}
+        onOpenDetails={setDetailsJobId}
+      />
 
       {/* Resumes section */}
       <section className="mb-16">
