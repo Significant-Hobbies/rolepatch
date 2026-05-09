@@ -160,16 +160,25 @@ const tursoAdapter = createAdapter({
   }),
 });
 
+const canUseLocalAuthSecret =
+  process.env.NODE_ENV !== 'production' ||
+  process.env.npm_lifecycle_event === 'build' ||
+  process.env.NEXT_PHASE === 'phase-production-build';
+
+const authSecret =
+  process.env.BETTER_AUTH_SECRET?.trim() ||
+  (canUseLocalAuthSecret ? 'resume-tailor-local-development-secret-32-chars' : undefined);
+const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+
 export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: authSecret,
   baseURL: process.env.BETTER_AUTH_URL,
   database: tursoAdapter,
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-  },
+  socialProviders:
+    googleClientId && googleClientSecret
+      ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }
+      : {},
   trustedOrigins: [process.env.BETTER_AUTH_URL || ''],
   rateLimit: {
     enabled: false,
