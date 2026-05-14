@@ -1,5 +1,9 @@
 # agents.md — resume-tailor
 
+## Shared Fleet Standard
+
+Also read and follow the shared fleet-level agent standard at `../AGENTS.md`. Treat this repository as owned product code: protect production stability, keep changes scoped, verify work, and record durable follow-up tasks when something remains incomplete or blocked.
+
 ## Purpose
 LaTeX resume tailoring tool — job scraping + AI diff + cover letter generation. Users paste a job URL, AI rewrites their resume to match, with a Monaco diff view for review.
 
