@@ -27,7 +27,6 @@
     "@libsql/client": "^0.17.0",
     "@mozilla/readability": "^0.6.0",
     "@saas-maker/ai": "^0.1.0",
-    "@saas-maker/changelog-widget": "0.2.0",
     "@saas-maker/feedback": "0.2.0",
     "@saas-maker/posthog-client": "^0.1.0",
     "@saas-maker/sdk": "0.3.1",

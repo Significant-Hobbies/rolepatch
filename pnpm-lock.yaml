@@ -41,9 +41,6 @@ importers:
       '@saas-maker/ai':
         specifier: ^0.1.0
         version: 0.1.0(@ai-sdk/openai-compatible@2.0.41(zod@4.3.6))(ai@6.0.97(zod@4.3.6))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@saas-maker/changelog-widget':
-        specifier: 0.2.0
-        version: 0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@saas-maker/feedback':
         specifier: 0.2.0
         version: 0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -2136,12 +2133,6 @@ packages:
         optional: true
       ai:
         optional: true
-
-  '@saas-maker/changelog-widget@0.2.0':
-    resolution: {integrity: sha512-D0pNamHMfW8f+WyRckwZSSKTI25M3Jponf4tPgINsrky+ZENcDDuhcuaj5KUwkhOdUQ9KPZsNIuCnfVOWRXAiw==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
 
   '@saas-maker/eslint-config@1.0.5':
     resolution: {integrity: sha512-DxNgg49rOPNbP9cRVEabquqAKip5VgIsYkIH8YefmV6r74e03IRCMtWO3cjNg7uvQsNBu+7Rw9PSZ5qiT2BSTA==}
@@ -8295,11 +8286,6 @@ snapshots:
     optionalDependencies:
       '@ai-sdk/openai-compatible': 2.0.41(zod@4.3.6)
       ai: 6.0.97(zod@4.3.6)
-
-  '@saas-maker/changelog-widget@0.2.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
-    dependencies:
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
 
   '@saas-maker/eslint-config@1.0.5(@typescript-eslint/parser@8.56.0(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(eslint-config-next@16.1.6(@typescript-eslint/parser@8.56.0(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
