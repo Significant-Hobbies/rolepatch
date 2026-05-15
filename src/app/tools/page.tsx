@@ -1,4 +1,12 @@
-import { ArrowRight, GitCompare, Search } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckSquare,
+  GitCompare,
+  Hash,
+  ListChecks,
+  Search,
+  Sparkles,
+} from 'lucide-react';
 import Link from 'next/link';
 
 const tools = [
@@ -13,6 +21,30 @@ const tools = [
     icon: Search,
     title: 'ATS Keyword Checker',
     desc: 'Check how well your resume matches a job description and see matched vs missing keywords.',
+  },
+  {
+    href: '/tools/ats-check',
+    icon: CheckSquare,
+    title: 'ATS Formatting Check',
+    desc: 'Catch tables, columns, headers, emojis, and other layout traps that break ATS parsers.',
+  },
+  {
+    href: '/tools/snippets',
+    icon: Sparkles,
+    title: 'Bullet Snippet Library',
+    desc: 'Stash reusable accomplishment bullets and copy them into any resume in one click.',
+  },
+  {
+    href: '/tools/bullet-check',
+    icon: ListChecks,
+    title: 'Bullet Strength Checker',
+    desc: 'Paste any bullet to grade verb strength, quantified outcome, length, tense, and pronouns.',
+  },
+  {
+    href: '/tools/word-count',
+    icon: Hash,
+    title: 'Resume Word Count',
+    desc: 'Word, sentence, and density stats — keep each section in the sweet spot.',
   },
 ];
 
