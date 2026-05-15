@@ -1,5 +1,6 @@
 import { ArrowRight, Award, BarChart3, FileText, Globe, MessageSquare, Quote,Search, Shield, Star, Target, Zap } from "lucide-react";
 import Link from "next/link";
+import Script from "next/script";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -52,10 +53,14 @@ const caseStudies = [
 
 const builtOn = ["Next.js", "Turso", "Vercel", "Anthropic"];
 
+export const revalidate = 3600;
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
-      <script
+      <Script
+        id="rolepatch-structured-data"
+        strategy="beforeInteractive"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
