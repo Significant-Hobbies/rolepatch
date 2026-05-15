@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { AlertCircle,ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
