@@ -5,6 +5,11 @@ import path from 'path';
 export default defineVitestConfig({
   environment: 'jsdom',
   setupFiles: ['./vitest.setup.ts'],
+  include: [
+    '__tests__/**/*.test.{ts,tsx}',
+    'src/**/__tests__/**/*.test.{ts,tsx}',
+    'src/**/*.test.{ts,tsx}',
+  ],
   exclude: ['e2e/**', '.claude/**', 'extension/**'],
   extend: {
     plugins: [react()],
