@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useRef,useState } from 'react';
 
 import { authClient } from '@/lib/auth-client';
+import { captureAuthFailure } from '@/lib/foundry-monitoring';
 
 export function UserMenu() {
   const { data: session } = authClient.useSession();
@@ -22,9 +23,31 @@ export function UserMenu() {
   }, [open]);
 
   if (!session?.user) {
+    function handleSignIn() {
+      authClient.signIn.social({ provider: 'google', callbackURL: '/' }).then((result) => {
+        if (result?.error) {
+          captureAuthFailure({
+            projectSlug: 'resume-tailor',
+            provider: 'google',
+            stage: 'signin',
+            reason: result.error.message ?? 'Google sign-in failed',
+            source: 'user-menu',
+          });
+        }
+      }).catch((error: unknown) => {
+        captureAuthFailure({
+          projectSlug: 'resume-tailor',
+          provider: 'google',
+          stage: 'signin',
+          reason: error instanceof Error ? error.message : 'Google sign-in failed',
+          source: 'user-menu',
+        });
+      });
+    }
+
     return (
       <button
-        onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: '/' })}
+        onClick={handleSignIn}
         className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-gray-900 hover:bg-gray-200 transition-colors"
       >
         Sign in

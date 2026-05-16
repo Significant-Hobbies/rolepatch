@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { authClient } from '@/lib/auth-client';
+import { captureAuthFailure } from '@/lib/foundry-monitoring';
 
 const TOKEN_PACKS = [
   {
@@ -56,6 +57,28 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
     }
   }
 
+  function handleGuestSignIn() {
+    authClient.signIn.social({ provider: 'google', callbackURL: '/pricing' }).then((result) => {
+      if (result?.error) {
+        captureAuthFailure({
+          projectSlug: 'resume-tailor',
+          provider: 'google',
+          stage: 'signin',
+          reason: result.error.message ?? 'Google sign-in failed',
+          source: 'pricing-cards',
+        });
+      }
+    }).catch((error: unknown) => {
+      captureAuthFailure({
+        projectSlug: 'resume-tailor',
+        provider: 'google',
+        stage: 'signin',
+        reason: error instanceof Error ? error.message : 'Google sign-in failed',
+        source: 'pricing-cards',
+      });
+    });
+  }
+
   return (
     <div>
       {paymentVerified && (
@@ -100,7 +123,7 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
 
             {isGuest ? (
               <button
-                onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: '/pricing' })}
+                onClick={handleGuestSignIn}
                 className="w-full py-2.5 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--muted-foreground)] hover:text-foreground transition-colors"
               >
                 Sign in to purchase
