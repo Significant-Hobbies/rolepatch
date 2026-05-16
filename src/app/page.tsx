@@ -75,11 +75,12 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/50">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#case-studies" className="hover:text-white transition-colors">Results</a>
-            <Link href="/tools" className="hover:text-white transition-colors">Free Tools</Link>
-            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <Link href="/tools" prefetch={false} className="hover:text-white transition-colors">Free Tools</Link>
+            <Link href="/pricing" prefetch={false} className="hover:text-white transition-colors">Pricing</Link>
           </nav>
           <Link
             href="/dashboard"
+            prefetch={false}
             className="bg-white text-black text-sm font-bold px-6 py-2.5 rounded-full hover:bg-white/90 transition-all"
           >
             Get Started Free
@@ -116,6 +117,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
               <Link
                 href="/dashboard"
+                prefetch={false}
                 className="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -279,9 +281,9 @@ export default function LandingPage() {
             <div className="space-y-5">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-white/20">Product</h4>
               <nav className="flex flex-col gap-3 text-sm text-white/50 font-medium">
-                <Link href="/tools" className="hover:text-white transition-colors">Free Tools</Link>
-                <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-                <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+                <Link href="/tools" prefetch={false} className="hover:text-white transition-colors">Free Tools</Link>
+                <Link href="/pricing" prefetch={false} className="hover:text-white transition-colors">Pricing</Link>
+                <Link href="/dashboard" prefetch={false} className="hover:text-white transition-colors">Dashboard</Link>
               </nav>
             </div>
             <div className="space-y-5">

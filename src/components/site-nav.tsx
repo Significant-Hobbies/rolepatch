@@ -22,7 +22,7 @@ export function SiteNav() {
   return (
     <nav className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-1">
-        <Link href="/" className="font-semibold text-foreground mr-6 flex items-center gap-2">
+        <Link href="/" prefetch={false} className="font-semibold text-foreground mr-6 flex items-center gap-2">
           <span className="w-6 h-6 rounded-md bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">RP</span>
           RolePatch
         </Link>
@@ -32,6 +32,7 @@ export function SiteNav() {
             <Link
               key={link.href}
               href={link.href}
+              prefetch={false}
               className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                 isActive
                   ? 'bg-[var(--muted)] text-foreground font-medium'
