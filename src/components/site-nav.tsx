@@ -3,7 +3,7 @@
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { TokenBalance } from '@/components/token-balance';
 import { UserMenu } from '@/components/user-menu';
@@ -20,11 +20,14 @@ const NAV_LINKS = [
 export function SiteNav() {
   const pathname = usePathname() ?? '';
   const [menuOpen, setMenuOpen] = useState(false);
+  const [prevPath, setPrevPath] = useState(pathname);
 
-  // Close the mobile menu whenever the route changes.
-  useEffect(() => {
+  // Close the mobile menu when the route changes (render-phase reset —
+  // avoids a setState-in-effect cascading render).
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
     setMenuOpen(false);
-  }, [pathname]);
+  }
 
   if (pathname === '/') return null;
 

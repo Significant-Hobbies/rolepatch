@@ -1,11 +1,11 @@
-import { devices, expect, test } from '@playwright/test';
+import { devices, expect, test, type Page } from '@playwright/test';
 
 // Exercise the primary flow entry points at a 390px viewport (iPhone 13).
 // Wave 1 goal: no horizontal scroll, hamburger nav, single-column layouts.
 test.use({ ...devices['iPhone 13'] });
 
 /** Asserts the document does not scroll horizontally. */
-async function expectNoHorizontalScroll(page: import('@playwright/test').Page) {
+async function expectNoHorizontalScroll(page: Page) {
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
