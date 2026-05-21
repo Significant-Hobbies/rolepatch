@@ -100,6 +100,23 @@ main {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* Mobile: scale the fixed 8.5in resume page card down so it fits a phone
+   viewport without horizontal scroll. The layout box stays 8.5in (the
+   pagination math depends on it) — only the rendered size is scaled. */
+@media (max-width: 767px) {
+  #resume-print-target {
+    /* compensate the scaled-down card's leftover layout width */
+    overflow-x: hidden;
+  }
+  #resume-print-target .resume-page {
+    transform: scale(0.46);
+    transform-origin: top left;
+    /* 8.5in * 0.46 ≈ 3.91in ≈ 375px — collapse the unscaled overflow */
+    margin-bottom: calc(-11in * 0.54 + 24px);
+    margin-right: calc(-8.5in * 0.54);
+  }
+}
+
 /* Select styling for dark mode */
 select option {
   background: #171717;

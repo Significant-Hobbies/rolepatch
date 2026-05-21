@@ -10,6 +10,53 @@ interface ScrapeResult {
   role: string;
 }
 
+/**
+ * Typed result for scraping. Lets the UI distinguish a real failure (and show
+ * a "couldn't read that posting — paste it manually" fallback) from success,
+ * instead of a thrown error or a blank screen.
+ */
+export type ScrapeOutcome =
+  | { ok: true; data: ScrapeResult }
+  | { ok: false; reason: 'invalid_url' | 'unreadable' | 'network'; message: string };
+
+const MAX_SCRAPE_ATTEMPTS = 3;
+
+function isRetryableStatus(status: number): boolean {
+  // 429 + 5xx are worth retrying; 4xx (other than 429) are not.
+  return status === 429 || status >= 500;
+}
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Fetch with exponential backoff. Retries on network errors and retryable
+ * HTTP statuses; returns the last response otherwise.
+ */
+async function fetchWithRetry(
+  input: string,
+  init: RequestInit,
+  attempts = MAX_SCRAPE_ATTEMPTS,
+): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt > 0) {
+      // 400ms, 800ms, 1600ms ... with light jitter.
+      await delay(400 * 2 ** (attempt - 1) + Math.floor(Math.random() * 200));
+    }
+    try {
+      const res = await fetch(input, init);
+      if (res.ok || !isRetryableStatus(res.status) || attempt === attempts - 1) {
+        return res;
+      }
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError ?? new Error('Request failed after retries');
+}
+
 function validateUrl(raw: string): URL {
   let parsed: URL;
   try {
@@ -57,9 +104,9 @@ function validateUrl(raw: string): URL {
 export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
   validateUrl(url);
 
-  // Primary: Jina Reader
+  // Primary: Jina Reader (with backoff retry on transient failures).
   try {
-    const res = await fetch(`https://r.jina.ai/${url}`, {
+    const res = await fetchWithRetry(`https://r.jina.ai/${url}`, {
       headers: { Accept: 'text/markdown' },
       signal: AbortSignal.timeout(15000),
     });
@@ -78,8 +125,8 @@ export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
     // fallback below
   }
 
-  // Fallback: linkedom + Readability
-  const response = await fetch(url, {
+  // Fallback: direct fetch + linkedom + Readability (also retried).
+  const response = await fetchWithRetry(url, {
     headers: {
       'User-Agent':
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -110,6 +157,46 @@ export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
     company: extractCompany(url, article.title ?? ''),
     role: article.title ?? '',
   };
+}
+
+/**
+ * Non-throwing variant of {@link scrapeJobUrl}. Returns a typed
+ * {@link ScrapeOutcome} so the UI can fall back to manual paste instead of
+ * showing a blank screen or a raw error string.
+ */
+export async function scrapeJobUrlSafe(url: string): Promise<ScrapeOutcome> {
+  try {
+    validateUrl(url);
+  } catch (err) {
+    return {
+      ok: false,
+      reason: 'invalid_url',
+      message: err instanceof Error ? err.message : 'That URL looks invalid.',
+    };
+  }
+
+  try {
+    const data = await scrapeJobUrl(url);
+    if (!data.text.trim()) {
+      return {
+        ok: false,
+        reason: 'unreadable',
+        message:
+          "We couldn't read that posting. Paste the job description text manually to continue.",
+      };
+    }
+    return { ok: true, data };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    // A failed parse means the page loaded but had no readable content.
+    const reason = message.includes('parse') ? 'unreadable' : 'network';
+    return {
+      ok: false,
+      reason,
+      message:
+        "We couldn't read that posting. Paste the job description text manually to continue.",
+    };
+  }
 }
 
 function extractCompany(url: string, title: string): string {

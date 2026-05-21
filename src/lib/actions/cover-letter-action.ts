@@ -4,7 +4,8 @@ import { generateText } from 'ai';
 import { v4 as uuid } from 'uuid';
 
 import { creditTokens,debitToken } from '@/lib/actions/token-actions';
-import { getAIModel } from '@/lib/ai';
+import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig,CoverLetter } from '@/lib/types';
@@ -143,13 +144,16 @@ Return ONLY the cover letter text, no explanation, no preamble, no sign-off plac
       args: [id, jobId, resumeId, text, companyResearch, userId],
     });
 
+    trackCoreAction('cover_letter_generated', userId ?? undefined);
+
     return text;
   } catch (err) {
     // Refund token on AI failure
     if (debited && userId) {
       await creditTokens(userId, 1, 'refund', 'ai_failure');
     }
-    throw err;
+    // Surface a user-facing, retryable error — never a raw provider stack.
+    throw toUserFacingAIError(err);
   }
 }
 

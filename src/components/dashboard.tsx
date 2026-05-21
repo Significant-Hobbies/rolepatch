@@ -207,7 +207,7 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores, serverEv
 
       {/* Stats bar — only show when there are jobs */}
       {jobs.length > 0 && (
-        <div className="grid grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12">
           {[
             { label: 'Total Applications', value: stats.total, accent: 'text-foreground' },
             { label: 'Active Pipeline', value: stats.active, accent: 'text-[var(--primary)]' },
@@ -239,7 +239,7 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores, serverEv
 
       {/* Resumes section */}
       <section className="mb-16">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
               <FileText className="w-5 h-5" />
@@ -315,7 +315,7 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores, serverEv
 
       {/* Job Applications section */}
       <section>
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-accent/5 flex items-center justify-center text-accent shadow-sm">
               <Globe className="w-5 h-5" />
@@ -339,6 +339,8 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores, serverEv
           </div>
         ) : (
           <div className="bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl overflow-hidden shadow-sm">
+           <div className="overflow-x-auto">
+            <div className="min-w-[640px]">
             {/* Table header */}
             <div className="grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px_40px] gap-4 px-6 py-4 bg-muted/30 border-b border-[var(--border)] text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">
               <span>Position</span>
@@ -395,7 +397,7 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores, serverEv
                   </span>
                   <Link
                     href={`/tailor/${job.id}`}
-                    className="text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors justify-self-end"
+                    className="flex items-center justify-center w-11 h-11 -my-3 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors justify-self-end"
                     aria-label="Open tailor"
                   >
                     <ArrowRight className="w-4 h-4" />
@@ -403,6 +405,8 @@ export function Dashboard({ serverResumes, serverJobs, serverFitScores, serverEv
                 </div>
               );
             })}
+            </div>
+           </div>
           </div>
         )}
       </section>

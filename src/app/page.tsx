@@ -1,4 +1,4 @@
-import { ArrowRight, Award, BarChart3, FileText, Globe, MessageSquare, Quote,Search, Shield, Star, Target, Zap } from "lucide-react";
+import { Award, BarChart3, FileText, Globe, MessageSquare, Search, Shield, Star, Target, Zap } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
 
@@ -16,42 +16,27 @@ const jsonLd = {
     priceCurrency: "USD",
     description: "3 free tokens to start. No credit card required.",
   },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    ratingCount: "120",
-  },
 };
 
-// TODO: replace placeholders with real testimonials
-const caseStudies = [
+const howItWorks = [
   {
-    name: "Anya",
-    role: "Senior Backend Engineer",
-    atsBefore: 42,
-    atsAfter: 87,
-    quote: "Three interviews in two weeks after years of silence. The diff view showed me exactly which phrases recruiters were scanning for.",
-    outcome: "Offers from Top Fintech",
+    step: "01",
+    title: "Paste the job",
+    desc: "Drop in any job posting URL. RolePatch scrapes and analyzes the requirements, hard skills, and keywords the role is screening for.",
   },
   {
-    name: "Marcus",
-    role: "Product Designer",
-    atsBefore: 51,
-    atsAfter: 92,
-    quote: "I kept getting auto-rejected. RolePatch rewrote my impact statements around the exact signals each team was hiring for.",
-    outcome: "Public FAANG Interview",
+    step: "02",
+    title: "Tailor & review",
+    desc: "AI rewrites your resume to match — shown as a word-level diff, so you see and control every single change before you accept it.",
   },
   {
-    name: "Priya",
-    role: "Data Scientist",
-    atsBefore: 38,
-    atsAfter: 89,
-    quote: "The fit score told me which roles were actually worth applying to. I stopped wasting weekends on long-shots and focused where I had edge.",
-    outcome: "Hired at Series B Startup",
+    step: "03",
+    title: "Score & prep",
+    desc: "Get a fit score across five weighted dimensions, then auto-generate STAR+R interview stories mapped to the job.",
   },
 ];
 
-const builtOn = ["Next.js", "Turso", "Vercel", "Anthropic"];
+const builtOn = ["Next.js", "Turso", "Cloudflare"];
 
 export const revalidate = 3600;
 
@@ -74,7 +59,7 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/50">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#case-studies" className="hover:text-white transition-colors">Results</a>
+            <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
             <Link href="/tools" prefetch={false} className="hover:text-white transition-colors">Free Tools</Link>
             <Link href="/pricing" prefetch={false} className="hover:text-white transition-colors">Pricing</Link>
           </nav>
@@ -136,21 +121,9 @@ export default function LandingPage() {
         {/* ── Features ── */}
         <section id="features" className="py-32 px-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
-              <div className="max-w-2xl">
-                <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">Built for speed, <br/> tuned for precision.</h2>
-                <p className="text-xl text-white/50 leading-relaxed font-medium">AI that understands what recruiters are actually looking for.</p>
-              </div>
-              <div className="flex gap-4">
-                <div className="px-6 py-4 rounded-3xl bg-white/5 border border-white/10">
-                  <div className="text-2xl font-bold text-white">98%</div>
-                  <div className="text-[10px] uppercase tracking-widest text-white/40">ATS Score Avg</div>
-                </div>
-                <div className="px-6 py-4 rounded-3xl bg-white/5 border border-white/10">
-                  <div className="text-2xl font-bold text-white">2.4s</div>
-                  <div className="text-[10px] uppercase tracking-widest text-white/40">Tailor Speed</div>
-                </div>
-              </div>
+            <div className="max-w-2xl mb-20">
+              <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">Built for speed, <br/> tuned for precision.</h2>
+              <p className="text-xl text-white/50 leading-relaxed font-medium">AI that understands what recruiters are actually looking for.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -174,76 +147,33 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Social Proof / Case Studies ── */}
-        <section id="case-studies" className="py-32 px-6 border-t border-[var(--border)]">
+        {/* ── How it works ── */}
+        <section id="how-it-works" className="py-32 px-6 border-t border-[var(--border)]">
           <div className="max-w-7xl mx-auto">
             <div className="max-w-2xl mb-20">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
                 <Award className="w-3 h-3" />
-                Proof, not promises
+                How it works
               </div>
               <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
-                Real results from<br /> real candidates.
+                From job post to<br /> tailored resume.
               </h2>
               <p className="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
-                Before and after ATS scores from candidates who used RolePatch to land interviews they&apos;d been chasing for months.
+                Three steps from a link to an application that speaks the role&apos;s language.
               </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {caseStudies.map((c, i) => {
-                const delta = c.atsAfter - c.atsBefore;
-                return (
-                  <article
-                    key={i}
-                    className="flex flex-col p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500"
-                  >
-                    <header className="mb-6">
-                      <div className="text-lg font-bold text-[var(--foreground)]">{c.name}</div>
-                      <div className="text-sm font-medium text-[var(--muted-foreground)]">{c.role}</div>
-                    </header>
-
-                    {/* Before → After ATS visualization */}
-                    <div className="mb-6" aria-label={`ATS score improved from ${c.atsBefore} to ${c.atsAfter}`}>
-                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-2">
-                        <span>ATS Score</span>
-                        <span className="text-[var(--accent)]">+{delta} pts</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col items-center">
-                          <span className="text-xs font-bold text-[var(--muted-foreground)] mb-1">{c.atsBefore}</span>
-                          <div className="w-14 h-2 rounded-full bg-[var(--muted)] overflow-hidden">
-                            <div
-                              className="h-full bg-[var(--muted-foreground)]/50"
-                              style={{ width: `${c.atsBefore}%` }}
-                            />
-                          </div>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
-                        <div className="flex flex-col items-center flex-1">
-                          <span className="text-xs font-bold text-[var(--accent)] mb-1">{c.atsAfter}</span>
-                          <div className="w-full h-2 rounded-full bg-[var(--muted)] overflow-hidden">
-                            <div
-                              className="h-full bg-[var(--accent)]"
-                              style={{ width: `${c.atsAfter}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <blockquote className="relative text-[var(--foreground)]/80 italic leading-relaxed font-medium mb-6 flex-1">
-                      <Quote className="w-4 h-4 text-[var(--muted-foreground)] mb-2" aria-hidden="true" />
-                      {c.quote}
-                    </blockquote>
-
-                    <div className="inline-flex self-start items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[11px] font-bold text-[var(--accent)]">
-                      <Award className="w-3 h-3" />
-                      {c.outcome}
-                    </div>
-                  </article>
-                );
-              })}
+              {howItWorks.map((s) => (
+                <div
+                  key={s.step}
+                  className="flex flex-col p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500"
+                >
+                  <div className="text-3xl font-black text-[var(--accent)] mb-6">{s.step}</div>
+                  <h3 className="text-xl font-bold mb-3 text-[var(--foreground)]">{s.title}</h3>
+                  <p className="text-[var(--muted-foreground)] leading-relaxed font-medium">{s.desc}</p>
+                </div>
+              ))}
             </div>
 
             {/* Built on — understated tech stack row */}

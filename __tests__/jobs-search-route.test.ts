@@ -1,4 +1,4 @@
-import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type * as JobsSearchRoute from '@/app/api/jobs/search/route';
 
@@ -7,21 +7,15 @@ vi.mock('@/lib/auth-utils', () => ({
   getCurrentUserId: () => mockGetCurrentUserId(),
 }));
 
-// NextAuth's server helpers pull in ESM-only packages; stub them out for jsdom.
-vi.mock('next-auth', () => ({ getServerSession: vi.fn() }));
-vi.mock('@/lib/auth', () => ({ authOptions: {}, auth: vi.fn() }));
-
-const ORIGINAL_FETCH = globalThis.fetch;
+const mockSearchJobs = vi.fn();
+vi.mock('@/lib/job-search', () => ({
+  searchJobs: (...args: unknown[]) => mockSearchJobs(...args),
+}));
 
 beforeEach(() => {
   mockGetCurrentUserId.mockReset();
+  mockSearchJobs.mockReset();
   vi.resetModules();
-  process.env.JOBSPY_API_KEY = 'secret';
-  delete process.env.VERCEL_URL;
-});
-
-afterEach(() => {
-  globalThis.fetch = ORIGINAL_FETCH;
 });
 
 function makeReq(body: unknown, origin = 'http://localhost') {
@@ -29,16 +23,7 @@ function makeReq(body: unknown, origin = 'http://localhost') {
     method: 'POST',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
-  }) as unknown as Parameters<typeof JobsSearchRoute['POST']>[0];
-}
-
-function okFetch(payload: unknown) {
-  return vi.fn(async () =>
-    new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    }),
-  ) as unknown as typeof fetch;
+  }) as unknown as Parameters<(typeof JobsSearchRoute)['POST']>[0];
 }
 
 describe('POST /api/jobs/search', () => {
@@ -47,59 +32,34 @@ describe('POST /api/jobs/search', () => {
     const { POST } = await import('@/app/api/jobs/search/route');
     const res = await POST(makeReq({ query: 'python' }));
     expect(res.status).toBe(401);
+    expect(mockSearchJobs).not.toHaveBeenCalled();
   });
 
-  it('returns 503 when JOBSPY_API_KEY is missing', async () => {
+  it('returns 400 when query is missing', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-config');
-    delete process.env.JOBSPY_API_KEY;
     const { POST } = await import('@/app/api/jobs/search/route');
-    const res = await POST(makeReq({ query: 'python' }));
-    expect(res.status).toBe(503);
+    const res = await POST(makeReq({}));
+    expect(res.status).toBe(400);
+    expect(mockSearchJobs).not.toHaveBeenCalled();
   });
 
-  it('forwards to same-origin Python function with bearer auth', async () => {
+  it('returns jobs from the native in-Worker search', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-forward');
-    const fetchSpy = vi.fn(async () =>
-      new Response(JSON.stringify({ jobs: [{ id: 'abc' }] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    );
-    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+    mockSearchJobs.mockResolvedValue({ jobs: [{ id: 'abc', title: 'Dev' }] });
 
     const { POST } = await import('@/app/api/jobs/search/route');
-    const res = await POST(makeReq({ query: 'python engineer' }, 'https://rolepatch.com'));
+    const res = await POST(makeReq({ query: 'python engineer', location: 'Remote' }));
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.jobs).toHaveLength(1);
-
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchSpy.mock.calls[0];
-    expect(url).toBe('https://rolepatch.com/api/python/jobs-search');
-    const headers = (init as RequestInit).headers as Record<string, string>;
-    expect(headers.Authorization).toBe('Bearer secret');
-  });
-
-  it('honors VERCEL_URL when set', async () => {
-    mockGetCurrentUserId.mockResolvedValue('user-vercel');
-    process.env.VERCEL_URL = 'preview-abc.vercel.app';
-    const fetchSpy = vi.fn(async () =>
-      new Response(JSON.stringify({ jobs: [] }), { status: 200 }),
+    expect(mockSearchJobs).toHaveBeenCalledWith(
+      expect.objectContaining({ query: 'python engineer', location: 'Remote' }),
     );
-    globalThis.fetch = fetchSpy as unknown as typeof fetch;
-
-    const { POST } = await import('@/app/api/jobs/search/route');
-    await POST(makeReq({ query: 'python' }));
-    const [url] = fetchSpy.mock.calls[0];
-    expect(url).toBe('https://preview-abc.vercel.app/api/python/jobs-search');
   });
 
-  it('maps 5xx from Python function to 502', async () => {
+  it('maps search failures to 502', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-5xx');
-    globalThis.fetch = vi.fn(
-      async () => new Response('boom', { status: 500 }),
-    ) as unknown as typeof fetch;
-
+    mockSearchJobs.mockRejectedValue(new Error('boom'));
     const { POST } = await import('@/app/api/jobs/search/route');
     const res = await POST(makeReq({ query: 'python' }));
     expect(res.status).toBe(502);
@@ -107,7 +67,7 @@ describe('POST /api/jobs/search', () => {
 
   it('allows repeated job searches for the same user', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-burst');
-    globalThis.fetch = okFetch({ jobs: [] });
+    mockSearchJobs.mockResolvedValue({ jobs: [] });
 
     const { POST } = await import('@/app/api/jobs/search/route');
     for (let i = 0; i < 8; i++) {

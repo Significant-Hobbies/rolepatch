@@ -4,7 +4,8 @@ import { generateText } from 'ai';
 import { v4 as uuid } from 'uuid';
 
 import { creditTokens,debitToken } from '@/lib/actions/token-actions';
-import { getAIModel } from '@/lib/ai';
+import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig,FitScore } from '@/lib/types';
@@ -71,12 +72,15 @@ export async function generateFitScore(
       });
     }
 
+    trackCoreAction('fit_score_run', userId ?? undefined);
+
     return fitScore;
   } catch (err) {
     if (debited && userId) {
       await creditTokens(userId, 1, 'refund', 'ai_failure');
     }
-    throw err;
+    // Surface a user-facing, retryable error — never a raw provider stack.
+    throw toUserFacingAIError(err);
   }
 }
 

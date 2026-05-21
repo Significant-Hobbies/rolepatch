@@ -124,7 +124,7 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
             {isGuest ? (
               <button
                 onClick={handleGuestSignIn}
-                className="w-full py-2.5 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--muted-foreground)] hover:text-foreground transition-colors"
+                className="w-full min-h-[44px] py-2.5 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--muted-foreground)] hover:text-foreground transition-colors"
               >
                 Sign in to purchase
               </button>
@@ -132,7 +132,7 @@ export function PricingCards({ paymentVerified }: { paymentVerified: boolean }) 
               <button
                 onClick={() => handleBuy(pack.id)}
                 disabled={loadingPack !== null}
-                className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${
+                className={`w-full min-h-[44px] py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${
                   pack.popular
                     ? 'bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90'
                     : 'bg-white text-gray-900 hover:bg-gray-200'

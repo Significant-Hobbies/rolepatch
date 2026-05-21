@@ -338,14 +338,14 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   }
 
   return (
-    <>
+    <div className="flex flex-col md:flex-row w-full h-full overflow-y-auto md:overflow-hidden">
       {/* Editor pane */}
-      <div className="w-1/2 flex flex-col overflow-hidden border-r border-gray-200 print-hide">
+      <div className="w-full md:w-1/2 min-h-[50vh] md:min-h-0 flex flex-col overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 print-hide">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-200 bg-white">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 border-b border-gray-200 bg-white">
           <Link
             href="/"
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center justify-center w-9 h-9 -m-1.5 text-gray-400 hover:text-gray-600 transition-colors"
             title="Back to dashboard"
           >
             <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
@@ -364,7 +364,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             <div className="relative" ref={configRef}>
               <button
                 onClick={() => setShowConfig((v) => !v)}
-                className={`p-1.5 rounded transition-colors ${showConfig ? 'bg-gray-200 text-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                className={`flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:p-1.5 rounded transition-colors ${showConfig ? 'bg-gray-200 text-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                 title="Format settings"
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>
@@ -425,7 +425,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             {isGuest ? (
               <button
                 onClick={handlePrint}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="Guest mode — use browser print dialog to save as PDF"
               >
                 Print
@@ -434,7 +434,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               <button
                 onClick={handleDownloadPdf}
                 disabled={downloading}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
+                className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
               >
                 {downloading ? 'Generating...' : 'Download PDF'}
               </button>
@@ -442,17 +442,17 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             <button
               onClick={save}
               disabled={saving}
-              className="px-3 py-1.5 text-xs font-medium bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
-        <div ref={editorContainerRef} className="flex-1 overflow-hidden" />
+        <div ref={editorContainerRef} className="flex-1 overflow-hidden min-h-[40vh] md:min-h-0" />
       </div>
 
       {/* Preview pane — paginated */}
-      <div className="w-1/2 overflow-y-auto bg-gray-100 py-8 px-6 print-hide" id="resume-print-target">
+      <div className="w-full md:w-1/2 min-h-[60vh] md:min-h-0 overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 print-hide" id="resume-print-target">
         {/* Hidden measurement div — same styling, unconstrained height */}
         <div ref={measureRef} className="resume-measure" style={cssVars} aria-hidden="true">
           <Markdown>{source}</Markdown>
@@ -482,6 +482,6 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
           <Markdown>{source}</Markdown>
         </div>
       </div>
-    </>
+    </div>
   );
 }

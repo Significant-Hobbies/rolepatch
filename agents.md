@@ -12,7 +12,7 @@ LaTeX resume tailoring tool — job scraping + AI diff + cover letter generation
 - Language: TypeScript
 - Styling: Tailwind CSS v4
 - DB: Turso (libSQL)
-- Auth: NextAuth v4 (Google OAuth, JWT sessions)
+- Auth: better-auth (Google OAuth)
 - Editor: CodeMirror (LaTeX editing) + Monaco (diff view)
 - AI: Vercel AI SDK with OpenAI-compatible adapter (swappable `baseURL`)
 - Scraping: Jina Reader (primary) + linkedom + Readability (fallback)
@@ -31,11 +31,11 @@ src/
     cover-letter/      # Cover letter generation
     stash/             # Extra content pool for AI
     settings/          # AI provider config
-    api/auth/          # NextAuth route
+    api/auth/          # better-auth route ([...all] handler)
   components/          # React components (client-side)
   lib/
     actions/           # Server actions — all data mutations + AI calls
-    auth.ts            # NextAuth config
+    auth.ts            # better-auth config
     auth-utils.ts      # getCurrentUserId() helper
     db.ts              # Turso client
     ai.ts              # AI provider setup (swappable baseURL)

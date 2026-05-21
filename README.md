@@ -2,9 +2,22 @@
 
 AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. Generate cover letters with company research, fit scores, and STAR interview stories.
 
+## Deployment & External Services
+
+| Concern | Service |
+|---------|---------|
+| Hosting | Cloudflare Workers (`resume-tailor`) via `@opennextjs/cloudflare` — custom domain `rolepatch.com` |
+| Database | Turso (libSQL) |
+| Auth | better-auth + Google OAuth |
+| AI | free-ai-gateway (Workers AI chokepoint) via Vercel AI SDK / OpenAI-compatible adapter |
+| Payments | Dodo Payments |
+| CI/CD | GitHub Actions — auto-deploy to Cloudflare on push to `main` |
+
+PDF rendering uses the Cloudflare Workers Browser Rendering binding (`BROWSER`).
+
 ## Stack
 
-Next.js 16 · React 19 · TypeScript · Tailwind 4 · Turso (libsql) · NextAuth (Google) · Vercel AI SDK · CodeMirror · Playwright · Vitest
+Next.js 16 · React 19 · TypeScript · Tailwind 4 · Turso (libsql) · better-auth (Google) · Vercel AI SDK · CodeMirror · Playwright · Vitest
 
 ## Quick start
 
@@ -33,10 +46,9 @@ See `.env.example`. Required for full use:
 
 - `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` — signed-in persistence
 - `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` — OpenAI-compatible AI provider
-- `AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — Google OAuth
+- `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — Google OAuth via better-auth
 - `DODO_PAYMENTS_*`, `DODO_PRODUCT_*` — token purchases (optional)
 - `NEXT_PUBLIC_SAASMAKER_API_KEY` — feedback/analytics (optional)
-- `JOBSPY_SERVICE_URL`, `JOBSPY_SERVICE_KEY` — job discovery sidecar (optional; see below)
 
 ## Layout
 
@@ -45,22 +57,22 @@ See `.env.example`. Required for full use:
 - `src/lib/local-storage.ts` — guest data layer
 - `src/components/` — client UI
 - `__tests__/` — vitest · `e2e/` — playwright
-- `jobspy-service/` — Python sidecar for multi-platform job discovery
+- `src/lib/job-search.ts` — native in-Worker job search (LinkedIn)
 
 More in `agents.md`.
 
-## Job discovery sidecar
+## Job discovery
 
-Live job search (Indeed / LinkedIn / Google / Glassdoor / ZipRecruiter) is
-served by a tiny Python FastAPI service under [`jobspy-service/`](./jobspy-service/)
-that wraps [python-jobspy](https://github.com/speedyapply/JobSpy).
+Live job search runs natively in the Worker — `src/lib/job-search.ts` queries
+LinkedIn's public guest job-search endpoint (no API key) and normalises the
+results for the job-discovery UI. The Next.js route
+`src/app/api/jobs/search/route.ts` calls it directly.
 
-Kept out-of-process because jobspy pulls heavy scraping deps we don't want in
-the Next.js runtime. The web app talks to it via `/api/jobs/search` using
-`JOBSPY_SERVICE_URL` + `JOBSPY_SERVICE_KEY` (shared bearer secret).
-
-See [`jobspy-service/README.md`](./jobspy-service/README.md) for local dev
-and free-tier deploy notes (Render / Fly.io).
+Scope: LinkedIn only. The former multi-board Python sidecar (`api/python/`,
+which wrapped [python-jobspy](https://github.com/speedyapply/JobSpy)) was
+removed — Cloudflare Workers has no Python runtime. If LinkedIn rate-limits
+the Worker's datacenter IP, the fallback is Cloudflare Browser Rendering or a
+hosted job-search API.
 
 ## Deploy
 

@@ -193,9 +193,9 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
   const showNoTokens = !isGuest && tokenBalance !== null && tokenBalance <= 0;
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
       {/* Left panel: Job Description */}
-      <div className="w-1/3 border-r border-[var(--border)] flex flex-col">
+      <div className="w-full md:w-1/3 min-h-[50vh] md:min-h-0 border-b md:border-b-0 md:border-r border-[var(--border)] flex flex-col">
         <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--card)]/50">
           <h2 className="text-sm font-semibold text-foreground">Job Description</h2>
           {job.url && (
@@ -243,9 +243,9 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
       </div>
 
       {/* Right panel: Resume / Tailored output */}
-      <div className="w-2/3 flex flex-col">
-        <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--card)]/50 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="w-full md:w-2/3 min-h-[70vh] md:min-h-0 flex flex-col">
+        <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--card)]/50 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div>
               <h2 className="text-sm font-semibold text-foreground">
                 {tailoredSource ? 'Tailored Resume (diff)' : 'Original Resume'}
@@ -276,7 +276,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Token balance indicator for signed-in users */}
             {!isGuest && tokenBalance !== null && (
               <span className="text-xs text-[var(--muted-foreground)] mr-1">
@@ -285,7 +285,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
             )}
             <Link
               href={`/cover-letter/${job.id}`}
-              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors"
+              className="inline-flex items-center min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors"
             >
               Generate Cover Letter
             </Link>
@@ -293,7 +293,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
               <button
                 onClick={handleSave}
                 disabled={isPending}
-                className="px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
+                className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
               >
                 {isPending ? 'Saving...' : 'Accept & Save'}
               </button>
@@ -304,7 +304,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
             {showNoTokens ? (
               <Link
                 href="/pricing"
-                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors"
+                className="inline-flex items-center min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors"
               >
                 Buy Tokens
               </Link>
@@ -312,7 +312,7 @@ export function TailorFlow({ job, serverResume, existingTailored, existingFitSco
               <button
                 onClick={handleGenerate}
                 disabled={isPending}
-                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-gray-900 hover:bg-gray-200 disabled:opacity-40 transition-colors"
+                className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-white text-gray-900 hover:bg-gray-200 disabled:opacity-40 transition-colors"
               >
                 {isPending ? 'Generating...' : 'Generate Tailored Resume'}
               </button>

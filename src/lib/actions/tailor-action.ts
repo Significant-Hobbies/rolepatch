@@ -5,8 +5,10 @@ import { z } from 'zod';
 
 import { listStashEntries } from '@/lib/actions/stash-actions';
 import { creditTokens,debitToken } from '@/lib/actions/token-actions';
-import { getAIModel } from '@/lib/ai';
+import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { trackActivated, trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { db } from '@/lib/db';
 import type { AIProviderConfig, TailorChange } from '@/lib/types';
 
 const tailorSchema = z.object({
@@ -87,6 +89,23 @@ Return a JSON object with:
       prompt: `## Base Resume (Markdown):\n${resumeSource}\n\n## Job Description:\n${jdText}${stashSection}\n\n## Instructions:\n- Emphasize relevant experience and skills that match the JD\n- Reword bullet points to use keywords from the JD where truthful\n- Reorder skills to prioritize those mentioned in the JD\n- If any stashed content is highly relevant to the JD, incorporate it naturally into the appropriate resume section\n- Keep it honest — do not fabricate experience\n- For every edit you make, record a changes entry tying it back to the JD`,
     });
 
+    // Analytics: core action + first-tailor activation. Best-effort, never
+    // allowed to fail the request.
+    trackCoreAction('tailor_completed', userId ?? undefined);
+    if (userId) {
+      try {
+        const prior = await db.execute({
+          sql: 'SELECT 1 FROM tailored_resumes WHERE user_id = ? LIMIT 1',
+          args: [userId],
+        });
+        if (prior.rows.length === 0) {
+          trackActivated(userId);
+        }
+      } catch {
+        // Activation check is best-effort.
+      }
+    }
+
     return {
       tailored: object.tailored,
       changes: object.changes ?? [],
@@ -96,6 +115,7 @@ Return a JSON object with:
     if (debited && userId) {
       await creditTokens(userId, 1, 'refund', 'ai_failure');
     }
-    throw err;
+    // Surface a user-facing, retryable error — never a raw provider stack.
+    throw toUserFacingAIError(err);
   }
 }
