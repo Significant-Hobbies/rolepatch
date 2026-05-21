@@ -23,15 +23,50 @@ export function captureAuthFailure(options: {
   stage?: AuthFailureStage;
   reason?: string;
   source?: string;
+  projectSlug?: string;
 }) {
   track("foundry_auth_failure", {
-    project_slug: PROJECT_SLUG,
+    project_slug: options.projectSlug ?? PROJECT_SLUG,
     route: route(),
     provider: options.provider,
     stage: options.stage ?? "unknown",
     reason: options.reason,
     source: options.source,
   });
+}
+
+type ErrorBoundaryScope =
+  | "root"
+  | "global"
+  | "tailor"
+  | "editor"
+  | "cover-letter"
+  | "interview-prep"
+  | "dashboard"
+  | "unknown";
+
+/**
+ * Emits an "error_captured" event for an error surfaced by a React error
+ * boundary (error.tsx / global-error.tsx). Use alongside captureAuthFailure().
+ * Safe to call from the client — no-ops gracefully if PostHog is not ready.
+ */
+export function captureError(
+  error: unknown,
+  options: { scope?: ErrorBoundaryScope; digest?: string; source?: string } = {},
+) {
+  try {
+    track("error_captured", {
+      project_slug: PROJECT_SLUG,
+      route: route(),
+      scope: options.scope ?? "unknown",
+      digest: options.digest,
+      source: options.source ?? "error_boundary",
+      message: messageFrom(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+  } catch {
+    // Never let monitoring throw inside an error boundary.
+  }
 }
 
 export function capturePageCrash(error: unknown, source: "window_error" | "unhandled_rejection") {
