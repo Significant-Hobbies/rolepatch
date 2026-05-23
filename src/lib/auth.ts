@@ -180,7 +180,4 @@ export const auth = betterAuth({
       ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }
       : {},
   trustedOrigins: [process.env.BETTER_AUTH_URL || ''],
-  rateLimit: {
-    enabled: false,
-  },
 });
