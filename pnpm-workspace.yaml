@@ -2,6 +2,9 @@ packages:
   - "extension"
 onlyBuiltDependencies:
   - esbuild
+  - workerd
 ignoredBuiltDependencies:
+  - core-js
+  - protobufjs
   - sharp
   - unrs-resolver
