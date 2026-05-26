@@ -60,6 +60,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/50">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
+            <a href="#proof" className="hover:text-white transition-colors">See it work</a>
             <Link href="/tools" prefetch={false} className="hover:text-white transition-colors">Free Tools</Link>
             <Link href="/pricing" prefetch={false} className="hover:text-white transition-colors">Pricing</Link>
           </nav>
@@ -191,6 +192,78 @@ export default function LandingPage() {
                   </span>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+        {/* ── Before / After Proof ── */}
+        <section id="proof" className="py-32 px-6 border-t border-[var(--border)]">
+          <div className="max-w-5xl mx-auto">
+
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)]">
+                <Zap className="w-3 h-3" />
+                Real Output
+              </div>
+            </div>
+
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-center">
+              See your resume{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">transform.</span>
+            </h2>
+            <p className="text-xl text-white/50 text-center mb-14 max-w-2xl mx-auto leading-relaxed font-medium">
+              One generic bullet. One job posting URL. This is what RolePatch produces.
+            </p>
+
+            <div className="flex justify-center mb-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60 font-medium">
+                <Target className="w-4 h-4 text-indigo-400 shrink-0" />
+                Tailored for:{" "}
+                <span className="text-white font-semibold ml-1">Senior Product Manager · Stripe</span>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              {/* Before */}
+              <div className="p-8 rounded-3xl bg-[#0c0c0c] border border-white/5">
+                <span className="inline-block px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                  Before
+                </span>
+                <p className="text-white/50 text-lg leading-relaxed font-medium">
+                  &ldquo;Worked with engineering teams to deliver product features and track key metrics.&rdquo;
+                </p>
+              </div>
+
+              {/* After */}
+              <div className="p-8 rounded-3xl bg-[#0c0c0c] border border-indigo-500/30 shadow-[0_0_40px_rgba(99,102,241,0.08)]">
+                <span className="inline-block px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                  After
+                </span>
+                <p className="text-white text-lg leading-relaxed font-medium">
+                  &ldquo;Owned end-to-end roadmap for{" "}
+                  <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">3 payment API products</mark>
+                  , partnering with{" "}
+                  <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">12 engineers</mark>
+                  {" "}to ship{" "}
+                  <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">$4.2M ARR feature expansion</mark>
+                  {" "}and cut time-to-first-transaction by{" "}
+                  <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">31%</mark>.&rdquo;
+                </p>
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-white/20 font-medium uppercase tracking-widest mb-10">
+              Highlighted text = AI-added specificity · every change shown in a word-level diff
+            </p>
+
+            <div className="flex justify-center">
+              <Link
+                href="/dashboard"
+                prefetch={false}
+                className="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative group-hover:text-white transition-colors">Tailor Your Resume Free →</span>
+              </Link>
             </div>
           </div>
         </section>
