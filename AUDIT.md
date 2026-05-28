@@ -43,9 +43,9 @@
   `getAIModel(modelOverride)` passes a client-controlled string directly to `google()`. Attacker could pass arbitrary model identifiers, potentially accessing expensive models or triggering unexpected behavior.
   **Fix:** Validate `modelOverride` against an allowlist of known model IDs.
 
-- [x] **No rate limiting on scrape endpoint** `src/lib/actions/scrape-action.ts:14`
+- [ ] **No rate limiting on scrape endpoint** `src/lib/actions/scrape-action.ts:14`
   `scrapeJobUrl` has no rate limit. Attacker can abuse it as a free proxy to scrape arbitrary sites at scale.
-  **Fix:** Add in-memory rate limiting (5 req/min per IP or user).
+  **Disposition:** Do not add broad or aggressive rate limiting by default. Prefer SSRF validation, ownership/auth checks, and provider cost controls; add a narrow throttle only if abuse is observed and approved.
 
 ## Low / Informational
 

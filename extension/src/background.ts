@@ -1,12 +1,13 @@
 import { getApiBase, TAILOR_ENDPOINT } from './config';
 import type { ExtensionMessage, ScrapedJob, TailorResponse } from './types';
 
-// NextAuth issues slightly different cookie names depending on deployment
-// (`next-auth.session-token` for http, `__Secure-next-auth.session-token`
-// for https). Try both so both localhost and prod work.
+// better-auth issues slightly different cookie names depending on deployment.
+// Try common local and secure names so both localhost and prod work.
 const SESSION_COOKIE_NAMES = [
-  'next-auth.session-token',
-  '__Secure-next-auth.session-token',
+  'better-auth.session_token',
+  '__Secure-better-auth.session_token',
+  'better-auth-session_token',
+  '__Secure-better-auth-session_token',
 ];
 
 async function getSessionCookie(apiBase: string): Promise<string | null> {

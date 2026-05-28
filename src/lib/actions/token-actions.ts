@@ -107,7 +107,8 @@ export async function initializeBalance(userId: string): Promise<void> {
  * The UPDATE + INSERT happen inside a single write transaction so a
  * failed log INSERT rolls back the balance change.
  *
- * TODO: Add rate limiting at the middleware layer to prevent burst abuse.
+ * Burst abuse should be handled with narrow, evidence-backed controls around
+ * token-spending endpoints rather than broad middleware throttling.
  */
 export async function debitToken(
   type: TokenDebitType,
@@ -161,7 +162,8 @@ export async function debitToken(
  * Atomically credit tokens and log the transaction.
  * The upsert + SELECT + INSERT all happen inside a single write transaction.
  *
- * TODO: Add rate limiting at the middleware layer to prevent burst abuse.
+ * Burst abuse should be handled with narrow, evidence-backed controls around
+ * token-crediting endpoints rather than broad middleware throttling.
  */
 export async function creditTokens(
   userId: string,

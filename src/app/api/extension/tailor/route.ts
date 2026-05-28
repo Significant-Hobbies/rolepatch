@@ -42,8 +42,13 @@ export function OPTIONS(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const headers = corsHeaders(req);
+  const authHeaders = new Headers(req.headers);
+  const forwardedSession = req.headers.get('x-rolepatch-session');
+  if (forwardedSession && !authHeaders.has('cookie')) {
+    authHeaders.set('cookie', forwardedSession);
+  }
 
-  const userId = await getCurrentUserId();
+  const userId = await getCurrentUserId(authHeaders);
   if (!userId) {
     return NextResponse.json(
       { ok: false, error: 'Not authenticated', redirect_url: '/api/auth/signin' },

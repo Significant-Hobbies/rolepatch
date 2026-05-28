@@ -36,8 +36,8 @@ The popup has an **API base** field (bottom). Defaults to
 
 ## Auth
 
-The service worker reads your RolePatch NextAuth session cookie
-(`next-auth.session-token` or `__Secure-next-auth.session-token`) via
+The service worker reads your RolePatch better-auth session cookie
+(`better-auth.session_token` or its secure deployment variant) via
 `chrome.cookies.get` and forwards it both as a normal cookie (via
 `credentials: 'include'`) and via an `x-rolepatch-session` header for cases
 where cross-origin cookie propagation is blocked. You must be signed in to

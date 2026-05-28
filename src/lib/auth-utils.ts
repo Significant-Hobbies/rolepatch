@@ -3,8 +3,8 @@ import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-export async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
+export async function getCurrentUserId(requestHeaders?: Headers): Promise<string | null> {
+  const session = await auth.api.getSession({ headers: requestHeaders ?? await headers() });
   const user = session?.user;
   if (!user?.id) return null;
 
