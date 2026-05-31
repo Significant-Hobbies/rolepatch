@@ -28,8 +28,8 @@ jobs:
       - run: pnpm cf:build
       - uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || '7d048325699a5acddb44d3be31cf6ba9' }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
       - name: Smoke check production
         run: curl --fail --silent --show-error --location https://rolepatch.com/ --output /dev/null
