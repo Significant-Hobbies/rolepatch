@@ -10,6 +10,12 @@ routes = [
   { pattern = "www.rolepatch.com/*", zone_name = "rolepatch.com" }
 ]
 
+# psi-swarm flagged TTFB / server-side delay as a major LCP driver.
+# Smart Placement moves the Worker close to Turso so server actions
+# don't pay a cross-region RTT on every request.
+[placement]
+mode = "smart"
+
 [observability]
 enabled = true
 head_sampling_rate = 0.1
