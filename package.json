@@ -5,8 +5,8 @@
   "packageManager": "pnpm@11.0.8",
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack && node scripts/inline-critical-css.mjs",
-    "cf:build": "opennextjs-cloudflare build",
+    "build": "next build --webpack",
+    "cf:build": "next build --webpack && node scripts/inline-critical-css.mjs && opennextjs-cloudflare build",
     "deploy": "pnpm cf:build && wrangler deploy",
     "start": "next start",
     "lint": "eslint",
