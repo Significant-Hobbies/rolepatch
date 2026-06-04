@@ -1,0 +1,25 @@
+{
+  "name": "resume-tailor-landing-astro",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static Astro port of the rolepatch.com landing page. Deploys to Cloudflare Pages and (post-cutover) serves the `/` route in front of the Next.js Worker.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "deploy": "wrangler pages deploy dist/ --project-name resume-tailor-landing --commit-dirty=true"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.1.7",
+    "astro": "^5.18.2",
+    "tailwindcss": "^4.1.7"
+  },
+  "devDependencies": {
+    "lightningcss": "^1.32.0",
+    "wrangler": "^4.98.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

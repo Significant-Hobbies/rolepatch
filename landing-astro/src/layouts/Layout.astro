@@ -1,0 +1,115 @@
+---
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+
+const SITE_URL = 'https://rolepatch.com';
+// OG image is served from the Next.js Worker at /og-image.svg. Post-cutover
+// the Worker keeps that route; the URL stays resolvable.
+const OG_IMAGE = `${SITE_URL}/og-image.svg`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'RolePatch',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  url: SITE_URL,
+  description:
+    'AI-powered resume tailoring with job fit scoring, interview prep, and transparent diff view. See exactly what changed, word by word.',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+    description: '3 free tokens to start. No credit card required.',
+  },
+};
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="application-name" content="RolePatch" />
+    <meta name="author" content="RolePatch" />
+    <meta name="creator" content="RolePatch" />
+    <meta
+      name="keywords"
+      content="resume tailor, AI resume, ATS score, resume diff, job application, cover letter generator, resume keywords, resume optimizer, job fit score, interview prep, STAR stories"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <link rel="canonical" href={SITE_URL} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={SITE_URL} />
+    <meta property="og:site_name" content="RolePatch" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={OG_IMAGE} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="RolePatch — See every change in your resume" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={OG_IMAGE} />
+
+    {/* ── Fonts ────────────────────────────────────────────────────
+       Geist (sans) is the LCP-path face — the hero h1 and the body
+       copy both render in it. Geist Mono is referenced via
+       `--font-geist-mono` but is not used on this landing surface
+       (the LaTeX editor lives on a different route), so we skip its
+       preload to keep the LCP path lean. Async-CSS pattern (preload
+       + media print → all on load) so the stylesheet never blocks
+       first paint; <noscript> covers the no-JS fallback. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap"
+      />
+    </noscript>
+
+    {/* Mirror the CSS vars Next.js's next/font set up, so `font-sans`
+       (which resolves to var(--font-sans) → var(--font-geist-sans))
+       keeps working unchanged. */}
+    <style is:inline>
+      :root {
+        --font-geist-sans: 'Geist', system-ui, -apple-system, sans-serif;
+        --font-geist-mono: 'Geist Mono', ui-monospace, monospace;
+      }
+      html.dark { color-scheme: dark; }
+      body { margin: 0; }
+    </style>
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+  </head>
+  <body class="antialiased">
+    <slot />
+  </body>
+</html>

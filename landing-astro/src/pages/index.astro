@@ -1,0 +1,296 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/Icon.astro';
+
+// RolePatch landing — static Astro port of /src/app/page.tsx.
+//
+// Tailwind utility classes, CSS vars, copy, and structure all mirror
+// the React source 1:1. Next.js <Link> turned into plain <a>; the
+// Worker still owns /dashboard, /tools, /pricing, /privacy, /terms,
+// so internal links resolve unchanged.
+
+const TITLE = 'RolePatch — AI Resume Tailoring with Diff View';
+const DESCRIPTION =
+  'Tailor your resume to any job description with AI. Job fit scoring, interview prep with STAR stories, ATS optimization, cover letters, and word-level diff view.';
+
+const howItWorks = [
+  {
+    step: '01',
+    title: 'Paste the job',
+    desc: 'Drop in any job posting URL. RolePatch scrapes and analyzes the requirements, hard skills, and keywords the role is screening for.',
+  },
+  {
+    step: '02',
+    title: 'Tailor & review',
+    desc: 'AI rewrites your resume to match — shown as a word-level diff, so you see and control every single change before you accept it.',
+  },
+  {
+    step: '03',
+    title: 'Score & prep',
+    desc: 'Get a fit score across five weighted dimensions, then auto-generate STAR+R interview stories mapped to the job.',
+  },
+];
+
+const builtOn = ['Next.js', 'Turso', 'Cloudflare'];
+
+const features = [
+  { icon: 'target', title: 'Job Fit Score', desc: 'AI evaluates your match across 5 weighted dimensions — role alignment, skills, experience level, keywords, and culture fit. Know before you apply.' },
+  { icon: 'zap', title: 'Contextual Rewriting', desc: "Our AI doesn't just swap words; it re-contextualizes your experience to match the role's needs. See every change in a word-level diff." },
+  { icon: 'message-square', title: 'Interview Prep', desc: 'Auto-generates STAR+R stories mapped to the job requirements. Walk into every interview with rehearsed, quantified answers.' },
+  { icon: 'search', title: 'Deep JD Analysis', desc: 'Extracts hard skills, soft skills, and cultural nuances from any job posting. Paste a URL and we scrape the rest.' },
+  { icon: 'bar-chart-3', title: 'ATS Optimization', desc: "Real-time keyword scoring shows exactly which terms you're hitting and missing. Close the gap before you submit." },
+  { icon: 'file-text', title: 'Cover Letters', desc: 'AI-generated cover letters with company research baked in. Maps your proof points directly to their requirements.' },
+] as const;
+
+// Build-time year — the React version called `new Date().getFullYear()`
+// at render. Baking it in keeps the deliverable pure-static.
+const year = new Date().getFullYear();
+---
+
+<Layout title={TITLE} description={DESCRIPTION}>
+  <div class="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
+    {/* ── Nav ── */}
+    <header class="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-2xl">
+      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-xs font-black text-white">RP</span>
+          <span class="font-bold text-xl tracking-tight text-white">RolePatch</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-white/50">
+          <a href="#features" class="hover:text-white transition-colors">Features</a>
+          <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
+          <a href="#proof" class="hover:text-white transition-colors">See it work</a>
+          <a href="/tools" class="hover:text-white transition-colors">Free Tools</a>
+          <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+        </nav>
+        <a
+          href="/dashboard"
+          class="bg-white text-black text-sm font-bold px-6 py-2.5 rounded-full hover:bg-white/90 transition-all"
+        >
+          Get Started Free
+        </a>
+      </div>
+    </header>
+
+    <main>
+      {/* ── Hero ── */}
+      <section class="relative pt-32 pb-28 px-6 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+          <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
+          <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[100px] animate-pulse delay-1000"></div>
+        </div>
+
+        <div class="relative max-w-5xl mx-auto text-center">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold tracking-widest uppercase text-indigo-400 mb-10">
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            Next-Gen AI Tailoring
+          </div>
+
+          <h1 class="text-7xl md:text-[100px] font-bold leading-[0.9] tracking-tight mb-10">
+            The AI that gets you <br />
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">more interviews.</span>
+          </h1>
+
+          <p class="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium mb-12">
+            Don't just apply. Score your fit, tailor your resume, and prep for interviews — all from one AI-powered command center.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
+            <a
+              href="/dashboard"
+              class="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span class="relative group-hover:text-white transition-colors">Start Building Now — It's Free</span>
+            </a>
+            <a
+              href="#features"
+              class="px-10 py-5 bg-white/5 text-white font-bold text-lg rounded-2xl border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2"
+            >
+              See Features <Icon name="zap" class="w-5 h-5" fill="currentColor" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section id="features" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+          <div class="max-w-2xl mb-20">
+            <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">Built for speed, <br/> tuned for precision.</h2>
+            <p class="text-xl text-white/50 leading-relaxed font-medium">AI that understands what recruiters are actually looking for.</p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            {features.map((f) => (
+              <div class="group p-8 rounded-3xl bg-[#0c0c0c] border border-white/5 hover:border-indigo-500/50 transition-all duration-500 hover:translate-y-[-4px]">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform duration-500">
+                  <Icon name={f.icon} class="w-7 h-7" />
+                </div>
+                <h3 class="text-xl font-bold mb-3">{f.title}</h3>
+                <p class="text-white/50 leading-relaxed font-medium">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section id="how-it-works" class="py-32 px-6 border-t border-[var(--border)]">
+        <div class="max-w-7xl mx-auto">
+          <div class="max-w-2xl mb-20">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
+              <Icon name="award" class="w-3 h-3" />
+              How it works
+            </div>
+            <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
+              From job post to<br /> tailored resume.
+            </h2>
+            <p class="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
+              Three steps from a link to an application that speaks the role's language.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            {howItWorks.map((s) => (
+              <div class="flex flex-col p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500">
+                <div class="text-3xl font-black text-[var(--accent)] mb-6">{s.step}</div>
+                <h3 class="text-xl font-bold mb-3 text-[var(--foreground)]">{s.title}</h3>
+                <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Built on — understated tech stack row */}
+          <div class="mt-24 pt-10 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
+              Built on
+            </span>
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 grayscale opacity-60">
+              {builtOn.map((tech) => (
+                <span class="text-sm font-semibold text-[var(--muted-foreground)] tracking-tight">
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Before / After Proof ── */}
+      <section id="proof" class="py-32 px-6 border-t border-[var(--border)]">
+        <div class="max-w-5xl mx-auto">
+          <div class="flex justify-center mb-8">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)]">
+              <Icon name="zap" class="w-3 h-3" />
+              Real Output
+            </div>
+          </div>
+
+          <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-center">
+            See your resume{' '}
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">transform.</span>
+          </h2>
+          <p class="text-xl text-white/50 text-center mb-14 max-w-2xl mx-auto leading-relaxed font-medium">
+            One generic bullet. One job posting URL. This is what RolePatch produces.
+          </p>
+
+          <div class="flex justify-center mb-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60 font-medium">
+              <Icon name="target" class="w-4 h-4 text-indigo-400 shrink-0" />
+              Tailored for:{' '}
+              <span class="text-white font-semibold ml-1">Senior Product Manager · Stripe</span>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6 mb-12">
+            {/* Before */}
+            <div class="p-8 rounded-3xl bg-[#0c0c0c] border border-white/5">
+              <span class="inline-block px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                Before
+              </span>
+              <p class="text-white/50 text-lg leading-relaxed font-medium">
+                &ldquo;Worked with engineering teams to deliver product features and track key metrics.&rdquo;
+              </p>
+            </div>
+
+            {/* After */}
+            <div class="p-8 rounded-3xl bg-[#0c0c0c] border border-indigo-500/30 shadow-[0_0_40px_rgba(99,102,241,0.08)]">
+              <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                After
+              </span>
+              <p class="text-white text-lg leading-relaxed font-medium">
+                &ldquo;Owned end-to-end roadmap for{' '}
+                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">3 payment API products</mark>
+                , partnering with{' '}
+                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">12 engineers</mark>
+                {' '}to ship{' '}
+                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">$4.2M ARR feature expansion</mark>
+                {' '}and cut time-to-first-transaction by{' '}
+                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">31%</mark>.&rdquo;
+              </p>
+            </div>
+          </div>
+
+          <p class="text-center text-xs text-white/20 font-medium uppercase tracking-widest mb-10">
+            Highlighted text = AI-added specificity · every change shown in a word-level diff
+          </p>
+
+          <div class="flex justify-center">
+            <a
+              href="/dashboard"
+              class="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span class="relative group-hover:text-white transition-colors">Tailor Your Resume Free →</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="py-20 border-t border-white/5 bg-black">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-16 mb-16">
+          <div class="col-span-2">
+            <div class="flex items-center gap-2.5 mb-6">
+              <span class="w-7 h-7 rounded-lg bg-[var(--accent)] flex items-center justify-center text-[9px] font-black text-white">RP</span>
+              <span class="font-bold text-lg tracking-tight">RolePatch</span>
+            </div>
+            <p class="text-white/40 max-w-sm leading-relaxed font-medium">
+              AI-powered resume tailoring. Score your fit, tailor your resume, prep for interviews.
+            </p>
+          </div>
+          <div class="space-y-5">
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">Product</h4>
+            <nav class="flex flex-col gap-3 text-sm text-white/50 font-medium">
+              <a href="/tools" class="hover:text-white transition-colors">Free Tools</a>
+              <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
+              <a href="/dashboard" class="hover:text-white transition-colors">Dashboard</a>
+            </nav>
+          </div>
+          <div class="space-y-5">
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">Legal</h4>
+            <nav class="flex flex-col gap-3 text-sm text-white/50 font-medium">
+              <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="/terms" class="hover:text-white transition-colors">Terms of Service</a>
+            </nav>
+          </div>
+        </div>
+        <div class="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p class="text-sm text-white/20 font-medium">
+            &copy; {year} RolePatch. Built for the modern job seeker.
+          </p>
+          <div class="flex gap-6 opacity-20 hover:opacity-100 transition-opacity">
+            <Icon name="globe" class="w-5 h-5 cursor-pointer" />
+            <Icon name="shield" class="w-5 h-5 cursor-pointer" />
+            <Icon name="star" class="w-5 h-5 cursor-pointer" />
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</Layout>
