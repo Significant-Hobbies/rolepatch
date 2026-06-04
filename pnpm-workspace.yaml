@@ -1,5 +1,6 @@
 packages:
   - "extension"
+  - "landing-astro"
 onlyBuiltDependencies:
   - esbuild
   - workerd
