@@ -49,8 +49,14 @@ const nextConfig: NextConfig = {
         headers: [
           ...securityHeaders,
           {
+            // CF Edge needs both max-age and CDN-Cache-Control to actually
+            // cache HTML at edge; s-maxage alone was being marked DYNAMIC.
             key: 'Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+            value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'public, s-maxage=86400, stale-while-revalidate=604800',
           },
         ],
       },
