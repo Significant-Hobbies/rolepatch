@@ -1,7 +1,10 @@
 'use client';
 
-import posthog from "posthog-js";
-import { PostHogProvider } from "posthog-js/react";
+// posthog-js + PostHogProvider intentionally NOT imported at module top.
+// `lib/analytics` already lazy-imports posthog-js inside its browser emit()
+// path; the React `<PostHogProvider>` was wrapping `{children}` but no
+// descendant uses `usePostHog`, so dropping it removes ~50 KB from the
+// LCP-critical main chunk (psi-swarm coverage flagged the waste).
 import { useEffect, useRef } from 'react';
 
 import { trackReturned } from '@/lib/analytics';
@@ -47,5 +50,5 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     trackReturned();
   }, [userId]);
 
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
+  return <>{children}</>;
 }
