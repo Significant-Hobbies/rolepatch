@@ -68,7 +68,7 @@ export async function generateSkillsRoadmap(
   const userId = await getCurrentUserId();
   let debited = false;
   if (userId) {
-    const result = await debitToken('fit_score', 'skills_roadmap');
+    const result = await debitToken('interview_prep', 'skills_roadmap');
     if (!result.success) {
       throw new Error(
         result.error === 'insufficient_tokens'
