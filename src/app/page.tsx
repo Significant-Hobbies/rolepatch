@@ -90,13 +90,13 @@ export default function LandingPage() {
               Next-Gen AI Tailoring
             </div>
 
-            <h1 className="text-7xl md:text-[100px] font-bold leading-[0.9] tracking-tight mb-10">
-              The AI that gets you <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">more interviews.</span>
+            <h1 className="text-6xl md:text-[88px] font-bold leading-[0.95] tracking-tight mb-10">
+              Paste the job link.<br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">Get a resume that matches it in 60 seconds.</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium mb-12">
-              Don&apos;t just apply. Score your fit, tailor your resume, and prep for interviews — all from one AI-powered command center.
+              You send the same resume to 40 jobs and hear nothing. RolePatch rewrites it for each one, then shows you every change before you accept it.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
@@ -106,7 +106,7 @@ export default function LandingPage() {
                 className="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="relative group-hover:text-white transition-colors">Start Building Now — It&apos;s Free</span>
+                <span className="relative group-hover:text-white transition-colors">Tailor My Resume Free</span>
               </Link>
               <a
                 href="#features"
@@ -128,7 +128,7 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { icon: Target, title: "Job Fit Score", desc: "AI evaluates your match across 5 weighted dimensions — role alignment, skills, experience level, keywords, and culture fit. Know before you apply." },
+                { icon: Target, title: "Job Fit Score", desc: "See your fit score across 5 things recruiters check before you waste an hour applying." },
                 { icon: Zap, title: "Contextual Rewriting", desc: "Our AI doesn't just swap words; it re-contextualizes your experience to match the role's needs. See every change in a word-level diff." },
                 { icon: MessageSquare, title: "Interview Prep", desc: "Auto-generates STAR+R stories mapped to the job requirements. Walk into every interview with rehearsed, quantified answers." },
                 { icon: Search, title: "Deep JD Analysis", desc: "Extracts hard skills, soft skills, and cultural nuances from any job posting. Paste a URL and we scrape the rest." },
@@ -230,6 +230,9 @@ export default function LandingPage() {
                 <p className="text-white/50 text-lg leading-relaxed font-medium">
                   &ldquo;Worked with engineering teams to deliver product features and track key metrics.&rdquo;
                 </p>
+                <p className="text-white/30 text-sm leading-relaxed font-medium mt-4 italic">
+                  This is the bullet everyone writes. It says nothing.
+                </p>
               </div>
 
               {/* After */}
@@ -238,20 +241,28 @@ export default function LandingPage() {
                   After
                 </span>
                 <p className="text-white text-lg leading-relaxed font-medium">
-                  &ldquo;Owned end-to-end roadmap for{" "}
+                  &ldquo;Owned the roadmap for{" "}
                   <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">3 payment API products</mark>
-                  , partnering with{" "}
+                  {" "}with{" "}
                   <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">12 engineers</mark>
-                  {" "}to ship{" "}
-                  <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">$4.2M ARR feature expansion</mark>
-                  {" "}and cut time-to-first-transaction by{" "}
+                  , shipped a{" "}
+                  <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">$4.2M expansion</mark>
+                  , cut time to first transaction{" "}
                   <mark className="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">31%</mark>.&rdquo;
+                </p>
+                <p className="text-white/50 text-sm leading-relaxed font-medium mt-4">
+                  Same job. Real numbers. Pulled from one weak line and one job link.
                 </p>
               </div>
             </div>
 
             <p className="text-center text-xs text-white/20 font-medium uppercase tracking-widest mb-10">
               Highlighted text = AI-added specificity · every change shown in a word-level diff
+            </p>
+
+            <p className="text-center text-2xl md:text-3xl text-white font-bold tracking-tight max-w-3xl mx-auto mb-10 leading-snug">
+              Stop guessing why you get ghosted.{" "}
+              <span className="text-white/60">See your fit score first, then fix it.</span>
             </p>
 
             <div className="flex justify-center">
@@ -298,11 +309,17 @@ export default function LandingPage() {
           </div>
           <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-sm text-white/20 font-medium">
-              &copy; {new Date().getFullYear()} RolePatch. Built for the modern job seeker.
+              &copy; {new Date().getFullYear()} RolePatch. Stop guessing why you get ghosted.
               {' · '}
               <a href="https://sarthakagrawal.dev" className="hover:text-white/50 transition-colors">Sarthak</a>
               {' · '}
               <a href="https://sassmaker.com" className="hover:text-white/50 transition-colors">Foundry</a>
+              {' · '}
+              <span className="text-white/15">
+                copy rewritten by{" "}
+                <a href="https://jasondoesstuff.com/marc" className="hover:text-white/50 transition-colors">jasondoesstuff.com/marc</a>
+                {" "}(built on Marc Lou&apos;s 31 tips)
+              </span>
             </p>
             <div className="flex gap-6 opacity-20 hover:opacity-100 transition-opacity">
               <Globe className="w-5 h-5 cursor-pointer" />
