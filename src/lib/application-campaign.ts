@@ -5,6 +5,10 @@ export type CampaignJob = Pick<
   'id' | 'company' | 'role' | 'status' | 'created_at' | 'follow_up_at' | 'interview_date'
 >;
 
+export interface CampaignJobWithActivity extends CampaignJob {
+  updated_at?: number;
+}
+
 export interface CampaignSummary {
   total: number;
   appliedThisWeek: number;
@@ -45,8 +49,12 @@ function startOfWeek(unixSeconds: number): number {
   return Math.floor(date.getTime() / 1000);
 }
 
+function lastActivityAt(job: CampaignJobWithActivity): number {
+  return job.updated_at ?? job.created_at;
+}
+
 export function buildCampaignSummary(
-  jobs: CampaignJob[],
+  jobs: CampaignJobWithActivity[],
   options: { now?: number; weeklyTarget?: number } = {},
 ): CampaignSummary {
   const now = options.now ?? Math.floor(Date.now() / 1000);
@@ -65,7 +73,7 @@ export function buildCampaignSummary(
   const appliedThisWeek = jobs.filter(
     (job) =>
       ['applied', 'interview', 'offer', 'rejected'].includes(job.status) &&
-      job.created_at >= weekStart,
+      lastActivityAt(job) >= weekStart,
   ).length;
   const activePipeline = jobs.filter((job) =>
     ['applied', 'interview', 'offer'].includes(job.status),
@@ -79,7 +87,7 @@ export function buildCampaignSummary(
   const staleDrafts = jobs.filter(
     (job) =>
       ['draft', 'tailored'].includes(job.status) &&
-      job.created_at < sevenDaysAgo,
+      lastActivityAt(job) < sevenDaysAgo,
   ).length;
   const contacted = jobs.filter((job) =>
     ['applied', 'interview', 'offer', 'rejected'].includes(job.status),
@@ -104,7 +112,7 @@ export function buildCampaignSummary(
   };
 }
 
-function buildNextActions(jobs: CampaignJob[], now: number): CampaignAction[] {
+function buildNextActions(jobs: CampaignJobWithActivity[], now: number): CampaignAction[] {
   const staleCutoff = now - 7 * 24 * 60 * 60;
   const upcomingCutoff = now + 7 * 24 * 60 * 60;
   const actions: CampaignAction[] = [];
@@ -136,7 +144,7 @@ function buildNextActions(jobs: CampaignJob[], now: number): CampaignAction[] {
       });
     }
 
-    if (['draft', 'tailored'].includes(job.status) && job.created_at < staleCutoff) {
+    if (['draft', 'tailored'].includes(job.status) && lastActivityAt(job) < staleCutoff) {
       actions.push({
         jobId: job.id,
         label: job.status === 'draft' ? 'Tailor draft' : 'Apply or archive',

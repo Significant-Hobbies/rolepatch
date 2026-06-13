@@ -116,8 +116,8 @@ export async function saveTailoredResume(
     args: [id, jobId, resumeId, source, JSON.stringify(changes ?? []), userId],
   });
   await db.execute({
-    sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ?`,
-    args: [jobId],
+    sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ? AND user_id = ?`,
+    args: [jobId, userId],
   });
   revalidatePath('/');
   return id;

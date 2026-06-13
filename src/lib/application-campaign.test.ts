@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCampaignSummary, type CampaignJob } from '@/lib/application-campaign';
+import {
+  buildCampaignSummary,
+  type CampaignJobWithActivity,
+} from '@/lib/application-campaign';
 
 const now = 1_775_772_000;
 
-function job(overrides: Partial<CampaignJob>): CampaignJob {
+function job(overrides: Partial<CampaignJobWithActivity>): CampaignJobWithActivity {
   return {
     id: overrides.id ?? crypto.randomUUID(),
     company: overrides.company ?? 'Acme',
     role: overrides.role ?? 'Engineer',
     status: overrides.status ?? 'draft',
     created_at: overrides.created_at ?? now,
+    updated_at: overrides.updated_at ?? overrides.created_at ?? now,
     follow_up_at: overrides.follow_up_at ?? null,
     interview_date: overrides.interview_date ?? null,
   };
@@ -47,5 +51,29 @@ describe('application campaign summary', () => {
       'follow-up',
       'stale',
     ]);
+  });
+
+  it('uses the latest activity timestamp for weekly and stale calculations', () => {
+    const summary = buildCampaignSummary(
+      [
+        job({
+          id: 'recently-applied',
+          status: 'applied',
+          created_at: now - 10 * 24 * 60 * 60,
+          updated_at: now - 2 * 24 * 60 * 60,
+        }),
+        job({
+          id: 'recently-edited-draft',
+          status: 'draft',
+          created_at: now - 10 * 24 * 60 * 60,
+          updated_at: now - 2 * 24 * 60 * 60,
+        }),
+      ],
+      { now },
+    );
+
+    expect(summary.appliedThisWeek).toBe(1);
+    expect(summary.staleDrafts).toBe(0);
+    expect(summary.nextActions.map((action) => action.jobId)).toEqual([]);
   });
 });
