@@ -135,6 +135,7 @@ export type LocalJobSummary = Pick<
   | 'role'
   | 'status'
   | 'created_at'
+  | 'updated_at'
   | 'interview_date'
   | 'follow_up_at'
   | 'salary_min'
@@ -152,6 +153,7 @@ function toSummary(j: LocalJob): LocalJobSummary {
     role: j.role,
     status: j.status,
     created_at: j.created_at,
+    updated_at: j.updated_at ?? j.created_at,
     interview_date: j.interview_date ?? null,
     follow_up_at: j.follow_up_at ?? null,
     salary_min: j.salary_min ?? null,
@@ -172,7 +174,7 @@ export function localListJobs(): LocalJobSummary[] {
 export function localSaveJob(id: string, company: string, role: string, resumeId: string): void {
   const now = Math.floor(Date.now() / 1000);
   const jobs = getItems<LocalJob>(KEYS.jobs);
-  jobs.push({ id, company, role, resume_id: resumeId, status: 'draft', created_at: now });
+  jobs.push({ id, company, role, resume_id: resumeId, status: 'draft', created_at: now, updated_at: now });
   setItems(KEYS.jobs, jobs);
 }
 
@@ -266,9 +268,10 @@ export function localGetInterviewStories(jobId: string): InterviewStory[] {
 
 export function localSaveInterviewStories(stories: InterviewStory[]): void {
   if (stories.length === 0) return;
-  const jobId = stories[0].job_id;
-  const existing = getItems<InterviewStory>(KEYS.interviewStories).filter(s => s.job_id !== jobId);
-  setItems(KEYS.interviewStories, [...existing, ...stories]);
+  const existing = getItems<InterviewStory>(KEYS.interviewStories);
+  const incomingJobIds = new Set(stories.map((story) => story.job_id));
+  const preserved = existing.filter((story) => !incomingJobIds.has(story.job_id));
+  setItems(KEYS.interviewStories, [...preserved, ...stories]);
 }
 
 // --- Outreach Emails ---

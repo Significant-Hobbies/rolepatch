@@ -1,11 +1,14 @@
-import { beforeEach,describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   localGetFitScore,
   localGetInterviewStories,
   localListFitScores,
+  localListJobs,
   localSaveFitScore,
   localSaveInterviewStories,
+  localSaveJob,
+  localUpdateJobStatus,
 } from '@/lib/local-storage';
 import type { FitScore, InterviewStory } from '@/lib/types';
 
@@ -103,5 +106,32 @@ describe('localInterviewStories', () => {
     const retrieved = localGetInterviewStories('job-1');
     expect(retrieved).toHaveLength(2);
     expect(retrieved[0].theme).toBe('New Theme');
+  });
+
+  it('preserves stories for other jobs when saving a mixed batch', () => {
+    localSaveInterviewStories([
+      mockStories[0],
+      { ...mockStories[0], id: 'story-2', job_id: 'job-2', theme: 'Ownership' },
+    ]);
+
+    localSaveInterviewStories([
+      { ...mockStories[0], id: 'story-3', job_id: 'job-1', theme: 'Leadership v2' },
+    ]);
+
+    expect(localGetInterviewStories('job-1')).toHaveLength(1);
+    expect(localGetInterviewStories('job-1')[0].theme).toBe('Leadership v2');
+    expect(localGetInterviewStories('job-2')).toHaveLength(1);
+    expect(localGetInterviewStories('job-2')[0].theme).toBe('Ownership');
+  });
+});
+
+describe('localJobs', () => {
+  it('preserves updated_at for guest job summaries', () => {
+    localSaveJob('job-1', 'Acme', 'Engineer', 'resume-1');
+    localUpdateJobStatus('job-1', 'applied');
+
+    const [job] = localListJobs();
+    expect(job.updated_at).toBeGreaterThanOrEqual(job.created_at);
+    expect(job.status).toBe('applied');
   });
 });

@@ -39,6 +39,7 @@ type DashboardJob = Pick<
   | 'role'
   | 'status'
   | 'created_at'
+  | 'updated_at'
   | 'interview_date'
   | 'follow_up_at'
   | 'salary_min'
@@ -63,6 +64,7 @@ function toDashboardJob(j: JobApplication): DashboardJob {
     role: j.role,
     status: j.status,
     created_at: j.created_at,
+    updated_at: j.updated_at,
     interview_date: j.interview_date ?? null,
     follow_up_at: j.follow_up_at ?? null,
     salary_min: j.salary_min ?? null,
