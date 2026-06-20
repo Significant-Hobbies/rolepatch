@@ -3,18 +3,14 @@ main = "worker.mjs"
 compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat_v2"]
 
-assets = { directory = ".open-next/assets", binding = "ASSETS" }
+# Serve overlaid Astro index.html for GET / without invoking the Worker.
+# Signed-in redirect is inline in landing-astro Layout.astro.
+assets = { directory = ".open-next/assets", binding = "ASSETS", run_worker_first = [ "/*", "!/" ] }
 
 routes = [
   { pattern = "rolepatch.com/*", zone_name = "rolepatch.com" },
   { pattern = "www.rolepatch.com/*", zone_name = "rolepatch.com" }
 ]
-
-# psi-swarm flagged TTFB / server-side delay as a major LCP driver.
-# Smart Placement moves the Worker close to Turso so server actions
-# don't pay a cross-region RTT on every request.
-[placement]
-mode = "smart"
 
 [observability]
 enabled = true

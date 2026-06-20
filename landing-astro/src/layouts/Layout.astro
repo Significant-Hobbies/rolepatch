@@ -89,6 +89,17 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>
   <body class="antialiased">
+    <script is:inline>
+      (function () {
+        var c = document.cookie;
+        if (
+          c.indexOf('better-auth.session_token') !== -1 ||
+          c.indexOf('__Secure-better-auth.session_token') !== -1
+        ) {
+          location.replace('/dashboard');
+        }
+      })();
+    </script>
     <slot />
   </body>
 </html>
