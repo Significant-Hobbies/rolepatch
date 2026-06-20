@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-06-04
+Last updated: 2026-06-20
 
 ## Current Scope
 
@@ -15,6 +15,7 @@ RolePatch is an AI resume and job-application assistant. It helps users tailor r
 - AI requests use the documented free-ai/OpenAI-compatible gateway path.
 - Dodo Payments, Browser Rendering binding, and production deployment expectations are documented.
 - Critical and high audit findings around guest data, SSRF, payments, success verification, and AI allowlisting have been fixed.
+- **Privacy PRD (Option B):** `get-a-job/` and `research/` untracked, repo set private, pushed `135ba24` to `main`. PRD closed.
 
 ## Planned Next
 
@@ -25,6 +26,7 @@ RolePatch is an AI resume and job-application assistant. It helps users tailor r
 
 ## Deferred / Parked
 
+- **Git history purge (Option A):** parked — user chose untrack-only (Option B). Blobs remain in commits before `135ba24`; acceptable while repo stays private. Re-open with `git filter-repo` if needed.
 - Broad ATS replacement or recruiter CRM scope is deferred.
 - Aggressive scraping and strict rate limits are deferred pending endpoint-specific evidence.
 - Additional payment/provider expansion is parked until the current checkout and entitlement paths are repeatedly verified.
