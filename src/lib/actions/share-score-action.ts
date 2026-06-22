@@ -61,16 +61,19 @@ export async function publishScore(tailoredId: string): Promise<{ slug: string }
 
   // Recompute scores against the current JD + base resume so the cached
   // values on the row reflect the source of truth.
-  const jobRes = await db.execute({
-    sql: 'SELECT jd_text FROM job_applications WHERE id = ? AND user_id = ?',
-    args: [tailored.job_id as string, userId],
-  });
+  // Independent owner-scoped reads off the already-loaded tailored row —
+  // run in parallel (one round-trip instead of two).
+  const [jobRes, resumeRes] = await Promise.all([
+    db.execute({
+      sql: 'SELECT jd_text FROM job_applications WHERE id = ? AND user_id = ?',
+      args: [tailored.job_id as string, userId],
+    }),
+    db.execute({
+      sql: 'SELECT source FROM resumes WHERE id = ? AND user_id = ?',
+      args: [tailored.resume_id as string, userId],
+    }),
+  ]);
   const jdText = (jobRes.rows[0]?.jd_text as string | undefined) ?? '';
-
-  const resumeRes = await db.execute({
-    sql: 'SELECT source FROM resumes WHERE id = ? AND user_id = ?',
-    args: [tailored.resume_id as string, userId],
-  });
   const baseSource = (resumeRes.rows[0]?.source as string | undefined) ?? '';
 
   const scoreOriginal = calculateATSScore(baseSource, jdText).score;
