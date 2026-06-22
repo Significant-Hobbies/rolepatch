@@ -72,11 +72,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'jd_text too short' }, { status: 400, headers });
   }
 
-  // Pick the user's most recent resume.
-  const resumeRes = await db.execute({
-    sql: 'SELECT id FROM resumes WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
-    args: [userId],
-  });
+  // Pick the user's most recent resume + check idempotency in parallel.
+  // Both are independent, read-only, owner-scoped SELECTs; the early-return
+  // checks below preserve the original ordering of observable behavior.
+  const [resumeRes, existing] = await Promise.all([
+    db.execute({
+      sql: 'SELECT id FROM resumes WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+      args: [userId],
+    }),
+    db.execute({
+      sql: 'SELECT id FROM job_applications WHERE url = ? AND user_id = ? LIMIT 1',
+      args: [url, userId],
+    }),
+  ]);
+
   const resumeRow = resumeRes.rows[0];
   if (!resumeRow) {
     return NextResponse.json(
@@ -88,10 +97,6 @@ export async function POST(req: NextRequest) {
 
   // Idempotency: if this user already has a job_applications row for this URL,
   // return its ID instead of creating a duplicate.
-  const existing = await db.execute({
-    sql: 'SELECT id FROM job_applications WHERE url = ? AND user_id = ? LIMIT 1',
-    args: [url, userId],
-  });
   if (existing.rows[0]) {
     const jobId = String(existing.rows[0].id);
     return NextResponse.json(
