@@ -16,6 +16,24 @@ export default defineConfig({
     ],
     exclude: ['node_modules', 'dist', '.next', '.wrangler', 'e2e/**', '.claude/**', 'extension/**'],
     testTimeout: 15_000,
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'src/**/*.d.ts',
+        'src/**/types.ts',
+        'src/**/index.ts',
+        'src/**/*.config.{ts,js}',
+        'src/**/__tests__/**',
+        'src/lib/**/*.sql',
+        'src/lib/isomorphic-ws-shim.js',
+      ],
+      thresholds: {
+        lines: 20,
+        functions: 25,
+      },
+    },
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
 });
