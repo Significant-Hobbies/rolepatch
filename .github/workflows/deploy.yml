@@ -20,8 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
-        with:
-          version: 11.0.8
       - uses: actions/setup-node@v6
         with: { node-version: '22.19', cache: pnpm }
       - run: pnpm install --frozen-lockfile --ignore-scripts
@@ -42,8 +40,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
-        with:
-          version: 11.0.8
       - uses: actions/setup-node@v6
         with: { node-version: '22.19', cache: pnpm }
       - run: pnpm install --frozen-lockfile --ignore-scripts
