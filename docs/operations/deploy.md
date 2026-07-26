@@ -5,9 +5,9 @@ title: Deploy
 # Deploy
 
 RolePatch deploys to Cloudflare Workers (`resume-tailor`) via
-`@opennextjs/cloudflare`. Production deploys are triggered by push to
-`main` (GitHub Actions `deploy.yml`) or `workflow_dispatch`. There is
-no auto-deploy from PRs — PRs run `cf:build` only as a preview gate.
+`@opennextjs/cloudflare`. Production deploys are manual through
+`workflow_dispatch`; pushing to `main` does not deploy. PRs run `cf:build`
+only as a preview gate.
 
 ## Publish path
 
@@ -25,8 +25,8 @@ for the historical context):
    inside `cf:build`.
 3. **Build:** `pnpm cf:build` — the full multi-step production build
    pipeline (see [development workflow](../development/workflow.md)).
-4. **Deploy:** `wrangler deploy` (via `pnpm deploy` locally, or the
-   GitHub Actions `deploy.yml` on push to `main`).
+4. **Deploy:** SHA-tagged `wrangler deploy` (via `pnpm deploy` locally,
+   or a manual GitHub Actions `deploy.yml` dispatch).
 5. **Post-deploy smoke:** `pnpm smoke:prod` — public + optional
    authenticated apply-agent read smoke. See
    [production smoke](production-smoke.md).
@@ -35,8 +35,9 @@ for the historical context):
 
 `.github/workflows/deploy.yml`:
 
-- **Production** (`push` to `main` or `workflow_dispatch`): `cf:build`
-  → `wrangler deploy` (via `cloudflare/wrangler-action@v3` with
+- **Production** (`workflow_dispatch`): `cf:build` →
+  `wrangler deploy --tag ${{ github.sha }}` (via
+  `cloudflare/wrangler-action@v3` with
   `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets) →
   `pnpm smoke:prod`.
 - **Preview** (`pull_request`): `cf:build` only.

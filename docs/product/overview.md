@@ -24,7 +24,7 @@ diff view for review.
   Cloudflare D1 with `user_id` filtering, token purchases, saved
   searches, company watches, recruiter reply routing.
 - **Operators** — `rolepatch.com` Cloudflare Workers deploy, GitHub
-  Actions auto-deploy on push to `main`, manual cron dispatch.
+  Actions manual SHA-tagged production deploy, manual cron dispatch.
 
 ## Scope
 
