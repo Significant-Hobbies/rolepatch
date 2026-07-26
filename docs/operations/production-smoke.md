@@ -36,8 +36,8 @@ interactions instead of server-rendered HTML alone.
 `next build --webpack`, before OpenNext or `wrangler deploy` can proceed.
 
 The GitHub deploy workflow also runs `pnpm cf:build` before `wrangler deploy`
-and `pnpm smoke:prod` after deployment. Production deploys run on `main` pushes
-and can be started manually with `workflow_dispatch`.
+and `pnpm smoke:prod` after deployment. Production deploys are manual
+`workflow_dispatch` runs and tag the Worker version with the dispatched Git SHA.
 
 ```bash
 pnpm smoke:prod

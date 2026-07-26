@@ -1,6 +1,6 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-07-11
+Last updated: 2026-07-26
 
 ## Why / What
 
@@ -56,12 +56,17 @@ Live on `rolepatch.com` via Cloudflare Workers (OpenNext).
 | `pnpm verify:deploy-routes` | Verifies built Next app manifest contains parity-critical routes before deploy |
 | `pnpm smoke:prod` / `pnpm smoke:local` | Public production/local smoke plus optional authenticated apply-agent read checks |
 
-CI: GitHub Actions auto-deploy to Cloudflare on push to `main`.
+CI: GitHub Actions runs CI on pushes/PRs; production deploy is a manual,
+SHA-tagged `workflow_dispatch`.
 
 **Entrypoints:** `worker.mjs` · server actions `src/lib/actions/*` · API routes `/api/jobs` · job search `src/lib/job-search.ts` · PDF `src/lib/pdf.ts` · guest layer `src/lib/local-storage.ts`.
 
 ## Timeline
 
+- **2026-07-26 — Deploy provenance hardened locally:** Production deployment
+  is manual-only again, both local and Actions deploy paths attach the full Git
+  SHA to the Cloudflare version, and current deploy/CI/smoke docs match the
+  workflow. Pending commit/push and the next operator-owned production deploy.
 - **2026-07-11 — Test isolation:** Vitest now installs and resets a deterministic `localStorage` implementation before each test, preventing guest-mode state leakage between suites.
 
 - **2026-07-04 — Guest live job discovery shipped:** Dashboard discovery no longer dead-ends guests; unsigned users can run the native Cloudflare-safe LinkedIn search, save local shortlists/searches, and create local tailoring drafts from discovered jobs while recurring company watches stay signed-in-only.
@@ -104,7 +109,11 @@ CI: GitHub Actions auto-deploy to Cloudflare on push to `main`.
 - **2026-07-04 — Release preflight command shipped:** `pnpm release:verify` now runs the non-deploy release gates in one command: typecheck, lint, Vitest, extension build, Cloudflare build, standalone local public smoke, and focused desktop/mobile Playwright.
 - **2026-07-04 — Release preflight passed:** `pnpm release:verify` passed end to end against the standalone artifact with copied `.next/static`/`public` assets on 2026-07-04 23:32 IST: typecheck, Biome, 405 Vitest tests, extension build, Cloudflare build, 13/13 deploy-route verification, 6/6 local public smoke, and 22 focused desktop/mobile Playwright tests.
 - **2026-07-04 — Deploy handoff documented:** `docs/deploy-handoff.md` now captures the approved publish checklist, post-deploy smoke commands, task ids, and completion evidence needed once deploy approval is granted.
-- **2026-07-04 — GitHub deploy workflow repaired:** `.github/workflows/deploy.yml` now actually listens for `main` pushes, pull requests, and manual dispatch, so the Cloudflare deploy job no longer has an unreachable `push` condition.
+- **2026-07-04 — GitHub deploy workflow repaired:** At that time,
+  `.github/workflows/deploy.yml` was changed to listen for `main` pushes, pull
+  requests, and manual dispatch, removing an unreachable `push` condition.
+  The push-to-production behavior was superseded by the manual-only fleet
+  standard on 2026-07-26.
 - **2026-07-04 — Deploy handoff path repaired:** SaaS Maker's fleet registry now maps `resume-tailor` to `/Users/sarthak/Desktop/fleet/rolepatch`, and the Symphony dispatcher resolves configured project paths before falling back to slug-derived directories.
 - **2026-07-04 — Local production smoke verified:** Built app served with `next start -p 3005` passed the then-current public smoke 4/4 for landing, jobs browser, pricing, and settings readiness, using only a throwaway local auth secret. The current public smoke harness now checks 6 public routes, including `/proof` and the TrueHire preview guard.
 - **2026-07-04 — Missing answer prompt loop shipped:** Failed guarded browser receipts with missing required fields now surface answer-gap prompts in the command center and can prefill the Profile answers form for the next retry.
