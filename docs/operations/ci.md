@@ -12,7 +12,7 @@ for what runs — do not duplicate workflow YAML here.
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
 | [`ci.yml`](../../.github/workflows/ci.yml) | push, PR | `pnpm lint` + `pnpm test` + `pnpm cf:build` |
-| [`deploy.yml`](../../.github/workflows/deploy.yml) | push to `main`, PR, `workflow_dispatch` | `cf:build` + `wrangler deploy` + `pnpm smoke:prod` (production on `main`; preview build on PR) |
+| [`deploy.yml`](../../.github/workflows/deploy.yml) | PR, `workflow_dispatch` | `cf:build` preview gate on PR; manual SHA-tagged production deploy + `pnpm smoke:prod` |
 | [`job-sync.yml`](../../.github/workflows/job-sync.yml) | `workflow_dispatch` | Manual company-watchlist / weekly-digest cron trigger |
 | [`weekly.yml`](../../.github/workflows/weekly.yml) | cron `0 9 * * 1`, `workflow_dispatch` | Weekly quality check (lint + typecheck + test + build) |
 | [`docs.yml`](../../.github/workflows/docs.yml) | push, PR | `pnpm docs:check` (link + frontmatter + structure) |
@@ -32,8 +32,8 @@ catches missing parity-critical routes before deploy.
 
 ## Deploy workflow (`deploy.yml`)
 
-- **Production:** on `push` to `main` or `workflow_dispatch`. Runs
-  `cf:build` → `wrangler deploy` → `pnpm smoke:prod`.
+- **Production:** `workflow_dispatch` only. Runs `cf:build` →
+  `wrangler deploy --tag ${{ github.sha }}` → `pnpm smoke:prod`.
 - **Preview:** on PR. Runs `cf:build` only (no deploy, no smoke).
 
 See [deploy](deploy.md) for the full publish path.
