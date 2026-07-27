@@ -81,27 +81,28 @@ describe('analytics event map only declares sanitized fields', () => {
 });
 
 describe('activation call sites pass only sanitized arguments', () => {
-  it.each(
-    ACTIVATION_FILES
-  )('%s calls trackActivated/trackCoreAction without private payloads', async (file) => {
-    const source = await read(file);
-    // Every trackCoreAction call must pass only the action enum + optional
-    // `userId` distinctId. The regex is strict: only `userId` (or
-    // `userId ?? undefined`) is permitted as the second argument — any other
-    // variable (resumeSource, jdText, stashContent, etc.) fails the match.
-    const coreActionCalls = source.match(/trackCoreAction\([^)]*\)/g) ?? [];
-    expect(coreActionCalls.length).toBeGreaterThan(0);
-    for (const call of coreActionCalls) {
-      expect(call).toMatch(
-        /^trackCoreAction\(['"][a-z_]+['"](?:,\s*userId(?:\s*\?\?\s*undefined)?)?\)$/
-      );
+  it.each(ACTIVATION_FILES)(
+    '%s calls trackActivated/trackCoreAction without private payloads',
+    async (file) => {
+      const source = await read(file);
+      // Every trackCoreAction call must pass only the action enum + optional
+      // `userId` distinctId. The regex is strict: only `userId` (or
+      // `userId ?? undefined`) is permitted as the second argument — any other
+      // variable (resumeSource, jdText, stashContent, etc.) fails the match.
+      const coreActionCalls = source.match(/trackCoreAction\([^)]*\)/g) ?? [];
+      expect(coreActionCalls.length).toBeGreaterThan(0);
+      for (const call of coreActionCalls) {
+        expect(call).toMatch(
+          /^trackCoreAction\(['"][a-z_]+['"](?:,\s*userId(?:\s*\?\?\s*undefined)?)?\)$/
+        );
+      }
+      // trackActivated calls (only in tailor-action) must pass only `userId`.
+      const activatedCalls = source.match(/trackActivated\([^)]*\)/g) ?? [];
+      for (const call of activatedCalls) {
+        expect(call).toMatch(/^trackActivated\(userId\)$/);
+      }
     }
-    // trackActivated calls (only in tailor-action) must pass only `userId`.
-    const activatedCalls = source.match(/trackActivated\([^)]*\)/g) ?? [];
-    for (const call of activatedCalls) {
-      expect(call).toMatch(/^trackActivated\(userId\)$/);
-    }
-  });
+  );
 });
 
 describe('trackEvent signature does not accept raw private payloads', () => {

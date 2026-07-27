@@ -12,6 +12,7 @@ describe('deploy workflow', () => {
     expect(deployWorkflow).toContain('workflow_dispatch:');
     expect(deployWorkflow).toContain("if: github.event_name == 'workflow_dispatch'");
     expect(deployWorkflow).toContain('pnpm cf:build');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: GitHub Actions expressions use this literal syntax.
     expect(deployWorkflow).toContain('command: deploy --tag ${{ github.sha }}');
     expect(deployWorkflow).toContain('run: pnpm smoke:prod');
   });
