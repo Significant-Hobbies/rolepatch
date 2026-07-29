@@ -63,6 +63,9 @@ SHA-tagged `workflow_dispatch`.
 
 ## Timeline
 
+- **2026-07-29 — First-party changelog shipped:** The Astro public surface now
+  owns a same-origin `/changelog` with verified editorial release entries,
+  while Roadmap and Source link to the canonical GitHub issues and repository.
 - **2026-07-26 — Deploy provenance hardened locally:** Production deployment
   is manual-only again, both local and Actions deploy paths attach the full Git
   SHA to the Cloudflare version, and current deploy/CI/smoke docs match the
@@ -234,7 +237,9 @@ SHA-tagged `workflow_dispatch`.
 - Cloudflare Worker `resume-tailor`: server actions, `/api/jobs` routes, Browser Rendering binding (`BROWSER`) for PDF export.
 - Cloudflare D1 + better-auth Google OAuth for signed-in users; guest flows use localStorage with signed-in sync.
 - AI via `AI_BASE_URL` → free-ai-gateway; Dodo Payments for token checkout.
-- Landing: Astro static hero via local `scripts/run-overlay-astro-landing.mjs` overlaid during `cf:build` for fleet perf (psi-swarm TTFB/LCP improvement on `/`).
+- Landing: Astro static hero and first-party `/changelog` via local
+  `scripts/run-overlay-astro-landing.mjs`, overlaid during `cf:build` for fleet
+  performance while keeping verified release history on the product domain.
 - Job search runs natively in Worker — `src/lib/job-search.ts` queries LinkedIn public guest endpoint; `src/app/api/jobs/search/route.ts` exposes it to UI.
 
 ### Core product surfaces
