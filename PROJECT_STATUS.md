@@ -396,36 +396,8 @@ SHA-tagged `workflow_dispatch`.
 - Suggested reply drafts include matched proof candidates only when the recruiter explicitly asks for proof, examples, GitHub, portfolio, references, or verification; the draft remains editable and is not sent automatically.
 - **Not shipped**: mailbox sync and production Email Routing/Resend rule setup.
 
-## Todo / Planned / Deferred / Blocked
+## Work queue
 
-### Planned
-
-1. Add deeper provider-specific automation only after reviewed browser receipts have enough real failure-code evidence.
-2. Add live credentialed evidence for payment/provider callbacks once production credentials and callback events are available.
-3. Use saved-search/company-watch engagement and fallback health to decide whether broader job-board coverage is worth adding.
-4. ~~TrueHire proof-project next milestone~~ — **Decision recorded 2026-07-10:** keep TrueHire as a separate proof/credibility project, with RolePatch retaining the `/proof` preview integration. No deeper merge is planned until live recruiter evidence justifies it.
-
-### Deferred
-
-- **Git history purge (Option A)**: parked — user chose untrack-only (Option B).
-- Broad ATS replacement or recruiter CRM scope.
-- Aggressive scraping and stricter endpoint-specific rate limits pending live endpoint evidence.
-- Additional payment/provider expansion until checkout and entitlement paths repeatedly verified.
-- Production Email Routing/Resend setup and mailbox sync.
-- Multi-board crawlers and deeper ATS-specific company watch adapters beyond the current career URL adapters.
-- LinkedIn-only job search; datacenter IP rate limits may require Browser Rendering or hosted API fallback.
-- Residual audit: no CORS config (same-origin default).
-- Unattended browser auto-submit and bulk unattended apply remain deferred until reviewed submit plus confirmation receipts prove reliable.
-- Live e2e coverage remains thin for credentialed payment/provider callback paths.
-- TrueHire is paused as a separate proof project after the MVP integration decision; reopen only for measured recruiter validation or a specific proof workflow.
-
-### Blocked
-
-- (none)
-
-### Production Drift
-
-- Latest public `pnpm smoke:prod` run: 2/4 passed on `https://rolepatch.com`; `/jobs` returned 404 and `/settings` did not render the current operational-readiness/extension content. Authenticated apply-agent smoke was skipped because no `ROLEPATCH_SESSION_COOKIE` was supplied.
-- Current repo deploy build evidence: `pnpm build` passed on 2026-07-04 and listed `/jobs`, `/proof`, and `/settings` as dynamic app routes.
-- Current repo route-manifest gate: `pnpm verify:deploy-routes` passed 13/13 after the latest build, including `/proof` and `/api/proof/truehire-preview`; `pnpm cf:build` runs that gate automatically before OpenNext/Wrangler deploy work.
-- Current repo local production smoke evidence: `ROLEPATCH_SMOKE_BASE_URL=http://localhost:3010 pnpm smoke:prod` passed 6/6 on 2026-07-04 against the active local server, including `/proof`, `/jobs`, `/settings`, and the TrueHire preview guard. Authenticated apply-agent read checks remain skipped unless `ROLEPATCH_SESSION_COOKIE` is supplied.
+Open work is tracked only in [GitHub Issues](https://github.com/sarthakagrawal927/rolepatch/issues).
+An open issue is a to-do, a linked pull request is in progress, and merge plus
+issue closure makes the work done.
