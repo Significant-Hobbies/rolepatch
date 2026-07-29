@@ -81,7 +81,8 @@ presentation/search layer — generated output (`.blume/`, `dist/`) is
 gitignored.
 
 - **Navigation hub:** [`docs/index.md`](docs/index.md)
-- **Short current view:** [`STATUS.md`](STATUS.md) · **Deep timeline:** [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
+- **Current/shipped product truth:** [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
+- **Open work:** GitHub Issues
 - **Product:** [`docs/product/overview.md`](docs/product/overview.md) · [`docs/product/surfaces.md`](docs/product/surfaces.md)
 - **Architecture:** [`docs/architecture/overview.md`](docs/architecture/overview.md) · [`docs/architecture/data-model.md`](docs/architecture/data-model.md) · [ADRs](docs/architecture/decisions/)
 - **Development:** [`docs/development/workflow.md`](docs/development/workflow.md) · [`docs/development/docs.md`](docs/development/docs.md)
@@ -95,8 +96,7 @@ gitignored.
    covers — link to it. Don't duplicate code-discoverable facts.
 2. **Markdown is the source of truth.** Code/config stays authoritative
    for implementation details and schedules.
-3. **Mark unresolved questions explicitly** in [`STATUS.md`](STATUS.md)
-   — do not invent information.
+3. **Track unresolved questions in GitHub Issues** — do not invent information.
 4. **New non-obvious decision → new ADR** under
    `docs/architecture/decisions/` (use the
    [ADR template](docs/architecture/decisions/_template.md)). Never
@@ -110,9 +110,8 @@ gitignored.
    `.github/workflows/docs.yml`).
 9. **Do not edit generated Blume output** (`.blume/`, `dist/`). Edit
    the Markdown in `docs/` and rebuild.
-10. **Status:** `STATUS.md` is the short view; `PROJECT_STATUS.md` is
-    the durable fleet-mandated record. Update `PROJECT_STATUS.md` when
-    PR-sized work completes; keep `STATUS.md` in sync.
+10. **Status:** `PROJECT_STATUS.md` is the durable fleet-mandated record for
+    current/shipped truth. GitHub Issues owns all open work.
 
 <!-- FLEET-GUIDANCE:START -->
 
