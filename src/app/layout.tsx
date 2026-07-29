@@ -117,7 +117,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: `{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://sassmaker.com/#org","name":"SaaS Maker (Foundry)","url":"https://sassmaker.com","sameAs":["https://sassmaker.com","https://github.com/sarthakagrawal927/rolepatch"]},{"@type":"SoftwareApplication","@id":"https://rolepatch.com/#app","name":"RolePatch","url":"https://rolepatch.com","description":"AI-powered resume tailoring. Score fit against a job description, rewrite bullets for the role, and prep interviews.","publisher":{"@id":"https://sassmaker.com/#org"}}]}`,
+            __html: `{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://sassmaker.com/#org","name":"SaaS Maker (Foundry)","url":"https://sassmaker.com","sameAs":["https://sassmaker.com","https://github.com/sass-maker/rolepatch"]},{"@type":"SoftwareApplication","@id":"https://rolepatch.com/#app","name":"RolePatch","url":"https://rolepatch.com","description":"AI-powered resume tailoring. Score fit against a job description, rewrite bullets for the role, and prep interviews.","publisher":{"@id":"https://sassmaker.com/#org"}}]}`,
           }}
         />
         {/* fleet-jsonld:end */}
