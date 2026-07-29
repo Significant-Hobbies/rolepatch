@@ -11,11 +11,13 @@ import '@/styles/global.css';
 interface Props {
   title: string;
   description: string;
+  canonicalPath?: string;
+  redirectAuthenticated?: boolean;
 }
 
-const { title, description } = Astro.props;
-
 const SITE_URL = 'https://rolepatch.com';
+const { title, description, canonicalPath = '/', redirectAuthenticated = false } = Astro.props;
+const canonicalUrl = new URL(canonicalPath, SITE_URL).toString();
 // Keep social previews on the stable raster asset; crawlers do not reliably
 // render SVG Open Graph images.
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
@@ -55,11 +57,11 @@ const jsonLd = {
     />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
-    <link rel="canonical" href={SITE_URL} />
+    <link rel="canonical" href={canonicalUrl} />
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:url" content={SITE_URL} />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="RolePatch" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -91,17 +93,21 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>
   <body class="antialiased">
-    <script is:inline>
-      (function () {
-        var c = document.cookie;
-        if (
-          c.indexOf('better-auth.session_token') !== -1 ||
-          c.indexOf('__Secure-better-auth.session_token') !== -1
-        ) {
-          location.replace('/dashboard');
-        }
-      })();
-    </script>
+    {
+      redirectAuthenticated && (
+        <script is:inline>
+          (function () {
+            var c = document.cookie;
+            if (
+              c.indexOf('better-auth.session_token') !== -1 ||
+              c.indexOf('__Secure-better-auth.session_token') !== -1
+            ) {
+              location.replace('/dashboard');
+            }
+          })();
+        </script>
+      )
+    }
     <slot />
   </body>
 </html>

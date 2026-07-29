@@ -2,7 +2,7 @@
   "$schema": "fleet.design-review.v1",
   "version": 1,
   "project": "rolepatch",
-  "target": "RolePatch changelog",
+  "target": "RolePatch landing hero",
   "mode": "preserve",
   "register": "product",
   "context": {
@@ -14,33 +14,33 @@
     "probes": [],
     "selected": "existing-design",
     "approval": "not-required",
-    "before": ".fleet/evidence/changelog/before-1440.png"
+    "before": ".fleet/evidence/landing-hero/before-390.png"
   },
   "evidence": {
     "screenshots": [
       {
         "width": 390,
-        "path": ".fleet/evidence/changelog/after-390.png"
+        "path": ".fleet/evidence/landing-hero/after-390.png"
       },
       {
         "width": 768,
-        "path": ".fleet/evidence/changelog/after-768.png"
+        "path": ".fleet/evidence/landing-hero/after-768.png"
       },
       {
         "width": 1440,
-        "path": ".fleet/evidence/changelog/after-1440.png"
+        "path": ".fleet/evidence/landing-hero/after-1440.png"
       }
     ],
     "projectCheck": {
-      "command": "pnpm --filter ./landing-astro build",
+      "command": "pnpm --dir landing-astro build",
       "status": "pass"
     },
     "critique": {
-      "score": 34,
+      "score": 33,
       "maximum": 40
     },
     "audit": {
-      "score": 18,
+      "score": 17,
       "maximum": 20
     },
     "unresolved": {
@@ -49,18 +49,29 @@
     },
     "detector": {
       "posture": "advisory",
-      "findings": []
+      "findings": [
+        {
+          "rule": "gradient-text",
+          "count": 2,
+          "disposition": "intentional incumbent treatment; unchanged in preserve pass"
+        },
+        {
+          "rule": "ai-color-palette",
+          "count": 4,
+          "disposition": "existing indigo evidence accent; advisory for a future visual-language review"
+        }
+      ]
     },
     "browserReview": {
-      "tool": "Playwright",
+      "tool": "Playwright with system Chrome",
       "viewports": [390, 768, 1440],
       "horizontalOverflow": false,
       "consoleErrors": 0,
-      "note": "The changelog was visually inspected at all required widths. The compact mobile header wraps without clipping and the receipt-first release narrative stays legible."
+      "note": "At 390px, the headline height fell from 456px to 204px and the primary CTA moved from y=1006px to y=622px. Tablet navigation no longer overflows at 768px; desktop retains the 88px headline."
     }
   },
   "ownerFeedback": {
     "decision": "delegated",
-    "note": "Owner explicitly delegated agents to build first-party changelogs across all projects."
+    "note": "The owner explicitly delegated final design judgment for this remediation wave."
   }
 }

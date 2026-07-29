@@ -128,7 +128,7 @@ const fleetLinks = [
 ];
 ---
 
-<Layout title={TITLE} description={DESCRIPTION}>
+<Layout title={TITLE} description={DESCRIPTION} redirectAuthenticated>
   <div class="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
     {/* ── Nav ── */}
     <header class="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-2xl">
@@ -137,7 +137,7 @@ const fleetLinks = [
           <span class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-xs font-black text-white">RP</span>
           <span class="font-bold text-xl tracking-tight text-white">RolePatch</span>
         </a>
-        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-white/50">
+        <nav class="hidden xl:flex items-center gap-8 text-sm font-medium text-white/50">
           <a href="#features" class="hover:text-white transition-colors">Features</a>
           <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
           <a href="#receipts" class="hover:text-white transition-colors">Receipts</a>
@@ -158,14 +158,14 @@ const fleetLinks = [
 
     <main>
       {/* ── Hero ── */}
-      <section class="relative pt-32 pb-28 px-6 overflow-hidden">
+      <section class="relative pt-20 sm:pt-24 lg:pt-32 pb-20 sm:pb-24 lg:pb-28 px-5 sm:px-6 overflow-hidden">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
           <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
           <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[100px] animate-pulse delay-1000"></div>
         </div>
 
         <div class="relative max-w-5xl mx-auto text-center">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold tracking-widest uppercase text-indigo-400 mb-10">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold tracking-widest uppercase text-indigo-400 mb-7 sm:mb-10">
             <span class="flex h-2 w-2 relative">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -173,12 +173,12 @@ const fleetLinks = [
             Reviewed Apply Agent
           </div>
 
-          <h1 class="text-6xl md:text-[88px] font-bold leading-[0.95] tracking-tight mb-10">
+          <h1 class="text-[40px] sm:text-5xl md:text-7xl lg:text-[88px] font-bold leading-[1.02] lg:leading-[0.95] tracking-tight mb-7 sm:mb-10">
             Tailor the job packet.<br />
             <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">Fill applications with receipts, not guesswork.</span>
           </h1>
 
-          <p class="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium mb-12">
+          <p class="text-lg sm:text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium mb-9 sm:mb-12">
             RolePatch tailors your resume, prepares the cover letter and profile answers, fills supported ATS forms with a Chrome extension, and records what happened before you submit.
           </p>
 
