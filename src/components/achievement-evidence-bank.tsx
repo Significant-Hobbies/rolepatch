@@ -84,6 +84,7 @@ function toForm(entry: AchievementEvidence) {
 }
 
 export function AchievementEvidenceBank({ serverEntries, compact = false, roleHint = '' }: Props) {
+  const Heading = compact ? 'h2' : 'h1';
   const router = useRouter();
   const { isGuest } = useAuth();
   const [entries, setEntries] = useState(serverEntries);
@@ -181,9 +182,9 @@ export function AchievementEvidenceBank({ serverEntries, compact = false, roleHi
     >
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <h2 className={compact ? 'text-lg font-bold' : 'text-2xl font-bold'}>
+          <Heading className={compact ? 'text-lg font-bold' : 'text-2xl font-bold'}>
             Achievement Evidence
-          </h2>
+          </Heading>
           {!compact && (
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
               Reusable quantified proof for resumes, cover letters, interviews, and recruiter

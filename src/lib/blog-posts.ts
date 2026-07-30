@@ -1,6 +1,7 @@
 export interface BlogPost {
   slug: string;
   title: string;
+  seoTitle?: string;
   description: string;
   date: string; // ISO date (YYYY-MM-DD)
   readTime: string;
@@ -15,6 +16,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'why-tailoring-resume-matters',
     title: 'Why Tailoring Your Resume for Every Job Actually Works',
+    seoTitle: 'Why Tailored Resumes Work | RolePatch',
     description:
       "Data shows tailored resumes get 3x more interviews. Here's the science behind keyword matching, ATS systems, and what recruiters actually look for.",
     date: '2026-03-16',
@@ -53,6 +55,7 @@ Tools like [RolePatch](/) can tailor your resume in seconds. But the key differe
   {
     slug: 'ats-score-explained',
     title: 'ATS Scores Explained: What They Are and Why They Matter',
+    seoTitle: 'ATS Scores Explained | RolePatch',
     description:
       'Most resumes are rejected by software before a human sees them. Learn how Applicant Tracking Systems work and how to beat them.',
     date: '2026-03-16',

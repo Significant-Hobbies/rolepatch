@@ -13,7 +13,3 @@
 - [Agent catalog](https://rolepatch.com/api/ai): JSON inventory of public surfaces
 - [Homepage markdown](https://rolepatch.com/index.md): Product brief without JS
 - [This index](https://rolepatch.com/llms.txt)
-
-## Optional
-
-- [Foundry](https://sassmaker.com): Parent fleet showcase
