@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'Browse Jobs',
   description:
     'Search live job matches, shortlist roles, and queue applications for reviewed RolePatch apply-agent preparation.',
+  alternates: { canonical: 'https://rolepatch.com/jobs' },
 };
 
 function formatFirstSeen(createdAt: number): string {

@@ -5,7 +5,7 @@ import { ToolSeo } from '@/components/tool-seo';
 export const metadata: Metadata = {
   title: 'Free ATS Resume Checker — Formatting & Parseability Scan',
   description:
-    'Free ATS resume checker. Paste your resume to catch missing sections, contact info gaps, table traps, low bullet density, and missing dates — scored 0-100, all in your browser.',
+    'Check resume formatting and ATS parseability for free. Find missing sections, contact gaps, table traps, weak bullet density, and missing dates in your browser.',
   alternates: { canonical: 'https://rolepatch.com/tools/ats-check' },
 };
 

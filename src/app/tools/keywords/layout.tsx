@@ -5,7 +5,7 @@ import { ToolSeo } from '@/components/tool-seo';
 export const metadata: Metadata = {
   title: 'Free ATS Keyword Checker — Resume vs Job Description Match',
   description:
-    'Free ATS keyword checker. Paste your resume and a job description to see a match score, matched keywords, and the exact keywords you are missing. Runs in your browser, no sign-up.',
+    'Compare your resume with a job description in a free ATS keyword checker. See your match score, matched terms, and missing keywords without signing up.',
   alternates: { canonical: 'https://rolepatch.com/tools/keywords' },
 };
 

@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { ToolSeo } from '@/components/tool-seo';
 
 export const metadata: Metadata = {
-  title: 'Free Bullet Snippet Library — Save & Reuse Resume Paragraphs',
+  title: 'Free Resume Snippet Library — Save and Reuse Bullets',
   description:
-    'Free bullet snippet library. Save reusable accomplishment bullets and cover-letter paragraphs in your browser and copy them into any resume in one click. No sign-up, no server.',
+    'Save and reuse accomplishment bullets and cover-letter paragraphs in your browser. Copy them into any resume in one click, free and without signing up.',
   alternates: { canonical: 'https://rolepatch.com/tools/snippets' },
 };
 

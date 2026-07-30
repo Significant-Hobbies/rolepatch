@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { ToolSeo } from '@/components/tool-seo';
 
 export const metadata: Metadata = {
-  title: 'Free Bullet Strength Checker — Grade Resume Bullets Instantly',
+  title: 'Free Resume Bullet Checker — Grade Every Bullet',
   description:
-    'Free bullet strength checker. Paste resume bullets one per line to grade verb strength, quantified outcomes, length, tense, and first-person leakage. Runs in your browser, no sign-up.',
+    'Grade resume bullets for strong verbs, quantified outcomes, readable length, consistent tense, and first-person wording. Free, private, and no sign-up.',
   alternates: { canonical: 'https://rolepatch.com/tools/bullet-check' },
 };
 

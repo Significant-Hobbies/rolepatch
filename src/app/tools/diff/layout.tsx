@@ -5,7 +5,7 @@ import { ToolSeo } from '@/components/tool-seo';
 export const metadata: Metadata = {
   title: 'Free Resume Diff Tool — Compare Two Versions Word by Word',
   description:
-    'Free resume diff tool. Paste two versions of your resume to see a word-level side-by-side diff with additions and removals counted. Split or inline view, runs in your browser, no sign-up.',
+    'Compare two resume versions word by word in a free side-by-side diff. Count additions and removals, switch views, and keep every draft in your browser.',
   alternates: { canonical: 'https://rolepatch.com/tools/diff' },
 };
 

@@ -42,6 +42,7 @@ describe('AchievementEvidenceBank proof readiness', () => {
       />
     );
 
+    expect(screen.getByRole('heading', { level: 1, name: 'Achievement Evidence' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Proof readiness' })).toBeDefined();
     expect(screen.getAllByText(/user-provided until external verification ships/i).length).toBe(2);
     expect(screen.getAllByText('Proof-ready')).toHaveLength(2);
@@ -53,6 +54,7 @@ describe('AchievementEvidenceBank proof readiness', () => {
   it('hides the readiness summary in compact dashboard mode', () => {
     render(<AchievementEvidenceBank compact serverEntries={[evidence({})]} />);
 
+    expect(screen.getByRole('heading', { level: 2, name: 'Achievement Evidence' })).toBeDefined();
     expect(screen.queryByRole('heading', { name: 'Proof readiness' })).toBeNull();
     expect(screen.getByText('Proof-ready')).toBeDefined();
   });

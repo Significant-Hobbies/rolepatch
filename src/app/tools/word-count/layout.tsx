@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import { ToolSeo } from '@/components/tool-seo';
 
 export const metadata: Metadata = {
-  title: 'Free Resume Word Count — Words, Sentences, Bullets & Skim Time',
+  title: 'Free Resume Word Count, Bullet Count & Skim Time',
   description:
-    'Free resume word count tool. Paste any text to get word, character, line, sentence, paragraph, and bullet counts plus an estimated recruiter skim time. Runs locally, no sign-up.',
+    'Count resume words, characters, lines, sentences, paragraphs, and bullets, then estimate recruiter skim time. Free, private, and no sign-up.',
   alternates: { canonical: 'https://rolepatch.com/tools/word-count' },
 };
 
