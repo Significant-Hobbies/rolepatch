@@ -41,7 +41,7 @@ Dashboard routes require auth and are not agent-indexed.
 - https://rolepatch.com/sitemap.xml
 - https://rolepatch.com/robots.txt
 
-## Contact / fleet
+## Contact
 
-- Fleet: https://sassmaker.com
+- Owner: https://sarthakagrawal.dev
 - Agent email for directory verification: sarthakagrawal@agentmail.to

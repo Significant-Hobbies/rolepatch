@@ -14,6 +14,7 @@
 import openNext from './.open-next/worker.js';
 import { withTiming } from './timing.mjs';
 import { handleAgentEdge } from './agent-edge.mjs';
+import { handleRolePatchAgentRoutes } from './rolepatch-agent-routes.mjs';
 
 // Durable Objects must be re-exported from the entry that wrangler.toml
 // points at, otherwise the bindings can't resolve them at deploy time.
@@ -138,6 +139,12 @@ export default {
   },
 
   fetch: withTiming(async function fetch(request, env, ctx) {
+    // Curated Markdown for every public RolePatch page. This precedes the
+    // generated Fleet handler because it also owns the complete /api/ai catalog.
+    {
+      const rolePatchAgentRoute = handleRolePatchAgentRoutes(request);
+      if (rolePatchAgentRoute) return rolePatchAgentRoute;
+    }
     // Agent / LLM indexing surfaces (fleet GEO standard)
     {
       const agent = handleAgentEdge(request);

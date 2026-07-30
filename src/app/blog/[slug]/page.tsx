@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const post = blogPostBySlug(slug);
   if (!post) return {};
   return {
-    title: post.title,
+    title: post.seoTitle ? { absolute: post.seoTitle } : post.title,
     description: post.description,
     alternates: { canonical: `https://rolepatch.com/blog/${slug}` },
     openGraph: {
