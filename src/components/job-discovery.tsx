@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { TurnstileWidget } from '@/components/turnstile-widget';
 import { queueApplication } from '@/lib/actions/apply-agent-actions';
 import { createJobApplication } from '@/lib/actions/job-actions';
 import {
@@ -91,6 +92,7 @@ const SEMANTIC_SCORE_FILTERS = [
   { label: '70%+', value: 70 },
 ] as const;
 const STRONG_MATCH_QUEUE_THRESHOLD = 80;
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '0x4AAAAAAECKM9sjSkW-PHF_';
 
 const QUICK_SEARCHES = [
   { label: 'Remote AI engineer', query: 'AI engineer', location: 'Remote', remote: true },
@@ -157,6 +159,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
   const [remote, setRemote] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
   const [results, setResults] = useState<DiscoveredJob[]>([]);
   const [tailoringId, setTailoringId] = useState<string | null>(null);
   const [queueingId, setQueueingId] = useState<string | null>(null);
@@ -286,6 +290,11 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
 
   async function runSearch(searchQuery = query, searchLocation = location, searchRemote = remote) {
     if (!searchQuery.trim()) return;
+    if (!turnstileToken) {
+      setError('Complete the verification before searching.');
+      return [];
+    }
+    const verificationToken = turnstileToken;
     setLoading(true);
     setError('');
     setQueueSummary('');
@@ -305,6 +314,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
           location: searchLocation.trim() || undefined,
           remote: searchRemote || undefined,
           results_wanted: 25,
+          turnstileToken: verificationToken,
         }),
       });
 
@@ -329,6 +339,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
       return [];
     } finally {
       setLoading(false);
+      setTurnstileToken(null);
+      setTurnstileResetSignal((value) => value + 1);
     }
   }
 
@@ -772,11 +784,19 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
         </label>
         <button
           type="submit"
-          disabled={loading || !query.trim() || needsResume}
+          disabled={loading || !query.trim() || needsResume || !turnstileToken}
           className="px-5 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity whitespace-nowrap"
         >
           {loading ? 'Searching…' : 'Discover jobs'}
         </button>
+        <div className="md:col-span-4">
+          <TurnstileWidget
+            siteKey={TURNSTILE_SITE_KEY}
+            action="turnstile-spin-v2"
+            resetSignal={turnstileResetSignal}
+            onTokenChange={setTurnstileToken}
+          />
+        </div>
       </form>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -788,7 +808,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
             key={search.label}
             type="button"
             onClick={() => handleQuickSearch(search)}
-            disabled={loading || needsResume}
+            disabled={loading || needsResume || !turnstileToken}
             className="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
           >
             {search.label}

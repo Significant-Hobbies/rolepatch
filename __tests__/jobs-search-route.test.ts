@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type * as JobsSearchRoute from '@/app/api/jobs/search/route';
 
 const mockSearchJobs = vi.fn();
+const mockVerifyTurnstile = vi.fn();
 vi.mock('@/lib/job-search', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/job-search')>();
   return {
@@ -10,9 +11,14 @@ vi.mock('@/lib/job-search', async (importOriginal) => {
     searchJobs: (...args: unknown[]) => mockSearchJobs(...args),
   };
 });
+vi.mock('@/lib/turnstile', () => ({
+  verifyTurnstile: (...args: unknown[]) => mockVerifyTurnstile(...args),
+}));
 
 beforeEach(() => {
   mockSearchJobs.mockReset();
+  mockVerifyTurnstile.mockReset();
+  mockVerifyTurnstile.mockResolvedValue(true);
   vi.resetModules();
 });
 
@@ -29,10 +35,20 @@ describe('POST /api/jobs/search', () => {
     mockSearchJobs.mockResolvedValue({ jobs: [{ id: 'abc', title: 'Dev' }] });
 
     const { POST } = await import('@/app/api/jobs/search/route');
-    const res = await POST(makeReq({ query: 'python' }));
+    const res = await POST(makeReq({ query: 'python', turnstileToken: 'test-token' }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ jobs: [{ id: 'abc', title: 'Dev' }] });
     expect(mockSearchJobs).toHaveBeenCalledWith(expect.objectContaining({ query: 'python' }));
+  });
+
+  it('rejects searches that fail verification', async () => {
+    mockVerifyTurnstile.mockResolvedValueOnce(false);
+
+    const { POST } = await import('@/app/api/jobs/search/route');
+    const res = await POST(makeReq({ query: 'python', turnstileToken: 'bad-token' }));
+
+    expect(res.status).toBe(403);
+    expect(mockSearchJobs).not.toHaveBeenCalled();
   });
 
   it('returns 400 when query is missing', async () => {

@@ -13,6 +13,18 @@ vi.mock('@/components/auth-provider', () => ({
   useAuth: () => ({ isGuest: true }),
 }));
 
+vi.mock('@/components/turnstile-widget', async () => {
+  const { useEffect } = await import('react');
+  return {
+    TurnstileWidget: ({ onTokenChange }: { onTokenChange: (token: string | null) => void }) => {
+      useEffect(() => {
+        onTokenChange('test-turnstile-token');
+      }, [onTokenChange]);
+      return null;
+    },
+  };
+});
+
 const mockQueueApplication = vi.fn();
 vi.mock('@/lib/actions/apply-agent-actions', () => ({
   queueApplication: (...args: unknown[]) => mockQueueApplication(...args),
@@ -111,6 +123,7 @@ describe('JobDiscovery', () => {
             location: 'Remote',
             remote: true,
             results_wanted: 25,
+            turnstileToken: 'test-turnstile-token',
           }),
         })
       );

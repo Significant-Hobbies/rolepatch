@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { parseJsonObjectInput } from '@/lib/json-route-input';
 import { searchJobs, toUserFacingJobSearchError } from '@/lib/job-search';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -20,6 +21,17 @@ export async function POST(req: NextRequest) {
   const query = typeof params.query === 'string' ? params.query.trim() : '';
   if (!query) {
     return NextResponse.json({ error: 'query is required' }, { status: 400 });
+  }
+
+  const verified = await verifyTurnstile({
+    token: params.turnstileToken,
+    action: 'turnstile-spin-v2',
+    remoteIp:
+      req.headers.get('cf-connecting-ip') ??
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim(),
+  });
+  if (!verified) {
+    return NextResponse.json({ error: 'Verification failed' }, { status: 403 });
   }
 
   try {
