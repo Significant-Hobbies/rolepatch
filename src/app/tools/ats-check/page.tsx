@@ -152,11 +152,12 @@ export default function AtsCheckPage() {
       <Link href="/" className="text-xs text-stone-500 hover:underline">
         ← RolePatch
       </Link>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight">ATS check</h1>
+      <h1 className="mt-3 text-3xl font-bold tracking-tight">Free ATS Resume Checker</h1>
       <p className="mt-3 text-sm text-stone-600">
-        Paste your resume as markdown or plain text. Local heuristics flag the things ATS parsers
-        and recruiter skim-readers actually care about. No network call — your text never leaves the
-        page.
+        Paste the text of your resume for an immediate, browser-local check of seven visible
+        structure and formatting signals. No sign-up, file upload, or network request is required.
+        The result is a transparent heuristic report, not a prediction that a particular employer or
+        applicant-tracking system will accept your resume.
       </p>
 
       <textarea

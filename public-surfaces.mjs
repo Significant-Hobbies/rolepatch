@@ -119,13 +119,13 @@ export const PUBLIC_SURFACES = [
   {
     id: 'ats-checker',
     path: '/tools/ats-check',
-    title: 'ATS resume checker',
+    title: 'Free ATS resume checker',
     description:
-      'Check resume structure and parseability with local heuristics for sections, contact details, bullets, dates, metrics, and table-like rows.',
+      'Check seven resume structure and formatting signals for free in your browser with no sign-up, upload, or network request.',
     details: [
-      'The score summarizes seven documented formatting and structure checks.',
-      'Findings explain which heuristic passed, warned, or failed.',
-      'The check runs locally and does not upload the resume.',
+      'The documented heuristics cover length, sections, contact details, bullets, dates, quantified outcomes, and table-like rows.',
+      'Every warning and failure is visible; the score is not a prediction from a particular employer ATS.',
+      'The check runs locally and does not upload the resume or require an account.',
     ],
     changeFrequency: 'monthly',
     priority: 0.85,
