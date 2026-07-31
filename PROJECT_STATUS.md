@@ -1,6 +1,6 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-07-26
+Last updated: 2026-07-31
 
 ## Why / What
 
@@ -63,6 +63,11 @@ SHA-tagged `workflow_dispatch`.
 
 ## Timeline
 
+- **2026-07-31 — Receipt-first landing evidence clarified:** The Astro hero now
+  shows a truthful illustrative packet/fill/submit receipt rail, routes its
+  receipt CTA to the matching section, exposes visible keyboard focus, honors
+  reduced motion, and keeps header targets at least 44px without overflow at
+  390px, 768px, or 1440px.
 - **2026-07-29 — First-party changelog shipped:** The Astro public surface now
   owns a same-origin `/changelog` with verified editorial release entries,
   while Roadmap and Source link to the canonical GitHub issues and repository.
