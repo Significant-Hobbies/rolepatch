@@ -156,8 +156,8 @@ export default function AtsCheckPage() {
       <p className="mt-3 text-sm text-stone-600">
         Paste the text of your resume for an immediate, browser-local check of seven visible
         structure and formatting signals. No sign-up, file upload, or network request is required.
-        The result is a transparent heuristic report, not a prediction that a particular employer
-        or applicant-tracking system will accept your resume.
+        The result is a transparent heuristic report, not a prediction that a particular employer or
+        applicant-tracking system will accept your resume.
       </p>
 
       <textarea
