@@ -1,6 +1,6 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-07-26
+Last updated: 2026-07-31
 
 ## Why / What
 
@@ -62,6 +62,11 @@ SHA-tagged `workflow_dispatch`.
 **Entrypoints:** `worker.mjs` · server actions `src/lib/actions/*` · API routes `/api/jobs` · job search `src/lib/job-search.ts` · PDF `src/lib/pdf.ts` · guest layer `src/lib/local-storage.ts`.
 
 ## Timeline
+
+- **2026-07-31 — Free ATS checker intent page:** clarified the checker as a
+  private, no-sign-up seven-signal structure pass; documented its scoring,
+  relationship to keyword matching, workflow, and limitations; and synchronized
+  the agent-readable public catalog without changing its local analysis logic.
 
 - **2026-07-29 — First-party changelog shipped:** The Astro public surface now
   owns a same-origin `/changelog` with verified editorial release entries,
