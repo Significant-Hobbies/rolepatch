@@ -63,11 +63,11 @@ SHA-tagged `workflow_dispatch`.
 
 ## Timeline
 
-- **2026-07-31 — Free ATS checker intent page:** clarified the checker as a
-  private, no-sign-up seven-signal structure pass; documented its scoring,
-  relationship to keyword matching, workflow, and limitations; and synchronized
-  the agent-readable public catalog without changing its local analysis logic.
-
+- **2026-07-31 — Receipt-first landing evidence clarified:** The Astro hero now
+  shows a truthful illustrative packet/fill/submit receipt rail, routes its
+  receipt CTA to the matching section, exposes visible keyboard focus, honors
+  reduced motion, and keeps header targets at least 44px without overflow at
+  390px, 768px, or 1440px.
 - **2026-07-29 — First-party changelog shipped:** The Astro public surface now
   owns a same-origin `/changelog` with verified editorial release entries,
   while Roadmap and Source link to the canonical GitHub issues and repository.
