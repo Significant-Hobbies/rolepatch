@@ -36,11 +36,11 @@
       "status": "pass"
     },
     "critique": {
-      "score": 33,
+      "score": 36,
       "maximum": 40
     },
     "audit": {
-      "score": 17,
+      "score": 19,
       "maximum": 20
     },
     "unresolved": {
@@ -63,11 +63,11 @@
       ]
     },
     "browserReview": {
-      "tool": "Playwright with system Chrome",
+      "tool": "Chrome DevTools Protocol with system Chrome",
       "viewports": [390, 768, 1440],
       "horizontalOverflow": false,
       "consoleErrors": 0,
-      "note": "At 390px, the headline height fell from 456px to 204px and the primary CTA moved from y=1006px to y=622px. Tablet navigation no longer overflows at 768px; desktop retains the 88px headline."
+      "note": "The illustrative receipt rail remains legible at all three viewports, the secondary CTA resolves to #receipts, and the 390px header links measure 44px high. Keyboard focus exposes a 2px accent outline with 3px offset, reduced-motion disables ambient pulse animation, and the isolated static preview produced no application console errors; its missing favicon generated one non-application 404 network log."
     }
   },
   "ownerFeedback": {
