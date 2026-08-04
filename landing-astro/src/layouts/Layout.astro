@@ -1,11 +1,4 @@
 ---
-// Self-hosted Geist variable font. Astro inlines the @font-face into
-// the page's CSS via Lightning CSS (build.inlineStylesheets: 'always'),
-// so we drop the external fonts.googleapis.com round-trip from the
-// LCP path. Family registers as 'Geist Variable' — mapped onto the
-// existing --font-geist-sans CSS var below so global.css needs no
-// changes. Geist Mono is not used on the landing surface; skipped.
-import '@fontsource-variable/geist';
 import '@/styles/global.css';
 
 interface Props {
@@ -77,14 +70,12 @@ const jsonLd = {
     <meta name="twitter:site" content="@sarthakcodes" />
     <meta name="twitter:creator" content="@sarthakcodes" />
 
-    {/* Mirror the CSS vars Next.js's next/font set up, so `font-sans`
-       (which resolves to var(--font-sans) → var(--font-geist-sans))
-       keeps working unchanged. Fontsource Variable registers Geist as
-       'Geist Variable'; plain 'Geist' stays in the fallback chain. */}
+    {/* Use the native UI stack on the static landing page. This avoids a
+       late font swap moving and delaying the hero on constrained devices. */}
     <style is:inline>
       :root {
-        --font-geist-sans: 'Geist Variable', 'Geist', system-ui, -apple-system, sans-serif;
-        --font-geist-mono: 'Geist Mono', ui-monospace, monospace;
+        --font-geist-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --font-geist-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
       }
       html.dark { color-scheme: dark; }
       body { margin: 0; }
