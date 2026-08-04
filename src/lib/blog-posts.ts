@@ -54,41 +54,59 @@ Tools like [RolePatch](/) can tailor your resume in seconds. But the key differe
   },
   {
     slug: 'ats-score-explained',
-    title: 'ATS Scores Explained: What They Are and Why They Matter',
-    seoTitle: 'ATS Scores Explained | RolePatch',
+    title: 'ATS Scores and Metrics Explained: What Job Seekers Should Track',
+    seoTitle: 'ATS Score and ATS Metrics Explained | RolePatch',
     description:
-      'Most resumes are rejected by software before a human sees them. Learn how Applicant Tracking Systems work and how to beat them.',
+      'Learn what an ATS score actually measures, which resume-match and parsing metrics matter, and why there is no universal ATS pass score.',
     date: '2026-03-16',
-    readTime: '4 min',
+    readTime: '5 min',
     content: `## What Is an ATS Score?
 
-An ATS (Applicant Tracking System) score is a numerical match between your resume and a job description. It typically ranges from 0 to 100, where higher means your resume contains more of the keywords and qualifications the employer is looking for.
+An ATS score usually means a **resume-to-job match score** produced by a resume checker. It estimates how closely your resume reflects a specific job description. It is not a universal score shared by every Applicant Tracking System, and employers do not all use the same formula.
 
-## How It Works
+Treat the score as a comparison tool: use it to find missing evidence, improve the resume, and compare the new version with the original. It cannot predict whether a recruiter will interview you.
 
-The system extracts keywords from the job description — skills, tools, certifications, job titles — and checks how many appear in your resume. Some systems also look for:
+## How Resume Match Scores Work
 
-- **Keyword frequency** — mentioned once vs. demonstrated throughout
-- **Keyword proximity** — related terms near each other (e.g., "Python" near "data analysis")
-- **Section matching** — skills in a skills section vs. buried in a paragraph
-- **Exact vs. fuzzy matching** — "JavaScript" vs. "JS" vs. "ECMAScript"
+A resume checker extracts signals from the job description and compares them with the resume. Useful signals include:
 
-## What Score Do You Need?
+- **Required-skill coverage** — which named tools, certifications, and capabilities appear with supporting evidence
+- **Role and seniority alignment** — whether titles, scope, and responsibility match the opening
+- **Experience evidence** — whether relevant terms appear in concrete achievement bullets rather than an isolated keyword list
+- **Parsing quality** — whether standard headings and readable formatting let software identify experience, education, and skills
+- **Missing requirements** — which important job-description signals have no honest counterpart in the resume
 
-Most ATS systems use a threshold — typically 60-80% — below which your resume is automatically rejected. The exact threshold varies by company and role.
+Exact matching is only one input. Adding a keyword you cannot support may raise a simplistic score while making the resume less credible to a recruiter.
 
-**A good target:** 75+ for most roles. 85+ for competitive positions.
+## ATS Score vs. ATS Metrics
+
+People use “ATS metrics” to describe several different things. For a job seeker, the useful metrics are:
+
+- **Parse completeness:** did the checker correctly identify your contact details, work history, education, and skills?
+- **Required-skill coverage:** how many genuinely relevant requirements are supported by your resume?
+- **Preferred-skill coverage:** which optional requirements strengthen your fit?
+- **Evidence quality:** are matched skills demonstrated through outcomes, scale, or ownership?
+- **Match improvement:** did a reviewed revision close real gaps without inventing experience?
+
+Recruiting teams track different operational ATS metrics, such as application completion, source of hire, time to review, and movement through interview stages. Those employer metrics are not your personal resume score.
+
+## Is There a Good ATS Score?
+
+There is no universal ATS pass score. A 75 in one checker is not equivalent to a 75 in another, and a company may use filters, recruiter review, knockout questions, or no numerical resume score at all.
+
+Use a score directionally. A revised resume should parse cleanly, cover the role's important requirements, and improve against the same job description and the same scoring method. Review every change before applying.
 
 ## How to Check Your Score
 
-You can use [RolePatch's free keyword checker](/tools/keywords) to see your match score instantly. Paste your resume and the job description, and see exactly which keywords you're matching and which you're missing.
+Use [RolePatch's free keyword checker](/tools/keywords) to compare one resume with one job description. It shows matched and missing terms so you can inspect the evidence behind the result instead of relying on a number alone.
 
 ## How to Improve It
 
-1. **Mirror the JD language** — if they say "stakeholder management," use that exact phrase
-2. **Include hard skills** — tools, languages, certifications are heavily weighted
-3. **Use standard section headers** — "Experience," "Education," "Skills" (not creative alternatives)
-4. **Avoid images and tables** — most ATS systems can't parse them
+1. **Fix parsing first** — use standard headings, readable text, and a straightforward structure
+2. **Match truthful terminology** — when your experience supports it, use the language the job description uses
+3. **Prioritize required skills** — make the most relevant evidence easy to find in recent roles and achievements
+4. **Show proof** — connect skills to outcomes, scale, ownership, or measurable impact
+5. **Remove unsupported keywords** — never add a requirement you cannot defend in an interview
 
 [Check your ATS score free →](/tools/keywords)`,
   },
