@@ -61,6 +61,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Keep the initial mobile render focused on the hero. Sections become fully
+   rendered as they approach the viewport, while their reserved size keeps
+   anchor navigation and the document scrollbar stable. */
+.landing-page main > section:not(:first-child) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
 :where(a, button, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;
