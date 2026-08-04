@@ -203,12 +203,12 @@ export const PUBLIC_SURFACES = [
   {
     id: 'ats-score-article',
     path: '/blog/ats-score-explained',
-    title: 'ATS scores explained',
+    title: 'ATS scores and metrics explained',
     description:
-      'An introduction to ATS match scores, common scoring signals, and ways to inspect a resume against a job description.',
+      'A practical guide to resume match scores, parsing and coverage metrics, and the limits of universal ATS thresholds.',
     details: [
-      'Describes keyword, section, and formatting signals used in resume screening.',
-      'Explains that thresholds vary by employer and role.',
+      'Separates candidate resume-match scores from employer recruiting metrics.',
+      'Explains that there is no universal ATS score or pass threshold.',
       'Links to the free RolePatch keyword checker.',
     ],
     changeFrequency: 'monthly',
