@@ -29,6 +29,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // This repository lives below Fleet's root lockfile. Keep standalone output
+  // rooted here so OpenNext finds `.next/standalone/.next` consistently.
+  outputFileTracingRoot: process.cwd(),
   // Emit .next/standalone so Beasties' post-build inline-critical-css.mjs
   // can modify the same HTML that OpenNext's --skipNextBuild consumes.
   output: 'standalone',
