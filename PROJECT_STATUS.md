@@ -63,6 +63,12 @@ SHA-tagged `workflow_dispatch`.
 
 ## Timeline
 
+- **2026-08-05 — ATS metrics guide aligned to live search evidence:** The
+  public ATS score guide now distinguishes third-party resume-match scores from
+  employer recruiting metrics, removes unsupported universal threshold claims,
+  and explains parsing, requirement coverage, and evidence quality before
+  directing readers to the free keyword checker.
+
 - **2026-07-31 — Receipt-first landing evidence clarified:** The Astro hero now
   shows a truthful illustrative packet/fill/submit receipt rail, routes its
   receipt CTA to the matching section, exposes visible keyboard focus, honors
