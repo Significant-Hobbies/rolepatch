@@ -117,7 +117,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: `{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://sassmaker.com/#org","name":"SaaS Maker (Foundry)","url":"https://sassmaker.com","sameAs":["https://sassmaker.com","https://github.com/sass-maker/rolepatch"]},{"@type":"SoftwareApplication","@id":"https://rolepatch.com/#app","name":"RolePatch","url":"https://rolepatch.com","description":"AI-powered resume tailoring. Score fit against a job description, rewrite bullets for the role, and prep interviews.","publisher":{"@id":"https://sassmaker.com/#org"}}]}`,
+            __html: `{"@context":"https://schema.org","@graph":[{"@type":"Person","@id":"https://sarthakagrawal.dev/#person","name":"Sarthak Agrawal","jobTitle":"AI Infrastructure & Product Engineer","url":"https://sarthakagrawal.dev","image":"https://avatars.githubusercontent.com/u/43884471?v=4","sameAs":["https://sarthakagrawal.dev","https://www.linkedin.com/in/sarthakagrawal927","https://github.com/sarthakagrawal927","https://x.com/sarthakcodes","https://huggingface.co/sarthakagrawal927"]},{"@type":"SoftwareApplication","@id":"https://rolepatch.com/#app","name":"RolePatch","alternateName":["Role Patch","rolepatch.com"],"url":"https://rolepatch.com","description":"AI-powered resume tailoring. Score fit against a job description, rewrite bullets for the role, and prep interviews.","publisher":{"@id":"https://sarthakagrawal.dev/#person"},"sameAs":["https://github.com/Significant-Hobbies/rolepatch"]}]}`,
           }}
         />
         {/* fleet-jsonld:end */}
