@@ -15,9 +15,6 @@ into the apply-agent discovery feed.
   `SCHEDULED_TASKS` and dispatches a subrequest to
   `/api/internal/cron/company-watchlist` with the
   `x-rolepatch-internal: worker` header.
-- **Manual trigger:** GitHub Actions `job-sync.yml` with the
-  `company-watchlist` input, or any HTTP client with the internal
-  secret header (`x-rolepatch-internal-secret`).
 
 ## Route
 

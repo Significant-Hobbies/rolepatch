@@ -13,8 +13,6 @@ for what runs — do not duplicate workflow YAML here.
 | --- | --- | --- |
 | [`ci.yml`](../../.github/workflows/ci.yml) | push, PR | `pnpm lint` + `pnpm test` + `pnpm cf:build` |
 | [`deploy.yml`](../../.github/workflows/deploy.yml) | PR, `workflow_dispatch` | `cf:build` preview gate on PR; manual SHA-tagged production deploy + `pnpm smoke:prod` |
-| [`job-sync.yml`](../../.github/workflows/job-sync.yml) | `workflow_dispatch` | Manual company-watchlist / weekly-digest cron trigger |
-| [`weekly.yml`](../../.github/workflows/weekly.yml) | cron `0 9 * * 1`, `workflow_dispatch` | Weekly quality check (lint + typecheck + test + build) |
 | [`docs.yml`](../../.github/workflows/docs.yml) | push, PR | `pnpm docs:check` (link + frontmatter + structure) |
 
 ## CI gates (`ci.yml`)
@@ -37,13 +35,6 @@ catches missing parity-critical routes before deploy.
 - **Preview:** on PR. Runs `cf:build` only (no deploy, no smoke).
 
 See [deploy](deploy.md) for the full publish path.
-
-## Weekly quality (`weekly.yml`)
-
-Cron `0 9 * * 1` (Monday 09:00 UTC) + `workflow_dispatch`. Runs lint,
-typecheck, test, build if the scripts exist. Catches drift that
-push-driven CI might miss (e.g. a dependency change that breaks the
-build but didn't trigger a push).
 
 ## Docs (`docs.yml`)
 
