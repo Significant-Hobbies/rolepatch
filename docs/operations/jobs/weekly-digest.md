@@ -15,8 +15,6 @@ company-watch matches and apply-agent queue / receipt activity.
   `SCHEDULED_TASKS` and dispatches a subrequest to
   `/api/internal/cron/weekly-digest` with the
   `x-rolepatch-internal: worker` header.
-- **Manual trigger:** GitHub Actions `job-sync.yml` with the
-  `weekly-digest` input.
 
 ## Route
 
