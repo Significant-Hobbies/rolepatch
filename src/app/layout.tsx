@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
 
   title: {
-    default: 'RolePatch — AI Resume Tailoring with Diff View',
+    default: 'RolePatch — AI resume tailoring for job applications',
     template: '%s | RolePatch',
   },
   description:
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://rolepatch.com',
     siteName: 'RolePatch',
-    title: 'RolePatch — AI Resume Tailoring with Diff View',
+    title: 'RolePatch — AI resume tailoring for job applications',
     description:
       'Tailor your resume to any job description with AI. See exactly what changed word by word.',
     images: [
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@sarthakcodes',
     creator: '@sarthakcodes',
-    title: 'RolePatch — AI Resume Tailoring with Diff View',
+    title: 'RolePatch — AI resume tailoring for job applications',
     description: 'Tailor your resume to any job description with AI. See exactly what changed.',
     images: ['/og-image.png'],
   },
