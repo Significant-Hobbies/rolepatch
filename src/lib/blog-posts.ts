@@ -54,10 +54,10 @@ Tools like [RolePatch](/) can tailor your resume in seconds. But the key differe
   },
   {
     slug: 'ats-score-explained',
-    title: 'ATS Scores and Metrics Explained: What Job Seekers Should Track',
-    seoTitle: 'ATS Score and ATS Metrics Explained | RolePatch',
+    title: 'Resume ATS Scores Explained: What Job Seekers Should Track',
+    seoTitle: 'Resume ATS Score Explained for Job Seekers | RolePatch',
     description:
-      'Learn what an ATS score actually measures, which resume-match and parsing metrics matter, and why there is no universal ATS pass score.',
+      'What a resume ATS score measures for job applications: match coverage, parsing quality, and why there is no universal pass threshold. For job seekers, not school exams.',
     date: '2026-03-16',
     readTime: '5 min',
     content: `## What Is an ATS Score?
