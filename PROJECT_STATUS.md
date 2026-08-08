@@ -1,6 +1,6 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-07-31
+Last updated: 2026-08-09
 
 ## Why / What
 
@@ -20,6 +20,9 @@ Live on `rolepatch.com` via Cloudflare Workers (OpenNext).
 
 ### External
 
+- **Ultracite 7.10.2:** Exact development-only shared Biome presets; RolePatch
+  keeps explicit local compatibility exceptions and does not ship Ultracite at
+  runtime.
 - **Cloudflare D1:** Signed-in persistence: jobs, applications, evidence, saved searches, alerts.
 - **Dodo Payments:** Token purchases; webhook + success verification hardened in audit.
 - **LinkedIn (guest API):** In-Worker job search — no API key; datacenter IP rate limits possible.
@@ -63,6 +66,11 @@ SHA-tagged `workflow_dispatch`.
 
 ## Timeline
 
+- **2026-08-09 — Adopted the verified Fleet lint baseline:** Extended the
+  exact Ultracite core, React, Next.js, and Vitest Biome presets while retaining
+  RolePatch's existing formatter contract, generated-file exclusions, and
+  explicit compatibility exceptions. No source rewrite, production dependency,
+  runtime, route, deploy, secret, or production configuration changed.
 - **2026-08-05 — ATS metrics guide aligned to live search evidence:** The
   public ATS score guide now distinguishes third-party resume-match scores from
   employer recruiting metrics, removes unsupported universal threshold claims,
