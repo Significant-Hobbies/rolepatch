@@ -1,5 +1,11 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.5/schema.json",
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next",
+    "ultracite/biome/vitest"
+  ],
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
@@ -40,11 +46,14 @@
       "jsxQuoteStyle": "double"
     }
   },
+  "html": { "formatter": { "enabled": false } },
+  "json": { "formatter": { "enabled": false } },
   "linter": {
     "enabled": true,
     "rules": {
       "preset": "recommended",
       "a11y": {
+        "noNoninteractiveElementInteractions": "off",
         "noSvgWithoutTitle": "off",
         "useButtonType": "off",
         "useValidAnchor": "off",
@@ -54,22 +63,81 @@
         "useSemanticElements": "off"
       },
       "suspicious": {
+        "noAlert": "off",
         "noExplicitAny": "off",
         "noArrayIndexKey": "off",
+        "noBiomeFirstException": "off",
+        "noBitwiseOperators": "off",
+        "noEmptyBlockStatements": "off",
+        "noEqualsToNull": "off",
+        "noLeakedRender": "off",
+        "noNestedPromises": "off",
+        "noShadow": "off",
+        "noShadowRestrictedNames": "off",
+        "noUnnecessaryConditions": "off",
         "useIterableCallbackReturn": "off",
-        "noShadowRestrictedNames": "off"
+        "useAwait": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
       },
       "style": {
+        "noIncrementDecrement": "off",
+        "noNegationElse": "off",
+        "noNestedTernary": "off",
         "noNonNullAssertion": "off",
-        "useNodejsImportProtocol": "off"
+        "noParameterAssign": "off",
+        "noUnusedTemplateLiteral": "off",
+        "useAtIndex": "off",
+        "useBlockStatements": "off",
+        "useConsistentArrayType": "off",
+        "useConsistentArrowReturn": "off",
+        "useConsistentMethodSignatures": "off",
+        "useConsistentTypeDefinitions": "off",
+        "useDefaultSwitchClause": "off",
+        "useDestructuring": "off",
+        "useErrorCause": "off",
+        "useFilenamingConvention": "off",
+        "useForOf": "off",
+        "useNodejsImportProtocol": "off",
+        "useNumericSeparators": "off"
       },
       "complexity": {
-        "useLiteralKeys": "off"
+        "noDivRegex": "off",
+        "noExcessiveCognitiveComplexity": "off",
+        "noForEach": "off",
+        "noUselessUndefined": "off",
+        "noVoid": "off",
+        "useArrayFind": "off",
+        "useLiteralKeys": "off",
+        "useSimplifiedLogicExpression": "off"
+      },
+      "correctness": {
+        "noGlobalDirnameFilename": "off"
+      },
+      "nursery": {
+        "useSortedClasses": "off"
+      },
+      "performance": {
+        "noAwaitInLoops": "off",
+        "noBarrelFile": "off",
+        "noDelete": "off",
+        "noJsxPropsBind": "off",
+        "useTopLevelRegex": "off"
       }
     }
   },
-  "assist": { "enabled": true, "actions": { "source": { "organizeImports": "off" } } }
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "off",
+        "useSortedAttributes": "off",
+        "useSortedInterfaceMembers": "off",
+        "useSortedKeys": "off",
+        "useSortedPackageJson": "off",
+        "useSortedProperties": "off"
+      }
+    }
+  }
 }
