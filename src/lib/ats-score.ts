@@ -224,19 +224,24 @@ export function calculateATSScore(resumeText: string, jdText: string): ATSResult
     regular.clear();
   }
 
-  const allKeywords = new Set([...important, ...regular]);
-  if (allKeywords.size === 0) {
+  const totalKeywords = important.size + regular.size;
+  if (totalKeywords === 0) {
     return { score: 0, matchedKeywords: [], missingKeywords: [], totalKeywords: 0 };
   }
 
-  function matches(keyword: string): boolean {
-    return resumeLower.includes(keyword);
+  const matchedImportant: string[] = [];
+  const matchedRegular: string[] = [];
+  const missingKeywords: string[] = [];
+  for (const keyword of important) {
+    if (resumeLower.includes(keyword)) matchedImportant.push(keyword);
+    else missingKeywords.push(keyword);
+  }
+  for (const keyword of regular) {
+    if (resumeLower.includes(keyword)) matchedRegular.push(keyword);
+    else missingKeywords.push(keyword);
   }
 
-  const matchedImportant = [...important].filter(matches);
-  const matchedRegular = [...regular].filter(matches);
   const matchedKeywords = [...matchedImportant, ...matchedRegular];
-  const missingKeywords = [...allKeywords].filter((k) => !matches(k));
 
   // Score: important keywords worth 70%, regular worth 30%
   let score: number;
@@ -253,6 +258,6 @@ export function calculateATSScore(resumeText: string, jdText: string): ATSResult
     score: Math.round(score),
     matchedKeywords,
     missingKeywords,
-    totalKeywords: allKeywords.size,
+    totalKeywords,
   };
 }
