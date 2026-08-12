@@ -90,13 +90,3 @@ export async function renameResume(id: string, name: string): Promise<void> {
   });
   revalidatePath('/');
 }
-
-export async function deleteResume(id: string): Promise<void> {
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('Sign in to delete resumes');
-  await db.execute({
-    sql: 'DELETE FROM resumes WHERE id = ? AND user_id = ?',
-    args: [id, userId],
-  });
-  revalidatePath('/');
-}

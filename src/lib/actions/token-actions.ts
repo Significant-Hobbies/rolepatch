@@ -74,31 +74,6 @@ export async function getTokenBalance(): Promise<number> {
 }
 
 /**
- * Idempotent balance initialization for new users.
- * Uses a D1 batch so the signup_bonus log is only written when the
- * balance row is actually created.
- */
-export async function initializeBalance(userId: string): Promise<void> {
-  if (!userId || typeof userId !== 'string') {
-    throw new Error('Invalid user ID');
-  }
-
-  await db.batch([
-    {
-      sql: `INSERT OR IGNORE INTO token_balances (user_id, balance, total_purchased, total_used)
-            VALUES (?, 3, 0, 0)`,
-      args: [userId],
-    },
-    {
-      sql: `INSERT INTO token_transactions (id, user_id, amount, type, balance_after)
-            SELECT ?, ?, 3, 'signup_bonus', 3
-            WHERE changes() > 0`,
-      args: [uuid(), userId],
-    },
-  ]);
-}
-
-/**
  * Atomically debit one token and log the transaction in a D1 batch.
  *
  * Burst abuse should be handled with narrow, evidence-backed controls around
