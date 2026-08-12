@@ -182,13 +182,13 @@ function extractBigrams(words: string[]): string[] {
   return bigrams;
 }
 
-function findContainedKeywords(text: string, keywords: Iterable<string>): Set<string> {
-  const nodes: Array<{
-    next: Map<string, number>;
-    failure: number;
-    outputs: string[];
-  }> = [{ next: new Map(), failure: 0, outputs: [] }];
+interface KeywordNode {
+  next: Map<string, number>;
+  failure: number;
+  outputs: string[];
+}
 
+function addKeywordNodes(nodes: KeywordNode[], keywords: Iterable<string>): void {
   for (const keyword of keywords) {
     let state = 0;
     for (const character of keyword) {
@@ -202,7 +202,9 @@ function findContainedKeywords(text: string, keywords: Iterable<string>): Set<st
     }
     nodes[state].outputs.push(keyword);
   }
+}
 
+function addKeywordFailureLinks(nodes: KeywordNode[]): void {
   const queue = [...nodes[0].next.values()];
   for (let offset = 0; offset < queue.length; offset += 1) {
     const state = queue[offset];
@@ -216,7 +218,17 @@ function findContainedKeywords(text: string, keywords: Iterable<string>): Set<st
       nodes[next].outputs.push(...nodes[nodes[next].failure].outputs);
     }
   }
+}
 
+function buildKeywordNodes(keywords: Iterable<string>): KeywordNode[] {
+  const nodes: KeywordNode[] = [{ next: new Map(), failure: 0, outputs: [] }];
+  addKeywordNodes(nodes, keywords);
+  addKeywordFailureLinks(nodes);
+  return nodes;
+}
+
+function findContainedKeywords(text: string, keywords: Iterable<string>): Set<string> {
+  const nodes = buildKeywordNodes(keywords);
   const matches = new Set<string>();
   let state = 0;
   for (const character of text) {
