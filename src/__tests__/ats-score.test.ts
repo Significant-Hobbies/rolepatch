@@ -39,6 +39,11 @@ describe('calculateATSScore', () => {
     );
   });
 
+  it('preserves substring matching for overlapping keyword names', () => {
+    const result = calculateATSScore('JavaScript platform work', 'Java Java JavaScript JavaScript');
+    expect(result.matchedKeywords).toEqual(expect.arrayContaining(['java', 'javascript']));
+  });
+
   it('filters stop words and filler words', () => {
     const jd = 'the company is looking for a strong candidate with good experience';
     const resume = 'the company is looking for a strong candidate with good experience';

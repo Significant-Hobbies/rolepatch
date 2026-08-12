@@ -182,6 +182,53 @@ function extractBigrams(words: string[]): string[] {
   return bigrams;
 }
 
+function findContainedKeywords(text: string, keywords: Iterable<string>): Set<string> {
+  const nodes: Array<{
+    next: Map<string, number>;
+    failure: number;
+    outputs: string[];
+  }> = [{ next: new Map(), failure: 0, outputs: [] }];
+
+  for (const keyword of keywords) {
+    let state = 0;
+    for (const character of keyword) {
+      let next = nodes[state].next.get(character);
+      if (next === undefined) {
+        next = nodes.length;
+        nodes[state].next.set(character, next);
+        nodes.push({ next: new Map(), failure: 0, outputs: [] });
+      }
+      state = next;
+    }
+    nodes[state].outputs.push(keyword);
+  }
+
+  const queue = [...nodes[0].next.values()];
+  for (let offset = 0; offset < queue.length; offset += 1) {
+    const state = queue[offset];
+    for (const [character, next] of nodes[state].next) {
+      queue.push(next);
+      let failure = nodes[state].failure;
+      while (failure !== 0 && !nodes[failure].next.has(character)) {
+        failure = nodes[failure].failure;
+      }
+      nodes[next].failure = nodes[failure].next.get(character) ?? 0;
+      nodes[next].outputs.push(...nodes[nodes[next].failure].outputs);
+    }
+  }
+
+  const matches = new Set<string>();
+  let state = 0;
+  for (const character of text) {
+    while (state !== 0 && !nodes[state].next.has(character)) {
+      state = nodes[state].failure;
+    }
+    state = nodes[state].next.get(character) ?? 0;
+    for (const keyword of nodes[state].outputs) matches.add(keyword);
+  }
+  return matches;
+}
+
 export function calculateATSScore(resumeText: string, jdText: string): ATSResult {
   if (!resumeText.trim() || !jdText.trim()) {
     return { score: 0, matchedKeywords: [], missingKeywords: [], totalKeywords: 0 };
@@ -232,12 +279,13 @@ export function calculateATSScore(resumeText: string, jdText: string): ATSResult
   const matchedImportant: string[] = [];
   const matchedRegular: string[] = [];
   const missingKeywords: string[] = [];
+  const containedKeywords = findContainedKeywords(resumeLower, [...important, ...regular]);
   for (const keyword of important) {
-    if (resumeLower.includes(keyword)) matchedImportant.push(keyword);
+    if (containedKeywords.has(keyword)) matchedImportant.push(keyword);
     else missingKeywords.push(keyword);
   }
   for (const keyword of regular) {
-    if (resumeLower.includes(keyword)) matchedRegular.push(keyword);
+    if (containedKeywords.has(keyword)) matchedRegular.push(keyword);
     else missingKeywords.push(keyword);
   }
 
