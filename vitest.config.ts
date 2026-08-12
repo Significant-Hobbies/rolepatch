@@ -29,8 +29,10 @@ export default defineConfig({
         'src/lib/**/*.sql',
       ],
       thresholds: {
-        lines: 20,
-        functions: 25,
+        branches: 47,
+        functions: 63,
+        lines: 55,
+        statements: 53,
       },
     },
   },

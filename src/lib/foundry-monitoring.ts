@@ -70,7 +70,7 @@ export function captureError(
   }
 }
 
-export function capturePageCrash(error: unknown, source: 'window_error' | 'unhandled_rejection') {
+function capturePageCrash(error: unknown, source: 'window_error' | 'unhandled_rejection') {
   posthog.capture('foundry_page_crash', {
     project_id: PROJECT_SLUG,
     route: route(),

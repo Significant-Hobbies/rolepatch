@@ -16,7 +16,7 @@ export interface ScrapedJob {
     | 'generic';
 }
 
-interface ApplyPacketProfileAnswer {
+export interface ApplyPacketProfileAnswer {
   id: string;
   category: string;
   label: string;
@@ -39,7 +39,7 @@ interface ApplyPacketProofItem {
   source_url?: string;
 }
 
-interface ApplyPacket {
+export interface ApplyPacket {
   job_id: string;
   company?: string;
   role?: string;
@@ -54,20 +54,20 @@ interface ApplyPacket {
   receipt?: ApplyPacketReceipt | null;
 }
 
-interface ReceiptField {
+export interface ReceiptField {
   label: string;
   value: string;
   source: 'profile' | 'resume' | 'cover_letter' | 'user' | 'system' | 'ats';
 }
 
-interface FileAttachment {
+export interface FileAttachment {
   kind: 'resume' | 'cover_letter' | 'other';
   name: string;
   type: string;
   base64: string;
 }
 
-interface FillResult {
+export interface FillResult {
   ok: boolean;
   job_id: string;
   url: string;
@@ -82,7 +82,7 @@ interface FillResult {
   error?: string;
 }
 
-interface SubmitResult {
+export interface SubmitResult {
   ok: boolean;
   job_id: string;
   url: string;
@@ -96,7 +96,7 @@ interface SubmitResult {
   error?: string;
 }
 
-interface FieldSnapshotResult {
+export interface FieldSnapshotResult {
   ok: boolean;
   fields: ReceiptField[];
   error?: string;
