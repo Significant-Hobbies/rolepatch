@@ -22,7 +22,6 @@ const productionPaths = [
 const hygienePaths = [
   ...productionPaths,
   '.github',
-  'docs',
   'PROJECT_STATUS.md',
   'biome.json',
   'extension/package.json',
