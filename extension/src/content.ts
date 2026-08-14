@@ -16,14 +16,19 @@ function textFromSelector(selector: string): string | null {
   return text && text.length > 0 ? text : null;
 }
 
+function textFromSelectors(...selectors: string[]): string | null {
+  for (const selector of selectors) {
+    const text = textFromSelector(selector);
+    if (text) return text;
+  }
+  return null;
+}
+
 function scrapeGreenhouse(): Partial<ScrapedJob> | null {
   if (!/greenhouse\.io/.test(location.hostname)) return null;
-  const title = textFromSelector('h1.app-title') ?? textFromSelector('h1');
-  const company = textFromSelector('.company-name') ?? textFromSelector('span.company-name');
-  const description =
-    textFromSelector('#content') ??
-    textFromSelector('.content') ??
-    textFromSelector('[class*="job__description"]');
+  const title = textFromSelectors('h1.app-title', 'h1');
+  const company = textFromSelectors('.company-name', 'span.company-name');
+  const description = textFromSelectors('#content', '.content', '[class*="job__description"]');
   if (!description) return null;
   return {
     title: title ?? document.title,
@@ -35,31 +40,35 @@ function scrapeGreenhouse(): Partial<ScrapedJob> | null {
 
 function scrapeLever(): Partial<ScrapedJob> | null {
   if (!/lever\.co/.test(location.hostname)) return null;
-  const title = textFromSelector('.posting-headline h2') ?? textFromSelector('h2');
+  const title = textFromSelectors('.posting-headline h2', 'h2');
   const company = textFromSelector('.main-header-logo img')
     ? (document.querySelector('.main-header-logo img') as HTMLImageElement | null)?.alt ?? undefined
     : undefined;
-  const description =
-    textFromSelector('.posting-page .section-wrapper') ??
-    textFromSelector('[data-qa="job-description"]') ??
-    textFromSelector('.content');
+  const description = textFromSelectors(
+    '.posting-page .section-wrapper',
+    '[data-qa="job-description"]',
+    '.content'
+  );
   if (!description) return null;
   return { title: title ?? document.title, company, description, source: 'lever' };
 }
 
 function scrapeLinkedIn(): Partial<ScrapedJob> | null {
   if (!/linkedin\.com/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('.top-card-layout__title') ??
-    textFromSelector('.job-details-jobs-unified-top-card__job-title') ??
-    textFromSelector('h1');
-  const company =
-    textFromSelector('.topcard__org-name-link') ??
-    textFromSelector('.job-details-jobs-unified-top-card__company-name');
-  const description =
-    textFromSelector('.description__text') ??
-    textFromSelector('#job-details') ??
-    textFromSelector('.jobs-description__content');
+  const title = textFromSelectors(
+    '.top-card-layout__title',
+    '.job-details-jobs-unified-top-card__job-title',
+    'h1'
+  );
+  const company = textFromSelectors(
+    '.topcard__org-name-link',
+    '.job-details-jobs-unified-top-card__company-name'
+  );
+  const description = textFromSelectors(
+    '.description__text',
+    '#job-details',
+    '.jobs-description__content'
+  );
   if (!description) return null;
   return {
     title: title ?? document.title,
@@ -71,93 +80,84 @@ function scrapeLinkedIn(): Partial<ScrapedJob> | null {
 
 function scrapeWorkday(): Partial<ScrapedJob> | null {
   if (!/workday\.com|myworkdayjobs\.com/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('[data-automation-id="jobPostingHeader"]') ?? textFromSelector('h2');
-  const description =
-    textFromSelector('[data-automation-id="jobPostingDescription"]') ??
-    textFromSelector('[data-automation-id="job-posting-details"]');
+  const title = textFromSelectors('[data-automation-id="jobPostingHeader"]', 'h2');
+  const description = textFromSelectors(
+    '[data-automation-id="jobPostingDescription"]',
+    '[data-automation-id="job-posting-details"]'
+  );
   if (!description) return null;
   return { title: title ?? document.title, description, source: 'workday' };
 }
 
 function scrapeAshby(): Partial<ScrapedJob> | null {
   if (!/ashbyhq\.com/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('[data-testid="job-title"]') ??
-    textFromSelector('[class*="jobPostingTitle"]') ??
-    textFromSelector('h1');
-  const description =
-    textFromSelector('[data-testid="job-description"]') ??
-    textFromSelector('[class*="jobPostingDescription"]') ??
-    textFromSelector('main');
+  const title = textFromSelectors('[data-testid="job-title"]', '[class*="jobPostingTitle"]', 'h1');
+  const description = textFromSelectors(
+    '[data-testid="job-description"]',
+    '[class*="jobPostingDescription"]',
+    'main'
+  );
   if (!description) return null;
   return { title: title ?? document.title, description, source: 'ashby' };
 }
 
 function scrapeWorkable(): Partial<ScrapedJob> | null {
   if (!/workable\.com/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('[data-ui="job-title"]') ??
-    textFromSelector('[class*="job-title"]') ??
-    textFromSelector('h1');
-  const company =
-    textFromSelector('[data-ui="company-name"]') ??
-    textFromSelector('[class*="company"]');
-  const description =
-    textFromSelector('[data-ui="job-description"]') ??
-    textFromSelector('[class*="job-description"]') ??
-    textFromSelector('main');
+  const title = textFromSelectors('[data-ui="job-title"]', '[class*="job-title"]', 'h1');
+  const company = textFromSelectors('[data-ui="company-name"]', '[class*="company"]');
+  const description = textFromSelectors(
+    '[data-ui="job-description"]',
+    '[class*="job-description"]',
+    'main'
+  );
   if (!description) return null;
   return { title: title ?? document.title, company: company ?? undefined, description, source: 'workable' };
 }
 
 function scrapeRecruitee(): Partial<ScrapedJob> | null {
   if (!/recruitee\.com/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('[data-testid="offer-title"]') ??
-    textFromSelector('[class*="offer-title"]') ??
-    textFromSelector('h1');
-  const description =
-    textFromSelector('[data-testid="offer-description"]') ??
-    textFromSelector('[class*="offer-description"]') ??
-    textFromSelector('main');
+  const title = textFromSelectors('[data-testid="offer-title"]', '[class*="offer-title"]', 'h1');
+  const description = textFromSelectors(
+    '[data-testid="offer-description"]',
+    '[class*="offer-description"]',
+    'main'
+  );
   if (!description) return null;
   return { title: title ?? document.title, description, source: 'recruitee' };
 }
 
 function scrapePersonio(): Partial<ScrapedJob> | null {
   if (!/personio\.(com|de)/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('[data-testid="job-title"]') ??
-    textFromSelector('[class*="job-title"]') ??
-    textFromSelector('h1');
-  const company =
-    textFromSelector('[data-testid="company-name"]') ??
-    textFromSelector('[class*="company"]');
-  const description =
-    textFromSelector('[data-testid="job-description"]') ??
-    textFromSelector('[class*="job-description"]') ??
-    textFromSelector('main');
+  const title = textFromSelectors('[data-testid="job-title"]', '[class*="job-title"]', 'h1');
+  const company = textFromSelectors('[data-testid="company-name"]', '[class*="company"]');
+  const description = textFromSelectors(
+    '[data-testid="job-description"]',
+    '[class*="job-description"]',
+    'main'
+  );
   if (!description) return null;
   return { title: title ?? document.title, company: company ?? undefined, description, source: 'personio' };
 }
 
 function scrapeSmartRecruiters(): Partial<ScrapedJob> | null {
   if (!/smartrecruiters\.com/.test(location.hostname)) return null;
-  const title =
-    textFromSelector('[data-testid="job-title"]') ??
-    textFromSelector('[class*="job-title"]') ??
-    textFromSelector('[class*="jobTitle"]') ??
-    textFromSelector('h1');
-  const company =
-    textFromSelector('[data-testid="company-name"]') ??
-    textFromSelector('[class*="company"]') ??
-    textFromSelector('[class*="Company"]');
-  const description =
-    textFromSelector('[data-testid="job-description"]') ??
-    textFromSelector('[class*="job-description"]') ??
-    textFromSelector('[class*="jobDescription"]') ??
-    textFromSelector('main');
+  const title = textFromSelectors(
+    '[data-testid="job-title"]',
+    '[class*="job-title"]',
+    '[class*="jobTitle"]',
+    'h1'
+  );
+  const company = textFromSelectors(
+    '[data-testid="company-name"]',
+    '[class*="company"]',
+    '[class*="Company"]'
+  );
+  const description = textFromSelectors(
+    '[data-testid="job-description"]',
+    '[class*="job-description"]',
+    '[class*="jobDescription"]',
+    'main'
+  );
   if (!description) return null;
   return {
     title: title ?? document.title,
@@ -168,24 +168,31 @@ function scrapeSmartRecruiters(): Partial<ScrapedJob> | null {
 }
 
 function scrapeGeneric(): Partial<ScrapedJob> {
-  const candidate =
-    textFromSelector('main') ?? textFromSelector('article') ?? document.body.innerText;
+  const candidate = textFromSelectors('main', 'article') ?? document.body.innerText;
   const description = candidate.replace(/\n{3,}/g, '\n\n').trim();
   return { title: document.title, description, source: 'generic' };
 }
 
+function firstScraperResult(): Partial<ScrapedJob> | null {
+  for (const scraper of [
+    scrapeGreenhouse,
+    scrapeLever,
+    scrapeLinkedIn,
+    scrapeWorkday,
+    scrapeAshby,
+    scrapeWorkable,
+    scrapeRecruitee,
+    scrapePersonio,
+    scrapeSmartRecruiters,
+  ]) {
+    const result = scraper();
+    if (result) return result;
+  }
+  return null;
+}
+
 function scrape(): ScrapedJob {
-  const partial =
-    scrapeGreenhouse() ??
-    scrapeLever() ??
-    scrapeLinkedIn() ??
-    scrapeWorkday() ??
-    scrapeAshby() ??
-    scrapeWorkable() ??
-    scrapeRecruitee() ??
-    scrapePersonio() ??
-    scrapeSmartRecruiters() ??
-    scrapeGeneric();
+  const partial = firstScraperResult() ?? scrapeGeneric();
   return {
     url: location.href,
     title: partial.title ?? document.title,

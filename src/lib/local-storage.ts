@@ -326,6 +326,19 @@ export type LocalJobSummary = Pick<
   | 'rejection_reason'
 >;
 
+function optionalJobFields(j: LocalJob) {
+  return {
+    interview_date: j.interview_date ?? null,
+    follow_up_at: j.follow_up_at ?? null,
+    salary_min: j.salary_min ?? null,
+    salary_max: j.salary_max ?? null,
+    salary_currency: j.salary_currency ?? null,
+    offer_amount: j.offer_amount ?? null,
+    notes: j.notes ?? null,
+    rejection_reason: j.rejection_reason ?? null,
+  };
+}
+
 function toJobApplication(j: LocalJob): JobApplication {
   return {
     id: j.id,
@@ -336,14 +349,7 @@ function toJobApplication(j: LocalJob): JobApplication {
     jd_raw: j.jd_raw ?? j.jd_text ?? '',
     jd_text: j.jd_text ?? j.jd_raw ?? '',
     status: j.status,
-    interview_date: j.interview_date ?? null,
-    follow_up_at: j.follow_up_at ?? null,
-    salary_min: j.salary_min ?? null,
-    salary_max: j.salary_max ?? null,
-    salary_currency: j.salary_currency ?? null,
-    offer_amount: j.offer_amount ?? null,
-    notes: j.notes ?? null,
-    rejection_reason: j.rejection_reason ?? null,
+    ...optionalJobFields(j),
     created_at: j.created_at,
     updated_at: j.updated_at ?? j.created_at,
   };
@@ -358,15 +364,8 @@ function toSummary(j: LocalJob): LocalJobSummary {
     role: j.role,
     status: j.status,
     created_at: j.created_at,
+    ...optionalJobFields(j),
     updated_at: j.updated_at ?? j.created_at,
-    interview_date: j.interview_date ?? null,
-    follow_up_at: j.follow_up_at ?? null,
-    salary_min: j.salary_min ?? null,
-    salary_max: j.salary_max ?? null,
-    salary_currency: j.salary_currency ?? null,
-    offer_amount: j.offer_amount ?? null,
-    notes: j.notes ?? null,
-    rejection_reason: j.rejection_reason ?? null,
   };
 }
 
