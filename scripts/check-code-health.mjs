@@ -52,7 +52,7 @@ const baselines = {
     unresolved: 0,
   },
   suppressions: 13,
-  dependencies: { critical: 0, highIds: 21, highFindings: 29 },
+  dependencies: { critical: 0, highIds: 22, highFindings: 30 },
 };
 const acceptedUnusedDependencies = new Set([
   'landing-astro/package.json:@fontsource-variable/geist',
@@ -72,6 +72,7 @@ const acceptedHighAdvisories = new Set([
   'GHSA-9wv6-86v2-598j',
   'GHSA-f88m-g3jw-g9cj',
   'GHSA-hm92-r4w5-c3mj',
+  'GHSA-jmr9-qjv8-65gv',
   'GHSA-mh99-v99m-4gvg',
   'GHSA-mwp4-54f8-5fhr',
   'GHSA-r28c-9q8g-f849',
@@ -270,6 +271,13 @@ function checkDependencies() {
         .map((advisory) => advisory.github_advisory_id)
         .join(', ')}`
     );
+  }
+  const extractZipExceptionExpires = new Date('2026-09-14T00:00:00Z');
+  if (
+    Date.now() >= extractZipExceptionExpires.getTime() &&
+    high.some((advisory) => advisory.github_advisory_id === 'GHSA-jmr9-qjv8-65gv')
+  ) {
+    throw new Error('extract-zip dependency exception expired on 2026-09-14 (#56).');
   }
   failRegressions('Dependencies', observed, baselines.dependencies);
 }
