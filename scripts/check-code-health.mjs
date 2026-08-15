@@ -36,11 +36,11 @@ const hygienePaths = [
 ];
 const sourceExtensions = new Set(['.astro', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx']);
 const baselines = {
-  complexity: { violations: 81, maxCcn: 49, maxLength: 615, maxParams: 9 },
+  complexity: { violations: 72, maxCcn: 49, maxLength: 615, maxParams: 9 },
   duplication: {
-    clones: 47,
-    duplicatedLines: 750,
-    percentage: 2.1453702909122114,
+    clones: 43,
+    duplicatedLines: 716,
+    percentage: 2.044254104211278,
   },
   unused: {
     files: 0,

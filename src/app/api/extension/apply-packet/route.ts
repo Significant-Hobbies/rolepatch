@@ -5,6 +5,7 @@ import { inferAtsProvider, normalizeReceipt } from '@/lib/apply-agent';
 import { buildProofItemsForJob } from '@/lib/achievement-evidence';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { rowToEvidence, strField } from '@/lib/evidence-mapping';
 import { extensionCorsHeaders } from '@/lib/extension-cors';
 import { parseExtensionUrlInput } from '@/lib/extension-route-input';
 import { jobUrlVariants, sqlPlaceholders } from '@/lib/job-url';
@@ -195,20 +196,9 @@ export async function POST(req: NextRequest) {
 }
 
 function toPacketEvidence(row: Record<string, unknown>): AchievementEvidence {
-  return {
-    id: String(row.id),
-    title: String(row.title ?? ''),
-    situation: String(row.situation ?? ''),
-    action: String(row.action ?? ''),
-    result: String(row.result ?? ''),
-    metric: String(row.metric ?? ''),
-    scope: String(row.scope ?? ''),
-    skills: parsePacketJsonList(row.skills),
-    role_targets: parsePacketJsonList(row.role_targets),
-    impact_type: String(row.impact_type ?? 'other') as AchievementEvidence['impact_type'],
-    created_at: Number(row.created_at ?? 0),
-    updated_at: Number(row.updated_at ?? 0),
-  };
+  return rowToEvidence(row, parsePacketJsonList, (r) =>
+    (strField(r, 'impact_type') || 'other') as AchievementEvidence['impact_type']
+  );
 }
 
 function parsePacketJsonList(value: unknown): string[] {

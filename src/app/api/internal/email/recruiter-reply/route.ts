@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 
 import { buildProofItemsForJob } from '@/lib/achievement-evidence';
 import { db } from '@/lib/db';
+import { rowToEvidence, strField } from '@/lib/evidence-mapping';
 import { isInternalWorkerRequest } from '@/lib/internal-route-auth';
 import { parseJsonObjectInput } from '@/lib/json-route-input';
 import {
@@ -171,20 +172,11 @@ async function listAchievementEvidenceForReply(userId: string): Promise<Achievem
 }
 
 function toReplyEvidence(row: Record<string, unknown>): AchievementEvidence {
-  return {
-    id: String(row.id),
-    title: String(row.title ?? ''),
-    situation: String(row.situation ?? ''),
-    action: String(row.action ?? ''),
-    result: String(row.result ?? ''),
-    metric: String(row.metric ?? ''),
-    scope: String(row.scope ?? ''),
-    skills: parseReplyJsonList(row.skills),
-    role_targets: parseReplyJsonList(row.role_targets),
-    impact_type: String(row.impact_type ?? 'other') as AchievementEvidence['impact_type'],
-    created_at: Number(row.created_at ?? 0),
-    updated_at: Number(row.updated_at ?? 0),
-  };
+  return rowToEvidence(
+    row,
+    parseReplyJsonList,
+    (r) => (strField(r, 'impact_type') || 'other') as AchievementEvidence['impact_type']
+  );
 }
 
 function parseReplyJsonList(value: unknown): string[] {
