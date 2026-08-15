@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { rowToEvidence } from '@/lib/evidence-mapping';
 import type { AchievementEvidence, AchievementImpact } from '@/lib/types';
 import {
   TRUEHIRE_PUBLIC_BASE_URL,
@@ -69,22 +70,11 @@ function normalize(input: AchievementEvidenceInput): AchievementEvidenceInput {
 }
 
 function toEvidence(row: Record<string, unknown>): AchievementEvidence {
-  return {
-    id: String(row.id),
-    title: String(row.title ?? ''),
-    situation: String(row.situation ?? ''),
-    action: String(row.action ?? ''),
-    result: String(row.result ?? ''),
-    metric: String(row.metric ?? ''),
-    scope: String(row.scope ?? ''),
-    skills: parseList(row.skills),
-    role_targets: parseList(row.role_targets),
-    impact_type: IMPACT_TYPES.has(row.impact_type as AchievementImpact)
-      ? (row.impact_type as AchievementImpact)
-      : 'other',
-    created_at: Number(row.created_at ?? 0),
-    updated_at: Number(row.updated_at ?? 0),
-  };
+  return rowToEvidence(row, parseList, (r) =>
+    IMPACT_TYPES.has(r.impact_type as AchievementImpact)
+      ? (r.impact_type as AchievementImpact)
+      : 'other'
+  );
 }
 
 export async function listAchievementEvidence(): Promise<AchievementEvidence[]> {
