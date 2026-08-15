@@ -6,8 +6,9 @@
 // descendant uses `usePostHog`, so dropping it removes ~50 KB from the
 // LCP-critical main chunk (psi-swarm coverage flagged the waste).
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
-import { trackReturned } from '@/lib/analytics';
+import { trackPageView, trackReturned } from '@/lib/analytics';
 import { authClient } from '@/lib/auth-client';
 import { installBrowserMonitoring } from '@/lib/foundry-monitoring';
 
@@ -31,10 +32,17 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = authClient.useSession();
   const userId = session?.user?.id ?? null;
   const firedRef = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     return installBrowserMonitoring();
   }, []);
+
+  // Fire a `page_view` on mount and whenever the route changes.
+  useEffect(() => {
+    void pathname; // re-fire on route change
+    trackPageView();
+  }, [pathname]);
 
   // Fire `returned` once per session start for a user with prior activity.
   useEffect(() => {
