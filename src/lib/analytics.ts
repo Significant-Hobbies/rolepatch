@@ -1,7 +1,7 @@
 /**
- * Owner-facing analytics — the fixed 4-event taxonomy.
+ * Owner-facing analytics — the fixed 5-event taxonomy.
  *
- * Every project in the fleet emits exactly these four events so PostHog can
+ * Every project in the fleet emits exactly these five events so PostHog can
  * build one cross-fleet funnel (signup -> activated -> core_action) and a
  * D1/D7 retention insight without any custom dashboard.
  *
@@ -10,7 +10,7 @@
  *
  * It is isomorphic: in the browser it routes through `posthog-js`
  * (`track`); inside a server action it posts to the PostHog capture API so the
- * 4 events still land for server-side triggers (`activated`, `core_action`).
+ * 5 events still land for server-side triggers (`activated`, `core_action`).
  *
  * NOTE: `posthog-js` (the browser entry) bundles
  * `PostHogProvider`, which calls `React.createContext` at module-evaluation
@@ -41,6 +41,8 @@ interface AnalyticsEventMap {
   core_action: { project_id: typeof PROJECT; action: CoreAction };
   /** A return session by a user with prior activity. */
   returned: { project_id: typeof PROJECT };
+  /** A page view — fired on mount and on route changes in the browser. */
+  page_view: { project_id: typeof PROJECT };
 }
 
 function emitServer(event: string, props: Record<string, unknown>, distinctId?: string) {
@@ -111,4 +113,9 @@ export function trackCoreAction(action: CoreAction, distinctId?: string) {
 /** Fire on session start for a user who has prior activity. */
 export function trackReturned() {
   emit('returned', {});
+}
+
+/** Fire on mount and on each route change to record a page view. */
+export function trackPageView() {
+  emit('page_view', {});
 }
