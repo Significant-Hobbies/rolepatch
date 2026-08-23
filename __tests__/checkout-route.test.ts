@@ -13,11 +13,11 @@ vi.mock('next/headers', () => ({
 }));
 
 vi.mock('@/lib/auth', () => ({
-  auth: {
+  getAuth: () => ({
     api: {
       getSession: (...args: unknown[]) => mocks.getSession(...args),
     },
-  },
+  }),
 }));
 
 vi.mock('dodopayments', () => ({
