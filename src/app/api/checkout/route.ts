@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { auth } from '@/lib/auth';
+import { getAuth } from '@/lib/auth';
 import { getProductId } from '@/lib/token-config';
 
 let _client: DodoPayments | null = null;
@@ -61,7 +61,7 @@ function checkoutErrorResponse(error: unknown) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }

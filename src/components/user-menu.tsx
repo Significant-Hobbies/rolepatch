@@ -25,7 +25,7 @@ export function UserMenu() {
   if (!session?.user) {
     function handleSignIn() {
       authClient.signIn
-        .social({ provider: 'google', callbackURL: '/' })
+        .social({ provider: 'google', callbackURL: '/dashboard' })
         .then((result) => {
           if (result?.error) {
             captureAuthFailure({
