@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { createAdapter } from 'better-auth/adapters';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 import { db } from '@/lib/db';
 
@@ -202,24 +203,61 @@ const d1Adapter = createAdapter({
   }),
 });
 
-const canUseLocalAuthSecret =
-  process.env.NODE_ENV !== 'production' ||
-  process.env.npm_lifecycle_event === 'build' ||
-  process.env.NEXT_PHASE === 'phase-production-build';
+export type AuthRuntimeEnv = {
+  NODE_ENV?: string;
+  npm_lifecycle_event?: string;
+  NEXT_PHASE?: string;
+  BETTER_AUTH_SECRET?: string;
+  BETTER_AUTH_URL?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+};
 
-const authSecret =
-  process.env.BETTER_AUTH_SECRET?.trim() ||
-  (canUseLocalAuthSecret ? 'resume-tailor-local-development-secret-32-chars' : undefined);
-const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+/**
+ * OpenNext populates process.env from the Cloudflare request environment.
+ * Keep this construction request-lazy so Worker module evaluation cannot
+ * freeze production secrets as undefined before that initialization occurs.
+ */
+export function buildAuthOptions(env: AuthRuntimeEnv = process.env) {
+  const canUseLocalAuthSecret =
+    env.NODE_ENV !== 'production' ||
+    env.npm_lifecycle_event === 'build' ||
+    env.NEXT_PHASE === 'phase-production-build';
+  const authSecret =
+    env.BETTER_AUTH_SECRET?.trim() ||
+    (canUseLocalAuthSecret ? 'resume-tailor-local-development-secret-32-chars' : undefined);
+  const googleClientId = env.GOOGLE_CLIENT_ID?.trim();
+  const googleClientSecret = env.GOOGLE_CLIENT_SECRET?.trim();
 
-export const auth = betterAuth({
-  secret: authSecret,
-  baseURL: process.env.BETTER_AUTH_URL,
-  database: d1Adapter,
-  socialProviders:
-    googleClientId && googleClientSecret
-      ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }
-      : {},
-  trustedOrigins: [process.env.BETTER_AUTH_URL || ''],
-});
+  return {
+    secret: authSecret,
+    baseURL: env.BETTER_AUTH_URL?.trim() || undefined,
+    basePath: '/api/auth',
+    database: d1Adapter,
+    socialProviders:
+      googleClientId && googleClientSecret
+        ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }
+        : {},
+    trustedOrigins: env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : [],
+  };
+}
+
+function createAuth(env: AuthRuntimeEnv = process.env) {
+  return betterAuth(buildAuthOptions(env));
+}
+
+let authInstance: ReturnType<typeof createAuth> | undefined;
+
+function getRuntimeAuthEnv(): AuthRuntimeEnv {
+  try {
+    const { env } = getCloudflareContext({ async: false });
+    return env as unknown as AuthRuntimeEnv;
+  } catch {
+    return process.env;
+  }
+}
+
+export function getAuth(): ReturnType<typeof createAuth> {
+  authInstance ??= createAuth(getRuntimeAuthEnv());
+  return authInstance;
+}
