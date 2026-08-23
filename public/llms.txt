@@ -8,8 +8,16 @@
 - [Pricing](https://rolepatch.com/pricing): Plans and limits
 - [Tools](https://rolepatch.com/tools): Public tools
 
+## When to use this
+
+- Tailoring a resume to a specific job description before applying
+- Scoring fit between a resume and a job posting to prioritize applications
+- Generating role-specific cover letters and STAR interview prep stories
+- Discovering public tools for job seekers (fit scoring, resume analysis)
+
 ## Machine surfaces
 
 - [Agent catalog](https://rolepatch.com/api/ai): JSON inventory of public surfaces
+- [OpenAPI spec](https://rolepatch.com/openapi.json): Machine-readable API description
 - [Homepage markdown](https://rolepatch.com/index.md): Product brief without JS
 - [This index](https://rolepatch.com/llms.txt)
