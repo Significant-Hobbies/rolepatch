@@ -4,7 +4,7 @@
  *
  * Markdown under docs/ is the source of truth. This script enforces:
  *   1. Every docs markdown file (except archive/) has a `title` in
- *      frontmatter (Blume renders it).
+ *      frontmatter.
  *   2. Every relative Markdown link resolves to a file that exists.
  *      Scans docs/ AND root-level *.md (AGENTS.md, README.md,
  *      STATUS.md, PROJECT_STATUS.md, CLAUDE.md) so cross-tree links
@@ -80,17 +80,17 @@ for (const file of allScanned) {
   const text = readFileSync(file, 'utf8');
   const inDocs = file.startsWith(DOCS + sep) || file === DOCS;
   // Archived docs are preserved for git history, not rendered as
-  // canonical Blume pages. Skip frontmatter + link checks for them
+  // canonical pages. Skip frontmatter + link checks for them
   // (their links are expected to be stale relative to their original
   // locations).
   if (isArchive(file)) continue;
 
   // Frontmatter title check only for docs/ files (root *.md like
-  // README.md, PROJECT_STATUS.md, AGENTS.md are not Blume pages).
+  // README.md, PROJECT_STATUS.md, AGENTS.md are not docs pages).
   if (inDocs) {
     const fm = readFrontmatter(text);
     if (!fm?.title) {
-      errors.push(`${rel}: missing frontmatter \`title\` (Blume renders it as the page heading).`);
+      errors.push(`${rel}: missing frontmatter \`title\`.`);
     }
   }
 

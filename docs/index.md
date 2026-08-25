@@ -10,9 +10,8 @@ research, fit scores, STAR interview stories, and run review-first
 apply-agent workflows. Product: <https://rolepatch.com>.
 
 This `docs/` tree is the canonical source of truth for product knowledge,
-architecture, decisions, workflows, operations, and durable learnings.
-Blume (`blume.config.ts`) is only the presentation + search layer over this
-tree. Edit the Markdown here; never edit generated Blume output.
+architecture, decisions, workflows, operations, and durable learnings. Edit
+the Markdown here; it is the canonical source of truth.
 
 ## Start here
 
@@ -31,7 +30,7 @@ tree. Edit the Markdown here; never edit generated Blume output.
 ## Development
 
 - [Development workflow](development/workflow.md) — setup, commands, testing, lint, build.
-- [Working on docs](development/docs.md) — documentation rules, validation, Blume rendering.
+- [Working on docs](development/docs.md) — documentation rules and validation.
 
 ## Operations
 
@@ -53,7 +52,7 @@ tree. Edit the Markdown here; never edit generated Blume output.
 ## Archive
 
 - [archive/](archive/) — superseded plans, PRDs, handoff notes, and old doc READMEs
-  kept for git history. Not rendered as canonical Blume pages.
+  kept for git history.
 
 ## How this tree is maintained
 
@@ -68,8 +67,6 @@ tree. Edit the Markdown here; never edit generated Blume output.
 - **Keep pages short** (150–300 lines). Split rather than grow.
 - **Run `pnpm docs:check` before committing doc changes.** CI runs the
   same gate (link check + structure validation).
-- **Do not edit generated Blume output** (`.blume/`, `dist/`). Edit the
-  Markdown in `docs/` and rebuild.
 - **Preserve history.** Prefer `docs/archive/<name>.md` over deletion. Use
   `git mv` when moving docs so rename history is kept.
 - **Status**: `STATUS.md` is the short view; `PROJECT_STATUS.md` is the

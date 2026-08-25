@@ -6,9 +6,7 @@ title: Working on docs
 
 The committed Markdown under `docs/` is the **source of truth** for
 product knowledge, architecture, decisions, workflows, operations, and
-durable learnings. Blume (`blume.config.ts`) is only the presentation +
-search layer — generated output (`.blume/`, `dist/`) is gitignored and
-never committed.
+durable learnings.
 
 ## Rules
 
@@ -30,17 +28,14 @@ never committed.
 7. **Prefer `docs/archive/<name>.md` over deletion** so git rename
    history survives. Use `git mv` when reorganizing.
 8. **Keep pages short** (150–300 lines). Split rather than grow.
-9. **Every docs Markdown file needs a `title` in frontmatter** — Blume
-   renders it as the page heading. The validator enforces this.
-10. **Archive is excluded from Blume rendering.** `docs/archive/**` is
-    preserved for git history and reachable via the repo, not as
-    canonical pages.
+9. **Every docs Markdown file needs a `title` in frontmatter.** The validator
+   enforces this.
+10. **Archive pages** under `docs/archive/**` are preserved for git history.
 
 ## Validate
 
 ```bash
 pnpm docs:check    # link check + frontmatter + structure validation
-pnpm docs:build    # Blume build → dist/ (presentation layer)
 ```
 
 CI runs `pnpm docs:check` on every push / PR via
@@ -48,28 +43,10 @@ CI runs `pnpm docs:check` on every push / PR via
 
 The validator (`scripts/check-docs.mjs`) enforces:
 
-1. Every docs Markdown file has a `title` in frontmatter (Blume renders
-   it). Archive files are exempt.
+1. Every docs Markdown file has a `title` in frontmatter. Archive files are exempt.
 2. Every relative Markdown link resolves to a file that exists.
 3. `docs/index.md` exists.
 4. No empty `docs/` subdirectories.
-
-## Blume rendering
-
-Blume is the presentation + search layer. It renders the committed
-`docs/` tree as a static docs site with search (Orama), `llms.txt` for
-agent crawlers, sitemap, robots, and OG. Generated output (`.blume/`,
-`dist/`) is gitignored — never edit it; edit the Markdown and rebuild.
-
-```bash
-pnpm docs:build    # → dist/
-pnpm docs:dev      # → http://localhost:3000 (Blume dev server)
-```
-
-The Blume config is `blume.config.ts` at repo root. It is **not** the
-source of truth — it only configures how `docs/` is rendered. If a doc
-change requires a Blume config change (e.g. a new content root), edit
-the config to fit the docs, not the docs to fit the config.
 
 ## When to update what
 

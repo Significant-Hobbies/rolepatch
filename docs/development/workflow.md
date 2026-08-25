@@ -45,7 +45,6 @@ the D1 binding (production only — local dev uses guest mode or
 | `pnpm smoke:local` | Smoke against http://localhost:3000 |
 | `pnpm verify:deploy-routes` | Verify built Next manifest contains parity-critical routes |
 | `pnpm docs:check` | Docs link + frontmatter + structure validation |
-| `pnpm docs:build` | Blume build → `dist/` (presentation layer) |
 | `pnpm apply-agent` | Apply-agent CLI (see [runbook](../operations/runbooks/apply-agent-cli.md)) |
 | `pnpm apply-agent:mcp` | Apply-agent MCP stdio server |
 
