@@ -38,7 +38,6 @@ pnpm release:verify          # full local preflight before publish
 pnpm smoke:prod              # production smoke (public + optional auth)
 pnpm verify:deploy-routes    # verify built manifest has parity-critical routes
 pnpm docs:check              # docs link + frontmatter + structure validation
-pnpm docs:build              # Blume build → dist/ (presentation layer)
 ```
 
 ## Critical constraints
@@ -79,9 +78,7 @@ pnpm docs:build              # Blume build → dist/ (presentation layer)
 
 The committed Markdown under `docs/` is the **source of truth** for
 product knowledge, architecture, decisions, workflows, operations, and
-durable learnings. Blume (`blume.config.ts`) is only the
-presentation/search layer — generated output (`.blume/`, `dist/`) is
-gitignored.
+durable learnings.
 
 - **Navigation hub:** [`docs/index.md`](docs/index.md)
 - **Current/shipped product truth:** [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
@@ -111,8 +108,6 @@ gitignored.
 7. **Keep pages 150–300 lines.** Split rather than grow.
 8. **Validate before commit:** `pnpm docs:check` (CI runs it via
    `.github/workflows/docs.yml`).
-9. **Do not edit generated Blume output** (`.blume/`, `dist/`). Edit
-   the Markdown in `docs/` and rebuild.
 10. **Status:** `PROJECT_STATUS.md` is the durable fleet-mandated record for
     current/shipped truth. GitHub Issues owns all open work.
 

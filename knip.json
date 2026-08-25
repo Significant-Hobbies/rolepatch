@@ -8,7 +8,6 @@
     "agent-edge.mjs",
     "worker.mjs",
     "scripts/*.mjs",
-    "blume.config.ts",
     "next.config.ts",
     "open-next.config.ts",
     "postcss.config.mjs",
@@ -21,7 +20,7 @@
     "agent-edge.mjs",
     "worker.mjs"
   ],
-  "ignore": ["blume.config.ts", "open-next.config.ts"],
+  "ignore": ["open-next.config.ts"],
   "ignoreDependencies": [
     "@mozilla/readability",
     "@sparticuz/chromium",
