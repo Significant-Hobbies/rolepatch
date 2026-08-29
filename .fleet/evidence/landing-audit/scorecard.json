@@ -1,0 +1,73 @@
+{
+  "$schema": "fleet.landing-audit.v1",
+  "project": "rolepatch",
+  "priority": "P2",
+  "auditedAt": "2026-08-29",
+  "candidate": {
+    "kind": "local-cloudflare-worker",
+    "origin": "http://localhost:4342",
+    "deployed": false
+  },
+  "scores": {
+    "purpose": 100,
+    "visual": 94,
+    "seo": 99,
+    "geo": 100,
+    "performance": 100,
+    "weightedOverall": 98
+  },
+  "purpose": {
+    "canonical": "Evidence-bound resume tailoring and review-first application preparation for one specific job.",
+    "alignment": "match",
+    "pricingTruth": "Free browser-local tools plus implemented token packs: 10 for $5, 30 for $12, and 100 for $30; no subscription.",
+    "currentState": "Live and maintained. Owner-led validation on new applications is paused because the maker is not currently job hunting.",
+    "comprehension": "pass"
+  },
+  "design": {
+    "direction": "evidence-workbench",
+    "critique": "37/40",
+    "audit": "18/20",
+    "responsiveWidths": [390, 768, 1440],
+    "horizontalOverflow": 0,
+    "footerProjectStrip": "pass",
+    "footerAskAI": "pass"
+  },
+  "seo": {
+    "landingCriticalChecks": "14 pass, 0 fail, 1 advisory warning",
+    "robots": "pass on full local Worker",
+    "sitemap": "pass on full local Worker",
+    "liveLinkGraph": "23 pages, 0 internal errors, 0 redirects"
+  },
+  "geo": {
+    "productionAgentIndex": "S 100%",
+    "surfaces": ["/llms.txt", "/llms-full.txt", "/index.md", "/api/ai", "/openapi.json"]
+  },
+  "performance": {
+    "tool": "PSI Swarm 0.4.2",
+    "runs": "20/20 successful",
+    "weightedLcpMs": 556,
+    "slowMobileP75LcpMs": 1506,
+    "midMobileP75LcpMs": 757,
+    "fastMobileP75LcpMs": 381,
+    "desktopP75LcpMs": 208,
+    "cls": 0,
+    "tbtMs": 0,
+    "performanceScore": 100,
+    "opportunities": 0,
+    "report": ".fleet/evidence/landing-audit/performance.html"
+  },
+  "verification": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "tests": "442 pass across 75 files",
+    "cloudflareBuild": "pass",
+    "deploymentRoutes": "14/14 present",
+    "livePublicSmoke": "6/6 pass",
+    "localPublicContracts": "pass"
+  },
+  "limitations": [
+    "Authenticated apply-agent checks require a session cookie and were not run.",
+    "Fresh local D1 app pages reject the development default Better Auth secret; the current production public smoke passes 6/6.",
+    "No deployment, release, purchase, or provider mutation was performed."
+  ]
+}
