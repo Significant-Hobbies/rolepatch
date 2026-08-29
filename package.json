@@ -39,7 +39,7 @@
     "quality": "pnpm check && pnpm typecheck && pnpm test:coverage && pnpm docs:check && pnpm --filter @rolepatch/extension typecheck && pnpm quality:unused && pnpm quality:complexity && pnpm quality:duplication && pnpm quality:cycles && pnpm quality:dependencies && pnpm quality:suppressions && pnpm quality:hygiene"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^2.0.41",
+    "@ai-sdk/openai-compatible": "2.0.41",
     "@cloudflare/puppeteer": "^1.1.0",
     "@codemirror/lang-markdown": "^6.5.1",
     "@codemirror/state": "^6.7.1",
@@ -48,7 +48,7 @@
     "@mozilla/readability": "^0.6.0",
     "@saas-maker/feedback": "^0.4.0",
     "@sparticuz/chromium": "^147.0.2",
-    "ai": "^6.0.97",
+    "ai": "6.0.168",
     "better-auth": "^1.6.25",
     "codemirror": "^6.0.2",
     "dodopayments": "^2.43.0",
