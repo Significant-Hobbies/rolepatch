@@ -3,9 +3,10 @@ main = "worker.mjs"
 compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat_v2"]
 
-# Serve overlaid Astro index.html for GET / without invoking the Worker.
-# Signed-in redirect is inline in landing-astro Layout.astro.
-assets = { directory = ".open-next/assets", binding = "ASSETS", run_worker_first = [ "/*", "!/" ] }
+# Run discovery negotiation before serving the overlaid Astro homepage. The
+# Worker still short-circuits ordinary anonymous GET / requests to ASSETS, so
+# HTML stays asset-backed while Accept: text/markdown reaches the curated brief.
+assets = { directory = ".open-next/assets", binding = "ASSETS", run_worker_first = true }
 
 routes = [
   { pattern = "rolepatch.com/*", zone_name = "rolepatch.com" },

@@ -1,0 +1,100 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+
+const TITLE = 'RolePatch developer docs — Public discovery surfaces';
+const DESCRIPTION =
+  'Documentation for RolePatch’s read-only public catalog, LLM indexes, Markdown negotiation, OpenAPI schema, typed errors, and version policy.';
+
+const endpoints = [
+  ['/api/ai', 'JSON catalog of every public HTML surface and same-origin Markdown alternate.'],
+  ['/api/public/v1/surfaces/{id}', 'Versioned JSON lookup for one catalog surface; an unknown id returns a typed problem response.'],
+  ['/llms.txt', 'Compact product guidance, best-fit use cases, boundaries, access, and discovery links.'],
+  ['/llms-full.txt', 'Expanded product brief for agents that need the full product contract.'],
+  ['/index.md', 'Canonical Markdown explanation of product purpose, evidence rules, access, and state.'],
+  ['/openapi.json', 'OpenAPI 3.1 description of these read-only discovery routes.'],
+  ['/sitemap.xml', 'Canonical public route inventory for crawlers.'],
+] as const;
+---
+
+<Layout title={TITLE} description={DESCRIPTION} canonicalPath="/docs">
+  <div class="rolepatch-page">
+    <SiteHeader active="docs" />
+    <main>
+      <section class="page-hero paper-grid">
+        <div class="site-shell">
+          <p class="section-label">Public discovery interface</p>
+          <h1>Read the product contract. Do not automate the applicant.</h1>
+          <p>
+            RolePatch publishes a small, unauthenticated, read-only interface so agents can
+            discover the product and understand its limits. Resume tailoring and application
+            actions remain inside the reviewed user workflow.
+          </p>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <div class="site-shell docs-layout">
+          <div class="docs-intro">
+            <p class="section-label">Endpoints</p>
+            <h2>Six public routes. No mutation API.</h2>
+            <p>
+              Use GET or HEAD. These routes require no token or account. They describe RolePatch;
+              they do not accept a resume, spend credits, fill an ATS, or submit an application.
+            </p>
+          </div>
+          <div class="endpoint-list">
+            {endpoints.map(([path, body]) => (
+              <article>
+                <a href={path}><code>{path}</code></a>
+                <p>{body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="page-section paper-grid">
+        <div class="site-shell docs-notes">
+          <article>
+            <p class="section-label">Markdown negotiation</p>
+            <h2>Ask for Markdown at the page URL.</h2>
+            <p>
+              Send <code>Accept: text/markdown</code> to any cataloged public page, or request its
+              explicit <code>.md</code> alternate. Negotiated responses include
+              <code>Vary: Accept</code> so HTML and Markdown cannot poison one another in a cache.
+            </p>
+          </article>
+          <article>
+            <p class="section-label">Error model</p>
+            <h2>Discovery errors are structured.</h2>
+            <p>
+              Unsupported methods and missing discovery routes return
+              <code>application/problem+json</code> with a stable code, status, detail, and
+              resolution hint. Ordinary product routes keep their own application contracts.
+            </p>
+          </article>
+          <article>
+            <p class="section-label">Version policy</p>
+            <h2>Breaking changes get a new major contract.</h2>
+            <p>
+              The OpenAPI <code>info.version</code> follows semantic versioning. A breaking change
+              gets a new major version; the previous contract remains available for at least 90
+              days with <code>Deprecation</code> and <code>Sunset</code> response headers.
+            </p>
+          </article>
+          <article>
+            <p class="section-label">Non-goals</p>
+            <h2>No public agent can apply on your behalf.</h2>
+            <p>
+              There is no public mutation API, MCP tool, payment-by-agent rail, CAPTCHA bypass, or
+              unattended file upload. Those absences preserve the review-first product boundary.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+    <SiteFooter />
+  </div>
+</Layout>

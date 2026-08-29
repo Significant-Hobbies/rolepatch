@@ -1,107 +1,79 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
 
-const TITLE = 'RolePatch changelog — What shipped';
+const TITLE = 'RolePatch changelog — Verified product updates';
 const DESCRIPTION =
-  'Verified updates to RolePatch job discovery, reviewed application workflows, and application receipts.';
-const sourceUrl = 'https://github.com/sass-maker/rolepatch';
+  'Verified RolePatch updates to guest workflows, job discovery, review-first application assistance, receipts, proof, and release checks.';
+const sourceUrl = 'https://github.com/Significant-Hobbies/rolepatch';
 const roadmapUrl = `${sourceUrl}/issues`;
 
 const entries = [
   {
     date: 'July 11, 2026',
     title: 'Guest workflows became more predictable',
-    body: 'The test environment now resets browser-local state between runs, protecting the same guest-mode boundaries that let unsigned users keep resumes, searches, and application drafts on their device.',
-    tags: ['Guest mode', 'Reliability'],
+    body: 'The test environment now resets browser-local state between runs. That protects the same boundary unsigned users rely on when they keep resumes, searches, and application drafts on one device.',
   },
   {
     date: 'July 4, 2026',
     title: 'Job discovery moved into the product',
-    body: 'A standalone jobs browser shipped with quick searches, posting signals, resume-aware semantic ranking, visible match evidence, and reviewed batch queueing. Guests can search and prepare locally without being forced into sign-in.',
-    tags: ['Discovery', 'Fit evidence'],
+    body: 'A LinkedIn-focused job browser added quick searches, posting signals, resume-aware ranking, visible match evidence, and reviewed batch queueing. Guests can search and prepare locally without being forced to sign in.',
   },
   {
     date: 'July 4, 2026',
     title: 'Application assistance became receipt-first',
-    body: 'The reviewed queue gained Chrome-assisted ATS fill, guarded submit, provider-aware blockers, field-level receipt details, retry timelines, and copyable audit summaries. Unattended bulk apply remains explicitly out of scope.',
-    tags: ['Apply workflow', 'Receipts'],
+    body: 'The reviewed queue added Chrome-assisted ATS fill, guarded submit attempts, provider-aware blockers, field-level details, retry timelines, and copyable audit summaries. Unattended bulk apply remains out of scope.',
   },
   {
     date: 'July 4, 2026',
     title: 'Proof and public release checks shipped',
-    body: 'RolePatch added the source-backed Proof surface plus a release preflight that verifies type safety, formatting, tests, extension build, Cloudflare build, public routes, and responsive browser journeys before deployment.',
-    tags: ['Proof', 'Release quality'],
+    body: 'RolePatch added a source-backed Proof surface and a release preflight covering type safety, formatting, tests, the extension build, the Cloudflare build, public routes, and responsive browser journeys.',
   },
 ];
 ---
 
 <Layout title={TITLE} description={DESCRIPTION} canonicalPath="/changelog">
-  <div class="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
-    <header class="sticky top-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-2xl">
-      <div class="max-w-7xl mx-auto px-6 min-h-16 py-3 flex items-center justify-between gap-6">
-        <a href="/" class="flex items-center gap-2.5">
-          <span class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-xs font-black text-white">RP</span>
-          <span class="font-bold text-xl tracking-tight text-white">RolePatch</span>
-        </a>
-        <nav class="flex items-center justify-end flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-white/50" aria-label="Primary navigation">
-          <a href="/jobs" class="min-h-11 inline-flex items-center hover:text-white transition-colors">Jobs</a>
-          <a href="/proof" class="min-h-11 inline-flex items-center hover:text-white transition-colors">Proof</a>
-          <a href="/changelog" aria-current="page" class="min-h-11 inline-flex items-center text-white">Changelog</a>
-          <a href="/dashboard" class="min-h-11 inline-flex items-center rounded-full bg-white px-5 text-black hover:bg-white/90 transition-colors">Dashboard</a>
-        </nav>
-      </div>
-    </header>
-
+  <div class="rolepatch-page">
+    <SiteHeader active="changelog" />
     <main>
-      <section class="relative px-6 pt-28 pb-20 overflow-hidden">
-        <div class="absolute inset-0 pointer-events-none">
-          <div class="absolute top-[-20%] left-[8%] w-[46%] h-[55%] rounded-full bg-indigo-600/10 blur-[120px]"></div>
-        </div>
-        <div class="relative max-w-3xl mx-auto text-center">
-          <div class="text-[11px] font-black tracking-widest uppercase text-indigo-400 mb-8">
-            Product history, owned by RolePatch
-          </div>
-          <h1 class="text-5xl md:text-7xl font-bold leading-[0.96] tracking-tight mb-7">
-            What changed,<br /><span class="text-white/55">and why it matters.</span>
-          </h1>
-          <p class="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium">
-            Verified improvements to discovery, application review, safety, and evidence. Planned
-            work stays in GitHub Issues.
+      <section class="page-hero paper-grid">
+        <div class="site-shell">
+          <p class="section-label">Verified product history</p>
+          <h1>What changed, and why it matters.</h1>
+          <p>
+            Shipped changes live here. Planned work stays in the public issue tracker, where it
+            cannot be mistaken for a finished feature.
           </p>
-          <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <a href={roadmapUrl} class="min-h-11 inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-5 text-sm font-bold hover:border-indigo-400/50 transition-colors">Roadmap</a>
-            <a href={sourceUrl} class="min-h-11 inline-flex items-center rounded-xl border border-white/10 px-5 text-sm font-bold text-white/70 hover:text-white transition-colors">Source</a>
-          </div>
         </div>
       </section>
 
-      <section class="max-w-4xl mx-auto px-6 pb-32" aria-label="RolePatch releases">
-        {entries.map((entry) => (
-          <article class="grid md:grid-cols-[150px_minmax(0,1fr)] gap-4 md:gap-10 py-9 border-t border-white/10">
-            <time class="text-sm font-bold text-white/35">{entry.date}</time>
+      <section class="page-section" aria-label="RolePatch releases">
+        <div class="site-shell">
+          <div class="release-list">
+            {entries.map((entry) => (
+              <article class="release-item">
+                <time class="release-date">{entry.date}</time>
+                <div>
+                  <h2>{entry.title}</h2>
+                  <p>{entry.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div class="page-cta">
             <div>
-              <h2 class="text-2xl font-bold tracking-tight mb-3">{entry.title}</h2>
-              <p class="max-w-[70ch] text-white/55 leading-relaxed font-medium">{entry.body}</p>
-              <ul class="mt-5 flex flex-wrap gap-2 list-none p-0" aria-label="Update categories">
-                {entry.tags.map((tag) => (
-                  <li class="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-bold text-indigo-300">{tag}</li>
-                ))}
-              </ul>
+              <h2>Inspect the work behind the claims.</h2>
+              <p>The canonical repository and its issue tracker are public.</p>
             </div>
-          </article>
-        ))}
+            <div class="hero-actions">
+              <a href={sourceUrl} class="primary-action">View source <span aria-hidden="true">↗</span></a>
+              <a href={roadmapUrl} class="secondary-action">Open roadmap <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
-
-    <footer class="border-t border-white/5 bg-black">
-      <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between gap-6 text-sm text-white/40">
-        <span>Reviewed applications. Exact receipts. No unattended bulk apply.</span>
-        <nav class="flex flex-wrap gap-6" aria-label="Project resources">
-          <a href="/" class="hover:text-white">Home</a>
-          <a href={roadmapUrl} class="hover:text-white">Roadmap</a>
-          <a href={sourceUrl} class="hover:text-white">Source</a>
-        </nav>
-      </div>
-    </footer>
+    <SiteFooter />
   </div>
 </Layout>

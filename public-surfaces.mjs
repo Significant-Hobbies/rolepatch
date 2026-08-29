@@ -9,11 +9,11 @@ export const PUBLIC_SURFACES = [
     path: '/',
     title: 'RolePatch',
     description:
-      'AI-assisted resume tailoring and a review-first job application workflow with visible diffs, fit evidence, and submission receipts.',
+      'Evidence-bound resume tailoring for one specific job, followed by review-first supporting materials, application assistance, and receipts.',
     details: [
-      'Tailor a base resume to a specific job description.',
-      'Review proposed resume changes in a word-level diff before accepting them.',
-      'Prepare cover letters, interview stories, and reviewed application packets.',
+      'The base resume, project stash, and achievement bank are the only permitted sources for employer-facing claims.',
+      'RolePatch may reframe supplied evidence, but unsupported skills, metrics, employers, tools, and accomplishments remain visible gaps.',
+      'Every proposed resume patch is reviewable before it anchors supporting materials or an application packet.',
     ],
     changeFrequency: 'weekly',
     priority: 1,
@@ -37,11 +37,11 @@ export const PUBLIC_SURFACES = [
     path: '/pricing',
     title: 'RolePatch pricing',
     description:
-      'Review RolePatch token options and the product capabilities available before purchasing AI-assisted work.',
+      'Compare free browser tools, guest-local use, account persistence, and the implemented token packs for signed-in AI work.',
     details: [
-      'Free tools do not require a token purchase.',
-      'Paid tokens are used for AI-assisted generation such as resume tailoring.',
-      'Application review and user approval remain part of the workflow.',
+      'The ATS, keyword, bullet, diff, snippet, and word-count tools work without sign-up.',
+      'Signed-in AI operations debit tokens; packs are 10 for $5, 30 for $12, and 100 for $30, with no subscription.',
+      'Guest tailoring currently does not debit account tokens, while queue, packet, fill, and receipt work does not spend tokens.',
     ],
     changeFrequency: 'monthly',
     priority: 0.95,
@@ -233,14 +233,28 @@ export const PUBLIC_SURFACES = [
     path: '/faq',
     title: 'RolePatch frequently asked questions',
     description:
-      'Answers about resume tailoring, fit scores, cover letters, interview preparation, editing, and the reviewed apply workflow.',
+      'Answers about evidence-bound tailoring, storage, exact token pricing, the Chrome extension, product state, and review-first application safety.',
     details: [
-      'Answers describe what RolePatch does and how each workflow starts.',
-      'The page covers guest use, saved resume versions, and review controls.',
-      'The answers do not claim unattended application submission.',
+      'Answers distinguish browser-local guest records from signed-in D1-backed records.',
+      'The page states which AI operations use tokens and which application workflow actions do not.',
+      'The answers explicitly rule out invented evidence, unattended submission, CAPTCHA bypass, and implicit file upload.',
     ],
     changeFrequency: 'monthly',
     priority: 0.8,
+  },
+  {
+    id: 'docs',
+    path: '/docs',
+    title: 'RolePatch public discovery docs',
+    description:
+      'Read the supported machine-readable discovery routes, content negotiation behavior, error model, version policy, and explicit non-goals.',
+    details: [
+      'The documented interface is read-only discovery, not a resume-tailoring or application-submission API.',
+      'The catalog, LLM indexes, product Markdown, sitemap, and OpenAPI document require no authentication.',
+      'Unsupported discovery methods and missing discovery routes use application/problem+json.',
+    ],
+    changeFrequency: 'monthly',
+    priority: 0.65,
   },
   {
     id: 'changelog',

@@ -1,0 +1,115 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "rolepatch",
+  "target": "RolePatch public landing and supporting explanation pages",
+  "surfaceMode": "persuade",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "GitHub pull-request diffs for visible evidence boundaries",
+      "Editorial case files for the paper-and-redline visual language",
+      "Terminal receipts for explicit safe-stop and provenance states"
+    ],
+    "probes": [],
+    "selected": "evidence-workbench",
+    "approval": "agent-selected",
+    "before": "landing-astro/artifacts/design/rolepatch-before-1440.jpg",
+    "contract": {
+      "purpose": "Help one job seeker tailor a resume for one role without inventing claims, then preserve an inspectable application record.",
+      "purposeSource": "PRODUCT.md plus current implementation, pricing, authentication, and apply-flow source",
+      "canonicalPurpose": "Evidence-bound resume tailoring and review-first application preparation for one specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "A careful job seeker who wants a role-specific application without losing control of factual claims or submission.",
+      "job": "Compare a role with existing evidence, make defensible wording changes, review the packet, and stop safely before submission when anything is uncertain.",
+      "thesis": "Resume tailoring is more trustworthy when every change can be traced to source evidence and the applicant keeps the final decision.",
+      "system": "A paper workbench pairs role requirements, evidence-backed patches, a dossier, review controls, token-pack access, and a final receipt.",
+      "signature": "The redline patch and safe-stop receipt make evidence and human control visible rather than describing them abstractly.",
+      "risk": "Avoid implying unattended application submission, invented claims, a subscription, or a currently verified live checkout transaction."
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "landing-astro/artifacts/design/rolepatch-after-390.png"
+      },
+      {
+        "width": 768,
+        "path": "landing-astro/artifacts/design/rolepatch-after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "landing-astro/artifacts/design/rolepatch-after-1440.png"
+      },
+      {
+        "width": 390,
+        "path": ".fleet/evidence/landing-audit/footer-strip-390.png",
+        "surface": "footer project strip and Ask AI"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet/evidence/landing-audit/footer-strip-1440.png",
+        "surface": "footer project strip and Ask AI"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm lint && pnpm typecheck && pnpm test && pnpm cf:build",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 37,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        {
+          "rule": "dense-evidence-layout",
+          "count": 1,
+          "disposition": "Intentional for a high-consideration employment workflow; mobile hierarchy and line lengths remain readable."
+        }
+      ]
+    },
+    "comprehension": {
+      "status": "pass",
+      "reviewer": "independent agent review",
+      "answers": {
+        "product": "RolePatch is an evidence-bound resume tailoring and application-preparation tool for one job at a time.",
+        "audience": "It is for job seekers who care about truthful claims and want to retain submission control.",
+        "value": "It turns an existing resume and evidence stash into a role-specific packet without fabricating experience.",
+        "mechanism": "It maps requirements to evidence, proposes inspectable patches, assembles a dossier, and records a reviewed receipt.",
+        "proof": "The page shows a sourced patch, requirement map, dossier contents, token boundaries, and a safe-stop receipt.",
+        "nextAction": "Start tailoring in the browser, then use AI only when a signed-in applicant chooses to spend tokens."
+      },
+      "purposeScore": {
+        "product": 25,
+        "audience": 15,
+        "value": 15,
+        "mechanism": 15,
+        "proof": 15,
+        "nextAction": 15,
+        "total": 100
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "The owner explicitly delegated final design judgment and asked the portfolio pass to continue without repeated feedback pauses."
+  }
+}

@@ -1,47 +1,46 @@
 # RolePatch — full agent brief
 
-AI-powered resume tailoring. Score fit against a job description, rewrite bullets for the role, and prep interviews.
+RolePatch is an evidence-bound resume tailoring and review-first job application workspace for job seekers preparing a serious application to one specific role.
 
-## Index
+## Canonical product brief
 
 # RolePatch
 
-AI-powered resume tailoring and job-application assistant.
+RolePatch reads a job description, compares its requirements with evidence already supplied by the candidate, and proposes a resume patch for review.
 
-## What it is
+### Evidence rule
 
-- Score resume fit against a job description
-- Rewrite bullets for the role
-- Cover letters, company research, STAR prep
+The base resume, project stash, and achievement bank are the permitted claim sources. RolePatch may reframe or prioritize that material. It must not invent a skill, tool, employer, metric, scope, role, or accomplishment. Unsupported requirements remain visible gaps.
 
-## Who it's for
+### Workflow and boundaries
 
-Job seekers who want reviewed, role-specific application materials — not generic AI fluff.
+- Import one job description and compare it with supplied evidence.
+- Review the proposed resume wording in a word-level diff.
+- Keep the accepted resume, cover letter, fit analysis, interview stories, evidence, answers, and receipts together by application.
+- Queue and fill supported ATS fields only through a reviewed flow.
+- Stop for CAPTCHA, missing required answers, explicit file selection, and ambiguous submit states.
+- Do not claim unattended bulk submission, human-verification bypass, or universal hiring prediction.
 
-## Agent entrypoints
+### Access and commercial state
 
-- https://rolepatch.com/llms.txt
-- https://rolepatch.com/api/ai
-- https://rolepatch.com/index.md
+- Guest records can stay in browser localStorage; clearing that storage can remove them.
+- Google sign-in adds D1-backed account persistence and three starting tokens.
+- Signed-in AI operations debit tokens. Implemented packs are 10 for $5, 30 for $12, and 100 for $30, with no subscription.
+- Guest tailoring currently does not debit account tokens.
+- Public ATS, keyword, bullet, diff, snippet, and word-count tools work without sign-up.
+- RolePatch is live and maintained, but owner-led validation against new real applications is paused because its maker is not currently job hunting.
+- No independently completed live token purchase or broad outcome study is claimed here.
 
-Dashboard routes require auth and are not agent-indexed.
+## Public links
 
-## Product links
-
-- Home: https://rolepatch.com/ — Product landing
-- Pricing: https://rolepatch.com/pricing — Plans and limits
-- Tools: https://rolepatch.com/tools — Public tools
-
-## Machine surfaces
-
-- https://rolepatch.com/llms.txt
-- https://rolepatch.com/llms-full.txt
-- https://rolepatch.com/api/ai
-- https://rolepatch.com/index.md
-- https://rolepatch.com/sitemap.xml
-- https://rolepatch.com/robots.txt
-
-## Contact
-
+- Home: https://rolepatch.com/
+- Pricing: https://rolepatch.com/pricing
+- Free tools: https://rolepatch.com/tools
+- FAQ: https://rolepatch.com/faq
+- Changelog: https://rolepatch.com/changelog
+- Public catalog: https://rolepatch.com/api/ai
+- OpenAPI: https://rolepatch.com/openapi.json
+- Sitemap: https://rolepatch.com/sitemap.xml
 - Owner: https://sarthakagrawal.dev
-- Agent email for directory verification: sarthakagrawal@agentmail.to
+
+Every cataloged public route also has a same-origin Markdown alternate. User-specific dashboard and API routes are excluded.

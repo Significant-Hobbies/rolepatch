@@ -180,7 +180,13 @@ export default {
       // response — and the downstream CF Edge cache entry — is small.
       // Only Astro overlay at `/` is static; marketing pages use edge HTML cache.
       if (env.ASSETS && url.pathname === '/') {
-        const assetResp = await env.ASSETS.fetch(request);
+        // Fetch an identity representation from the binding. Compression is
+        // negotiated below for the caller; forwarding its Accept-Encoding can
+        // otherwise make local and edge runtimes hand us encoded bytes without
+        // a stable Content-Encoding contract, which risks double compression.
+        const assetHeaders = new Headers(request.headers);
+        assetHeaders.set('accept-encoding', 'identity');
+        const assetResp = await env.ASSETS.fetch(new Request(request, { headers: assetHeaders }));
         // The assets binding answers If-None-Match revalidations with 304.
         // Pass those through — falling through would serve the wrong page.
         if (assetResp.status === 304) {
@@ -196,28 +202,45 @@ export default {
           headers.set('Cache-Control', CACHE_CONTROL);
           headers.set('x-edge-cache', 'ASSET');
 
-          if (wantsGzip && !headers.has('content-encoding')) {
+          // Static Assets can expose already-compressed bytes through a Worker
+          // without a matching Content-Encoding header (notably in local
+          // qualification). Normalize the small HTML asset before negotiating
+          // the caller's representation so neither identity nor gzip can be
+          // served with an incorrect number of encoding layers.
+          let payload = new Uint8Array(await assetResp.arrayBuffer());
+          let encodingLayers = 0;
+          while (payload[0] === 0x1f && payload[1] === 0x8b && encodingLayers < 4) {
+            const decoded = new Blob([payload])
+              .stream()
+              .pipeThrough(new DecompressionStream('gzip'));
+            payload = new Uint8Array(await new Response(decoded).arrayBuffer());
+            encodingLayers += 1;
+          }
+          headers.delete('content-encoding');
+          headers.delete('content-length');
+
+          if (wantsGzip) {
             headers.set('content-encoding', 'gzip');
-            headers.delete('content-length');
             // `Vary: Accept-Encoding` so a future no-encoding client
             // gets a separately negotiated entry.
             const vary = headers.get('vary');
             headers.set('vary', vary ? `${vary}, Accept-Encoding` : 'Accept-Encoding');
-            return new Response(assetResp.body.pipeThrough(new CompressionStream('gzip')), {
-              status: assetResp.status,
-              statusText: assetResp.statusText,
-              headers,
-              // Body is already gzip-encoded; without this the runtime
-              // gzips it a second time (encodeBody defaults to
-              // "automatic") and browsers receive garbled bytes.
-              encodeBody: 'manual',
-            });
+            return new Response(
+              new Blob([payload]).stream().pipeThrough(new CompressionStream('gzip')),
+              {
+                status: assetResp.status,
+                statusText: assetResp.statusText,
+                headers,
+                encodeBody: 'manual',
+              }
+            );
           }
 
-          return new Response(assetResp.body, {
+          return new Response(payload, {
             status: assetResp.status,
             statusText: assetResp.statusText,
             headers,
+            encodeBody: 'manual',
           });
         }
       }

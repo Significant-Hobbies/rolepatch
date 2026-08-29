@@ -1,490 +1,395 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import Icon from '@/components/Icon.astro';
-
-// RolePatch landing — static Astro port of /src/app/page.tsx.
-//
-// Tailwind utility classes, CSS vars, copy, and structure all mirror
-// the React source 1:1. Next.js <Link> turned into plain <a>; the
-// Worker still owns /dashboard, /tools, /pricing, /privacy, /terms,
-// so internal links resolve unchanged.
-
-const TITLE = 'RolePatch — AI resume tailoring with review for job applications';
-const DESCRIPTION =
-  'Tailor resumes, prepare application packets, fill ATS forms with a Chrome extension, and keep reviewed receipts for every application.';
-
-const howItWorks = [
-  {
-    step: '01',
-    title: 'Paste the job',
-    desc: 'Drop in any job posting URL. RolePatch scrapes the requirements and keywords the role is screening for.',
-  },
-  {
-    step: '02',
-    title: 'Tailor & review',
-    desc: 'AI rewrites your resume to match, shown as a word-level diff. You see and control every change before you accept it.',
-  },
-  {
-    step: '03',
-    title: 'Fill & keep receipts',
-    desc: 'Use reviewed extension fill, guarded submit checks, and field-level receipts so you know exactly what was sent or blocked.',
-  },
-];
-
-const builtOn = ['Next.js', 'Cloudflare D1', 'Cloudflare'];
-
-const features = [
-  { icon: 'target', title: 'Job Fit Score', desc: 'See your fit score across 5 things recruiters check before you waste an hour applying.' },
-  { icon: 'zap', title: 'Contextual Rewriting', desc: "Our AI rewrites your experience to match the role, not just swap words. See every change in a word-level diff." },
-  { icon: 'message-square', title: 'Interview Prep', desc: 'Auto-generates STAR+R stories mapped to the job requirements. Walk into every interview with rehearsed, quantified answers.' },
-  { icon: 'search', title: 'Deep JD Analysis', desc: 'Pulls hard skills and keywords out of any job posting. Paste a URL and we scrape the rest.' },
-  { icon: 'bar-chart-3', title: 'Reviewed Apply Agent', desc: 'Queue jobs, prepare packets, fill ATS forms with the Chrome extension, and keep control before submit.' },
-  { icon: 'file-text', title: 'Receipts & Guardrails', desc: 'Capture filled fields, uploaded files, blocker reasons, and confirmation text without unattended bulk apply claims.' },
-] as const;
-
-// Build-time year — the React version called `new Date().getFullYear()`
-// at render. Baking it in keeps the deliverable pure-static.
-const year = new Date().getFullYear();
-
-// FAQ — 35-60 word answers optimized for Generative Engine Optimization
-// (AI search engines lift concise, self-contained passages from pages).
-const faqs = [
-  {
-    q: 'What is RolePatch?',
-    a: 'RolePatch is an AI-powered resume and reviewed-apply assistant. Paste a job URL, tailor your resume, generate cover letters, score role fit, prepare application packets, fill ATS forms with a Chrome extension, and keep receipts for what was filled, skipped, blocked, or submitted.',
-  },
-  {
-    q: 'Is RolePatch free?',
-    a: 'RolePatch offers a guest mode that works without sign-up, plus free tools including ATS check, keyword match, and bullet check. Sign in with Google to save resumes and tailoring history to the cloud. No credit card is required to start tailoring resumes or generating cover letters.',
-  },
-  {
-    q: 'How does RolePatch tailor my resume?',
-    a: 'Paste a job URL and RolePatch scrapes the job description, then AI rewrites your bullets to match the role\u2019s requirements, hard skills, and keywords. You review every change in a side-by-side diff view before saving, so you stay in control of what stays and what gets rewritten.',
-  },
-  {
-    q: 'Does RolePatch write cover letters?',
-    a: 'Yes. RolePatch generates cover letters with company research, a fit score, and STAR interview stories baked in. Each cover letter is tailored to the specific job and company, mapping your proof points directly to the role\u2019s requirements so every paragraph speaks to that employer.',
-  },
-  {
-    q: 'Does RolePatch automatically apply to jobs?',
-    a: 'RolePatch is review-first. It can queue applications, prepare packets, fill visible ATS fields with a Chrome extension, run guarded submit checks, and record receipts. It does not bypass captchas, upload files without user selection, or run unattended bulk apply.',
-  },
-  {
-    q: 'What free tools does RolePatch offer?',
-    a: 'RolePatch includes an ATS check for parse-friendly resume structure, a keyword match tool for job-description keyword overlap, a bullet check for action-verb and impact lint, a word count tool, a diff viewer, and a snippets library — all usable without signing in.',
-  },
-  {
-    q: 'Can I use RolePatch without signing in?',
-    a: 'Yes. Guest mode works without an account and stores your data locally in the browser. Sign in with Google to save resumes and tailoring history to the cloud and sync across devices. Nothing is lost in guest mode as long as you stay on the same browser.',
-  },
-  {
-    q: 'Does RolePatch support LaTeX resumes?',
-    a: 'Yes. RolePatch includes a CodeMirror-based markdown editor with live preview for editing resumes. The editor supports markdown with LaTeX-style formatting, so you can write and refine structured resume content with syntax highlighting and instant rendering as you type.',
-  },
-];
+import SiteFooter from '@/components/SiteFooter.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import { PRODUCT_DESCRIPTION, PRODUCT_FAQS, PRODUCT_TITLE, TOKEN_PACKS } from '@/lib/product';
 
 const faqJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqs.map((f) => ({
+  mainEntity: PRODUCT_FAQS.map((faq) => ({
     '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: f.a,
-    },
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
   })),
 };
 
-const softwareAppJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'RolePatch',
-  alternateName: ['Role Patch', 'rolepatch.com'],
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web Browser',
-  url: 'https://rolepatch.com',
-  description:
-    'AI-powered resume tailoring and reviewed apply agent. Paste a job URL, tailor materials, fill ATS forms with a Chrome extension, and keep application receipts.',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
+const workflow = [
+  {
+    number: '01',
+    title: 'Bring one specific job',
+    body: 'Paste the posting URL. RolePatch extracts the responsibilities, hard skills, language, and visible requirements that this application actually needs to answer.',
   },
-  creator: {
-    '@type': 'Person',
-    name: 'Sarthak Agrawal',
-    url: 'https://sarthakagrawal.dev',
+  {
+    number: '02',
+    title: 'Match against existing proof',
+    body: 'Your base resume, project stash, and achievement evidence are the only claim sources. Relevant proof moves forward; unsupported requirements stay visible as gaps.',
   },
-};
+  {
+    number: '03',
+    title: 'Inspect the proposed patch',
+    body: 'The revised resume arrives with a word-level diff and a reason for each meaningful edit, tied back to the requirement or keyword that prompted it.',
+  },
+  {
+    number: '04',
+    title: 'Accept, edit, or leave it out',
+    body: 'You keep control of the final wording. The accepted resume can then anchor a cover letter, fit analysis, interview stories, and a reviewed application packet.',
+  },
+] as const;
 
+const packetItems = [
+  ['Tailored resume', 'One saved version per role, with the base resume preserved.'],
+  ['Fit analysis', 'Requirement coverage and visible gaps—not a universal hiring prediction.'],
+  ['Cover letter', 'Role- and company-specific material grounded in the same supplied proof.'],
+  ['STAR+R stories', 'Interview preparation mapped to the job and candidate evidence.'],
+  ['Evidence bank', 'Reusable achievements with situation, action, result, metric, scope, and source context.'],
+  ['Application packet', 'Resume, answers, proof, and receipt history collected for review.'],
+] as const;
+
+const stops = [
+  ['CAPTCHA or human verification', 'Stop. No bypass attempt.'],
+  ['Required answer is missing', 'Stop. Surface the exact answer gap.'],
+  ['A file still needs selection', 'Stop. The user chooses the file explicitly.'],
+  ['Submit state is ambiguous', 'Record a failed receipt for review.'],
+] as const;
 ---
 
-<Layout title={TITLE} description={DESCRIPTION} redirectAuthenticated>
-  <div class="landing-page min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-indigo-500/30 selection:text-white">
-    {/* ── Nav ── */}
-    <header class="sticky top-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-2xl">
-      <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="/" class="inline-flex min-h-11 min-w-11 items-center gap-2.5">
-          <span class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-xs font-black text-white">RP</span>
-          <span class="font-bold text-xl tracking-tight text-white">RolePatch</span>
-        </a>
-        <nav class="hidden xl:flex items-center gap-8 text-sm font-medium text-white/50">
-          <a href="#features" class="inline-flex min-h-11 items-center hover:text-white transition-colors">Features</a>
-          <a href="#how-it-works" class="inline-flex min-h-11 items-center hover:text-white transition-colors">How it works</a>
-          <a href="#receipts" class="inline-flex min-h-11 items-center hover:text-white transition-colors">Receipts</a>
-          <a href="#proof" class="inline-flex min-h-11 items-center hover:text-white transition-colors">See it work</a>
-          <a href="/jobs" class="inline-flex min-h-11 items-center hover:text-white transition-colors">Jobs</a>
-          <a href="/tools" class="inline-flex min-h-11 items-center hover:text-white transition-colors">Free Tools</a>
-          <a href="/pricing" class="inline-flex min-h-11 items-center hover:text-white transition-colors">Pricing</a>
-          <a href="/faq" class="inline-flex min-h-11 items-center hover:text-white transition-colors">FAQ</a>
-        </nav>
-        <a
-          href="/dashboard"
-          class="inline-flex min-h-11 items-center justify-center bg-white text-black text-sm font-bold px-6 py-2.5 rounded-full hover:bg-white/90 transition-all"
-        >
-          Get Started Free
-        </a>
-      </div>
-    </header>
+<Layout title={PRODUCT_TITLE} description={PRODUCT_DESCRIPTION} redirectAuthenticated>
+  <div class="rolepatch-page">
+    <SiteHeader active="home" />
 
     <main>
-      {/* ── Hero ── */}
-      <section class="relative pt-20 sm:pt-24 lg:pt-32 pb-20 sm:pb-24 lg:pb-28 px-5 sm:px-6 overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-          <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse"></div>
-          <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[100px] animate-pulse delay-1000"></div>
-        </div>
-
-        <div class="relative max-w-5xl mx-auto text-center">
-          <div
-            class="inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-wider mb-7 sm:mb-10"
-            role="group"
-            aria-label="Example RolePatch receipt: packet ready to review, ATS fill requires your click, and submit waits for confirmation"
-          >
-            <span class="text-indigo-300">Example receipt</span>
-            <span class="text-white/65"><strong class="text-white">Packet</strong> · ready to review</span>
-            <span class="text-white/65"><strong class="text-white">Fill</strong> · requires your click</span>
-            <span class="text-white/65"><strong class="text-white">Submit</strong> · waits for confirmation</span>
+      <section class="hero-section paper-grid">
+        <div class="site-shell hero-layout">
+          <div class="hero-copy">
+            <p class="section-label">For one serious application to one specific role</p>
+            <h1>Tailor the resume.<br /><span>Keep the record true.</span></h1>
+            <p class="hero-lede">
+              RolePatch reads the job description, matches it against evidence already in your
+              resume, and proposes a reviewable patch. It can reframe proof. It cannot invent it.
+            </p>
+            <div class="hero-actions">
+              <a href="/dashboard" class="primary-action">Tailor a resume <span aria-hidden="true">↗</span></a>
+              <a href="#proof" class="secondary-action">See the evidence rule <span aria-hidden="true">↓</span></a>
+            </div>
+            <dl class="hero-facts" aria-label="RolePatch access summary">
+              <div><dt>Guest</dt><dd>Browser-local workspace</dd></div>
+              <div><dt>Account</dt><dd>Optional Google sync</dd></div>
+              <div><dt>Control</dt><dd>Review every patch</dd></div>
+            </dl>
           </div>
 
-          <h1 class="text-[40px] sm:text-5xl md:text-7xl lg:text-[88px] font-bold leading-[1.02] lg:leading-[0.95] tracking-tight mb-7 sm:mb-10">
-            Tailor the job packet.<br />
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">Fill applications with receipts, not guesswork.</span>
-          </h1>
-
-          <p class="text-lg sm:text-xl md:text-2xl text-white/60 max-w-2xl mx-auto leading-relaxed font-medium mb-9 sm:mb-12">
-            RolePatch tailors your resume, prepares the cover letter and profile answers, fills supported ATS forms with a Chrome extension, and records what happened before you submit.
-          </p>
-
-          <div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
-            <a
-              href="/dashboard"
-              class="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
-            >
-              <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <span class="relative group-hover:text-white transition-colors">Build My Apply Queue</span>
-            </a>
-            <a
-              href="#receipts"
-              class="px-10 py-5 bg-white/5 text-white font-bold text-lg rounded-2xl border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2"
-            >
-              See Receipts <Icon name="zap" class="w-5 h-5" fill="currentColor" />
-            </a>
+          <div class="patch-board" aria-label="Illustrative evidence-bound resume patch">
+            <div class="board-head">
+              <span>Illustrative patch 07</span>
+              <span class="status-dot">Evidence checked</span>
+            </div>
+            <div class="board-sheet requirement-sheet">
+              <p class="board-label">Job requirement</p>
+              <p>Own a TypeScript platform migration and show measurable reliability impact.</p>
+            </div>
+            <div class="board-connector" aria-hidden="true">↓</div>
+            <div class="board-sheet source-sheet">
+              <p class="board-label">Existing resume evidence</p>
+              <p>Led migration of 11 services to TypeScript. Incident rate fell 34%.</p>
+              <span class="source-tag">Supplied by candidate</span>
+            </div>
+            <div class="board-connector" aria-hidden="true">↓</div>
+            <div class="board-sheet patch-sheet">
+              <p class="board-label">Proposed wording</p>
+              <p>
+                Led a <mark>TypeScript migration</mark> across <mark>11 services</mark>, reducing
+                incidents <mark>34%</mark>.
+              </p>
+              <span class="source-tag">Every fact traced to source</span>
+            </div>
+            <div class="gap-note">
+              <span>Unsupported requirement: Kubernetes</span>
+              <strong>Leave it out. Do not invent it.</strong>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section id="features" class="py-32 px-6">
-        <div class="max-w-7xl mx-auto">
-          <div class="max-w-2xl mb-20">
-            <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">Built for speed, <br/> reviewed for trust.</h2>
-            <p class="text-xl text-white/50 leading-relaxed font-medium">AI materials plus an apply workflow you can audit.</p>
+      <section class="definition-section">
+        <div class="site-shell definition-grid">
+          <div>
+            <p class="section-label">What the product is</p>
+            <h2>A focused preparation desk for a job seeker who cares about this application.</h2>
           </div>
+          <div class="definition-copy">
+            <p>
+              A generic resume asks an employer to find the relevant evidence. RolePatch starts
+              with the actual role, identifies what must be answered, and helps move supported
+              proof into the foreground.
+            </p>
+            <p>
+              The result is not an automatic application factory. It is a traceable set of
+              materials the candidate can inspect, correct, accept, and carry into a review-first
+              application workflow.
+            </p>
+            <a href="/evidence">Open the achievement evidence bank <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </section>
 
-          <div class="grid md:grid-cols-3 gap-8">
-            {features.map((f) => (
-              <div class="group p-8 rounded-3xl bg-[#0c0c0c] border border-white/5 hover:border-indigo-500/50 transition-all duration-500 hover:translate-y-[-4px]">
-                <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform duration-500">
-                  <Icon name={f.icon} class="w-7 h-7" />
+      <section id="method" class="method-section paper-grid">
+        <div class="site-shell">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="section-label">The method</p>
+              <h2>Job description in.<br />Reviewable patch out.</h2>
+            </div>
+            <p>
+              The mechanism is intentionally simple enough to audit. Secondary features only
+              matter after the candidate understands where each changed claim came from.
+            </p>
+          </div>
+          <ol class="workflow-list">
+            {workflow.map((step) => (
+              <li>
+                <span class="workflow-number">{step.number}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
                 </div>
-                <h3 class="text-xl font-bold mb-3">{f.title}</h3>
-                <p class="text-white/50 leading-relaxed font-medium">{f.desc}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section id="proof" class="proof-section">
+        <div class="site-shell">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="section-label">The evidence rule</p>
+              <h2>Better phrasing is allowed.<br />Better fiction is not.</h2>
+            </div>
+            <p>
+              RolePatch's tailoring instruction forbids adding a skill, metric, employer, tool, or
+              accomplishment merely because the job description asks for it.
+            </p>
+          </div>
+
+          <div class="redline-stage">
+            <div class="redline-source">
+              <div class="redline-meta">
+                <span>Base resume · supplied text</span>
+                <span>Requirement: platform reliability</span>
               </div>
+              <p>
+                Led the migration of 11 services to TypeScript and reduced production incidents
+                by 34%.
+              </p>
+            </div>
+            <div class="redline-arrow" aria-hidden="true">PATCH</div>
+            <div class="redline-output">
+              <div class="redline-meta">
+                <span>Proposed resume · review required</span>
+                <span>0 unsupported facts</span>
+              </div>
+              <p>
+                Led a <ins>TypeScript platform migration</ins> across <ins>11 services</ins>,
+                reducing <ins>production incidents 34%</ins>.
+              </p>
+              <ul>
+                <li>“Platform” mirrors the job's language and remains supported by the 11-service scope.</li>
+                <li>The service count and outcome are preserved exactly from supplied evidence.</li>
+                <li>Kubernetes is omitted because the source does not demonstrate it.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="proof-caption">
+            This example is illustrative. The source line already contains every employer-facing
+            fact shown in the patch.
+          </p>
+        </div>
+      </section>
+
+      <section class="packet-section">
+        <div class="site-shell packet-layout">
+          <div class="packet-intro">
+            <p class="section-label">One application dossier</p>
+            <h2>The resume is the start, not six disconnected AI outputs.</h2>
+            <p>
+              Once the resume patch is accepted, RolePatch can keep the role, evidence, materials,
+              answers, and application history together. Each layer remains reviewable.
+            </p>
+            <a href="/dashboard" class="text-action">Build the role workspace <span aria-hidden="true">→</span></a>
+          </div>
+          <div class="packet-index">
+            {packetItems.map(([title, body], index) => (
+              <article>
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <div><h3>{title}</h3><p>{body}</p></div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── How it works ── */}
-      <section id="how-it-works" class="py-32 px-6 border-t border-[var(--border)]">
-        <div class="max-w-7xl mx-auto">
-          <div class="max-w-2xl mb-20">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
-              <Icon name="award" class="w-3 h-3" />
-              How it works
+      <section class="receipt-section">
+        <div class="site-shell">
+          <div class="receipt-heading">
+            <div>
+              <p class="section-label">Review-first application assistance</p>
+              <h2>The stops are part of the product.</h2>
             </div>
-            <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
-              From job post to<br /> reviewed application.
-            </h2>
-            <p class="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
-              Three steps from a job link to a packet, fill, and receipt.
+            <p>
+              Queueing, packet preparation, reviewed browser checks, Chrome-assisted fill, and
+              guarded single-submit attempts can remove repetition. They do not remove the user.
             </p>
           </div>
-
-          <div class="grid md:grid-cols-3 gap-8">
-            {howItWorks.map((s) => (
-              <div class="flex flex-col p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500">
-                <div class="text-3xl font-black text-[var(--accent)] mb-6">{s.step}</div>
-                <h3 class="text-xl font-bold mb-3 text-[var(--foreground)]">{s.title}</h3>
-                <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">{s.desc}</p>
+          <div class="receipt-console">
+            <div class="console-top">
+              <span>APPLICATION RECEIPT · GREENHOUSE · REVIEW 03</span>
+              <span class="console-status">BLOCKED SAFELY</span>
+            </div>
+            <div class="console-grid">
+              <div>
+                <p class="console-label">Prepared</p>
+                <strong>12 fields</strong>
+                <span>9 answered · 2 skipped · 1 needs review</span>
               </div>
-            ))}
-          </div>
-
-          {/* Built on — understated tech stack row */}
-          <div class="mt-24 pt-10 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
-              Built on
-            </span>
-            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 grayscale opacity-60">
-              {builtOn.map((tech) => (
-                <span class="text-sm font-semibold text-[var(--muted-foreground)] tracking-tight">
-                  {tech}
-                </span>
-              ))}
+              <div>
+                <p class="console-label">Files</p>
+                <strong>0 uploaded</strong>
+                <span>User selection still required</span>
+              </div>
+              <div>
+                <p class="console-label">Submit</p>
+                <strong>Not attempted</strong>
+                <span>Required answer missing</span>
+              </div>
+            </div>
+            <div class="console-log">
+              <span>10:14:07</span><p>Work authorization answer not found in reviewed profile.</p>
+              <span>10:14:07</span><p>Submit guard engaged. No click sent to ATS.</p>
+              <span>10:14:08</span><p>Failed receipt saved with next action: answer and retry.</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ── Reviewed Apply / Receipts ── */}
-      <section id="receipts" class="py-32 px-6 border-t border-[var(--border)]">
-        <div class="max-w-7xl mx-auto">
-          <div class="max-w-2xl mb-16">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
-              <Icon name="shield" class="w-3 h-3" />
-              Receipt-first automation
-            </div>
-            <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
-              Know what changed<br /> before you send.
-            </h2>
-            <p class="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
-              RolePatch keeps automation reviewable: field snapshots, uploaded-file records, blocker
-              reasons, and confirmation text stay attached to the application.
-            </p>
-          </div>
-
-          <div class="grid md:grid-cols-4 gap-6">
-            {[
-              ['Packet', 'Tailored resume, cover letter, fit score, and saved profile answers stay together.'],
-              ['Fill', 'Chrome-assisted fill handles supported ATS forms only after a user click.'],
-              ['Blockers', 'Captcha, missing required fields, uploads, and ambiguous submits create failed receipts.'],
-              ['Receipt', 'Submitted receipts preserve final visible fields, confirmation text, and retry history.'],
-            ].map(([title, desc]) => (
-              <div class="p-6 rounded-3xl bg-[var(--card)] border border-[var(--border)]">
-                <p class="text-[10px] font-black uppercase tracking-widest text-[var(--accent)] mb-3">
-                  {title}
-                </p>
-                <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">{desc}</p>
-              </div>
+          <div class="stop-grid">
+            {stops.map(([title, body]) => (
+              <article><h3>{title}</h3><p>{body}</p></article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Before / After Proof ── */}
-      <section id="proof" class="py-32 px-6 border-t border-[var(--border)]">
-        <div class="max-w-5xl mx-auto">
-          <div class="flex justify-center mb-8">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)]">
-              <Icon name="zap" class="w-3 h-3" />
-              Real Output
+      <section class="access-section paper-grid">
+        <div class="site-shell">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="section-label">Access and pricing</p>
+              <h2>Start in the browser.<br />Pay for signed-in AI work when needed.</h2>
             </div>
+            <p>
+              RolePatch has a real mixed access model. Free browser tools, guest-local work,
+              account persistence, and token-funded AI operations are different things.
+            </p>
           </div>
-
-          <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-center">
-            See your resume{' '}
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400">transform.</span>
-          </h2>
-          <p class="text-xl text-white/50 text-center mb-14 max-w-2xl mx-auto leading-relaxed font-medium">
-            One generic bullet. One job posting URL. This is what RolePatch produces.
-          </p>
-
-          <div class="flex justify-center mb-10">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60 font-medium">
-              <Icon name="target" class="w-4 h-4 text-indigo-400 shrink-0" />
-              Tailored for:{' '}
-              <span class="text-white font-semibold ml-1">Senior Product Manager · Stripe</span>
-            </div>
+          <div class="access-grid">
+            <article>
+              <p class="access-number">01</p>
+              <h3>Guest browser</h3>
+              <p>
+                Resumes, jobs, tailored drafts, evidence, and application metadata can stay in the
+                current browser. The current guest tailoring path does not debit account tokens.
+              </p>
+              <small>Clearing browser storage can remove guest data.</small>
+            </article>
+            <article>
+              <p class="access-number">02</p>
+              <h3>Google account</h3>
+              <p>
+                Sign-in adds user-scoped D1 persistence and starts a new account with three tokens.
+                Signed-in AI tailoring, cover letters, fit scoring, interview prep, and outreach
+                consume tokens.
+              </p>
+              <small>The reviewed queue, packet, fill, and receipt workflow does not spend tokens.</small>
+            </article>
+            <article>
+              <p class="access-number">03</p>
+              <h3>Token packs</h3>
+              <ul class="price-list">
+                {TOKEN_PACKS.map((pack) => <li><strong>{pack.tokens}</strong><span>{pack.price}</span></li>)}
+              </ul>
+              <small>
+                No subscription. Purchase requires sign-in and working Dodo provider configuration;
+                this audit did not complete a live transaction.
+              </small>
+            </article>
           </div>
-
-          <div class="grid md:grid-cols-2 gap-6 mb-12">
-            {/* Before */}
-            <div class="p-8 rounded-3xl bg-[#0c0c0c] border border-white/5">
-              <span class="inline-block px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 text-[10px] font-black uppercase tracking-widest mb-6">
-                Before
-              </span>
-              <p class="text-white/50 text-lg leading-relaxed font-medium">
-                &ldquo;Worked with engineering teams to deliver product features and track key metrics.&rdquo;
-              </p>
-              <p class="text-white/30 text-sm leading-relaxed font-medium mt-4 italic">
-                This is the bullet everyone writes. It says nothing.
-              </p>
-            </div>
-
-            {/* After */}
-            <div class="p-8 rounded-3xl bg-[#0c0c0c] border border-indigo-500/30 shadow-[0_0_40px_rgba(99,102,241,0.08)]">
-              <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-6">
-                After
-              </span>
-              <p class="text-white text-lg leading-relaxed font-medium">
-                &ldquo;Owned the roadmap for{' '}
-                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">3 payment API products</mark>
-                {' '}with{' '}
-                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">12 engineers</mark>
-                , shipped a{' '}
-                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">$4.2M expansion</mark>
-                , cut time to first transaction{' '}
-                <mark class="bg-emerald-500/20 text-emerald-300 rounded px-0.5 not-italic">31%</mark>.&rdquo;
-              </p>
-              <p class="text-white/50 text-sm leading-relaxed font-medium mt-4">
-                Same job. Real numbers. Pulled from one weak line and one job link.
-              </p>
-            </div>
-          </div>
-
-          <p class="text-center text-xs text-white/20 font-medium uppercase tracking-widest mb-10">
-            Highlighted text = AI-added specificity · every change shown in a word-level diff
-          </p>
-
-          <p class="text-center text-2xl md:text-3xl text-white font-bold tracking-tight max-w-3xl mx-auto mb-10 leading-snug">
-            Stop guessing why you get ghosted.{' '}
-            <span class="text-white/60">See your fit score first, then fix it.</span>
-          </p>
-
-          <div class="flex justify-center">
-            <a
-              href="/dashboard"
-              class="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden"
-            >
-              <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <span class="relative group-hover:text-white transition-colors">Tailor Your Resume Free →</span>
-            </a>
+          <div class="free-tools-strip">
+            <p><strong>Free, local tools:</strong> ATS structure check · keyword overlap · bullet check · word count · resume diff · snippets</p>
+            <a href="/tools">Use the free tools <span aria-hidden="true">→</span></a>
           </div>
         </div>
       </section>
 
-      {/* ── Resources / Blog ── */}
-      <section id="resources" class="py-32 px-6 border-t border-[var(--border)]">
-        <div class="max-w-7xl mx-auto">
-          <div class="max-w-2xl mb-20">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
-              <Icon name="file-text" class="w-3 h-3" />
-              Resources
-            </div>
-            <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
-              Guides &amp; explainers.
-            </h2>
-            <p class="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
-              Practical reads on tailoring, ATS scores, and keywords before you apply.
-            </p>
+      <section class="fit-section">
+        <div class="site-shell fit-grid">
+          <div>
+            <p class="section-label">An honest fit</p>
+            <h2>Use RolePatch when the role matters enough to inspect the details.</h2>
           </div>
+          <div class="fit-columns">
+            <article>
+              <p class="fit-kicker">A good fit</p>
+              <p>
+                You have real experience to work with, a specific job description, and want the
+                relevant proof stated clearly across the resume and supporting application.
+              </p>
+            </article>
+            <article>
+              <p class="fit-kicker">Not a fit</p>
+              <p>
+                You want invented qualifications, a universal hiring score, CAPTCHA solving,
+                unattended file uploads, or bulk applications submitted without review.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
 
-          <div class="grid md:grid-cols-3 gap-8">
-            <a href="/blog/why-tailoring-resume-matters" class="group p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500">
-              <h3 class="text-xl font-bold mb-3 text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors">Why tailoring your resume matters</h3>
-              <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">Why a generic resume gets filtered out, and what targeted tailoring fixes.</p>
-            </a>
-            <a href="/blog/ats-score-explained" class="group p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500">
-              <h3 class="text-xl font-bold mb-3 text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors">ATS score explained</h3>
-              <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">What an ATS score measures, how it's calculated, and how to read yours.</p>
-            </a>
-            <a href="/blog/resume-keywords-guide" class="group p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500">
-              <h3 class="text-xl font-bold mb-3 text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors">Resume keywords guide</h3>
-              <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">How to find the right keywords from a job posting and weave them in naturally.</p>
-            </a>
+      <section class="faq-section">
+        <div class="site-shell faq-layout">
+          <div class="faq-intro">
+            <p class="section-label">Straight answers</p>
+            <h2>What happens to the resume, the data, and the application?</h2>
+            <p>Precise enough for a candidate to decide whether RolePatch belongs in a real job search.</p>
+            <a href="/faq" class="text-action">Read every answer <span aria-hidden="true">→</span></a>
+          </div>
+          <div class="faq-list">
+            {PRODUCT_FAQS.slice(0, 6).map((faq, index) => (
+              <details open={index === 0}>
+                <summary>{faq.q}<span aria-hidden="true">+</span></summary>
+                <p>{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="closing-section paper-grid">
+        <div class="site-shell closing-grid">
+          <div>
+            <p class="section-label">The next application</p>
+            <h2>Make the relevant truth easier to see.</h2>
+          </div>
+          <div>
+            <p>
+              Bring the job description and the resume you actually earned. RolePatch will help
+              map one to the other—and show you the patch before you use it.
+            </p>
+            <a href="/dashboard" class="primary-action">Open RolePatch <span aria-hidden="true">↗</span></a>
           </div>
         </div>
       </section>
     </main>
 
-    {/* ── FAQ (GEO) ── */}
-    <section id="faq" class="py-32 px-6 border-t border-[var(--border)]">
-      <div class="max-w-3xl mx-auto">
-        <div class="max-w-2xl mb-16">
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-[10px] font-bold tracking-widest uppercase text-[var(--accent)] mb-6">
-            <Icon name="help-circle" class="w-3 h-3" />
-            FAQ
-          </div>
-          <h2 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-[var(--foreground)]">
-            Frequently asked<br /> questions.
-          </h2>
-          <p class="text-xl text-[var(--muted-foreground)] leading-relaxed font-medium">
-            Everything you need to know about how RolePatch tailors your resume.
-          </p>
-        </div>
-
-        <div class="space-y-4">
-          {faqs.map((f) => (
-            <div class="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-colors duration-500">
-              <h3 class="text-lg font-bold mb-3 text-[var(--foreground)]">{f.q}</h3>
-              <p class="text-[var(--muted-foreground)] leading-relaxed font-medium">{f.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
     <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
-    <script type="application/ld+json" set:html={JSON.stringify(softwareAppJsonLd)} is:inline />
-
-    <footer class="py-20 border-t border-white/5 bg-black">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="grid md:grid-cols-4 gap-16 mb-16">
-          <div class="col-span-2">
-            <div class="flex items-center gap-2.5 mb-6">
-              <span class="w-7 h-7 rounded-lg bg-[var(--accent)] flex items-center justify-center text-[9px] font-black text-white">RP</span>
-              <span class="font-bold text-lg tracking-tight">RolePatch</span>
-            </div>
-            <p class="text-white/40 max-w-sm leading-relaxed font-medium">
-              AI resume tailoring, reviewed apply packets, Chrome-assisted fill, and receipts.
-            </p>
-          </div>
-          <div class="space-y-5">
-            <h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">Product</h4>
-            <nav class="flex flex-col gap-3 text-sm text-white/50 font-medium">
-              <a href="/jobs" class="hover:text-white transition-colors">Jobs</a>
-              <a href="/tools" class="hover:text-white transition-colors">Free Tools</a>
-              <a href="/pricing" class="hover:text-white transition-colors">Pricing</a>
-              <a href="/faq" class="hover:text-white transition-colors">FAQ</a>
-              <a href="/changelog" class="hover:text-white transition-colors">Changelog</a>
-              <a href="/dashboard" class="hover:text-white transition-colors">Dashboard</a>
-            </nav>
-          </div>
-          <div class="space-y-5">
-            <h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">Legal</h4>
-            <nav class="flex flex-col gap-3 text-sm text-white/50 font-medium">
-              <a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="/terms" class="hover:text-white transition-colors">Terms of Service</a>
-            </nav>
-          </div>
-        </div>
-
-        <div class="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p class="text-sm text-white/20 font-medium">
-            &copy; {year} RolePatch. Stop guessing why you get ghosted.
-            {' · '}<a href="https://sarthakagrawal.dev" class="hover:text-white/50 transition-colors">Sarthak</a>
-            {' · '}<span class="text-white/15">copy rewritten by <a href="https://jasondoesstuff.com/marc" class="hover:text-white/50 transition-colors">jasondoesstuff.com/marc</a> (built on Marc Lou's 31 tips)</span>
-          </p>
-          <div class="flex gap-6 opacity-20 hover:opacity-100 transition-opacity">
-            <Icon name="globe" class="w-5 h-5 cursor-pointer" />
-            <Icon name="shield" class="w-5 h-5 cursor-pointer" />
-            <Icon name="star" class="w-5 h-5 cursor-pointer" />
-          </div>
-        </div>
-      </div>
-    </footer>
+    <SiteFooter />
   </div>
 </Layout>

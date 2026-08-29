@@ -2,6 +2,7 @@
   "name": "RolePatch",
   "version": "1",
   "url": "https://rolepatch.com",
+  "description": "Evidence-bound resume tailoring and a review-first application workspace for one specific job.",
   "llms": "https://rolepatch.com/llms.txt",
   "llmsFull": "https://rolepatch.com/llms-full.txt",
   "sitemap": "https://rolepatch.com/sitemap.xml",
@@ -17,25 +18,32 @@
       "url": "https://rolepatch.com/",
       "md": "https://rolepatch.com/index.md",
       "kind": "static",
-      "description": "Product home"
+      "description": "Product purpose, evidence rule, access model, and review-first boundaries"
     },
     {
       "id": "pricing",
       "url": "https://rolepatch.com/pricing",
-      "md": null,
+      "md": "https://rolepatch.com/pricing.md",
       "kind": "static",
-      "description": "Plans and limits"
+      "description": "Free tools, guest use, account persistence, and exact token packs"
     },
     {
       "id": "tools",
       "url": "https://rolepatch.com/tools",
-      "md": null,
+      "md": "https://rolepatch.com/tools.md",
       "kind": "static",
-      "description": "Public tools"
+      "description": "Public browser-local resume tools"
+    },
+    {
+      "id": "faq",
+      "url": "https://rolepatch.com/faq",
+      "md": "https://rolepatch.com/faq.md",
+      "kind": "static",
+      "description": "Evidence, storage, pricing, extension, safety, and current-state answers"
     }
   ],
   "auth": {
     "public": true,
-    "notes": "Auth-walled app routes are not agent-indexed unless listed here."
+    "notes": "Only cataloged pages are public agent surfaces. User-specific app and API routes are excluded."
   }
 }
