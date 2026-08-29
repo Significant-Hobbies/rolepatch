@@ -19,6 +19,10 @@ export function withTiming(handler) {
       status: response.status,
       statusText: response.statusText,
       headers,
+      // `response.body` already represents the inner response's encoded or
+      // identity bytes. Re-running automatic encoding here can add a second
+      // gzip layer while preserving only one Content-Encoding header.
+      encodeBody: 'manual',
     });
 
     // Log slow requests

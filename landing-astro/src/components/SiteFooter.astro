@@ -1,0 +1,76 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="site-shell">
+    <div class="footer-state">
+      <div>
+        <p class="section-label">Current product state</p>
+        <h2>Live software. Review-first boundaries. No invented proof.</h2>
+      </div>
+      <p>
+        RolePatch is maintained and publicly usable. Guest work stays in the current browser;
+        Google sign-in adds account persistence. Token packs are implemented, while the maker's
+        own new-application validation is paused because he is not currently job hunting.
+      </p>
+    </div>
+
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="brand-link">
+          <span class="brand-mark" aria-hidden="true">RP</span>
+          <span>RolePatch</span>
+        </a>
+        <p>
+          Tailor one resume to one job description, keep every claim grounded in supplied
+          evidence, and review the patch before it leaves your hands.
+        </p>
+      </div>
+      <nav aria-label="RolePatch product links">
+        <p class="footer-heading">Product</p>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/jobs">Browse jobs</a>
+        <a href="/evidence">Evidence bank</a>
+        <a href="/proof">Proof packets</a>
+        <a href="/pricing">Pricing</a>
+      </nav>
+      <nav aria-label="RolePatch resources">
+        <p class="footer-heading">Understand</p>
+        <a href="/tools">Free tools</a>
+        <a href="/faq">FAQ</a>
+        <a href="/changelog">Changelog</a>
+        <a href="/llms.txt">LLM index</a>
+        <a href="/docs">Developer docs</a>
+        <a href="/openapi.json">OpenAPI schema</a>
+        <a href="/index.md">Product brief</a>
+      </nav>
+      <nav aria-label="RolePatch legal and owner links">
+        <p class="footer-heading">Trust</p>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="https://github.com/Significant-Hobbies/rolepatch">Source</a>
+        <a href="https://github.com/Significant-Hobbies/rolepatch/issues">Roadmap</a>
+        <a href="https://sarthakagrawal.dev">Maker</a>
+      </nav>
+    </div>
+
+    <div class="footer-tools">
+      <p>Explore the Fleet project strip or ask AI about RolePatch below.</p>
+      <p>© {year} Sarthak Agrawal · No unattended bulk apply · No CAPTCHA bypass</p>
+    </div>
+
+    <portfolio-project-strip
+      current-project="rolepatch"
+      label="Other Fleet projects"
+    ></portfolio-project-strip>
+    <script is:inline src="/project-strip.js" data-project="rolepatch" defer></script>
+    <script
+      is:inline
+      src="https://sassmaker.com/ai-chat-footer.js"
+      data-name="RolePatch"
+      data-compose="false"
+      defer
+    ></script>
+  </div>
+</footer>

@@ -1,0 +1,27 @@
+---
+interface Props {
+  active?: 'home' | 'faq' | 'changelog' | 'docs';
+}
+
+const { active = 'home' } = Astro.props;
+---
+
+<header class="site-header">
+  <div class="site-shell header-inner">
+    <a href="/" class="brand-link" aria-label="RolePatch home">
+      <span class="brand-mark" aria-hidden="true">RP</span>
+      <span>RolePatch</span>
+    </a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a href="/#method">How it works</a>
+      <a href="/#proof">Evidence rule</a>
+      <a href="/jobs">Jobs</a>
+      <a href="/tools">Free tools</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/faq" aria-current={active === 'faq' ? 'page' : undefined}>FAQ</a>
+      <a href="/docs" aria-current={active === 'docs' ? 'page' : undefined}>Docs</a>
+      <a href="/changelog" aria-current={active === 'changelog' ? 'page' : undefined}>Changelog</a>
+    </nav>
+    <a href="/dashboard" class="header-cta">Open RolePatch <span aria-hidden="true">↗</span></a>
+  </div>
+</header>

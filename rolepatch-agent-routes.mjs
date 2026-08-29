@@ -14,10 +14,13 @@ function buildCatalog(origin) {
     name: 'RolePatch',
     version: '1',
     url: origin,
+    description:
+      'Evidence-bound resume tailoring and a review-first application workspace for one specific job.',
     llms: `${origin}/llms.txt`,
     llmsFull: `${origin}/llms-full.txt`,
     sitemap: `${origin}/sitemap.xml`,
     robots: `${origin}/robots.txt`,
+    openapi: `${origin}/openapi.json`,
     markdown: {
       suffix: '.md',
       negotiation: true,

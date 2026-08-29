@@ -1,23 +1,35 @@
 # RolePatch
 
-> AI-powered resume tailoring. Score fit against a job description, rewrite bullets for the role, and prep interviews.
+> Evidence-bound resume tailoring for a serious application to one specific job. RolePatch may reframe supplied proof, but it must not invent a skill, metric, employer, tool, or accomplishment.
 
-## Product
+## When to use RolePatch
 
-- [Home](https://rolepatch.com/): Product landing
-- [Pricing](https://rolepatch.com/pricing): Plans and limits
-- [Tools](https://rolepatch.com/tools): Public tools
+- Matching a job description against a base resume, project stash, and achievement evidence
+- Reviewing a proposed resume patch in a word-level diff before accepting it
+- Preparing a cover letter, fit analysis, interview stories, and an application packet from the same supplied proof
+- Queueing a job, filling supported ATS fields after review, and keeping blocked, failed, or successful receipts
 
-## When to use this
+## Do not use RolePatch for
 
-- Tailoring a resume to a specific job description before applying
-- Scoring fit between a resume and a job posting to prioritize applications
-- Generating role-specific cover letters and STAR interview prep stories
-- Discovering public tools for job seekers (fit scoring, resume analysis)
+- Inventing qualifications or closing an unsupported requirement with fabricated evidence
+- Predicting a universal hiring outcome from a fit score
+- Unattended bulk submission, CAPTCHA bypass, or automatic file upload
 
-## Machine surfaces
+## Access and pricing
 
-- [Agent catalog](https://rolepatch.com/api/ai): JSON inventory of public surfaces
-- [OpenAPI spec](https://rolepatch.com/openapi.json): Machine-readable API description
-- [Homepage markdown](https://rolepatch.com/index.md): Product brief without JS
-- [This index](https://rolepatch.com/llms.txt)
+- Guest records can stay in the current browser; clearing browser storage can remove them
+- Google sign-in adds user-scoped account persistence and three starting tokens
+- Signed-in AI operations use tokens; implemented packs are 10 for $5, 30 for $12, and 100 for $30
+- Public ATS, keyword, bullet, diff, snippet, and word-count tools work without sign-up
+
+## Public surfaces
+
+- [Home](https://rolepatch.com/) — product purpose, evidence rule, access, and safety boundaries
+- [Pricing](https://rolepatch.com/pricing) — exact token packs and access model
+- [Free tools](https://rolepatch.com/tools) — browser-based resume checks
+- [FAQ](https://rolepatch.com/faq) — storage, pricing, extension, and product-state answers
+- [Public catalog](https://rolepatch.com/api/ai) — every indexed HTML and Markdown surface
+- [OpenAPI](https://rolepatch.com/openapi.json) — read-only machine-surface description
+- [Product brief](https://rolepatch.com/index.md) — canonical Markdown summary
+
+User-specific dashboard and API routes are not public agent surfaces.

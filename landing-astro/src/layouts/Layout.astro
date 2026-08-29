@@ -1,5 +1,6 @@
 ---
 import '@/styles/global.css';
+import { PRODUCT_DESCRIPTION } from '@/lib/product';
 
 interface Props {
   title: string;
@@ -23,19 +24,35 @@ const jsonLd = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   url: SITE_URL,
-  description:
-    'AI-powered resume tailoring with job fit scoring, interview prep, and transparent diff view. See exactly what changed, word by word.',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
-    description: '3 free tokens to start. No credit card required.',
+  description: PRODUCT_DESCRIPTION,
+  audience: {
+    '@type': 'Audience',
+    audienceType: 'Job seekers preparing a serious application for a specific role',
   },
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Browser-local resume tools',
+      price: '0',
+      priceCurrency: 'USD',
+      description: 'ATS, keyword, bullet, diff, snippets, and word-count tools without sign-up.',
+    },
+    { '@type': 'Offer', name: '10 AI tokens', price: '5', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: '30 AI tokens', price: '12', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: '100 AI tokens', price: '30', priceCurrency: 'USD' },
+  ],
+  featureList: [
+    'Evidence-bound resume tailoring',
+    'Word-level change review',
+    'Job fit analysis',
+    'Cover letters and interview stories',
+    'Review-first application packets and receipts',
+  ],
 };
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -52,6 +69,9 @@ const jsonLd = {
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="text/markdown" href="/index.md" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" />
+    <link rel="describedby" type="application/json" href="/api/ai" />
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
@@ -78,7 +98,6 @@ const jsonLd = {
         --font-geist-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         --font-geist-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
       }
-      html.dark { color-scheme: dark; }
       body { margin: 0; }
     </style>
 
@@ -101,12 +120,5 @@ const jsonLd = {
       )
     }
     <slot />
-    <script is:inline src="/project-strip.js" data-project="rolepatch" defer></script>
-    <script
-      is:inline
-      src="https://sassmaker.com/ai-chat-footer.js"
-      data-name="RolePatch"
-      defer
-    ></script>
   </body>
 </html>
