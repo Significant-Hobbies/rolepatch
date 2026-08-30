@@ -92,6 +92,9 @@ importers:
       web-vitals:
         specifier: ^4.2.4
         version: 4.2.4
+      workers-ai-provider:
+        specifier: 3.3.1
+        version: 3.3.1(@ai-sdk/provider@3.0.8)(ai@6.0.168(zod@4.4.3))
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -6421,6 +6424,22 @@ packages:
     resolution: {integrity: sha512-NycKuc1x2onvsRfGGpM093vRlLFU2zHDAM0+APpccfg4+gZxDGCH27RmdDvkeBuoZyYqgLo3oAfF6re4mvC3vQ==}
     engines: {node: '>=16'}
     hasBin: true
+
+  workers-ai-provider@3.3.1:
+    resolution: {integrity: sha512-vArwnmiAxQQF1clsXJd9ADn1xK9YUZVxE4umaMhrdsxM2kucxP430LfaoH4rn0AfoqtnuH3bfRhW1ak0r1x/8A==}
+    peerDependencies:
+      '@ai-sdk/anthropic': ^3.0.0
+      '@ai-sdk/google': ^3.0.0
+      '@ai-sdk/openai': ^3.0.0
+      '@ai-sdk/provider': ^3.0.0
+      ai: ^6.0.0
+    peerDependenciesMeta:
+      '@ai-sdk/anthropic':
+        optional: true
+      '@ai-sdk/google':
+        optional: true
+      '@ai-sdk/openai':
+        optional: true
 
   wrangler@4.114.0:
     resolution: {integrity: sha512-M65P25t5UHA1TIJfgZXDcj+YzVobgKdRguM2QPz0xnxLFuOcuE3ErgllDht0iaho7MS4o0g/Bb4YK2+GT+bibg==}
@@ -13032,6 +13051,11 @@ snapshots:
       '@cloudflare/workerd-linux-64': 1.20260722.1
       '@cloudflare/workerd-linux-arm64': 1.20260722.1
       '@cloudflare/workerd-windows-64': 1.20260722.1
+
+  workers-ai-provider@3.3.1(@ai-sdk/provider@3.0.8)(ai@6.0.168(zod@4.4.3)):
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      ai: 6.0.168(zod@4.4.3)
 
   wrangler@4.114.0:
     dependencies:
