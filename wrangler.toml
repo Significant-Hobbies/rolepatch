@@ -23,6 +23,10 @@ cpu_ms = 30000
 [ai]
 binding = "AI"
 
+# Build-only environment used while materializing the static-assets cache.
+# AI is intentionally absent because cache population never calls a model.
+[env.cache]
+
 [triggers]
 crons = [
   # Hourly company-watch job discovery sync.
