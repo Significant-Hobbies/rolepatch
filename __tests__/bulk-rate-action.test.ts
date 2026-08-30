@@ -20,11 +20,9 @@ vi.mock('ai', () => ({
   generateObject: (...args: unknown[]) => mockGenerateObject(...args),
 }));
 
-// getAIModel builds its model via @ai-sdk/openai-compatible's
-// createOpenAICompatible. Return a sentinel so generateObject calls can
-// assert on `model`.
-vi.mock('@ai-sdk/openai-compatible', () => ({
-  createOpenAICompatible: vi.fn(() => ({ chatModel: () => ({ _model: 'mock' }) })),
+// Keep the bulk action test independent of the selected runtime provider.
+vi.mock('@/lib/ai-cloudflare', () => ({
+  getAIModel: vi.fn(() => ({ _model: 'mock' })),
 }));
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));

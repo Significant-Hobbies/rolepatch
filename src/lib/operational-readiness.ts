@@ -19,6 +19,7 @@ type EnvSnapshot = Record<string, string | undefined>;
 
 interface OperationalReadinessInput {
   browserBindingDetected?: boolean;
+  aiBindingDetected?: boolean;
   knowledgebaseBindingDetected?: boolean;
   env?: EnvSnapshot;
   now?: number;
@@ -48,11 +49,22 @@ async function hasKnowledgebaseBinding(): Promise<boolean> {
   }
 }
 
+async function hasAiBinding(): Promise<boolean> {
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = getCloudflareContext({ async: false });
+    return Boolean((ctx?.env as { AI?: unknown } | undefined)?.AI);
+  } catch {
+    return false;
+  }
+}
+
 export async function getOperationalReadiness(
   input: OperationalReadinessInput = {}
 ): Promise<OperationalReadiness> {
   const env = input.env ?? process.env;
   const browserBindingDetected = input.browserBindingDetected ?? (await hasBrowserBinding());
+  const aiBindingDetected = input.aiBindingDetected ?? (await hasAiBinding());
   const knowledgebaseBindingDetected =
     input.knowledgebaseBindingDetected ?? (await hasKnowledgebaseBinding());
   const emailConfigured = input.env ? configured(env, 'RESEND_API_KEY') : isEmailConfigured();
@@ -62,9 +74,11 @@ export async function getOperationalReadiness(
     'GOOGLE_CLIENT_ID',
     'GOOGLE_CLIENT_SECRET',
   ].every((name) => configured(env, name));
-  const aiGatewayReady =
-    configured(env, 'AI_BASE_URL') &&
-    (configured(env, 'AI_API_KEY') || configured(env, 'AI_GATEWAY_API_KEY'));
+  const aiRuntimeReady =
+    aiBindingDetected ||
+    (configured(env, 'AI_BASE_URL') &&
+      configured(env, 'AI_API_KEY') &&
+      configured(env, 'AI_MODEL'));
   const knowledgebaseReady =
     configured(env, 'RAG_SERVICE_KEY') && configured(env, 'ROLEPATCH_RAG_INDEX_ID');
   const dodoCheckoutReady =
@@ -116,15 +130,17 @@ export async function getOperationalReadiness(
           : 'Override EMAIL_FROM if sender verification uses a different production identity.',
       },
       {
-        id: 'ai-gateway',
-        label: 'AI gateway',
-        status: aiGatewayReady ? 'ready' : 'needs_setup',
-        detail: aiGatewayReady
-          ? 'AI base URL and API key are configured.'
-          : 'AI_BASE_URL plus an AI API key are required for tailoring, fit scoring, and drafts.',
-        nextStep: aiGatewayReady
+        id: 'ai-runtime',
+        label: 'AI runtime',
+        status: aiRuntimeReady ? 'ready' : 'needs_setup',
+        detail: aiRuntimeReady
+          ? aiBindingDetected
+            ? 'Project Workers AI binding is configured.'
+            : 'Direct AI base URL, API key, and model are configured.'
+          : 'A Workers AI binding or AI_BASE_URL, AI_API_KEY, and AI_MODEL are required.',
+        nextStep: aiRuntimeReady
           ? undefined
-          : 'Configure AI_BASE_URL and AI_API_KEY or AI_GATEWAY_API_KEY for the target runtime.',
+          : 'Add the AI binding or configure the direct endpoint, key, and model.',
       },
       {
         id: 'knowledgebase-similarity',

@@ -1,7 +1,12 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModel } from 'ai';
+import { createWorkersAI, type WorkersAISettings } from 'workers-ai-provider';
 
 import type { AIProviderConfig } from './types';
+
+const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+type WorkersAiBinding = Extract<WorkersAISettings, { binding: unknown }>['binding'];
 
 /**
  * Build a LanguageModel from a provider config, talking to any
@@ -14,38 +19,41 @@ function createAIModel(
   const provider = createOpenAICompatible({
     baseURL: config.endpointUrl.trim().replace(/\/+$/, ''),
     apiKey: config.apiKey,
-    name: options?.name ?? 'free-ai',
+    name: options?.name ?? 'rolepatch-direct',
     headers: options?.headers,
   });
   return provider.chatModel(config.model);
 }
 
-/**
- * Default model for resume-tailor flows. Routed through free-ai-gateway,
- * which is the single Workers AI chokepoint for the Fleet and enforces a
- * daily 9500-Neuron hard cap (10k free quota minus 500 buffer).
- */
-const DEFAULT_GATEWAY_MODEL = 'auto';
-
-const FALLBACK_GATEWAY_BASE_URL = 'https://ai-gateway.sassmaker.com/v1';
-const PROJECT_ID = 'resume-tailor';
-
-function getGatewayBaseUrl(): string {
+function getDirectBaseUrl(): string {
   const fromEnv = process.env.AI_BASE_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/+$/, '');
-  return FALLBACK_GATEWAY_BASE_URL;
+  if (!fromEnv) throw new Error('AI_BASE_URL is required when no BYOK endpoint is supplied');
+  return fromEnv.replace(/\/+$/, '');
 }
 
-function getGatewayApiKey(): string {
-  return (process.env.AI_GATEWAY_API_KEY ?? process.env.AI_API_KEY)?.trim() ?? '';
+function getDirectApiKey(): string {
+  const apiKey = process.env.AI_API_KEY?.trim();
+  if (!apiKey) throw new Error('AI_API_KEY is required when no BYOK key is supplied');
+  return apiKey;
+}
+
+function getWorkersAIModel(): LanguageModel | null {
+  try {
+    const { env } = getCloudflareContext({ async: false });
+    const binding = (env as { AI?: WorkersAiBinding }).AI;
+    return binding ? createWorkersAI({ binding })(DEFAULT_WORKERS_AI_MODEL) : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Returns a LanguageModel that talks to free-ai-gateway by default.
+ * Returns a model for BYOK or the project's direct free-provider/local path.
  *
  * Selection order:
  *   1. User-supplied endpointUrl + apiKey  → external provider (BYO key)
- *   2. Otherwise                           → free-ai-gateway (Fleet chokepoint)
+ *   2. Project Workers AI binding           → free, keyless Cloudflare model
+ *   3. Otherwise                            → explicit direct runtime config
  */
 export function getAIModel(aiConfig: AIProviderConfig): LanguageModel {
   // Honour explicit user config first — lets users plug in their own keys
@@ -54,20 +62,15 @@ export function getAIModel(aiConfig: AIProviderConfig): LanguageModel {
     return createAIModel(aiConfig);
   }
 
-  const resolvedModel = aiConfig.model || DEFAULT_GATEWAY_MODEL;
+  const workersAiModel = getWorkersAIModel();
+  if (workersAiModel) return workersAiModel;
 
-  return createAIModel(
-    {
-      endpointUrl: getGatewayBaseUrl(),
-      // free-ai-gateway tolerates an empty key, but createOpenAICompatible
-      // requires a string — pass a placeholder so the Bearer header attaches.
-      apiKey: getGatewayApiKey() || 'free-ai-gateway',
-      model: resolvedModel,
-    },
-    {
-      headers: {
-        'x-gateway-project-id': PROJECT_ID,
-      },
-    }
-  );
+  const resolvedModel = aiConfig.model || process.env.AI_MODEL?.trim();
+  if (!resolvedModel) throw new Error('AI_MODEL is required when no BYOK model is supplied');
+
+  return createAIModel({
+    endpointUrl: getDirectBaseUrl(),
+    apiKey: getDirectApiKey(),
+    model: resolvedModel,
+  });
 }
