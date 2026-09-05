@@ -3,6 +3,7 @@ import { createAdapter } from 'better-auth/adapters';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 import { db } from '@/lib/db';
+import { ping } from '@/lib/ping';
 
 // ---------------------------------------------------------------------------
 // Lightweight SQLite adapter backed by the app's Cloudflare D1 wrapper.
@@ -239,6 +240,18 @@ export function buildAuthOptions(env: AuthRuntimeEnv = process.env) {
         ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }
         : {},
     trustedOrigins: env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : [],
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (newUser) => {
+            await ping('signup', {
+              title: newUser.email,
+              props: { id: newUser.id, name: newUser.name },
+            });
+          },
+        },
+      },
+    },
   };
 }
 
