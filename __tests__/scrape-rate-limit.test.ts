@@ -20,6 +20,21 @@ beforeEach(async () => {
 });
 
 describe('scrape rate limiting', () => {
+  it('uses the bundled HTML parser when the reader service is unavailable', async () => {
+    mockFetch.mockResolvedValueOnce(new Response('Unavailable', { status: 404 }));
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        `<html><head><title>Platform Engineer</title></head><body><article><h1>Platform Engineer</h1><p>${'Build reliable TypeScript APIs and optimize PostgreSQL queries with a small engineering team. '.repeat(12)}</p></article></body></html>`,
+        { status: 200 }
+      )
+    );
+    const { scrapeJobUrlSafe } = await import('@/lib/actions/scrape-action');
+    const result = await scrapeJobUrlSafe('https://example.com/jobs/platform');
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.text).toContain('Build reliable TypeScript APIs');
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
   it('returns a typed rate-limit outcome after too many scrape attempts', async () => {
     const { scrapeJobUrlSafe } = await import('@/lib/actions/scrape-action');
 

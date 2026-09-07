@@ -94,6 +94,15 @@ describe('tailoring server action boundary', () => {
 });
 
 describe('AI diagnostics', () => {
+  it('retains the provider adapter numeric code without its response body', () => {
+    expect(
+      getAIErrorDiagnostics({
+        name: 'AI_APICallError',
+        data: { workersAIErrorCode: 3030 },
+        responseBody: 'private',
+      }).code
+    ).toBe(3030);
+  });
   it('allows only bounded numeric codes and known error names', () => {
     expect(
       getAIErrorDiagnostics({
