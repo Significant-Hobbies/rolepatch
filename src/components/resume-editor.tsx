@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 
+import { LocalResumeExport } from '@/components/local-resume-export';
 import { useAuth } from '@/components/auth-provider';
 import { renameResume, updateResume } from '@/lib/actions/resume-actions';
 import { localGetResume, localRenameResume, localUpdateResume } from '@/lib/local-storage';
@@ -332,10 +333,6 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only initialize editor once when ready; source is captured at init time
   }, [ready, source]);
 
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
-
   const [downloading, setDownloading] = useState(false);
 
   const buildRenderUrl = useCallback(
@@ -572,13 +569,11 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             </div>
 
             {isGuest ? (
-              <button
-                onClick={handlePrint}
-                className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title="Guest mode — use browser print dialog to save as PDF"
-              >
-                Print
-              </button>
+              <LocalResumeExport
+                source={source}
+                name={resolvedName || 'Resume'}
+                config={{ template, fontFamily, fontSize, lineHeight, margin }}
+              />
             ) : (
               <div className="relative" ref={exportRef}>
                 <button

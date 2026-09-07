@@ -10,7 +10,7 @@ AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. G
 The 2026-09-07 production guest check verified resume creation, save/reload,
 manual job-description entry, and the repaired guest cover-letter route.
 Hosted tailoring and byte-exact save/reload now pass for a synthetic resume.
-The product remains unqualified for portfolio sharing: guest export, optional
+The product remains unqualified for portfolio sharing: export release verification, optional
 file import, broader output checks, and signed-in qualification remain in
 [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 
@@ -24,9 +24,20 @@ guarantee. Source restores model-generated HTML line breaks to Markdown and
 filters unsupported change excerpts. Tailoring retains a 90-second limit and
 an adaptive 2048–8192 token budget.
 
-Guest export currently returns 404 because the server endpoint requires sign-in.
-The mobile diff's flex sizing also clipped the lower resume; its source fix
-allows the diff pane to scroll. See #68 for live release verification.
+The guest editor already supported browser Print; a diagnostic 404 from the
+protected server export endpoint was expected, not a guest UI failure. The
+missing tailored-result export is now implemented in source. See #68 for live
+release verification and the remaining qualification work.
+
+### Export a resume
+
+Choose **Export resume** in the guest editor or next to a tailored result.
+**Print / Save PDF** opens a standalone document; choose your browser's PDF
+save destination in the print dialog. Allow pop-ups for RolePatch if prompted.
+HTML, plain Markdown text and Word-compatible **.doc** downloads are also
+available. These exports use your current text in the browser, including edits
+not yet saved, without uploading the document. Word export is HTML-compatible
+`.doc`, not a native DOCX file. Existing signed-in server exports are retained.
 
 ## Deployment & External Services
 
