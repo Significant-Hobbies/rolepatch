@@ -4,8 +4,6 @@ import { headers } from 'next/headers';
 
 import { detectAtsBoard, slugToCompanyName } from '@/lib/ats-boards';
 
-const dynImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
-
 interface ScrapeResult {
   title: string;
   text: string;
@@ -206,8 +204,8 @@ export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
 
   const html = await response.text();
   const [linkedomMod, readabilityMod] = await Promise.all([
-    dynImport('linkedom') as Promise<{ parseHTML: (h: string) => { document: unknown } }>,
-    dynImport('@mozilla/readability') as Promise<{
+    import('linkedom') as Promise<{ parseHTML: (h: string) => { document: unknown } }>,
+    import('@mozilla/readability') as Promise<{
       Readability: new (
         d: unknown
       ) => { parse(): { title?: string; textContent?: string; content?: string } | null };

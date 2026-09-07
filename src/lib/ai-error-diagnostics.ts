@@ -20,7 +20,13 @@ export function getAIErrorDiagnostics(error: unknown): {
   causeType: string | null;
 } {
   const value = error !== null && typeof error === 'object' ? error : {};
-  const record = value as { name?: unknown; statusCode?: unknown; code?: unknown; cause?: unknown };
+  const record = value as {
+    name?: unknown;
+    statusCode?: unknown;
+    code?: unknown;
+    cause?: unknown;
+    data?: { workersAIErrorCode?: unknown };
+  };
   const cause = record.cause as { name?: unknown } | undefined;
   const safeName = (name: unknown) =>
     typeof name === 'string' && KNOWN_ERROR_NAMES.has(name) ? name : 'unknown';
@@ -31,7 +37,7 @@ export function getAIErrorDiagnostics(error: unknown): {
   return {
     type: safeName(record.name),
     statusCode: safeNumber(record.statusCode),
-    code: safeNumber(record.code),
+    code: safeNumber(record.code) ?? safeNumber(record.data?.workersAIErrorCode),
     causeType: cause ? safeName(cause.name) : null,
   };
 }
