@@ -29,11 +29,24 @@ Word-compatible .doc export to tailored results and the guest editor, preserving
 signed-in server export. It exports current edited source, rejects executable
 HTML/unsafe links/external images, bounds render configuration and explains
 blocked pop-ups. Focused tests and the full 473-test quality pipeline pass.
-Local seeded-fixture text export is byte-exact and the standalone print document
-retains the candidate facts. Hosted download and PDF appearance qualification,
-optional file import, broader output checks and signed-in qualification remain
-in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
-The product remains nonshareable until the core export path is verified live.
+The approved export release `d28b05a34766aced89c11d138a2d5654c9b568c2`
+([deployment 34146632823](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34146632823))
+serves Worker `faaa3a1f-da95-4009-967c-0f3c3091dda1` at 100%, exact tag verified.
+A fresh UI-created guest workflow generated in 5.229 seconds, preserved reviewed
+synthetic facts, saved/reloaded exact output, and downloaded text/HTML/.doc.
+The real print popup produced readable one- and two-page documents through the
+browser print engine, with all 36 long-fixture items and final section retained.
+The native OS print dialog and Microsoft Word itself were not automated.
+Current unsaved edits export without replacing the saved original. Desktop/mobile
+controls pass with no horizontal overflow or page errors in the final session.
+
+The guest workflow is now shareable as an experiment, with medium confidence.
+Optional file import, URL scraping, broader AI behavior and signed-in account
+qualification remain in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
+The regular signed-in browser bridge could not start. An initial disposable
+Chrome process crashed; the successful pass used a fresh browser with GPU disabled.
+Local Turbopack could not decode the existing favicon; local validation used
+Webpack, matching the production pipeline.
 
 ## Why / What
 
