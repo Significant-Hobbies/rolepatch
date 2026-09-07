@@ -1,6 +1,18 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-08-09
+Last updated: 2026-09-07
+
+## Current qualification
+
+Production source `a2e4a336` was deployed successfully on 2026-09-07
+([run 34135808502](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34135808502)).
+Fresh guest resume creation, save/reload, and manual job-description entry passed.
+Actual tailoring returned HTTP 500; guest cover-letter routing also failed.
+The error-boundary repair returns expected AI failures as serializable safe
+messages and records only bounded error metadata, preserving token refunds.
+Successful generation, truthful output, export, and signed-in qualification
+remain open in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
+Do not infer full-product shareability from the working public keyword checker.
 
 ## Why / What
 
