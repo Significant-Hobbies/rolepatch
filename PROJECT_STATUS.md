@@ -10,6 +10,8 @@ Fresh guest resume creation, save/reload, and manual job-description entry passe
 Actual tailoring returned HTTP 500; guest cover-letter routing also failed.
 The error-boundary repair returns expected AI failures as serializable safe
 messages and records only bounded error metadata, preserving token refunds.
+The guest cover-letter route now resolves browser-local jobs, with explicit
+missing/corrupt-storage recovery and no signed-in fallback to guest jobs.
 Successful generation, truthful output, export, and signed-in qualification
 remain open in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 Do not infer full-product shareability from the working public keyword checker.
