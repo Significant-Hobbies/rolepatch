@@ -50,7 +50,7 @@ export function ATSScoreBadge({
       <button
         onClick={() => setExpanded(!expanded)}
         className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${color.bg} border ${color.border} hover:brightness-110 transition-all`}
-        title="Click to see keyword details"
+        title="RolePatch weighted keyword score; not an employer ATS score. Click for the calculation."
       >
         {/* Circular progress */}
         <svg width="36" height="36" className="-rotate-90">
@@ -81,7 +81,7 @@ export function ATSScoreBadge({
         <div className="absolute top-full mt-2 right-0 z-50 w-80 max-h-72 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              ATS Keyword Analysis
+              Weighted keyword analysis
             </h4>
             <button
               onClick={() => setExpanded(false)}
@@ -91,6 +91,11 @@ export function ATSScoreBadge({
             </button>
           </div>
 
+          <p className="text-xs text-[var(--muted-foreground)] mb-3">
+            Repeated job-description terms contribute 70%; other terms contribute 30%. If no terms
+            repeat, each term counts equally. Matches include substrings. This heuristic does not
+            predict an employer’s decision or interview chances.
+          </p>
           {matchedKeywords.length > 0 && (
             <div className="mb-3">
               <p className="text-[10px] font-medium text-[var(--accent)] mb-1.5">
@@ -137,6 +142,7 @@ export function ATSScoreMini({ score }: { score: number }) {
   const color = scoreColor(score);
   return (
     <span
+      title="RolePatch weighted keyword score, not an employer ATS score"
       className={`text-xs font-bold ${color.text} ${color.bg} border ${color.border} px-2 py-0.5 rounded-full`}
     >
       {score}

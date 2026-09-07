@@ -93,3 +93,13 @@ This section is maintained by the SaaS Maker Active-AI product/design loop so fu
 
 - No current Active-AI product/design task from the 2026-05-25/26 loop. Treat this as watch/status unless new evidence appears.
 <!-- ACTIVE-AI-TASK-LOG:END -->
+
+
+### Remaining shareability qualification (2026-09-07)
+
+- Deploy the checked keyword-feedback repair after explicit approval and verify
+  the public checker with a synthetic resume/job pair; the percentage must equal
+  the displayed matched/total count, with no employer-score implication.
+- Complete guest and signed-in tailoring, review each suggested change against
+  the supplied experience, and verify saved edits after reload. Verify the
+  weighted-score disclosure in account details and public score shares.

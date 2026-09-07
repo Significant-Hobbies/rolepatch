@@ -425,3 +425,21 @@ SHA-tagged `workflow_dispatch`.
 Open work is tracked only in [GitHub Issues](https://github.com/sarthakagrawal927/rolepatch/issues).
 An open issue is a to-do, a linked pull request is in progress, and merge plus
 issue closure makes the work done.
+
+
+## 2026-09-07 — Transparent keyword feedback
+
+The public keyword checker now displays the rounded matched/extracted keyword
+fraction, with an explicit empty-extraction state, literal-substring limitations
+and no claim to predict employer decisions. Its explanatory FAQ matches this
+unweighted calculation. Editing either input clears stale results.
+
+Existing account/dashboard and shared scores retain their stored weighted
+calculation, but the score detail and public share page identify the RolePatch
+heuristic and its 70/30 repeated/other-term weighting. This avoids rewriting
+historical scores as coverage percentages. Suggested edits must reflect actual
+experience; automatic gap-fixing promises were removed from the checker.
+
+The first validation pass completed 448 tests, lint and typecheck; final checks
+cover the additional badge copy as well. Deployment and guest/account runtime
+qualification remain outstanding. No account data or production settings changed.
