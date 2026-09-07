@@ -8,17 +8,20 @@ AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. G
 ## Current qualification and open work
 
 The 2026-09-07 production guest check verified resume creation, save/reload,
-and manual job-description entry, but AI tailoring returned HTTP 500 and
-the cover-letter route did not support the guest's browser-local job.
-Core workflow repair, truthful output/export checks, and signed-in qualification
-are tracked in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
-The product remains unqualified for portfolio sharing.
+manual job-description entry, and the repaired guest cover-letter route.
+The product remains unqualified for portfolio sharing: successful hosted
+tailoring, truthful output/export, and signed-in checks remain in
+[#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 
-The default keyless model is now Llama 3.3 70B FP8 on Workers AI. The old
+The default keyless model is Llama 3.3 70B FP8 on Workers AI. The old
 [Llama 3.1 8B model was deprecated](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct/)
-and rejected even a one-word live request. The replacement passed a bounded
-structured-output binding probe; complete hosted workflow qualification remains
-in #68. Tailoring allows at most 8192 output tokens and 90 seconds per request.
+and rejected even a one-word live request. The replacement passed a structured
+probe, but full hosted requests hit the 90-second limit. A tighter output budget
+and bounded edit explanations completed real-binding synthetic requests in
+5.6 and 6.7 seconds locally; this does not establish hosted success. Source also
+restores model-generated HTML line breaks to Markdown and discards explanations
+whose excerpts are absent from the output or unchanged from the original.
+Tailoring retains a 90-second limit and an adaptive 2048–8192 token budget.
 
 ## Deployment & External Services
 

@@ -4,25 +4,25 @@ Last updated: 2026-09-07
 
 ## Current qualification
 
-The remaining binding failure was isolated with a local Worker using the same
-account's remote AI binding: even a one-word request to the former default
-returned a deprecated-model error. Cloudflare lists that model as retired on
-2026-05-30. The supported `@cf/meta/llama-3.3-70b-instruct-fp8-fast` returned
-validated JSON in the independent probe. The source now selects that model,
-allows up to 8192 output tokens for full-resume tailoring, and bounds the request
-to 90 seconds. Hosted generation, save/export and truthfulness remain #68 until
-verified after deployment. Explicit BYOK selections are preserved.
+The former default Workers AI model was retired on 2026-05-30 and rejected
+an isolated one-word request. Source `1df7f0bb` switched the native binding to
+`@cf/meta/llama-3.3-70b-instruct-fp8-fast`; explicit BYOK selections are preserved.
+That release is deployed at 100% traffic (Worker
+`6fa2a6f1-40c2-4914-9bb0-ad9f3efdf5d0`,
+[run 34141582290](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34141582290)).
+Two full hosted tailoring attempts still reached the 90-second timeout.
 
-Production source `a2e4a336` was deployed successfully on 2026-09-07
-([run 34135808502](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34135808502)).
-Fresh guest resume creation, save/reload, and manual job-description entry passed.
-Actual tailoring returned HTTP 500; guest cover-letter routing also failed.
-The error-boundary repair returns expected AI failures as serializable safe
-messages and records only bounded error metadata, preserving token refunds.
-The guest cover-letter route now resolves browser-local jobs, with explicit
-missing/corrupt-storage recovery and no signed-in fallback to guest jobs.
-Successful generation, truthful output, export, and signed-in qualification
-remain open in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
+The subsequent source repair bounds output and edit explanations. Two local
+real-binding requests completed in 5.6 and 6.7 seconds with synthetic facts
+preserved. The model used HTML line breaks despite instructions; source now
+restores them to Markdown and filters unsupported or unchanged edit excerpts.
+These probes do not establish hosted generation or general factual correctness.
+
+Fresh guest resume creation, byte-exact save/reload, manual job-description
+entry, and the repaired guest cover-letter route passed. Expected AI errors now
+reach the UI safely; original content survives failures. Hosted generation,
+truthful output, save/export, file import, and signed-in qualification remain
+open in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 Do not infer full-product shareability from the working public keyword checker.
 
 ## Why / What
