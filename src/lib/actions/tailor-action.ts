@@ -12,23 +12,32 @@ import { getAIErrorDiagnostics } from '@/lib/ai-error-diagnostics';
 import { trackActivated, trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { groundTailorChanges, normalizeTailoredMarkdown } from '@/lib/tailor-changes';
 import type { AIProviderConfig, TailorChange } from '@/lib/types';
 
 const tailorSchema = z.object({
-  tailored: z.string().describe('The complete modified Markdown resume'),
+  tailored: z.string().min(1).max(40_000).describe('The complete modified Markdown resume'),
   changes: z
     .array(
       z.object({
         snippet: z
           .string()
+          .min(1)
+          .max(240)
           .describe('A short excerpt from the tailored resume that was added or modified'),
-        reason: z.string().describe('Why this edit was made — concise, human-readable'),
+        reason: z
+          .string()
+          .min(1)
+          .max(240)
+          .describe('Why this edit was made — concise, human-readable'),
         jd_match: z
           .string()
+          .max(120)
           .optional()
           .describe('The JD keyword, skill, or requirement this edit targets'),
       })
     )
+    .max(8)
     .describe('One entry per meaningful edit, grounded in the job description'),
 });
 
@@ -125,16 +134,19 @@ async function tailorResume(
 
     const { object } = await generateObject({
       model: getAIModel(aiConfig),
-      maxOutputTokens: 8192,
+      maxOutputTokens: Math.min(
+        8192,
+        Math.max(2048, Math.ceil((resumeSource.length + stashSection.length) / 3) + 1000)
+      ),
       abortSignal: AbortSignal.timeout(90_000),
       schema: tailorSchema,
-      system: `You are a resume tailoring expert. You receive a Markdown resume and a job description. Modify the resume content to better match the job while keeping the Markdown structure intact. Only modify content (summary, experience bullets, skills). Do not change headings or structure.
+      system: `You are a resume tailoring expert. You receive a Markdown resume and a job description. Modify the resume content to better match the job while keeping the Markdown structure intact. Only modify content (summary, experience bullets, skills). Do not change headings or structure. Return valid Markdown with actual newline characters separating headings, paragraphs, and bullets. Never replace newlines with HTML <br> tags.
 
 CRITICAL — never fabricate. Every skill, tool, technology, metric, role, or accomplishment in your output MUST already appear in the base resume or in the stashed/achievement content provided. You may rephrase, reframe, reorder, and emphasize what is already there using the job's language, but you must NOT invent or add anything the candidate has not demonstrated. Specifically: do not add a skill to the Skills list just because the job description mentions it — only keep and reorder skills the resume or stash already supports. If the resume lacks something the job wants, leave it out rather than inventing it. A tailored-but-truthful resume is the goal; an impressive-but-fabricated one is a failure.
 
 Return a JSON object with:
 - "tailored": the complete modified Markdown resume
-- "changes": an array of the meaningful edits you made. For each change provide a short "snippet" from the tailored resume (the new/modified line or phrase, 3-25 words), a "reason" explaining why you made it, and an optional "jd_match" naming the specific JD keyword, skill, or requirement that drove the change. Only include changes that are grounded in the job description — do not list trivial whitespace edits. Aim for 3-10 entries.`,
+- "changes": zero to eight actual edits. Copy each "snippet" literally from a new or modified phrase in the tailored resume (3-25 words, maximum 240 characters). Give one short "reason" (maximum 240 characters) and optionally the relevant "jd_match". Never put commentary inside a snippet or describe an edit you did not make. If the resume already fits, keep it and return an empty changes array. Do not manufacture edits to meet a quota.`,
       prompt: `## Base Resume (Markdown):\n${resumeSource}\n\n## Job Description:\n${jdText}${stashSection}\n\n## Instructions:\n- Emphasize relevant experience and skills that match the JD\n- Reword bullet points to use keywords from the JD ONLY where the resume/stash already supports that claim\n- Reorder existing skills to prioritize those mentioned in the JD — do NOT add new skills the resume/stash does not already contain\n- If any stashed content is highly relevant to the JD, incorporate it naturally into the appropriate resume section\n- Keep it honest — never fabricate skills, tools, technologies, metrics, or experience. If the candidate lacks something the JD asks for, omit it rather than invent it\n- For every edit you make, record a changes entry tying it back to the JD`,
     });
 
@@ -155,9 +167,10 @@ Return a JSON object with:
       }
     }
 
+    const tailored = normalizeTailoredMarkdown(object.tailored);
     return {
-      tailored: object.tailored,
-      changes: object.changes ?? [],
+      tailored,
+      changes: groundTailorChanges(resumeSource, tailored, object.changes ?? []),
     };
   } catch (err) {
     // Never log provider payloads: they may contain resume text or credentials.
