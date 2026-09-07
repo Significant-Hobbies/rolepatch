@@ -10,8 +10,9 @@ AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. G
 The 2026-09-07 production guest check verified resume creation, save/reload,
 manual job-description entry, and the repaired guest cover-letter route.
 Hosted tailoring and byte-exact save/reload now pass for a synthetic resume.
-The product remains unqualified for portfolio sharing: export release verification, optional
-file import, broader output checks, and signed-in qualification remain in
+The guest resume-tailoring and local-export workflow is shareable as an
+experiment. Optional file import, broader output checks and signed-in
+qualification remain in
 [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 
 The default keyless model is Llama 3.3 70B FP8 on Workers AI. The old
@@ -26,8 +27,10 @@ an adaptive 2048–8192 token budget.
 
 The guest editor already supported browser Print; a diagnostic 404 from the
 protected server export endpoint was expected, not a guest UI failure. The
-missing tailored-result export is now implemented in source. See #68 for live
-release verification and the remaining qualification work.
+missing tailored-result export is now verified live on source `d28b05a3`: a
+fresh guest workflow generated in 5.2 seconds, saved/reloaded exactly and exported
+text, HTML, Word-compatible .doc and print-ready one-/two-page documents. See #68
+for remaining qualification work.
 
 ### Export a resume
 
