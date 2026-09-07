@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 
   const roleLabel = data.role || 'engineering';
-  const title = `${data.score_original} → ${data.score_tailored} ATS score for a ${roleLabel} role`;
-  const description = `An engineer tailored their resume for a ${roleLabel} role and lifted their ATS score from ${data.score_original} to ${data.score_tailored}. Build yours free on RolePatch.`;
+  const title = `${data.score_original} → ${data.score_tailored} weighted keyword score for a ${roleLabel} role`;
+  const description = `An engineer tailored their resume for a ${roleLabel} role and changed their weighted keyword score from ${data.score_original} to ${data.score_tailored}. Build yours free on RolePatch.`;
   const pageUrl = `${SITE_URL}/badge/${slug}`;
   const ogImage = `${pageUrl}/opengraph-image`;
 
@@ -66,7 +66,7 @@ export default async function BadgePage({ params }: Params) {
       <div className="w-full max-w-2xl">
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-10 md:p-14 shadow-2xl text-center">
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
-            RolePatch ATS Score
+            RolePatch Weighted Keyword Score
           </p>
 
           <div className="mt-8 flex items-end justify-center gap-3">
@@ -104,7 +104,13 @@ export default async function BadgePage({ params }: Params) {
             <span className="font-semibold">{roleLabel}</span> role.
           </p>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            They lifted their ATS match from {score_original} to {score_tailored} in minutes.
+            They changed their weighted keyword score from {score_original} to {score_tailored}.
+          </p>
+
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+            This is a RolePatch keyword heuristic, not an employer ATS result or a prediction of
+            interview chances. Repeated terms contribute 70% and other terms 30%; when none repeat,
+            terms count equally.
           </p>
 
           <Link

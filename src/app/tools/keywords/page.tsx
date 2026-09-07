@@ -35,9 +35,9 @@ function ScoreCircle({ score }: { score: number }) {
         />
       </svg>
       <div className="flex flex-col items-center">
-        <span className={`text-4xl font-black ${color.text}`}>{score}</span>
+        <span className={`text-4xl font-black ${color.text}`}>{score}%</span>
         <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
-          ATS Score
+          Keyword coverage
         </span>
       </div>
     </div>
@@ -60,7 +60,7 @@ export default function KeywordsToolPage() {
     <main className="max-w-6xl mx-auto px-6 py-16">
       <div className="text-center mb-12 space-y-4">
         <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
-          Free ATS Keyword Checker
+          Free Resume Keyword Checker
         </h1>
         <p className="text-[var(--muted-foreground)] text-lg max-w-2xl mx-auto leading-relaxed">
           Check how well your resume matches a job description. See matched and missing keywords
@@ -112,9 +112,21 @@ export default function KeywordsToolPage() {
       {result && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden p-6 sm:p-8">
           <div className="flex flex-col items-center mb-8">
-            <ScoreCircle score={result.score} />
+            {result.totalKeywords > 0 ? (
+              <ScoreCircle
+                score={Math.round((result.matchedKeywords.length / result.totalKeywords) * 100)}
+              />
+            ) : (
+              <p>No usable keywords found in this job description.</p>
+            )}
             <p className="text-sm text-[var(--muted-foreground)] mt-4">
               {result.matchedKeywords.length} of {result.totalKeywords} keywords matched
+            </p>
+            <p className="text-sm text-[var(--muted-foreground)] mt-2 max-w-xl text-center">
+              Matched terms divided by extracted terms. This uses literal text matches, including
+              substrings, and can miss synonyms or count partial words. It does not predict an
+              employer’s ATS decision, job fit, or interview chances. Add a missing term only if
+              your experience supports it.
             </p>
           </div>
 
@@ -160,7 +172,9 @@ export default function KeywordsToolPage() {
 
       <div className="mt-16 text-center">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 max-w-xl mx-auto">
-          <p className="text-[var(--muted-foreground)] mb-4">Let AI fix the gaps automatically.</p>
+          <p className="text-[var(--muted-foreground)] mb-4">
+            Review suggested edits against your actual experience.
+          </p>
           <Link
             href="/dashboard"
             className="inline-block bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white font-bold px-6 py-3 rounded-xl transition-colors"

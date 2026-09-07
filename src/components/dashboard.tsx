@@ -894,7 +894,7 @@ export function Dashboard({
                   <span>Organization</span>
                   <span>Status</span>
                   <span>Fit</span>
-                  <span>ATS</span>
+                  <span>Keyword score</span>
                   <span className="text-right">Initiated</span>
                   <span />
                 </div>
