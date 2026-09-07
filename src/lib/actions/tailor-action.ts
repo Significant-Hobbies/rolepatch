@@ -125,6 +125,8 @@ async function tailorResume(
 
     const { object } = await generateObject({
       model: getAIModel(aiConfig),
+      maxOutputTokens: 8192,
+      abortSignal: AbortSignal.timeout(90_000),
       schema: tailorSchema,
       system: `You are a resume tailoring expert. You receive a Markdown resume and a job description. Modify the resume content to better match the job while keeping the Markdown structure intact. Only modify content (summary, experience bullets, skills). Do not change headings or structure.
 

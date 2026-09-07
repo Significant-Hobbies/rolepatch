@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { AIServiceError, toUserFacingAIError } from '@/lib/ai';
 
 describe('AI error normalization', () => {
+  it('does not recommend retrying a retired model or expose the provider message', () => {
+    const error = toUserFacingAIError(
+      new Error('The model is deprecated: private provider detail')
+    );
+    expect(error.message).toContain('no longer available');
+    expect(error.message).not.toContain('private provider detail');
+    expect((error as AIServiceError).retryable).toBe(false);
+  });
   it('preserves product-level token errors', () => {
     const error = new Error('No tokens remaining. Purchase more to continue.');
 

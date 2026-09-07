@@ -5,7 +5,8 @@ import { createWorkersAI, type WorkersAISettings } from 'workers-ai-provider';
 
 import type { AIProviderConfig } from './types';
 
-const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+// The former 3.1 8B model was retired; this model supports structured output.
+const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 type WorkersAiBinding = Extract<WorkersAISettings, { binding: unknown }>['binding'];
 
 /**

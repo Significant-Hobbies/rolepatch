@@ -14,6 +14,12 @@ Core workflow repair, truthful output/export checks, and signed-in qualification
 are tracked in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 The product remains unqualified for portfolio sharing.
 
+The default keyless model is now Llama 3.3 70B FP8 on Workers AI. The old
+[Llama 3.1 8B model was deprecated](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct/)
+and rejected even a one-word live request. The replacement passed a bounded
+structured-output binding probe; complete hosted workflow qualification remains
+in #68. Tailoring allows at most 8192 output tokens and 90 seconds per request.
+
 ## Deployment & External Services
 
 | Concern | Service |

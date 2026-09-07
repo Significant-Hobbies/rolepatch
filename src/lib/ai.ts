@@ -37,6 +37,12 @@ function looksLike(error: unknown, ...needles: string[]): boolean {
 export function toUserFacingAIError(error: unknown): Error {
   // Preserve already-classified or product-level errors (tokens, auth).
   if (error instanceof AIServiceError) return error;
+  if (looksLike(error, 'deprecated', 'model retired', 'model has been removed')) {
+    return new AIServiceError(
+      'The selected AI model is no longer available. Choose a supported model in Settings or try again after the service is updated.',
+      false
+    );
+  }
   if (
     error instanceof Error &&
     (error.message.includes('No tokens remaining') ||
