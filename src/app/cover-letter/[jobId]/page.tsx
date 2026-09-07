@@ -3,14 +3,17 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 
 import { CoverLetterEditor } from '@/components/cover-letter-editor';
+import { GuestCoverLetter } from '@/components/guest-cover-letter';
 import { OutreachPanel } from '@/components/outreach-panel';
 import { getCoverLetter } from '@/lib/actions/cover-letter-action';
 import { getJobApplication } from '@/lib/actions/job-actions';
 import { getOutreachEmail } from '@/lib/actions/outreach-action';
 import { getResume } from '@/lib/actions/resume-actions';
+import { getCurrentUserId } from '@/lib/auth-utils';
 
 export default async function CoverLetterPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;
+  if (!(await getCurrentUserId())) return <GuestCoverLetter jobId={jobId} />;
   const job = await getJobApplication(jobId);
   if (!job) notFound();
 
