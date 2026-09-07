@@ -4,26 +4,27 @@ Last updated: 2026-09-07
 
 ## Current qualification
 
-The former default Workers AI model was retired on 2026-05-30 and rejected
-an isolated one-word request. Source `1df7f0bb` switched the native binding to
-`@cf/meta/llama-3.3-70b-instruct-fp8-fast`; explicit BYOK selections are preserved.
-That release is deployed at 100% traffic (Worker
-`6fa2a6f1-40c2-4914-9bb0-ad9f3efdf5d0`,
-[run 34141582290](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34141582290)).
-Two full hosted tailoring attempts still reached the 90-second timeout.
+Production source `18c041f4c795af5281d6c82ef96e75c775acac3b` is deployed at
+100% traffic (Worker `fe163417-64ed-462a-80c5-a4b8d7cf99f5`,
+[run 34143940332](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34143940332)).
+All 467 tests, full local quality and exact-source CI passed. Replacing the
+retired Workers AI default and bounding generation recovered hosted tailoring:
+a synthetic guest resume completed in 6.4 seconds, preserving candidate facts,
+dates, education and 240/160 ms metrics without adding AWS/Kubernetes experience.
+Accept & Save retained byte-exact output after reload. This is sample evidence,
+not a guarantee of general factual correctness or model reliability.
 
-The subsequent source repair bounds output and edit explanations. Two local
-real-binding requests completed in 5.6 and 6.7 seconds with synthetic facts
-preserved. The model used HTML line breaks despite instructions; source now
-restores them to Markdown and filters unsupported or unchanged edit excerpts.
-These probes do not establish hosted generation or general factual correctness.
+Fresh guest resume creation, manual job-description entry and the repaired guest
+cover-letter route also pass. Expected AI errors reach the UI safely and original
+content survives failures. The mobile diff clipped lower content because its
+flex child could not shrink; the subsequent source fix allows internal scrolling.
 
-Fresh guest resume creation, byte-exact save/reload, manual job-description
-entry, and the repaired guest cover-letter route passed. Expected AI errors now
-reach the UI safely; original content survives failures. Hosted generation,
-truthful output, save/export, file import, and signed-in qualification remain
-open in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
-Do not infer full-product shareability from the working public keyword checker.
+Guest export is confirmed broken: the saved synthetic resume's export endpoint
+returns 404 because it requires sign-in. The tailoring view has no export control.
+Export, mobile fix release verification, optional file import, broader output
+checks and signed-in qualification remain in
+[#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
+The product remains nonshareable until its core output can be reviewed and used.
 
 ## Why / What
 
