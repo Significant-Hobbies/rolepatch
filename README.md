@@ -9,19 +9,24 @@ AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. G
 
 The 2026-09-07 production guest check verified resume creation, save/reload,
 manual job-description entry, and the repaired guest cover-letter route.
-The product remains unqualified for portfolio sharing: successful hosted
-tailoring, truthful output/export, and signed-in checks remain in
+Hosted tailoring and byte-exact save/reload now pass for a synthetic resume.
+The product remains unqualified for portfolio sharing: guest export, optional
+file import, broader output checks, and signed-in qualification remain in
 [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
 
 The default keyless model is Llama 3.3 70B FP8 on Workers AI. The old
 [Llama 3.1 8B model was deprecated](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct/)
-and rejected even a one-word live request. The replacement passed a structured
-probe, but full hosted requests hit the 90-second limit. A tighter output budget
-and bounded edit explanations completed real-binding synthetic requests in
-5.6 and 6.7 seconds locally; this does not establish hosted success. Source also
-restores model-generated HTML line breaks to Markdown and discards explanations
-whose excerpts are absent from the output or unchanged from the original.
-Tailoring retains a 90-second limit and an adaptive 2048–8192 token budget.
+and rejected even a one-word live request. The replacement initially timed out;
+bounded generation completed in 6.4 seconds on production source `18c041f4`.
+The sample retained dates, education and 240/160 ms metrics without inventing
+AWS/Kubernetes experience. This is sample evidence, not a universal factual
+guarantee. Source restores model-generated HTML line breaks to Markdown and
+filters unsupported change excerpts. Tailoring retains a 90-second limit and
+an adaptive 2048–8192 token budget.
+
+Guest export currently returns 404 because the server endpoint requires sign-in.
+The mobile diff's flex sizing also clipped the lower resume; its source fix
+allows the diff pane to scroll. See #68 for live release verification.
 
 ## Deployment & External Services
 
