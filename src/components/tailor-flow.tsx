@@ -16,7 +16,7 @@ import {
 } from '@/lib/achievement-evidence';
 import { generateFitScore } from '@/lib/actions/fit-score-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
-import { tailorResume } from '@/lib/actions/tailor-action';
+import { tailorResumeForClient } from '@/lib/actions/tailor-action';
 import { getTokenBalance } from '@/lib/actions/token-actions';
 import { calculateATSScore } from '@/lib/ats-score';
 import {
@@ -219,7 +219,14 @@ export function TailorFlow({
           apiKey: settings.apiKey || '',
           model: settings.model || '',
         };
-        const result = await tailorResume(resume.source, activeJob.jd_text, aiConfig, remixContent);
+        const response = await tailorResumeForClient(
+          resume.source,
+          activeJob.jd_text,
+          aiConfig,
+          remixContent
+        );
+        if (!response.success) throw new Error(response.error);
+        const result = response.data;
         setTailoredSource(result.tailored);
         setChanges(result.changes ?? []);
 

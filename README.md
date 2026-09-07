@@ -5,6 +5,15 @@
 
 AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. Generate cover letters with company research, fit scores, and STAR interview stories.
 
+## Current qualification and open work
+
+The 2026-09-07 production guest check verified resume creation, save/reload,
+and manual job-description entry, but AI tailoring returned HTTP 500 and
+the cover-letter route did not support the guest's browser-local job.
+Core workflow repair, truthful output/export checks, and signed-in qualification
+are tracked in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
+The product remains unqualified for portfolio sharing.
+
 ## Deployment & External Services
 
 | Concern | Service |
@@ -12,9 +21,9 @@ AI-powered resume tailoring. Paste a job URL, get a resume rewritten to match. G
 | Hosting | Cloudflare Workers (`resume-tailor`) via `@opennextjs/cloudflare` — custom domain `rolepatch.com` |
 | Database | Cloudflare D1 |
 | Auth | better-auth + Google OAuth |
-| AI | free-ai-gateway (Workers AI chokepoint) via Vercel AI SDK / OpenAI-compatible adapter |
+| AI | Workers AI binding by default; explicit BYOK OpenAI-compatible provider settings |
 | Payments | Dodo Payments |
-| CI/CD | GitHub Actions — auto-deploy to Cloudflare on push to `main` |
+| CI/CD | GitHub Actions checks; production deploy through the manual deployment workflow |
 
 PDF rendering uses the Cloudflare Workers Browser Rendering binding (`BROWSER`).
 
@@ -30,7 +39,8 @@ cp .env.example .env.local   # fill in values
 pnpm dev                     # http://localhost:3000
 ```
 
-Works fully as guest (localStorage). Sign in with Google to persist to Cloudflare D1.
+Guest data lives in localStorage. Signed-in data uses Cloudflare D1; see the
+qualification limitations above before relying on the complete workflow.
 
 ## Scripts
 

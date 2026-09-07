@@ -7,7 +7,8 @@ import { formatEvidenceForPrompt, rankEvidenceForJob } from '@/lib/achievement-e
 import { listAchievementEvidence } from '@/lib/actions/achievement-evidence-actions';
 import { listStashEntries } from '@/lib/actions/stash-actions';
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
-import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { AIServiceError, getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { getAIErrorDiagnostics } from '@/lib/ai-error-diagnostics';
 import { trackActivated, trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
@@ -31,16 +32,49 @@ const tailorSchema = z.object({
     .describe('One entry per meaningful edit, grounded in the job description'),
 });
 
-export interface TailorResult {
+interface TailorResult {
   tailored: string;
   changes: TailorChange[];
+}
+
+type TailorActionResult =
+  | { success: true; data: TailorResult }
+  | { success: false; error: string; retryable: boolean };
+
+/** Expected failures must be values: Next redacts thrown errors in production. */
+export async function tailorResumeForClient(
+  resumeSource: string,
+  jdText: string,
+  aiConfig: AIProviderConfig,
+  stashContent?: string
+): Promise<TailorActionResult> {
+  try {
+    return {
+      success: true,
+      data: await tailorResume(resumeSource, jdText, aiConfig, stashContent),
+    };
+  } catch (error) {
+    if (error instanceof AIServiceError) {
+      return { success: false, error: error.message, retryable: error.retryable };
+    }
+    if (
+      error instanceof Error &&
+      [
+        'No tokens remaining. Purchase more to continue.',
+        'Authentication required to generate.',
+      ].includes(error.message)
+    ) {
+      return { success: false, error: error.message, retryable: false };
+    }
+    throw error;
+  }
 }
 
 const MAX_RESUME_CHARS = 20_000;
 const MAX_JD_CHARS = 15_000;
 const MAX_STASH_CHARS = 10_000;
 
-export async function tailorResume(
+async function tailorResume(
   resumeSource: string,
   jdText: string,
   aiConfig: AIProviderConfig,
@@ -124,6 +158,8 @@ Return a JSON object with:
       changes: object.changes ?? [],
     };
   } catch (err) {
+    // Never log provider payloads: they may contain resume text or credentials.
+    console.error('tailor_generation_failed', getAIErrorDiagnostics(err));
     // Refund token on AI failure
     if (debited && userId) {
       await creditTokens(userId, 1, 'refund', 'ai_failure');
