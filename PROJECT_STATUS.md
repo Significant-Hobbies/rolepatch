@@ -4,6 +4,15 @@ Last updated: 2026-09-07
 
 ## Current qualification
 
+The remaining binding failure was isolated with a local Worker using the same
+account's remote AI binding: even a one-word request to the former default
+returned a deprecated-model error. Cloudflare lists that model as retired on
+2026-05-30. The supported `@cf/meta/llama-3.3-70b-instruct-fp8-fast` returned
+validated JSON in the independent probe. The source now selects that model,
+allows up to 8192 output tokens for full-resume tailoring, and bounds the request
+to 90 seconds. Hosted generation, save/export and truthfulness remain #68 until
+verified after deployment. Explicit BYOK selections are preserved.
+
 Production source `a2e4a336` was deployed successfully on 2026-09-07
 ([run 34135808502](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34135808502)).
 Fresh guest resume creation, save/reload, and manual job-description entry passed.
