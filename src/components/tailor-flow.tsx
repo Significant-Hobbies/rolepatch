@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { ATSScoreBadge } from '@/components/ats-score-badge';
 import { useAuth } from '@/components/auth-provider';
 import { FitScoreCard } from '@/components/fit-score-card';
+import { LocalResumeExport } from '@/components/local-resume-export';
 import { ResumeDiff } from '@/components/resume-diff';
 import { ShareScoreButton } from '@/components/share-score-button';
 import { SkillsRoadmapPanel } from '@/components/skills-roadmap';
@@ -487,13 +488,16 @@ export function TailorFlow({
               Generate Cover Letter
             </Link>
             {tailoredSource && (
-              <button
-                onClick={handleSave}
-                disabled={isPending}
-                className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
-              >
-                {isPending ? 'Saving...' : 'Accept & Save'}
-              </button>
+              <>
+                <button
+                  onClick={handleSave}
+                  disabled={isPending}
+                  className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
+                >
+                  {isPending ? 'Saving...' : 'Accept & Save'}
+                </button>
+                <LocalResumeExport source={tailoredSource} name={`${resume.name} tailored`} />
+              </>
             )}
             {!isGuest && latestTailored?.id && tailoredATS && (
               <ShareScoreButton tailoredId={latestTailored.id} />

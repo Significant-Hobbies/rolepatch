@@ -19,12 +19,21 @@ cover-letter route also pass. Expected AI errors reach the UI safely and origina
 content survives failures. The mobile diff clipped lower content because its
 flex child could not shrink; the subsequent source fix allows internal scrolling.
 
-Guest export is confirmed broken: the saved synthetic resume's export endpoint
-returns 404 because it requires sign-in. The tailoring view has no export control.
-Export, mobile fix release verification, optional file import, broader output
-checks and signed-in qualification remain in
-[#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
-The product remains nonshareable until its core output can be reviewed and used.
+Correction to the earlier export diagnosis: the guest editor already provides
+browser Print. The protected `/api/render/<id>` 404 is expected authorization
+behavior; the guest UI does not request it. The actual missing capability was
+exporting the tailored result.
+
+Source now adds browser-local Print / Save PDF, HTML, Markdown text and
+Word-compatible .doc export to tailored results and the guest editor, preserving
+signed-in server export. It exports current edited source, rejects executable
+HTML/unsafe links/external images, bounds render configuration and explains
+blocked pop-ups. Focused tests and the full 473-test quality pipeline pass.
+Local seeded-fixture text export is byte-exact and the standalone print document
+retains the candidate facts. Hosted download and PDF appearance qualification,
+optional file import, broader output checks and signed-in qualification remain
+in [#68](https://github.com/Significant-Hobbies/rolepatch/issues/68).
+The product remains nonshareable until the core export path is verified live.
 
 ## Why / What
 
