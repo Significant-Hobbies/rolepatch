@@ -1,0 +1,20 @@
+{
+  "probe": {
+    "message": "Couldn't reach the AI service. Please try again in a moment.",
+    "workerResponses": [
+      {
+        "url": "/_next/static/media/pdf.worker.d87db05e.mjs",
+        "status": 200
+      }
+    ],
+    "stayedOnDashboard": true,
+    "retryEnabled": true
+  },
+  "success": {
+    "scope": "Built local Worker, Chromium 390px, synthetic PDF and local AI stub; not hosted AI or account proof",
+    "editorOpened": true,
+    "persistedAfterReload": true,
+    "parserPreservedFacts": true,
+    "requests": 1
+  }
+}
