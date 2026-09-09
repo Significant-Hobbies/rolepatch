@@ -14,6 +14,11 @@ from the final bundle. No dependency or production configuration changed.
 Full quality is not green: the dependency gate reports 15 unexpected critical/high
 advisories (3 critical findings overall). Later quality stages did not run.
 
+The subsequent targeted Next.js 16.3.4 and Mammoth 1.12.2 updates reduce that gate
+to 5 unexpected findings and 1 critical finding. All 479 tests and the full
+Cloudflare build pass after the updates. Remaining findings concern Astro,
+extract-zip, sharp, js-yaml and SVGO; the gate remains failed and no release ran.
+
 This repair is not yet released or qualified on Workers. A local built-Worker
 dashboard probe stopped at a BetterAuth default-secret configuration error, before
 file import could be exercised; the local server was stopped. Existing issue68
