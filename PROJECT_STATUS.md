@@ -75,7 +75,10 @@ retains readable retry behavior. Both local servers and the browser were stopped
 Evidence: `docs/operations/evidence/resume-browser-pdf-2026-09-09.json`.
 This supersedes the PDF runtime failure above for the browser import flow;
 direct server-side PDF parsing still requires browser APIs and is not qualified.
-Full quality passes after this change (481 tests, no unexpected security findings).
+Full quality passes after the browser PDF change (481 tests, no unexpected security findings).
+The import picker no longer advertises legacy .doc support; direct legacy uploads
+receive a DOCX/PDF conversion message. Empty or generic browser MIME types fall
+back to supported filename extensions. Ten focused import tests pass.
 
 Both workspaces use Wrangler 4.114.0 and Miniflare resolves sharp 0.35.4 through a
 patch-only override. Native PNG encoding/decoding passed. The browser-manager

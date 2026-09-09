@@ -8,7 +8,7 @@ import { importResumeFromFile } from '@/lib/actions/import-action';
 import { localCreateResume } from '@/lib/local-storage';
 import { prepareResumeFile } from '@/lib/prepare-resume-file';
 
-const ACCEPTED = '.pdf,.doc,.docx,.txt,.md';
+const ACCEPTED = '.pdf,.docx,.txt,.md';
 const MAX_MB = 5;
 
 export function ResumeImportButton() {

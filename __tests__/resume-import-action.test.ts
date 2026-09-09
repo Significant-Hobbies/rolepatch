@@ -37,6 +37,25 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('resume file import action', () => {
+  it('imports Markdown when the browser supplies no MIME type', async () => {
+    const form = input();
+    form.set('file', new File([source], 'synthetic.md'));
+    const { importResumeFromFile } = await import('@/lib/actions/import-action');
+    expect(await importResumeFromFile(form, config)).toEqual({ success: true, id: '', source });
+  });
+
+  it('explains legacy Word conversion before calling AI', async () => {
+    const form = input();
+    form.set('file', new File([source], 'legacy.doc', { type: 'application/msword' }));
+    const { importResumeFromFile } = await import('@/lib/actions/import-action');
+    expect(await importResumeFromFile(form, config)).toEqual({
+      success: false,
+      error: 'Save this legacy Word document as DOCX or PDF, then import it.',
+    });
+    expect(mocks.generateText).not.toHaveBeenCalled();
+    expect(mocks.execute).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['pdf', 'application/pdf'],
     ['docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
