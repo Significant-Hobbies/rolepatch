@@ -2,6 +2,23 @@
 
 Last updated: 2026-09-09
 
+## Import release — 9 September
+
+PR #69 is merged. Source `985dfd1f11a3c617482c49f05bf59708b9d7fd6b`
+passed exact main CI34353340640 and all six deploy gates. Deployment34353678503
+and its production smoke passed. Worker `667026d3-f9c7-4630-a709-cf2f3f0239cf`
+serves the exact source tag at 100% traffic.
+
+Real hosted guest PDF and DOCX imports completed in 9.2 and 9.1 seconds,
+opened the editor and survived reload byte-exactly. Dates and the 240/160 ms
+metric were preserved. The mobile PDF editor was visually inspected; its browser
+reported no errors. Both generated outputs added an unnecessary missing-contact
+placeholder, so these samples do not prove perfect source fidelity. Signed-in
+persistence remains unqualified because the browser bridge cannot start.
+Evidence: `docs/operations/evidence/resume-hosted-import-2026-09-09.json` and
+its PNG. The checkpoints below are historical; this release supersedes their
+unreleased status. Local temporary artifacts and disposable browsers are cleaned.
+
 ## Import repair validation — 9 September
 
 The file-import action now uses literal dynamic imports instead of a module-level

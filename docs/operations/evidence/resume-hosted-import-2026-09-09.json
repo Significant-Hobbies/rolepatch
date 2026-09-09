@@ -1,0 +1,47 @@
+{
+  "sourceCommit": "985dfd1f11a3c617482c49f05bf59708b9d7fd6b",
+  "deploymentRun": 34353678503,
+  "mainCIRun": 34353340640,
+  "deploymentId": "cf264b17-55a9-4417-b815-7fd5629489fa",
+  "versions": [
+    {
+      "version_id": "667026d3-f9c7-4630-a709-cf2f3f0239cf",
+      "percentage": 100
+    }
+  ],
+  "createdOn": "2026-09-09T12:55:26.703806Z",
+  "rollback": {
+    "deploymentId": "f85a8f01-5348-4faf-af1c-928e9b957319",
+    "createdOn": "2026-09-07T17:37:14.442536Z",
+    "versions": [
+      {
+        "version_id": "69388e07-dedb-4ab7-b0ea-89f1497999cd",
+        "percentage": 100
+      }
+    ]
+  },
+  "guestImport": [
+    {
+      "format": "pdf",
+      "elapsedMs": 9193,
+      "editorOpened": true,
+      "source": "# Synthetic Candidate\n\nNo contact information available.\n\n---\n\n## Experience\n\n**Engineer** \u2014 _Example_ | 2022-2025\n\n- Reduced latency from 240ms to 160ms.",
+      "reloadExact": true,
+      "errors": []
+    },
+    {
+      "format": "docx",
+      "elapsedMs": 9061,
+      "editorOpened": true,
+      "source": "# Synthetic Candidate\n\nNo contact information available\n\n---\n\n## Experience\n\n**Engineer** \u2014 _Example_ | 2022-2025\n\n- Reduced latency from 240ms to 160ms",
+      "reloadExact": true,
+      "error": null
+    }
+  ],
+  "limits": [
+    "Synthetic samples only",
+    "AI added an unnecessary missing-contact placeholder",
+    "Signed-in browser bridge could not start; account sync remains unqualified"
+  ],
+  "cleanup": "Disposable browser contexts closed; no account data used"
+}
