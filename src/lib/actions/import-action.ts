@@ -61,10 +61,7 @@ async function extractDocxText(buffer: Buffer): Promise<string> {
 
 async function extractText(buffer: Buffer, mimeType: string): Promise<string> {
   if (mimeType === 'application/pdf') return extractPdfText(buffer);
-  if (
-    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-    mimeType === 'application/msword'
-  ) {
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     return extractDocxText(buffer);
   }
   if (mimeType === 'text/plain' || mimeType === 'text/markdown') {
@@ -78,17 +75,36 @@ export async function importResumeFromFile(
   aiConfig: AIProviderConfig
 ): Promise<{ success: true; id: string; source: string } | { success: false; error: string }> {
   const file = formData.get('file');
-  const name = (formData.get('name') as string | null)?.trim() || 'Imported Resume';
+  const rawName = formData.get('name');
+  const name = (typeof rawName === 'string' && rawName.trim()) || 'Imported Resume';
   if (!(file instanceof File)) return { success: false, error: 'No file provided' };
   if (file.size === 0) return { success: false, error: 'Empty file' };
   if (file.size > MAX_FILE_BYTES) {
     return { success: false, error: `File too large (max ${MAX_FILE_BYTES / 1024 / 1024}MB)` };
   }
+  if (file.type === 'application/msword' || /\.doc$/i.test(file.name)) {
+    return {
+      success: false,
+      error: 'Save this legacy Word document as DOCX or PDF, then import it.',
+    };
+  }
+
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const fallbackTypes: Record<string, string> = {
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    txt: 'text/plain',
+    md: 'text/markdown',
+  };
+  const mimeType =
+    !file.type || file.type === 'application/octet-stream'
+      ? fallbackTypes[extension ?? ''] || file.type
+      : file.type;
 
   let trimmed: string;
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    trimmed = (await extractText(buffer, file.type)).trim();
+    trimmed = (await extractText(buffer, mimeType)).trim();
   } catch {
     return {
       success: false,
