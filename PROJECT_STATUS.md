@@ -40,6 +40,12 @@ retains hosted import and account acceptance. The fixtures contain synthetic dat
 
 ## Current qualification
 
+September 9 tooling follow-up: both workspaces now use Wrangler 4.114.0 and
+Miniflare resolves sharp 0.35.4 through a patch-only override. Actual native PNG
+encoding/decoding and the full Cloudflare build pass. The dependency gate now
+reports 0 critical and 1 unexpected high finding: extract-zip. The security gate
+is still failed; no release has run.
+
 Production source `18c041f4c795af5281d6c82ef96e75c775acac3b` is deployed at
 100% traffic (Worker `fe163417-64ed-462a-80c5-a4b8d7cf99f5`,
 [run 34143940332](https://github.com/Significant-Hobbies/rolepatch/actions/runs/34143940332)).
