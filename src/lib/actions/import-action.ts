@@ -42,17 +42,8 @@ Rules:
 - Preserve dates as written.
 - Return ONLY the Markdown. No commentary, no fences.`;
 
-const dynImport = new Function('m', 'return import(m)') as (m: string) => Promise<unknown>;
-
 async function extractPdfText(buffer: Buffer): Promise<string> {
-  const mod = (await dynImport('pdf-parse')) as {
-    PDFParse: new (opts: {
-      data: Uint8Array;
-    }) => {
-      getText(): Promise<{ text?: string }>;
-      destroy(): Promise<void>;
-    };
-  };
+  const mod = await import('pdf-parse');
   const parser = new mod.PDFParse({ data: new Uint8Array(buffer) });
   try {
     const result = await parser.getText();
@@ -63,19 +54,14 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
 }
 
 async function extractDocxText(buffer: Buffer): Promise<string> {
-  const mammoth = (await dynImport('mammoth')) as {
-    extractRawText(opts: { buffer: Buffer }): Promise<{ value?: string }>;
-  };
+  const mammoth = await import('mammoth');
   const result = await mammoth.extractRawText({ buffer });
   return result.value ?? '';
 }
 
 async function extractText(buffer: Buffer, mimeType: string): Promise<string> {
   if (mimeType === 'application/pdf') return extractPdfText(buffer);
-  if (
-    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-    mimeType === 'application/msword'
-  ) {
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     return extractDocxText(buffer);
   }
   if (mimeType === 'text/plain' || mimeType === 'text/markdown') {
@@ -87,20 +73,49 @@ async function extractText(buffer: Buffer, mimeType: string): Promise<string> {
 export async function importResumeFromFile(
   formData: FormData,
   aiConfig: AIProviderConfig
-): Promise<{ id: string; source: string }> {
+): Promise<{ success: true; id: string; source: string } | { success: false; error: string }> {
   const file = formData.get('file');
-  const name = (formData.get('name') as string | null)?.trim() || 'Imported Resume';
-  if (!(file instanceof File)) throw new Error('No file provided');
-  if (file.size === 0) throw new Error('Empty file');
+  const rawName = formData.get('name');
+  const name = (typeof rawName === 'string' && rawName.trim()) || 'Imported Resume';
+  if (!(file instanceof File)) return { success: false, error: 'No file provided' };
+  if (file.size === 0) return { success: false, error: 'Empty file' };
   if (file.size > MAX_FILE_BYTES) {
-    throw new Error(`File too large (max ${MAX_FILE_BYTES / 1024 / 1024}MB)`);
+    return { success: false, error: `File too large (max ${MAX_FILE_BYTES / 1024 / 1024}MB)` };
+  }
+  if (file.type === 'application/msword' || /\.doc$/i.test(file.name)) {
+    return {
+      success: false,
+      error: 'Save this legacy Word document as DOCX or PDF, then import it.',
+    };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const rawText = await extractText(buffer, file.type);
-  const trimmed = rawText.trim();
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const fallbackTypes: Record<string, string> = {
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    txt: 'text/plain',
+    md: 'text/markdown',
+  };
+  const mimeType =
+    !file.type || file.type === 'application/octet-stream'
+      ? fallbackTypes[extension ?? ''] || file.type
+      : file.type;
+
+  let trimmed: string;
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    trimmed = (await extractText(buffer, mimeType)).trim();
+  } catch {
+    return {
+      success: false,
+      error: 'Could not read this file. Try a text-based PDF, DOCX, TXT, or Markdown file.',
+    };
+  }
   if (trimmed.length < 50) {
-    throw new Error('Could not extract enough text from file. Try a different format.');
+    return {
+      success: false,
+      error: 'Could not extract enough text from file. Try a different format.',
+    };
   }
 
   let markdown: string;
@@ -112,20 +127,26 @@ export async function importResumeFromFile(
     });
     markdown = result.text;
   } catch (err) {
-    throw toUserFacingAIError(err);
+    return { success: false, error: toUserFacingAIError(err).message };
   }
+  if (!markdown.trim())
+    return { success: false, error: 'The AI service returned an empty resume. Please try again.' };
 
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    // Guest: let the caller store to localStorage
-    return { id: '', source: markdown };
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      // Guest: let the caller store to localStorage
+      return { success: true, id: '', source: markdown };
+    }
+
+    const id = uuid();
+    await db.execute({
+      sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',
+      args: [id, name, markdown, userId],
+    });
+    revalidatePath('/dashboard');
+    return { success: true, id, source: markdown };
+  } catch {
+    return { success: false, error: 'Could not save the imported resume. Please try again.' };
   }
-
-  const id = uuid();
-  await db.execute({
-    sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',
-    args: [id, name, markdown, userId],
-  });
-  revalidatePath('/dashboard');
-  return { id, source: markdown };
 }

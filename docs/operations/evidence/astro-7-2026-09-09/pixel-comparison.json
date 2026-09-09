@@ -1,0 +1,63 @@
+{
+  "scope": "Local Chromium, JavaScript disabled and HTTP(S) requests blocked; 390px and1440px. Not hosted interaction or remote-font verification.",
+  "beforeAstro": "5.18.2",
+  "afterAstro": "7.2.8",
+  "comparisons": [
+    {
+      "file": "changelog.html-1440-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "f2a725536282dc05bb411ec0edf3ef08c586be9e0c955a9de17840acafbfd38e",
+      "afterSha256": "f2a725536282dc05bb411ec0edf3ef08c586be9e0c955a9de17840acafbfd38e"
+    },
+    {
+      "file": "changelog.html-390-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "ab579ee17a5dde4c7787cac8a521f4de03891a39608f9c5b21f8f0a702c30a1d",
+      "afterSha256": "ab579ee17a5dde4c7787cac8a521f4de03891a39608f9c5b21f8f0a702c30a1d"
+    },
+    {
+      "file": "docs.html-1440-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "828fbb4188e46619f9e2aebf4c54fa8b3b5e9b6c215271dd977de098dda56908",
+      "afterSha256": "828fbb4188e46619f9e2aebf4c54fa8b3b5e9b6c215271dd977de098dda56908"
+    },
+    {
+      "file": "docs.html-390-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "fcf2e446378d62e1863029f9b13ea9122786bfe53f71e1d1400a9bbf9ab4073c",
+      "afterSha256": "fcf2e446378d62e1863029f9b13ea9122786bfe53f71e1d1400a9bbf9ab4073c"
+    },
+    {
+      "file": "faq.html-1440-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "ce9bb7ac28dd349765f0cc1722331afec1e3ad540ba118cd5912994a1c1c57b3",
+      "afterSha256": "ce9bb7ac28dd349765f0cc1722331afec1e3ad540ba118cd5912994a1c1c57b3"
+    },
+    {
+      "file": "faq.html-390-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "c16efdfe0498e80361d30c9e37fa859262c849407441464048daa281c6f4dd6a",
+      "afterSha256": "c16efdfe0498e80361d30c9e37fa859262c849407441464048daa281c6f4dd6a"
+    },
+    {
+      "file": "index.html-1440-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "32b59eba95938fe5afb7dbacd1bd5b0108721b461faaafa4d44b2bde4fc86ec5",
+      "afterSha256": "32b59eba95938fe5afb7dbacd1bd5b0108721b461faaafa4d44b2bde4fc86ec5"
+    },
+    {
+      "file": "index.html-390-before.png",
+      "sameDimensions": true,
+      "pixelIdentical": true,
+      "beforeSha256": "01fe93501d1e69990fb278bed2161c7718e538c85aa4ee390fb982489b44dfc8",
+      "afterSha256": "01fe93501d1e69990fb278bed2161c7718e538c85aa4ee390fb982489b44dfc8"
+    }
+  ]
+}
