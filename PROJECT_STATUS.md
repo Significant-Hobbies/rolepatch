@@ -40,6 +40,21 @@ retains hosted import and account acceptance. The fixtures contain synthetic dat
 
 ## Current qualification
 
+The browser-manager override to @puppeteer/browsers 3.2.2 removes extract-zip
+without adding an audit exception. Both Puppeteer imports, a real local Chrome
+launch/PDF render and a Cloudflare-fork connection to that browser pass. Full
+quality (479 tests) and the complete Cloudflare build pass. The security gate has
+0 critical and 0 unexpected findings; 7 previously accepted high advisory IDs
+across 8 paths remain. No claim of a vulnerability-free dependency tree is made.
+
+Built-Worker import probes used only synthetic documents, an ephemeral local auth
+value and an intentionally unreachable synthetic AI endpoint. The dashboard
+returned HTTP200. PDF import fails in pdfjs with `DOMMatrix is not defined`.
+DOCX reaches the expected AI-service failure, proving extraction got past the
+parser, but the browser sees minified React error441 instead of the safe message.
+The local browser and Worker are stopped. Hosted import acceptance remains open;
+no release has run. This supersedes the earlier local auth-only blocker.
+
 September 9 tooling follow-up: both workspaces now use Wrangler 4.114.0 and
 Miniflare resolves sharp 0.35.4 through a patch-only override. Actual native PNG
 encoding/decoding and the full Cloudflare build pass. The dependency gate now
