@@ -2,6 +2,23 @@
 
 Last updated: 2026-09-07
 
+## Import repair validation — 9 September
+
+The file-import action now uses literal dynamic imports instead of a module-level
+`new Function()` loader. Six focused tests cover module loading with string code
+generation blocked, real synthetic PDF/DOCX extraction, guest isolation, signed-in
+ownership, failed generation and empty input. AI calls are mocked in these tests.
+All 479 tests passed, and the full Cloudflare build completed. Its bundle metadata
+includes Mammoth and pdf-parse; tracing exclusions alone did not establish absence
+from the final bundle. No dependency or production configuration changed.
+Full quality is not green: the dependency gate reports 15 unexpected critical/high
+advisories (3 critical findings overall). Later quality stages did not run.
+
+This repair is not yet released or qualified on Workers. A local built-Worker
+dashboard probe stopped at a BetterAuth default-secret configuration error, before
+file import could be exercised; the local server was stopped. Existing issue68
+retains hosted import and account acceptance. The fixtures contain synthetic data.
+
 ## Current qualification
 
 Production source `18c041f4c795af5281d6c82ef96e75c775acac3b` is deployed at
