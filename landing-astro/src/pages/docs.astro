@@ -62,7 +62,7 @@ const endpoints = [
             <h2>Ask for Markdown at the page URL.</h2>
             <p>
               Send <code>Accept: text/markdown</code> to any cataloged public page, or request its
-              explicit <code>.md</code> alternate. Negotiated responses include
+              explicit <code>.md</code> alternate. Negotiated responses include{' '}
               <code>Vary: Accept</code> so HTML and Markdown cannot poison one another in a cache.
             </p>
           </article>
@@ -70,7 +70,7 @@ const endpoints = [
             <p class="section-label">Error model</p>
             <h2>Discovery errors are structured.</h2>
             <p>
-              Unsupported methods and missing discovery routes return
+              Unsupported methods and missing discovery routes return{' '}
               <code>application/problem+json</code> with a stable code, status, detail, and
               resolution hint. Ordinary product routes keep their own application contracts.
             </p>

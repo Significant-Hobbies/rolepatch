@@ -24,6 +24,15 @@ unexpected findings to 3 (Astro, extract-zip and sharp), with 1 critical remaini
 All 479 tests and the complete Cloudflare build still pass. No acceptance baseline
 was relaxed. This supersedes the five-finding checkpoint above.
 
+Astro 7.2.8 removes the remaining critical finding. The dependency gate now has
+2 unexpected high findings (extract-zip and sharp); it is still failed. The full
+Cloudflare build passed. Chromium comparisons of all four static pages at 390px
+and 1440px found two lost spaces before inline code on the docs page; explicit
+spaces restore exact rendering. All eight final screenshots are pixel-identical
+to Astro 5 output, with matching rendered text and links and no horizontal
+overflow. These local checks disabled JavaScript and external requests; they do
+not qualify hosted interactions. Receipts: `docs/operations/evidence/astro-7-2026-09-09/`.
+
 This repair is not yet released or qualified on Workers. A local built-Worker
 dashboard probe stopped at a BetterAuth default-secret configuration error, before
 file import could be exercised; the local server was stopped. Existing issue68
