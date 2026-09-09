@@ -1,0 +1,82 @@
+[
+  {
+    "file": "index.html",
+    "width": 390,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "docs.html",
+    "width": 390,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "faq.html",
+    "width": 390,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "changelog.html",
+    "width": 390,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "index.html",
+    "width": 1440,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "docs.html",
+    "width": 1440,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "faq.html",
+    "width": 1440,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  },
+  {
+    "file": "changelog.html",
+    "width": 1440,
+    "sameRenderedText": true,
+    "sameLinks": true,
+    "overflow": [
+      false,
+      false
+    ]
+  }
+]
