@@ -6,8 +6,9 @@ import { useRef, useState, useTransition } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { importResumeFromFile } from '@/lib/actions/import-action';
 import { localCreateResume } from '@/lib/local-storage';
+import { prepareResumeFile } from '@/lib/prepare-resume-file';
 
-const ACCEPTED = '.pdf,.doc,.docx,.txt,.md';
+const ACCEPTED = '.pdf,.docx,.txt,.md';
 const MAX_MB = 5;
 
 export function ResumeImportButton() {
@@ -42,10 +43,15 @@ export function ResumeImportButton() {
         const name = file.name.replace(/\.(pdf|docx?|txt|md)$/i, '') || 'Imported Resume';
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', await prepareResumeFile(file));
         formData.append('name', name);
 
-        const { id, source } = await importResumeFromFile(formData, aiConfig);
+        const result = await importResumeFromFile(formData, aiConfig);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
+        const { id, source } = result;
 
         const finalId = isGuest ? localCreateResume(name, source) : id;
         router.push(`/editor/${finalId}`);

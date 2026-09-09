@@ -1,8 +1,88 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-09-07
+Last updated: 2026-09-09
+
+## Import repair validation — 9 September
+
+The file-import action now uses literal dynamic imports instead of a module-level
+`new Function()` loader. Six focused tests cover module loading with string code
+generation blocked, real synthetic PDF/DOCX extraction, guest isolation, signed-in
+ownership, failed generation and empty input. AI calls are mocked in these tests.
+All 479 tests passed, and the full Cloudflare build completed. Its bundle metadata
+includes Mammoth and pdf-parse; tracing exclusions alone did not establish absence
+from the final bundle. No dependency or production configuration changed.
+Full quality is not green: the dependency gate reports 15 unexpected critical/high
+advisories (3 critical findings overall). Later quality stages did not run.
+
+The subsequent targeted Next.js 16.3.4 and Mammoth 1.12.2 updates reduce that gate
+to 5 unexpected findings and 1 critical finding. All 479 tests and the full
+Cloudflare build pass after the updates. Remaining findings concern Astro,
+extract-zip, sharp, js-yaml and SVGO; the gate remains failed and no release ran.
+
+Narrow same-major js-yaml 4.3.2 and SVGO 4.1.0 overrides subsequently reduced the
+unexpected findings to 3 (Astro, extract-zip and sharp), with 1 critical remaining.
+All 479 tests and the complete Cloudflare build still pass. No acceptance baseline
+was relaxed. This supersedes the five-finding checkpoint above.
+
+Astro 7.2.8 removes the remaining critical finding. The dependency gate now has
+2 unexpected high findings (extract-zip and sharp); it is still failed. The full
+Cloudflare build passed. Chromium comparisons of all four static pages at 390px
+and 1440px found two lost spaces before inline code on the docs page; explicit
+spaces restore exact rendering. All eight final screenshots are pixel-identical
+to Astro 5 output, with matching rendered text and links and no horizontal
+overflow. These local checks disabled JavaScript and external requests; they do
+not qualify hosted interactions. Receipts: `docs/operations/evidence/astro-7-2026-09-09/`.
+
+This repair is not yet released or qualified on Workers. A local built-Worker
+dashboard probe stopped at a BetterAuth default-secret configuration error, before
+file import could be exercised; the local server was stopped. Existing issue68
+retains hosted import and account acceptance. The fixtures contain synthetic data.
 
 ## Current qualification
+
+The browser-manager override to @puppeteer/browsers 3.2.2 removes extract-zip
+without adding an audit exception. Both Puppeteer imports, a real local Chrome
+launch/PDF render and a Cloudflare-fork connection to that browser pass. Full
+quality (479 tests) and the complete Cloudflare build pass. The security gate has
+0 critical and 0 unexpected findings; 7 previously accepted high advisory IDs
+across 8 paths remain. No claim of a vulnerability-free dependency tree is made.
+
+Built-Worker import probes used only synthetic documents, an ephemeral local auth
+value and an intentionally unreachable synthetic AI endpoint. The dashboard
+returned HTTP200. PDF import fails in pdfjs with `DOMMatrix is not defined`.
+DOCX reaches the expected AI-service failure, proving extraction got past the
+parser, but the browser sees minified React error441 instead of the safe message.
+The local browser and Worker are stopped. Hosted import acceptance remains open;
+no release has run. This supersedes the earlier local auth-only blocker.
+
+Expected import errors now return structured action results instead of throwing
+through React's production transport. Built-Worker PDF and DOCX probes both
+returned HTTP 200 with readable error text, retained the dashboard and re-enabled
+retry. PDF still fails extraction; DOCX reaches the deliberately unavailable AI
+endpoint. This verifies recovery, not successful import. Eight focused tests pass,
+including empty model output and failed-save handling; full quality passed 481
+tests and the full Cloudflare build completed. Evidence:
+`docs/operations/evidence/resume-import-errors-2026-09-09.json`.
+
+PDF extraction now runs in the browser using the existing pdf-parse browser
+build and a same-origin, content-hashed worker asset. The full Cloudflare build
+passes with the worker URL excluded from the server bundle. A 390px Chromium
+probe against the built local Worker uploaded the real synthetic PDF, preserved
+its facts in the AI request, opened the editor and retained the generated resume
+after reload. That successful probe used a local AI stub; it does not establish
+hosted AI quality or account persistence. The unavailable-provider probe also
+retains readable retry behavior. Both local servers and the browser were stopped.
+Evidence: `docs/operations/evidence/resume-browser-pdf-2026-09-09.json`.
+This supersedes the PDF runtime failure above for the browser import flow;
+direct server-side PDF parsing still requires browser APIs and is not qualified.
+Full quality passes after the browser PDF change (481 tests, no unexpected security findings).
+The import picker no longer advertises legacy .doc support; direct legacy uploads
+receive a DOCX/PDF conversion message. Empty or generic browser MIME types fall
+back to supported filename extensions. Ten focused import tests pass.
+
+Both workspaces use Wrangler 4.114.0 and Miniflare resolves sharp 0.35.4 through a
+patch-only override. Native PNG encoding/decoding passed. The browser-manager
+change above subsequently removed the final unexpected extract-zip finding.
 
 Production source `18c041f4c795af5281d6c82ef96e75c775acac3b` is deployed at
 100% traffic (Worker `fe163417-64ed-462a-80c5-a4b8d7cf99f5`,
