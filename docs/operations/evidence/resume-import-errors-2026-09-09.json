@@ -1,0 +1,19 @@
+{
+  "scope": "Local production-built Worker; synthetic documents and deliberately unreachable AI endpoint; no owner account or hosted acceptance",
+  "observations": [
+    {
+      "format": "pdf",
+      "status": 200,
+      "message": "Could not read this file. Try a text-based PDF, DOCX, TXT, or Markdown file.",
+      "stayedOnDashboard": true,
+      "retryEnabled": true
+    },
+    {
+      "format": "docx",
+      "status": 200,
+      "message": "Couldn't reach the AI service. Please try again in a moment.",
+      "stayedOnDashboard": true,
+      "retryEnabled": true
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-09-07
+Last updated: 2026-09-09
 
 ## Import repair validation — 9 September
 
@@ -55,11 +55,18 @@ parser, but the browser sees minified React error441 instead of the safe message
 The local browser and Worker are stopped. Hosted import acceptance remains open;
 no release has run. This supersedes the earlier local auth-only blocker.
 
-September 9 tooling follow-up: both workspaces now use Wrangler 4.114.0 and
-Miniflare resolves sharp 0.35.4 through a patch-only override. Actual native PNG
-encoding/decoding and the full Cloudflare build pass. The dependency gate now
-reports 0 critical and 1 unexpected high finding: extract-zip. The security gate
-is still failed; no release has run.
+Expected import errors now return structured action results instead of throwing
+through React's production transport. Built-Worker PDF and DOCX probes both
+returned HTTP 200 with readable error text, retained the dashboard and re-enabled
+retry. PDF still fails extraction; DOCX reaches the deliberately unavailable AI
+endpoint. This verifies recovery, not successful import. Eight focused tests pass,
+including empty model output and failed-save handling; full quality passed 481
+tests and the full Cloudflare build completed. Evidence:
+`docs/operations/evidence/resume-import-errors-2026-09-09.json`.
+
+Both workspaces use Wrangler 4.114.0 and Miniflare resolves sharp 0.35.4 through a
+patch-only override. Native PNG encoding/decoding passed. The browser-manager
+change above subsequently removed the final unexpected extract-zip finding.
 
 Production source `18c041f4c795af5281d6c82ef96e75c775acac3b` is deployed at
 100% traffic (Worker `fe163417-64ed-462a-80c5-a4b8d7cf99f5`,
