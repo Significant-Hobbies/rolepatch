@@ -64,6 +64,19 @@ including empty model output and failed-save handling; full quality passed 481
 tests and the full Cloudflare build completed. Evidence:
 `docs/operations/evidence/resume-import-errors-2026-09-09.json`.
 
+PDF extraction now runs in the browser using the existing pdf-parse browser
+build and a same-origin, content-hashed worker asset. The full Cloudflare build
+passes with the worker URL excluded from the server bundle. A 390px Chromium
+probe against the built local Worker uploaded the real synthetic PDF, preserved
+its facts in the AI request, opened the editor and retained the generated resume
+after reload. That successful probe used a local AI stub; it does not establish
+hosted AI quality or account persistence. The unavailable-provider probe also
+retains readable retry behavior. Both local servers and the browser were stopped.
+Evidence: `docs/operations/evidence/resume-browser-pdf-2026-09-09.json`.
+This supersedes the PDF runtime failure above for the browser import flow;
+direct server-side PDF parsing still requires browser APIs and is not qualified.
+Full quality passes after this change (481 tests, no unexpected security findings).
+
 Both workspaces use Wrangler 4.114.0 and Miniflare resolves sharp 0.35.4 through a
 patch-only override. Native PNG encoding/decoding passed. The browser-manager
 change above subsequently removed the final unexpected extract-zip finding.

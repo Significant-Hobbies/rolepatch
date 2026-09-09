@@ -6,6 +6,7 @@ import { useRef, useState, useTransition } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { importResumeFromFile } from '@/lib/actions/import-action';
 import { localCreateResume } from '@/lib/local-storage';
+import { prepareResumeFile } from '@/lib/prepare-resume-file';
 
 const ACCEPTED = '.pdf,.doc,.docx,.txt,.md';
 const MAX_MB = 5;
@@ -42,7 +43,7 @@ export function ResumeImportButton() {
         const name = file.name.replace(/\.(pdf|docx?|txt|md)$/i, '') || 'Imported Resume';
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', await prepareResumeFile(file));
         formData.append('name', name);
 
         const result = await importResumeFromFile(formData, aiConfig);
