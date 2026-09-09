@@ -76,20 +76,30 @@ async function extractText(buffer: Buffer, mimeType: string): Promise<string> {
 export async function importResumeFromFile(
   formData: FormData,
   aiConfig: AIProviderConfig
-): Promise<{ id: string; source: string }> {
+): Promise<{ success: true; id: string; source: string } | { success: false; error: string }> {
   const file = formData.get('file');
   const name = (formData.get('name') as string | null)?.trim() || 'Imported Resume';
-  if (!(file instanceof File)) throw new Error('No file provided');
-  if (file.size === 0) throw new Error('Empty file');
+  if (!(file instanceof File)) return { success: false, error: 'No file provided' };
+  if (file.size === 0) return { success: false, error: 'Empty file' };
   if (file.size > MAX_FILE_BYTES) {
-    throw new Error(`File too large (max ${MAX_FILE_BYTES / 1024 / 1024}MB)`);
+    return { success: false, error: `File too large (max ${MAX_FILE_BYTES / 1024 / 1024}MB)` };
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const rawText = await extractText(buffer, file.type);
-  const trimmed = rawText.trim();
+  let trimmed: string;
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    trimmed = (await extractText(buffer, file.type)).trim();
+  } catch {
+    return {
+      success: false,
+      error: 'Could not read this file. Try a text-based PDF, DOCX, TXT, or Markdown file.',
+    };
+  }
   if (trimmed.length < 50) {
-    throw new Error('Could not extract enough text from file. Try a different format.');
+    return {
+      success: false,
+      error: 'Could not extract enough text from file. Try a different format.',
+    };
   }
 
   let markdown: string;
@@ -101,20 +111,26 @@ export async function importResumeFromFile(
     });
     markdown = result.text;
   } catch (err) {
-    throw toUserFacingAIError(err);
+    return { success: false, error: toUserFacingAIError(err).message };
   }
+  if (!markdown.trim())
+    return { success: false, error: 'The AI service returned an empty resume. Please try again.' };
 
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    // Guest: let the caller store to localStorage
-    return { id: '', source: markdown };
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      // Guest: let the caller store to localStorage
+      return { success: true, id: '', source: markdown };
+    }
+
+    const id = uuid();
+    await db.execute({
+      sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',
+      args: [id, name, markdown, userId],
+    });
+    revalidatePath('/dashboard');
+    return { success: true, id, source: markdown };
+  } catch {
+    return { success: false, error: 'Could not save the imported resume. Please try again.' };
   }
-
-  const id = uuid();
-  await db.execute({
-    sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',
-    args: [id, name, markdown, userId],
-  });
-  revalidatePath('/dashboard');
-  return { id, source: markdown };
 }

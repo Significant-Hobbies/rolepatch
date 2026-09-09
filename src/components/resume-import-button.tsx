@@ -45,7 +45,12 @@ export function ResumeImportButton() {
         formData.append('file', file);
         formData.append('name', name);
 
-        const { id, source } = await importResumeFromFile(formData, aiConfig);
+        const result = await importResumeFromFile(formData, aiConfig);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
+        const { id, source } = result;
 
         const finalId = isGuest ? localCreateResume(name, source) : id;
         router.push(`/editor/${finalId}`);

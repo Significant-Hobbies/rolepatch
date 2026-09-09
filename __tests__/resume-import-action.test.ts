@@ -68,7 +68,7 @@ describe('resume file import action', () => {
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
     vi.unstubAllGlobals();
     const result = await importResumeFromFile(form, config);
-    expect(result).toEqual({ id: '', source });
+    expect(result).toEqual({ success: true, id: '', source });
     expect(mocks.generateText.mock.calls[0]?.[0].prompt).toContain(source);
     expect(mocks.execute).not.toHaveBeenCalled();
   });
@@ -77,6 +77,8 @@ describe('resume file import action', () => {
     mocks.getCurrentUserId.mockResolvedValue('owner-1');
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
     const result = await importResumeFromFile(input(), config);
+    expect(result.success).toBe(true);
+    if (!result.success) throw new Error(result.error);
     expect(result.id).not.toBe('');
     expect(mocks.execute).toHaveBeenCalledWith({
       sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',
@@ -87,14 +89,41 @@ describe('resume file import action', () => {
   it('does not save an import when AI generation fails', async () => {
     mocks.generateText.mockRejectedValue(new Error('Provider unavailable'));
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
-    await expect(importResumeFromFile(input(), config)).rejects.toThrow('Generation unavailable');
+    await expect(importResumeFromFile(input(), config)).resolves.toEqual({
+      success: false,
+      error: 'Generation unavailable',
+    });
     expect(mocks.execute).not.toHaveBeenCalled();
   });
 
   it('rejects empty input before generation or persistence', async () => {
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
-    await expect(importResumeFromFile(input(''), config)).rejects.toThrow('Empty file');
+    await expect(importResumeFromFile(input(''), config)).resolves.toEqual({
+      success: false,
+      error: 'Empty file',
+    });
     expect(mocks.generateText).not.toHaveBeenCalled();
     expect(mocks.execute).not.toHaveBeenCalled();
+  });
+
+  it('does not save an empty model result', async () => {
+    mocks.generateText.mockResolvedValue({ text: '   ' });
+    const { importResumeFromFile } = await import('@/lib/actions/import-action');
+    expect(await importResumeFromFile(input(), config)).toEqual({
+      success: false,
+      error: 'The AI service returned an empty resume. Please try again.',
+    });
+    expect(mocks.execute).not.toHaveBeenCalled();
+  });
+
+  it('returns a safe persistence error without exposing database details', async () => {
+    mocks.getCurrentUserId.mockResolvedValue('owner-1');
+    mocks.execute.mockRejectedValue(new Error('private database detail'));
+    const { importResumeFromFile } = await import('@/lib/actions/import-action');
+    expect(await importResumeFromFile(input(), config)).toEqual({
+      success: false,
+      error: 'Could not save the imported resume. Please try again.',
+    });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });
