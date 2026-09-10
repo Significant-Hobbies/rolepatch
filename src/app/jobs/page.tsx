@@ -119,13 +119,13 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
                 ))}
               </div>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
               {observedJobs.map((job) => {
                 const logoUrl = logoUrlForCompany(job.company);
                 return (
                   <article
                     key={job.id}
-                    className="rounded-xl border border-[var(--border)]/70 bg-background/70 p-4"
+                    className="min-w-0 rounded-xl border border-[var(--border)]/70 bg-background/70 p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3">
@@ -161,9 +161,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
                     </div>
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--muted-foreground)]">
                       {job.location && (
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5" />
-                          {job.location}
+                        <span className="inline-flex min-w-0 max-w-full items-start gap-1">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />
+                          <span className="min-w-0 break-words">{job.location}</span>
                         </span>
                       )}
                       <span className="inline-flex items-center gap-1">
