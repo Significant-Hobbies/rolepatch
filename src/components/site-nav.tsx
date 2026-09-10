@@ -40,7 +40,7 @@ export function SiteNav() {
         <Link
           href="/"
           prefetch={false}
-          className="font-semibold text-foreground mr-auto md:mr-6 flex items-center gap-2"
+          className="font-semibold text-foreground mr-auto xl:mr-6 flex items-center gap-2"
         >
           <span className="w-6 h-6 rounded-md bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">
             RP
@@ -56,7 +56,7 @@ export function SiteNav() {
               key={link.href}
               href={link.href}
               prefetch={false}
-              className={`hidden md:block px-3 py-1.5 text-sm rounded-md transition-colors ${
+              className={`hidden xl:block px-3 py-1.5 text-sm rounded-md transition-colors ${
                 isActive
                   ? 'bg-[var(--muted)] text-foreground font-medium'
                   : 'text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--muted)]'
@@ -70,13 +70,13 @@ export function SiteNav() {
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <TokenBalance />
           <UserMenu />
-          {/* Hamburger — only under md */}
+          {/* Keep the full link list collapsed until there is room for account controls. */}
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
-            className="md:hidden flex items-center justify-center w-11 h-11 -mr-2 rounded-md text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--muted)] transition-colors"
+            className="xl:hidden flex items-center justify-center w-11 h-11 -mr-2 rounded-md text-[var(--muted-foreground)] hover:text-foreground hover:bg-[var(--muted)] transition-colors"
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -85,7 +85,7 @@ export function SiteNav() {
 
       {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-[var(--border)] bg-[var(--background)] px-4 py-2">
+        <div className="xl:hidden border-t border-[var(--border)] bg-[var(--background)] px-4 py-2">
           <div className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
