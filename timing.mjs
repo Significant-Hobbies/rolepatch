@@ -5,6 +5,8 @@
  * `performance.now()`, reports it via the `Server-Timing` response header,
  * and logs requests slower than 200 ms via `console.warn`.
  */
+import { observeRequest } from './app-health.mjs';
+
 export function withTiming(handler) {
   return async (request, env, ctx) => {
     const start = performance.now();
@@ -30,6 +32,7 @@ export function withTiming(handler) {
       console.warn(`[slow] ${request.method} ${url.pathname} — ${Math.round(duration)}ms`);
     }
 
+    observeRequest(request, timedResponse, duration, env, ctx);
     return timedResponse;
   };
 }
