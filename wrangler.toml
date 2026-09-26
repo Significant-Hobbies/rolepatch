@@ -28,12 +28,7 @@ binding = "AI"
 [env.cache]
 
 [triggers]
-crons = [
-  # Hourly company-watch job discovery sync.
-  "0 * * * *",
-  # Weekly saved-search/apply-agent digest.
-  "0 14 * * 1"
-]
+crons = []
 
 [[d1_databases]]
 binding = "DB"
