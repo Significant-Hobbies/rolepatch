@@ -14,10 +14,9 @@ describe('custom Cloudflare worker entrypoint', () => {
     expect(workerSource).toContain('0 14 * * 1');
   });
 
-  it('provisions Cloudflare cron triggers for the scheduled tasks', () => {
+  it('keeps Cloudflare cron triggers disabled', () => {
     expect(wranglerConfig).toContain('[triggers]');
-    expect(wranglerConfig).toContain('"0 * * * *"');
-    expect(wranglerConfig).toContain('"0 14 * * 1"');
+    expect(wranglerConfig).toContain('crons = []');
   });
 
   it('binds the primary Cloudflare D1 database', () => {
