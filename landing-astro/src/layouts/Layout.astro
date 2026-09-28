@@ -102,6 +102,25 @@ const jsonLd = {
     </style>
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+    <script
+      is:inline
+      defer
+      src="https://health.sassmaker.com/tracker.js"
+      data-key="ahk_pub_da27e32228b9bb96637405112579aadb17f0bdeaf1fa953c2d7572c26a07d6f8"
+      data-project="app-import-5055bea54acfed7be5d386e53bc59d75c2b4566fd7b7404c470c7bc6c5b7c747"
+      data-identity="session"
+      data-endpoint="https://ingest.sassmaker.com/v1/browser"
+    ></script>
+    <script is:inline>
+      document.addEventListener('click', function (event) {
+        var target = event.target;
+        var control = target && target.closest ? target.closest('[data-app-health-event]') : null;
+        var name = control && control.getAttribute('data-app-health-event');
+        if (name && window.appHealth && typeof window.appHealth.track === 'function') {
+          window.appHealth.track(name);
+        }
+      });
+    </script>
   </head>
   <body class="antialiased">
     {

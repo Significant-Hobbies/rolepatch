@@ -29,15 +29,15 @@ const year = new Date().getFullYear();
       </div>
       <nav aria-label="RolePatch product links">
         <p class="footer-heading">Product</p>
-        <a href="/dashboard">Dashboard</a>
+        <a href="/dashboard" data-app-health-event="workspace_opened">Dashboard</a>
         <a href="/jobs">Browse jobs</a>
         <a href="/evidence">Evidence bank</a>
         <a href="/proof">Proof packets</a>
-        <a href="/pricing">Pricing</a>
+        <a href="/pricing" data-app-health-event="pricing_opened">Pricing</a>
       </nav>
       <nav aria-label="RolePatch resources">
         <p class="footer-heading">Understand</p>
-        <a href="/tools">Free tools</a>
+        <a href="/tools" data-app-health-event="free_tools_opened">Free tools</a>
         <a href="/faq">FAQ</a>
         <a href="/changelog">Changelog</a>
         <a href="/llms.txt">LLM index</a>
@@ -65,6 +65,16 @@ const year = new Date().getFullYear();
       <p>Explore the Fleet project strip or ask AI about RolePatch below.</p>
       <p>© {year} Sarthak Agrawal · No unattended bulk apply · No CAPTCHA bypass</p>
     </div>
+
+    <saas-maker-newsletter-capture
+      catalog-id="rolepatch"
+      product-name="RolePatch"
+      kind="newsletter"
+      source="footer"
+      privacy-url="https://rolepatch.com/privacy"
+      theme="dark"
+    ></saas-maker-newsletter-capture>
+    <script is:inline type="module" src="https://sassmaker.com/newsletter-capture.js"></script>
 
     <portfolio-project-strip
       current-project="rolepatch"
