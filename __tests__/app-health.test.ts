@@ -28,6 +28,9 @@ describe('App Health endpoint summaries', () => {
       '/api/apply-agent/queue/:id'
     );
     expect(trustedRouteTemplate('/tailor/owner-job-slug/')).toBe('/tailor/:jobId');
+    expect(trustedRouteTemplate('/api/auth/sign-in/social')).toBe('/api/auth/:path*');
+    expect(trustedRouteTemplate('/api/auth/')).toBeNull();
+    expect(trustedRouteTemplate('/api/auth//unknown')).toBeNull();
     expect(trustedRouteTemplate('/api/unknown/secret-id')).toBeNull();
     expect(trustedRouteTemplate('/blog/owner-slug/extra')).toBeNull();
   });

@@ -56,7 +56,7 @@ export function trustedRouteTemplate(pathname) {
     return '/api/apply-agent/queue/:id';
   }
   if (/^\/api\/render\/[^/]+$/.test(path)) return '/api/render/:id';
-  if (path.startsWith('/api/auth/')) return '/api/auth/:path*';
+  if (/^\/api\/auth\/[^/]+(?:\/[^/]+)*$/.test(path)) return '/api/auth/:path*';
   if (/^\/badge\/[^/]+$/.test(path)) return '/badge/:slug';
   if (/^\/blog\/[^/]+$/.test(path)) return '/blog/:slug';
   if (/^\/cover-letter\/[^/]+$/.test(path)) return '/cover-letter/:jobId';
