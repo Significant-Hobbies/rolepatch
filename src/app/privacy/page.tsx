@@ -39,8 +39,8 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold text-foreground mb-2">How We Use It</h2>
           <ul className="list-disc ml-5 space-y-1">
             <li>
-              Resume and job description text is sent to Google Gemini API to generate tailored
-              versions
+              Resume and job text goes to the Fleet AI gateway by default or the user&apos;s BYOK
+              provider.
             </li>
             <li>We store your resumes and tailored versions so you can access them later</li>
             <li>We do not sell, share, or use your data for advertising</li>
@@ -77,8 +77,8 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold text-foreground mb-2">Third Parties</h2>
           <ul className="list-disc ml-5 space-y-1">
             <li>
-              <strong className="text-foreground">Google Gemini:</strong> Processes resume/JD text
-              for AI tailoring
+              <strong className="text-foreground">AI inference providers:</strong> Providers
+              selected by Fleet AI routing or user BYOK process requests
             </li>
             <li>
               <strong className="text-foreground">Dodo Payments:</strong> Handles payment processing

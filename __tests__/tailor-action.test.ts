@@ -8,7 +8,10 @@ const mocks = vi.hoisted(() => ({
   execute: vi.fn(),
 }));
 vi.mock('ai', () => ({ generateObject: mocks.generate }));
-vi.mock('@/lib/ai-cloudflare', () => ({ getAIModel: () => ({}) }));
+vi.mock('@/lib/ai-cloudflare', () => ({
+  getAIModel: () => ({}),
+  getAIModelRetryOptions: () => ({}),
+}));
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: mocks.user }));
 vi.mock('@/lib/actions/token-actions', () => ({
   debitToken: mocks.debit,

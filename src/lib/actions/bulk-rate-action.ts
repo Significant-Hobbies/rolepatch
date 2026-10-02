@@ -4,7 +4,7 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
-import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { rankRolePatchJobsWithKnowledgebase } from '@/lib/knowledgebase-similarity';
 import type { AIProviderConfig } from '@/lib/types';
@@ -71,8 +71,10 @@ async function rateBatch(
   jobs: BulkRateJob[],
   aiConfig: AIProviderConfig
 ): Promise<Array<z.infer<typeof ratingItemSchema>>> {
+  const model = getAIModel(aiConfig);
   const { object } = await generateObjectLoose({
-    model: getAIModel(aiConfig),
+    model,
+    ...getAIModelRetryOptions(model),
     schema: ratingSchema,
     system: SYSTEM_PROMPT,
     prompt: `## Resume:\n${resumeSource}\n\n## Jobs to rate (${jobs.length} total):\n${formatBatch(jobs)}\n\n## Instructions:\nReturn a JSON object { "ratings": [...] } with one entry per job matching on "id". score is 1-10. rationale is one sentence. strengths and gaps are each up to 3 short bullets (≤ 8 words). Base your judgment only on what the resume and description actually say.`,

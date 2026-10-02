@@ -23,6 +23,7 @@ vi.mock('ai', () => ({
 // Keep the bulk action test independent of the selected runtime provider.
 vi.mock('@/lib/ai-cloudflare', () => ({
   getAIModel: vi.fn(() => ({ _model: 'mock' })),
+  getAIModelRetryOptions: vi.fn(() => ({})),
 }));
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
