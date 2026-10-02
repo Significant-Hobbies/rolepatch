@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect } from 'react';
 
+import { TokenBalanceProvider } from '@/components/token-balance-provider';
 import { trackSignup } from '@/lib/analytics';
 import { authClient } from '@/lib/auth-client';
 
@@ -46,7 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   return (
-    <AuthContext.Provider value={{ isGuest: !userId, userId }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ isGuest: !userId, userId }}>
+      <TokenBalanceProvider userId={userId}>{children}</TokenBalanceProvider>
+    </AuthContext.Provider>
   );
 }
 
