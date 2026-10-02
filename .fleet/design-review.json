@@ -2,45 +2,76 @@
   "$schema": "fleet.design-review.v1",
   "version": 1,
   "project": "rolepatch",
-  "target": "RolePatch landing hero",
-  "mode": "preserve",
+  "target": "Guest dashboard footer feedback, issue #72",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
   "register": "product",
   "context": {
     "product": "PRODUCT.md",
     "design": "DESIGN.md"
   },
   "direction": {
-    "references": [],
-    "probes": [],
-    "selected": "existing-design",
-    "approval": "not-required",
-    "before": ".fleet/evidence/landing-hero/before-390.png"
+    "references": [
+      "Owner-selected shared Feedback A footer support preview; existing RolePatch dark workbench and installed feedback component"
+    ],
+    "probes": [
+      {
+        "id": "a",
+        "path": ".fleet/design/feedback-a.html"
+      }
+    ],
+    "selected": "a",
+    "approval": "approved",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "Keep Fleet feedback reachable without obscuring product actions, titles, or newsletter controls.",
+      "purposeSource": "RolePatch #72 and owner-selected shared Feedback direction A",
+      "canonicalPurpose": "One shared in-flow footer support section opens the existing feedback dialog while preserving each product's own page and newsletter experience.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Visitors using products that include the shared footer integration or React package",
+      "job": "Send a question, bug report, or product idea without losing their place or covering page controls.",
+      "thesis": "Feedback belongs beside footer support and newsletter actions in normal page flow.",
+      "system": "RolePatch dark workbench tokens and existing installed @saas-maker/feedback dialog. Scoped positioning override keeps the upstream widget in its footer support section.",
+      "signature": "A product-specific support card in document flow, followed by the site's newsletter controls.",
+      "risk": "The action is less immediately discoverable than a persistent floating button."
+    }
   },
   "evidence": {
     "screenshots": [
       {
         "width": 390,
-        "path": ".fleet/evidence/landing-hero/after-390.png"
+        "path": ".fleet/evidence/feedback-footer/after-390.png"
       },
       {
         "width": 768,
-        "path": ".fleet/evidence/landing-hero/after-768.png"
+        "path": ".fleet/evidence/feedback-footer/after-768.png"
       },
       {
         "width": 1440,
-        "path": ".fleet/evidence/landing-hero/after-1440.png"
+        "path": ".fleet/evidence/feedback-footer/after-1440.png"
       }
     ],
     "projectCheck": {
-      "command": "pnpm --dir landing-astro build",
+      "command": "pnpm typecheck; scoped pnpm exec biome check; isolated webpack Next dashboard Chrome pass at 390/768/1440 (no overlap with ATS question input, static footer placement, 44px target, Enter open and Escape close)",
       "status": "pass"
     },
     "critique": {
-      "score": 36,
+      "score": 34,
       "maximum": 40
     },
     "audit": {
-      "score": 19,
+      "score": 18,
       "maximum": 20
     },
     "unresolved": {
@@ -50,28 +81,34 @@
     "detector": {
       "posture": "advisory",
       "findings": [
-        {
-          "rule": "gradient-text",
-          "count": 2,
-          "disposition": "intentional incumbent treatment; unchanged in preserve pass"
-        },
-        {
-          "rule": "ai-color-palette",
-          "count": 4,
-          "disposition": "existing indigo evidence accent; advisory for a future visual-language review"
-        }
+        "Existing vendor blue feedback action is retained. Local dev uses the repository production webpack mode; default Turbopack failed on the incumbent ICO before rendering."
       ]
     },
-    "browserReview": {
-      "tool": "Chrome DevTools Protocol with system Chrome",
-      "viewports": [390, 768, 1440],
-      "horizontalOverflow": false,
-      "consoleErrors": 0,
-      "note": "The illustrative receipt rail remains legible at all three viewports, the secondary CTA resolves to #receipts, and the 390px header links measure 44px high. Keyboard focus exposes a 2px accent outline with 3px offset, reduced-motion disables ambient pulse animation, and the isolated static preview produced no application console errors; its missing favicon generated one non-application 404 network log."
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
     }
   },
   "ownerFeedback": {
-    "decision": "delegated",
-    "note": "The owner explicitly delegated final design judgment for this remediation wave."
+    "decision": "keep",
+    "note": "Owner selected shared Feedback A footer support on 2026-10-02; this is the dashboard consumer completion using its installed component."
   }
 }

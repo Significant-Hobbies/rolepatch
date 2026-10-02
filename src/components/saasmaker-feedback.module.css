@@ -1,0 +1,7 @@
+.support :global([data-feedback-widget] .smw-trigger) {
+  position: static;
+  inset: auto;
+  min-height: 44px;
+  max-width: 100%;
+  flex-shrink: 0;
+}
