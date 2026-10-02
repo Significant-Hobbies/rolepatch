@@ -130,11 +130,11 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AnalyticsProvider>
-          <SaaSMakerFeedback />
           <AuthProvider>
             <SiteNav />
             {children}
             <footer className="border-t border-border/60 px-6 py-6 text-sm text-muted-foreground">
+              <SaaSMakerFeedback />
               <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
                 <span>RolePatch</span>
                 <a href="/proof" className="transition-colors hover:text-foreground">
