@@ -19,7 +19,8 @@ type EnvSnapshot = Record<string, string | undefined>;
 
 interface OperationalReadinessInput {
   browserBindingDetected?: boolean;
-  aiBindingDetected?: boolean;
+  freeAiBindingDetected?: boolean;
+  workersAiBindingDetected?: boolean;
   knowledgebaseBindingDetected?: boolean;
   env?: EnvSnapshot;
   now?: number;
@@ -27,6 +28,38 @@ interface OperationalReadinessInput {
 
 function configured(env: EnvSnapshot, name: string): boolean {
   return Boolean(env[name]?.trim());
+}
+
+function getAiRuntimeReadiness({
+  freeAiBindingDetected,
+  workersAiBindingDetected,
+  directAiConfigured,
+  isProduction,
+}: {
+  freeAiBindingDetected: boolean;
+  workersAiBindingDetected: boolean;
+  directAiConfigured: boolean;
+  isProduction: boolean;
+}): Pick<OperationalReadinessItem, 'status' | 'detail' | 'nextStep'> {
+  if (freeAiBindingDetected) {
+    return {
+      status: 'ready',
+      detail: 'Free AI gateway service binding is configured for managed inference.',
+    };
+  }
+  if (!isProduction && (workersAiBindingDetected || directAiConfigured)) {
+    return {
+      status: 'code_ready',
+      detail:
+        'A development AI fallback is configured; managed production inference still requires the Free AI gateway binding.',
+      nextStep: 'Add the FREE_AI service binding to the production Worker environment.',
+    };
+  }
+  return {
+    status: 'needs_setup',
+    detail: 'The Free AI gateway service binding is not visible in this runtime.',
+    nextStep: 'Add the FREE_AI service binding to the production Worker environment.',
+  };
 }
 
 async function hasBrowserBinding(): Promise<boolean> {
@@ -49,7 +82,17 @@ async function hasKnowledgebaseBinding(): Promise<boolean> {
   }
 }
 
-async function hasAiBinding(): Promise<boolean> {
+async function hasFreeAiBinding(): Promise<boolean> {
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = getCloudflareContext({ async: false });
+    return Boolean((ctx?.env as { FREE_AI?: unknown } | undefined)?.FREE_AI);
+  } catch {
+    return false;
+  }
+}
+
+async function hasWorkersAiBinding(): Promise<boolean> {
   try {
     const { getCloudflareContext } = await import('@opennextjs/cloudflare');
     const ctx = getCloudflareContext({ async: false });
@@ -59,12 +102,23 @@ async function hasAiBinding(): Promise<boolean> {
   }
 }
 
+async function isProductionRuntime(): Promise<boolean> {
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = getCloudflareContext({ async: false });
+    return (ctx?.env as { NODE_ENV?: string } | undefined)?.NODE_ENV === 'production';
+  } catch {
+    return process.env.NODE_ENV === 'production';
+  }
+}
+
 export async function getOperationalReadiness(
   input: OperationalReadinessInput = {}
 ): Promise<OperationalReadiness> {
   const env = input.env ?? process.env;
   const browserBindingDetected = input.browserBindingDetected ?? (await hasBrowserBinding());
-  const aiBindingDetected = input.aiBindingDetected ?? (await hasAiBinding());
+  const freeAiBindingDetected = input.freeAiBindingDetected ?? (await hasFreeAiBinding());
+  const workersAiBindingDetected = input.workersAiBindingDetected ?? (await hasWorkersAiBinding());
   const knowledgebaseBindingDetected =
     input.knowledgebaseBindingDetected ?? (await hasKnowledgebaseBinding());
   const emailConfigured = input.env ? configured(env, 'RESEND_API_KEY') : isEmailConfigured();
@@ -74,11 +128,17 @@ export async function getOperationalReadiness(
     'GOOGLE_CLIENT_ID',
     'GOOGLE_CLIENT_SECRET',
   ].every((name) => configured(env, name));
-  const aiRuntimeReady =
-    aiBindingDetected ||
-    (configured(env, 'AI_BASE_URL') &&
-      configured(env, 'AI_API_KEY') &&
-      configured(env, 'AI_MODEL'));
+  const isProduction = input.env
+    ? env.NODE_ENV === 'production'
+    : (env.NODE_ENV ?? (await isProductionRuntime())) === 'production';
+  const directAiConfigured =
+    configured(env, 'AI_BASE_URL') && configured(env, 'AI_API_KEY') && configured(env, 'AI_MODEL');
+  const aiRuntimeReadiness = getAiRuntimeReadiness({
+    freeAiBindingDetected,
+    workersAiBindingDetected,
+    directAiConfigured,
+    isProduction,
+  });
   const knowledgebaseReady =
     configured(env, 'RAG_SERVICE_KEY') && configured(env, 'ROLEPATCH_RAG_INDEX_ID');
   const dodoCheckoutReady =
@@ -132,15 +192,7 @@ export async function getOperationalReadiness(
       {
         id: 'ai-runtime',
         label: 'AI runtime',
-        status: aiRuntimeReady ? 'ready' : 'needs_setup',
-        detail: aiRuntimeReady
-          ? aiBindingDetected
-            ? 'Project Workers AI binding is configured.'
-            : 'Direct AI base URL, API key, and model are configured.'
-          : 'A Workers AI binding or AI_BASE_URL, AI_API_KEY, and AI_MODEL are required.',
-        nextStep: aiRuntimeReady
-          ? undefined
-          : 'Add the AI binding or configure the direct endpoint, key, and model.',
+        ...aiRuntimeReadiness,
       },
       {
         id: 'knowledgebase-similarity',
