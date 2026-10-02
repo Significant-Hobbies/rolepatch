@@ -1,14 +1,13 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModel } from 'ai';
-import { createWorkersAI, type WorkersAISettings } from 'workers-ai-provider';
+import { createWorkersAI } from 'workers-ai-provider';
 
 import type { AIProviderConfig } from './types';
+import { createBudgetedWorkersAiBinding, SharedAiBudgetDenied } from './shared-ai-budget';
 
 // The former 3.1 8B model was retired; this model supports structured output.
 const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
-type WorkersAiBinding = Extract<WorkersAISettings, { binding: unknown }>['binding'];
-
 /**
  * Build a LanguageModel from a provider config, talking to any
  * OpenAI-compatible endpoint (formerly @saas-maker/ai's createAIModel).
@@ -41,9 +40,15 @@ function getDirectApiKey(): string {
 function getWorkersAIModel(): LanguageModel | null {
   try {
     const { env } = getCloudflareContext({ async: false });
-    const binding = (env as { AI?: WorkersAiBinding }).AI;
-    return binding ? createWorkersAI({ binding })(DEFAULT_WORKERS_AI_MODEL) : null;
-  } catch {
+    const runtimeEnv = env as Cloudflare.Env;
+    const binding = runtimeEnv.AI;
+    return binding
+      ? createWorkersAI({
+          binding: createBudgetedWorkersAiBinding(binding, runtimeEnv.NEURON_BUDGET),
+        })(DEFAULT_WORKERS_AI_MODEL)
+      : null;
+  } catch (error) {
+    if (error instanceof SharedAiBudgetDenied) throw error;
     return null;
   }
 }

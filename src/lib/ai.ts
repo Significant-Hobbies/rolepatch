@@ -1,3 +1,5 @@
+import { findSharedAiBudgetDenied } from './shared-ai-budget';
+
 // Wrapper that prefers Cloudflare Workers AI binding (free 10k Neurons/day)
 // and falls back to the user-configured external OpenAI-compatible endpoint.
 export { getAIModel } from './ai-cloudflare';
@@ -36,6 +38,8 @@ function looksLike(error: unknown, ...needles: string[]): boolean {
  */
 export function toUserFacingAIError(error: unknown): Error {
   // Preserve already-classified or product-level errors (tokens, auth).
+  const budgetDenial = findSharedAiBudgetDenied(error);
+  if (budgetDenial) return budgetDenial;
   if (error instanceof AIServiceError) return error;
   if (looksLike(error, 'deprecated', 'model retired', 'model has been removed')) {
     return new AIServiceError(

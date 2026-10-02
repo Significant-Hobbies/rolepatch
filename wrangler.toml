@@ -23,6 +23,11 @@ cpu_ms = 30000
 [ai]
 binding = "AI"
 
+[[durable_objects.bindings]]
+name = "NEURON_BUDGET"
+class_name = "NeuronBudgetDO"
+script_name = "free-ai-gateway"
+
 # Build-only environment used while materializing the static-assets cache.
 # AI is intentionally absent because cache population never calls a model.
 [env.cache]
