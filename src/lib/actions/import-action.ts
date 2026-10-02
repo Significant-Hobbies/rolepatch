@@ -4,7 +4,7 @@ import { generateText } from 'ai';
 import { revalidatePath } from 'next/cache';
 import { v4 as uuid } from 'uuid';
 
-import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig } from '@/lib/types';
@@ -120,8 +120,10 @@ export async function importResumeFromFile(
 
   let markdown: string;
   try {
+    const model = getAIModel(aiConfig);
     const result = await generateText({
-      model: getAIModel(aiConfig),
+      model,
+      ...getAIModelRetryOptions(model),
       system: STRUCTURING_SYSTEM_PROMPT,
       prompt: `Raw resume text:\n\n${trimmed}`,
     });

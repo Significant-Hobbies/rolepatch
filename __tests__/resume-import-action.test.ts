@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('ai', () => ({ generateText: mocks.generateText }));
 vi.mock('@/lib/ai', () => ({
   getAIModel: () => 'synthetic-model',
+  getAIModelRetryOptions: () => ({}),
   toUserFacingAIError: () => new Error('Generation unavailable'),
 }));
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: mocks.getCurrentUserId }));
