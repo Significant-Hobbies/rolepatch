@@ -10,6 +10,7 @@ import { LocalResumeExport } from '@/components/local-resume-export';
 import { ResumeDiff } from '@/components/resume-diff';
 import { ShareScoreButton } from '@/components/share-score-button';
 import { SkillsRoadmapPanel } from '@/components/skills-roadmap';
+import { useTokenBalance } from '@/components/token-balance-provider';
 import {
   formatEvidenceBullet,
   rankEvidenceForJob,
@@ -18,7 +19,6 @@ import {
 import { generateFitScore } from '@/lib/actions/fit-score-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
-import { getTokenBalance } from '@/lib/actions/token-actions';
 import { calculateATSScore } from '@/lib/ats-score';
 import {
   localGetFitScore,
@@ -71,18 +71,9 @@ export function TailorFlow({
   const [stashEntries, setStashEntries] = useState(serverStashEntries);
   const [evidenceEntries, setEvidenceEntries] = useState(serverEvidence);
   const [tailoredList, setTailoredList] = useState(existingTailored);
-  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const { balance: tokenBalance, refreshBalance } = useTokenBalance();
   const [fitScore, setFitScore] = useState<FitScore | null>(existingFitScore ?? null);
   const [fitScoreLoading, setFitScoreLoading] = useState(false);
-
-  // Fetch token balance on mount for signed-in users
-  useEffect(() => {
-    if (!isGuest) {
-      getTokenBalance()
-        .then(setTokenBalance)
-        .catch(() => {});
-    }
-  }, [isGuest]);
 
   // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
@@ -233,15 +224,13 @@ export function TailorFlow({
 
         // Refresh token balance after successful generation
         if (!isGuest) {
-          getTokenBalance()
-            .then(setTokenBalance)
-            .catch(() => {});
+          void refreshBalance();
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to generate tailored resume';
         if (message.includes('No tokens remaining') || message.includes('insufficient_tokens')) {
           setError('No tokens remaining.');
-          setTokenBalance(0);
+          void refreshBalance();
         } else {
           setError(message);
         }
@@ -295,9 +284,7 @@ export function TailorFlow({
         if (isGuest) {
           localSaveFitScore(result);
         } else {
-          getTokenBalance()
-            .then(setTokenBalance)
-            .catch(() => {});
+          void refreshBalance();
         }
       })
       .catch(() => {})

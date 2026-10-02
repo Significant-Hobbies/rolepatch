@@ -1,21 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
-import { getTokenBalance } from '@/lib/actions/token-actions';
+import { useTokenBalance } from '@/components/token-balance-provider';
 
 export function TokenBalance() {
   const { isGuest } = useAuth();
-  const [balance, setBalance] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (isGuest) return;
-    getTokenBalance()
-      .then(setBalance)
-      .catch(() => {});
-  }, [isGuest]);
+  const { balance } = useTokenBalance();
 
   if (isGuest || balance === null) return null;
 
