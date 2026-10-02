@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
-import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig, OutreachEmail } from '@/lib/types';
@@ -46,8 +46,10 @@ export async function generateOutreachEmail(
   }
 
   try {
+    const model = getAIModel(aiConfig);
     const { object } = await generateObject({
-      model: getAIModel(aiConfig),
+      model,
+      ...getAIModelRetryOptions(model),
       schema: outreachSchema,
       system: [
         'You write short, warm, professional cold outreach emails for job seekers reaching out to recruiters or hiring managers.',
