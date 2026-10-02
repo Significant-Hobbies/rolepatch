@@ -15,6 +15,12 @@ import openNext from './.open-next/worker.js';
 import { withTiming } from './timing.mjs';
 import { handleAgentEdge } from './agent-edge.mjs';
 import { handleRolePatchAgentRoutes } from './rolepatch-agent-routes.mjs';
+import {
+  documentCacheRequest,
+  isDocumentRequest,
+  DOCUMENT_CLIENT_CACHE_CONTROL,
+  DOCUMENT_EDGE_CACHE_CONTROL,
+} from './html-cache.mjs';
 
 // Durable Objects must be re-exported from the entry that wrangler.toml
 // points at, otherwise the bindings can't resolve them at deploy time.
@@ -163,7 +169,7 @@ export default {
       }
       // Auth-bearing requests pass straight through; the user is likely
       // going to be redirected by middleware to /library or /dashboard.
-      if (hasAuthCookie(request)) {
+      if (hasAuthCookie(request) || !isDocumentRequest(request)) {
         return openNext.fetch(request, env, ctx);
       }
 
@@ -245,10 +251,15 @@ export default {
         }
       }
 
+      // A deploy replaces hashed JS chunks. Never pair new assets with HTML
+      // left in a URL-only cache by an earlier build.
+      const cacheRequest = await documentCacheRequest(request, env.ASSETS);
+      if (!cacheRequest) return openNext.fetch(request, env, ctx);
       const cache = caches.default;
-      const cached = await cache.match(request);
+      const cached = await cache.match(cacheRequest);
       if (cached) {
         const hit = new Response(cached.body, cached);
+        hit.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
         hit.headers.set('x-edge-cache', 'HIT');
         return hit;
       }
@@ -257,7 +268,11 @@ export default {
 
       // Only cache 2xx HTML responses — never error pages or redirects.
       const contentType = response.headers.get('content-type') ?? '';
-      if (response.status !== 200 || !contentType.includes('text/html')) {
+      if (
+        response.status !== 200 ||
+        !contentType.includes('text/html') ||
+        response.headers.has('set-cookie')
+      ) {
         return response;
       }
 
@@ -269,20 +284,21 @@ export default {
       // the same Uint8Array sidesteps the streaming edge case entirely.
       const body = await response.arrayBuffer();
       const headers = new Headers(response.headers);
-      headers.set('Cache-Control', CACHE_CONTROL);
+      headers.set('Cache-Control', DOCUMENT_EDGE_CACHE_CONTROL);
 
       const cacheable = new Response(body, {
         status: response.status,
         statusText: response.statusText,
         headers,
       });
-      ctx.waitUntil(cache.put(request, cacheable.clone()));
+      ctx.waitUntil(cache.put(cacheRequest, cacheable.clone()));
 
       const clientResponse = new Response(body, {
         status: response.status,
         statusText: response.statusText,
         headers,
       });
+      clientResponse.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
       clientResponse.headers.set('x-edge-cache', 'MISS');
       return clientResponse;
     } catch (err) {
