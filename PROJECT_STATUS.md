@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-09
 
+## Free AI gateway source update — 2 October
+
+Managed AI requests now use the Fleet gateway with canonical `rolepatch`
+attribution. Explicit BYOK remains first; production fails closed when the
+service binding is missing, and managed calls leave retries to the gateway.
+Privacy copy now describes gateway and BYOK provider routing accurately. The
+SDK adapter tests and full local `pnpm quality` pass (496 tests), and the
+Cloudflare build plus Wrangler dry-run pass. Pending PR review and production
+release; no deployment was performed. Tracked in [Free AI issue #83](https://github.com/sass-maker/free-ai/issues/83).
+
 ## Import release — 9 September
 
 PR #69 is merged. Source `985dfd1f11a3c617482c49f05bf59708b9d7fd6b`

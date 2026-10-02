@@ -4,7 +4,7 @@ import { generateText } from 'ai';
 import { v4 as uuid } from 'uuid';
 
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
-import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
@@ -145,8 +145,10 @@ Return ONLY the cover letter text, no explanation, no preamble, no sign-off plac
         .join('\n')
     );
 
+    const model = getAIModel(aiConfig);
     const { text } = await generateText({
-      model: getAIModel(aiConfig),
+      model,
+      ...getAIModelRetryOptions(model),
       system,
       prompt: promptParts.join('\n\n'),
     });

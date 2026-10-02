@@ -12,7 +12,7 @@ const generateObjectLoose = generateObject as unknown as (
 import { v4 as uuid } from 'uuid';
 
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
-import { getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig, SkillRoadmapItem, SkillsRoadmap } from '@/lib/types';
@@ -89,8 +89,10 @@ export async function generateSkillsRoadmap(
   }
 
   try {
+    const model = getAIModel(aiConfig);
     const { object: rawObject } = await generateObjectLoose({
-      model: getAIModel(aiConfig),
+      model,
+      ...getAIModelRetryOptions(model),
       schema: roadmapSchema,
       system: SYSTEM_PROMPT,
       prompt: `## Resume:\n${resumeSource}\n\n## Job Description:\n${jdText}\n\n## Instructions:\nIdentify the skill gaps most relevant to this role and produce a prioritized learning plan. For each gap: name the skill, priority (high/medium/low), one-sentence reason tied to the JD, 1-5 concrete resources (type + title; url only when you are certain), and a single verifiable milestone. Compute total_estimated_hours by summing the resources' estimated_hours you provided. Write a 2-sentence summary of the overall plan.`,

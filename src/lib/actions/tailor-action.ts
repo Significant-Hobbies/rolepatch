@@ -7,7 +7,7 @@ import { formatEvidenceForPrompt, rankEvidenceForJob } from '@/lib/achievement-e
 import { listAchievementEvidence } from '@/lib/actions/achievement-evidence-actions';
 import { listStashEntries } from '@/lib/actions/stash-actions';
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
-import { AIServiceError, getAIModel, toUserFacingAIError } from '@/lib/ai';
+import { AIServiceError, getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { getAIErrorDiagnostics } from '@/lib/ai-error-diagnostics';
 import { trackActivated, trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
@@ -132,8 +132,10 @@ async function tailorResume(
       }
     }
 
+    const model = getAIModel(aiConfig);
     const { object } = await generateObject({
-      model: getAIModel(aiConfig),
+      model,
+      ...getAIModelRetryOptions(model),
       maxOutputTokens: Math.min(
         8192,
         Math.max(2048, Math.ceil((resumeSource.length + stashSection.length) / 3) + 1000)

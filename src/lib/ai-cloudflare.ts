@@ -8,6 +8,8 @@ import { createBudgetedWorkersAiBinding, SharedAiBudgetDenied } from './shared-a
 
 // The former 3.1 8B model was retired; this model supports structured output.
 const DEFAULT_WORKERS_AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+type FreeAiBinding = { fetch(request: Request): Promise<Response> };
+const managedGatewayModels = new WeakSet<object>();
 /**
  * Build a LanguageModel from a provider config, talking to any
  * OpenAI-compatible endpoint (formerly @saas-maker/ai's createAIModel).
@@ -25,6 +27,24 @@ function createAIModel(
   return provider.chatModel(config.model);
 }
 
+function createFreeAiGatewayModel(binding: FreeAiBinding): LanguageModel {
+  const provider = createOpenAICompatible({
+    name: 'free-ai',
+    baseURL: 'https://fleet-gateway.internal/v1',
+    apiKey: 'service-binding',
+    headers: { 'x-gateway-project-id': 'rolepatch' },
+    fetch: (input, init) => binding.fetch(new Request(input, init)),
+    supportsStructuredOutputs: false,
+  });
+  const model = provider.chatModel('auto');
+  managedGatewayModels.add(model as object);
+  return model;
+}
+
+export function getAIModelRetryOptions(model: LanguageModel): { maxRetries?: 0 } {
+  return managedGatewayModels.has(model as object) ? { maxRetries: 0 } : {};
+}
+
 function getDirectBaseUrl(): string {
   const fromEnv = process.env.AI_BASE_URL?.trim();
   if (!fromEnv) throw new Error('AI_BASE_URL is required when no BYOK endpoint is supplied');
@@ -37,29 +57,25 @@ function getDirectApiKey(): string {
   return apiKey;
 }
 
-function getWorkersAIModel(): LanguageModel | null {
+function getRuntimeEnv():
+  | (Cloudflare.Env & { FREE_AI?: FreeAiBinding; NODE_ENV?: string })
+  | undefined {
   try {
     const { env } = getCloudflareContext({ async: false });
-    const runtimeEnv = env as Cloudflare.Env;
-    const binding = runtimeEnv.AI;
-    return binding
-      ? createWorkersAI({
-          binding: createBudgetedWorkersAiBinding(binding, runtimeEnv.NEURON_BUDGET),
-        })(DEFAULT_WORKERS_AI_MODEL)
-      : null;
+    return env as Cloudflare.Env & { FREE_AI?: FreeAiBinding; NODE_ENV?: string };
   } catch (error) {
     if (error instanceof SharedAiBudgetDenied) throw error;
-    return null;
+    return undefined;
   }
 }
 
 /**
- * Returns a model for BYOK or the project's direct free-provider/local path.
+ * Returns a model for BYOK or the managed Free AI gateway.
  *
  * Selection order:
  *   1. User-supplied endpointUrl + apiKey  → external provider (BYO key)
- *   2. Project Workers AI binding           → free, keyless Cloudflare model
- *   3. Otherwise                            → explicit direct runtime config
+ *   2. Free AI service binding              → managed free-provider routing
+ *   3. Local Workers AI / explicit runtime  → development-only fallback
  */
 export function getAIModel(aiConfig: AIProviderConfig): LanguageModel {
   // Honour explicit user config first — lets users plug in their own keys
@@ -68,8 +84,23 @@ export function getAIModel(aiConfig: AIProviderConfig): LanguageModel {
     return createAIModel(aiConfig);
   }
 
-  const workersAiModel = getWorkersAIModel();
-  if (workersAiModel) return workersAiModel;
+  const runtimeEnv = getRuntimeEnv();
+  if (runtimeEnv?.FREE_AI) return createFreeAiGatewayModel(runtimeEnv.FREE_AI);
+  if ((runtimeEnv?.NODE_ENV ?? process.env.NODE_ENV) === 'production') {
+    throw new Error('Free AI gateway service binding is required in production');
+  }
+  return getDevelopmentModel(aiConfig, runtimeEnv);
+}
+
+function getDevelopmentModel(
+  aiConfig: AIProviderConfig,
+  runtimeEnv: ReturnType<typeof getRuntimeEnv>
+): LanguageModel {
+  if (runtimeEnv?.AI) {
+    return createWorkersAI({
+      binding: createBudgetedWorkersAiBinding(runtimeEnv.AI, runtimeEnv.NEURON_BUDGET),
+    })(DEFAULT_WORKERS_AI_MODEL);
+  }
 
   const resolvedModel = aiConfig.model || process.env.AI_MODEL?.trim();
   if (!resolvedModel) throw new Error('AI_MODEL is required when no BYOK model is supplied');
