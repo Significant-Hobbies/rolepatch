@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { markdownPathForSurface, PUBLIC_SURFACES } from '../../public-surfaces.mjs';
@@ -13,6 +14,13 @@ function request(path: string, accept?: string) {
 }
 
 describe('RolePatch agent surfaces', () => {
+  it('links the documented surface template to a real catalog example', () => {
+    const docs = readFileSync('landing-astro/src/pages/docs.astro', 'utf8');
+    expect(docs).toContain("'/api/public/v1/surfaces/home'");
+    expect(PUBLIC_SURFACES.some((surface) => surface.id === 'home')).toBe(true);
+    expect(docs).toContain('href={href}');
+  });
+
   it('serves truthful Markdown for every cataloged HTML route', async () => {
     for (const surface of PUBLIC_SURFACES) {
       const negotiated = handleRolePatchAgentRoutes(
