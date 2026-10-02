@@ -9,7 +9,7 @@ const DESCRIPTION =
 
 const endpoints = [
   ['/api/ai', 'JSON catalog of every public HTML surface and same-origin Markdown alternate.'],
-  ['/api/public/v1/surfaces/{id}', 'Versioned JSON lookup for one catalog surface; an unknown id returns a typed problem response.'],
+  ['/api/public/v1/surfaces/{id}', 'Versioned JSON lookup for one catalog surface. This link uses the home surface as a working example; an unknown id returns a typed problem response.', '/api/public/v1/surfaces/home'],
   ['/llms.txt', 'Compact product guidance, best-fit use cases, boundaries, access, and discovery links.'],
   ['/llms-full.txt', 'Expanded product brief for agents that need the full product contract.'],
   ['/index.md', 'Canonical Markdown explanation of product purpose, evidence rules, access, and state.'],
@@ -38,16 +38,16 @@ const endpoints = [
         <div class="site-shell docs-layout">
           <div class="docs-intro">
             <p class="section-label">Endpoints</p>
-            <h2>Six public routes. No mutation API.</h2>
+            <h2>Seven public routes. No mutation API.</h2>
             <p>
               Use GET or HEAD. These routes require no token or account. They describe RolePatch;
               they do not accept a resume, spend credits, fill an ATS, or submit an application.
             </p>
           </div>
           <div class="endpoint-list">
-            {endpoints.map(([path, body]) => (
+            {endpoints.map(([path, body, href = path]) => (
               <article>
-                <a href={path}><code>{path}</code></a>
+                <a href={href}><code>{path}</code></a>
                 <p>{body}</p>
               </article>
             ))}
