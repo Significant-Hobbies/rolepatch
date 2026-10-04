@@ -2,7 +2,32 @@
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer">
+<fleet-footer-extension
+    data-fleet-footer-project="rolepatch"
+    product-name="RolePatch"
+    art-src="https://sassmaker.com/footer-art/rolepatch.webp"
+    class="precise-footer"
+    signature-name="RolePatch"
+    font-base="https://sassmaker.com/fonts/fleet-footer-precise-v1/"
+    theme="dark"
+    surface={Astro.url.pathname === '/' ? 'landing' : 'app'}
+    art-alt="RolePatch: A careful application-tailoring desk centers a plain resume sheet beside a job-description card, joined by removable revision strips. A source folder and separate review tray occupy the sides, making approval visible before action."
+    art-width="2170"
+    art-height="725"
+    art-position="50% 50%"
+    art-credit="Original illustration for RolePatch"
+  >
+<saas-maker-newsletter-capture slot="capture"
+      catalog-id="rolepatch"
+      product-name="RolePatch"
+      kind="newsletter"
+      source="footer"
+      privacy-url="https://rolepatch.com/privacy"
+      theme="dark"
+      layout="compact"
+      integrated
+    ></saas-maker-newsletter-capture>
+<footer slot="navigation" data-fleet-footer-navigation class="site-footer">
   <div class="site-shell">
     <div class="footer-state">
       <div>
@@ -62,30 +87,28 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="footer-tools">
-      <p>Explore the Fleet project strip or ask AI about RolePatch below.</p>
+      <p>Explore more from the studio or ask AI about RolePatch.</p>
       <p>© {year} Sarthak Agrawal · No unattended bulk apply · No CAPTCHA bypass</p>
     </div>
 
-    <saas-maker-newsletter-capture
-      catalog-id="rolepatch"
-      product-name="RolePatch"
-      kind="newsletter"
-      source="footer"
-      privacy-url="https://rolepatch.com/privacy"
-      theme="dark"
-    ></saas-maker-newsletter-capture>
     <script is:inline type="module" src="https://sassmaker.com/newsletter-capture.js"></script>
 
-    <portfolio-project-strip
-      current-project="rolepatch"
-      label="Other Fleet projects"
-    ></portfolio-project-strip>
-    <script is:inline src="/project-strip.js" data-project="rolepatch" defer></script>
+    <script is:inline src="https://sassmaker.com/project-strip.js" data-project="rolepatch" defer data-theme="dark"
+      data-host-only="true"
+    ></script>
     <script
       is:inline
       src="https://sassmaker.com/ai-chat-footer.js"
       data-name="RolePatch"
       defer
+      data-theme="dark"
+      data-host-only="true"
+      data-project="rolepatch"
     ></script>
   </div>
 </footer>
+<portfolio-project-strip slot="projects" layout="studio" theme="dark"
+      current-project="rolepatch"
+      label="Other Fleet projects"
+    ></portfolio-project-strip>
+</fleet-footer-extension>
