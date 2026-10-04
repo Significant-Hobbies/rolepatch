@@ -70,6 +70,8 @@ const acceptedHighAdvisories = new Set([
   'GHSA-8hv8-536x-4wqp',
   'GHSA-96hv-2xvq-fx4p',
   'GHSA-9wv6-86v2-598j',
+  // http-cache-semantics <=4.2.0 via dev tooling; no patched version exists upstream. Re-review when a fix is released.
+  'GHSA-ch52-4w7c-c8xp',
   'GHSA-f88m-g3jw-g9cj',
   'GHSA-hm92-r4w5-c3mj',
   'GHSA-jmr9-qjv8-65gv',
