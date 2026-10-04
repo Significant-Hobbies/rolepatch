@@ -72,3 +72,6 @@ cache.bin
 .devin/logs/
 .agent-logs/
 .codevetter/
+
+# Private agent qualification evidence
+.fleet-local/
