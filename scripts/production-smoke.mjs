@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
+
 const DEFAULT_BASE_URL = 'https://rolepatch.com';
 const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -208,7 +210,7 @@ async function main() {
   if (summary.failed > 0) process.exitCode = 1;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;
