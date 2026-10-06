@@ -1,3 +1,4 @@
+import { Blob } from 'node:buffer';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { runInNewContext } from 'node:vm';
@@ -18,6 +19,7 @@ type RootWorker = {
   ) => Promise<Response>;
 };
 
+// Use Node streaming Blob rather than the JSDOM Blob, which has no stream().
 // Execute the actual handler with isolated routing dependencies. This verifies
 // response behavior in Node; the production build and Cloudflare smoke are
 // separate gates for the real static-asset routing and compression runtime.
