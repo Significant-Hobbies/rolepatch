@@ -1,10 +1,11 @@
 import { spawn } from 'node:child_process';
-import { copyFile, mkdtemp, rm } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
+import { CONTENT_SECURITY_POLICY } from '../security-policy.mjs';
 
 import {
   buildSmokeChecks,
@@ -45,7 +46,9 @@ describe('production smoke harness', () => {
       if (url.endsWith('/settings')) {
         return new Response('<h1>Operational readiness</h1><h2>Chrome extension</h2>');
       }
-      return new Response('<h1>RolePatch</h1>');
+      return new Response('<h1>RolePatch</h1>', {
+        headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
+      });
     });
 
     const summary = await runProductionSmoke({
@@ -61,6 +64,30 @@ describe('production smoke harness', () => {
       false
     );
   });
+
+  it.each([undefined, '', 'default-src *'])(
+    'rejects a missing, empty or different landing CSP: %s',
+    async (policy) => {
+      const summary = await runProductionSmoke({
+        baseUrl: 'https://rolepatch.com',
+        fetchImpl: vi.fn(
+          async () =>
+            new Response('<h1>RolePatch</h1>', {
+              headers: policy === undefined ? {} : { 'content-security-policy': policy },
+            })
+        ),
+      });
+      expect(summary.results[0]).toMatchObject({
+        name: 'landing',
+        ok: false,
+        errors: [
+          policy === undefined
+            ? 'missing response header: content-security-policy'
+            : 'unexpected response header: content-security-policy',
+        ],
+      });
+    }
+  );
 
   it('runs authenticated apply-agent read checks when a session cookie is supplied', async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
@@ -88,7 +115,9 @@ describe('production smoke harness', () => {
       if (url.endsWith('/settings')) {
         return new Response('<h1>Operational readiness</h1><h2>Chrome extension</h2>');
       }
-      return new Response('<h1>RolePatch</h1>');
+      return new Response('<h1>RolePatch</h1>', {
+        headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
+      });
     });
 
     const summary = await runProductionSmoke({
@@ -147,7 +176,10 @@ describe('production smoke harness', () => {
         return;
       }
 
-      response.writeHead(200, { 'content-type': 'text/html' });
+      response.writeHead(200, {
+        'content-type': 'text/html',
+        ...(path === '/' ? { 'content-security-policy': CONTENT_SECURITY_POLICY } : {}),
+      });
       response.end(
         {
           '/': '<h1>RolePatch</h1>',
@@ -172,8 +204,13 @@ describe('production smoke harness', () => {
         dirname(fileURLToPath(import.meta.url)),
         '../scripts/production-smoke.mjs'
       );
-      const spacedScriptPath = join(tempDirectory, 'production-smoke.mjs');
+      const spacedScriptPath = join(tempDirectory, 'scripts', 'production-smoke.mjs');
+      await mkdir(join(tempDirectory, 'scripts'));
       await copyFile(sourcePath, spacedScriptPath);
+      await copyFile(
+        join(dirname(sourcePath), '../security-policy.mjs'),
+        join(tempDirectory, 'security-policy.mjs')
+      );
 
       const { code, stdout, stderr } = await new Promise<{
         code: number | null;

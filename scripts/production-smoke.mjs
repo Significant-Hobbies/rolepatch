@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from 'node:url';
+import { CONTENT_SECURITY_POLICY } from '../security-policy.mjs';
 
 const DEFAULT_BASE_URL = 'https://rolepatch.com';
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -18,6 +19,7 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       path: '/',
       expectStatus: 200,
       requiredText: ['RolePatch'],
+      requiredHeaders: { 'content-security-policy': CONTENT_SECURITY_POLICY },
     },
     {
       name: 'jobs browser',
@@ -124,6 +126,11 @@ async function runCheck(baseUrl, check, sessionCookie, timeoutMs = DEFAULT_TIMEO
   const errors = [];
   if (res.status !== check.expectStatus) {
     errors.push(`expected HTTP ${check.expectStatus}, got ${res.status}`);
+  }
+  for (const [name, expectedValue] of Object.entries(check.requiredHeaders ?? {})) {
+    const actualValue = res.headers.get(name);
+    if (actualValue === null) errors.push(`missing response header: ${name}`);
+    else if (actualValue !== expectedValue) errors.push(`unexpected response header: ${name}`);
   }
   for (const text of check.requiredText ?? []) {
     if (!body.includes(text)) errors.push(`missing text: ${text}`);

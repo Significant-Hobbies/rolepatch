@@ -13,6 +13,7 @@
 
 import openNext from './.open-next/worker.js';
 import { withTiming } from './timing.mjs';
+import { CONTENT_SECURITY_POLICY } from './security-policy.mjs';
 import { handleAgentEdge } from './agent-edge.mjs';
 import { handleRolePatchAgentRoutes } from './rolepatch-agent-routes.mjs';
 import {
@@ -197,6 +198,7 @@ export default {
         // Pass those through — falling through would serve the wrong page.
         if (assetResp.status === 304) {
           const headers = new Headers(assetResp.headers);
+          headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
           headers.set('Cache-Control', CACHE_CONTROL);
           headers.set('x-edge-cache', 'ASSET');
           return new Response(null, { status: 304, headers });
@@ -205,6 +207,7 @@ export default {
           const acceptEnc = request.headers.get('accept-encoding') ?? '';
           const wantsGzip = acceptEnc.includes('gzip');
           const headers = new Headers(assetResp.headers);
+          headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
           headers.set('Cache-Control', CACHE_CONTROL);
           headers.set('x-edge-cache', 'ASSET');
 
