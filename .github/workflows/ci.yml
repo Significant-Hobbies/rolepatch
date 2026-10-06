@@ -1,20 +1,47 @@
-name: CI
+name: Temporary RolePatch deploy preflight
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
+        with:
+          repository: Significant-Hobbies/rolepatch
+          ref: main
+          path: rolepatch
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: sass-maker/saas-maker
+          ref: c8138c477e060174d2245f76219dc290acf56d2c
+          path: saas-maker
+          sparse-checkout: tooling/scripts/fleet-deploy-guard.sh
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: '22.19'
-          cache: pnpm
-      - uses: astral-sh/setup-uv@v7
-      - run: pnpm install --frozen-lockfile --ignore-scripts
-      - run: pnpm quality
-      - run: pnpm cf:build
+      - name: Assert exact clean main and immutable guard source
+        working-directory: rolepatch
+        env:
+          EXPECTED_MAIN_SHA: '1110236f1814720b7d103898000e4691bf460430'
+        run: |
+          test "$(git branch --show-current)" = main
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          test "$(git rev-parse refs/remotes/origin/main)" = "$EXPECTED_MAIN_SHA"
+          test "$(git status --porcelain)" = ''
+      - name: Run canonical read-only readiness guard
+        env:
+          FLEET_ROOT_OVERRIDE: ${{ github.workspace }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(git -C saas-maker rev-parse HEAD)" = c8138c477e060174d2245f76219dc290acf56d2c
+          test "$(git -C saas-maker rev-parse HEAD:tooling/scripts/fleet-deploy-guard.sh)" = 642a6e0306cc24497e72f342d1305ee14eb72626
+          bash saas-maker/tooling/scripts/fleet-deploy-guard.sh rolepatch
