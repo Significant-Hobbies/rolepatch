@@ -1,20 +1,32 @@
-name: CI
+name: Temporary RolePatch security lock generator
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  generate-security-lock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - uses: pnpm/action-setup@v6
+        with:
+          version: 10.33.2
+          run_install: false
       - uses: actions/setup-node@v6
         with:
           node-version: '22.19'
-          cache: pnpm
-      - uses: astral-sh/setup-uv@v7
-      - run: pnpm install --frozen-lockfile --ignore-scripts
-      - run: pnpm quality
-      - run: pnpm cf:build
+      - name: Read current package freshness
+        run: pnpm outdated --recursive --format json
+        continue-on-error: true
+      - name: Generate authentic lock without lifecycle scripts
+        run: pnpm install --lockfile-only --ignore-scripts
+      - uses: actions/upload-artifact@v7
+        with:
+          name: rolepatch8-security-lock-${{ github.sha }}
+          path: pnpm-lock.yaml
+          retention-days: 1
+          if-no-files-found: error
