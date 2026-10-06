@@ -99,15 +99,19 @@ jobs:
                 assert.equal(view.policy, CONTENT_SECURITY_POLICY, 'Enforced browser document CSP must match intended source exactly');
                 view.metaPolicies = await page.locator('meta[http-equiv="Content-Security-Policy" i]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('content')));
                 assert.deepEqual(view.metaPolicies, [], 'No competing CSP meta policy expected');
-                await expect.poll(() => expectedFiles.every((file) => view.scriptResponses.some((row) => row.file === file && row.status === 200 && row.bodyCompleted)), { timeout: 25000, message: 'All five required shared scripts must load through real browser requests' }).toBe(true);
+                const initialFiles = expectedFiles.filter((file) => file !== 'feedback-launcher.js');
+                await expect.poll(() => initialFiles.every((file) => view.scriptResponses.some((row) => row.file === file && row.status === 200 && row.bodyCompleted)), { timeout: 25000, message: 'Four initial shared scripts must load fully' }).toBe(true);
                 const feedback = page.getByRole('button', { name: /send feedback|give feedback|^feedback$/i });
+                await expect(feedback).toBeVisible({ timeout: 20000 });
                 view.feedback.launcherCount = await feedback.count();
+                assert.equal(view.feedback.launcherCount, 1, 'Open the existing unambiguous feedback launcher');
                 if (view.feedback.launcherCount === 1) {
                   await feedback.click({ timeout: 10000 });
+                  await expect.poll(() => expectedFiles.every((file) => view.scriptResponses.some((row) => row.file === file && row.status === 200 && row.bodyCompleted)), { timeout: 25000, message: 'All five scripts, including click-loaded feedback, must complete successfully' }).toBe(true);
                   const dialog = page.getByRole('dialog');
+                  await expect(dialog).toBeVisible({ timeout: 10000 });
                   view.feedback.dialogCount = await dialog.count();
                   if (view.feedback.dialogCount === 1) {
-                    await expect(dialog).toBeVisible({ timeout: 10000 });
                     view.feedback.visible = true;
                     view.feedback.textInputsBlank = await dialog.locator('textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"])').evaluateAll((nodes) => nodes.every((node) => node.value === ''));
                     view.feedback.checkboxesUnchecked = await dialog.locator('input[type="checkbox"]').evaluateAll((nodes) => nodes.every((node) => !node.checked));
@@ -118,7 +122,14 @@ jobs:
                     if (view.feedback.closeButtonCount === 1) {
                       view.feedback.closeHitTargetIsControl = await close.evaluate((element) => {
                         const bounds = element.getBoundingClientRect();
-                        const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                        const x = bounds.x + bounds.width / 2;
+                        const y = bounds.y + bounds.height / 2;
+                        let hit = document.elementFromPoint(x, y);
+                        while (hit?.shadowRoot) {
+                          const nested = hit.shadowRoot.elementFromPoint(x, y);
+                          if (!nested || nested === hit) break;
+                          hit = nested;
+                        }
                         return hit === element || element.contains(hit);
                       });
                     }
