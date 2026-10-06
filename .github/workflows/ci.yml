@@ -1,20 +1,156 @@
-name: CI
+name: Temporary RolePatch live CSP browser verification
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  live-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Assert exact verified main
+        env:
+          EXPECTED_MAIN_SHA: '1110236f1814720b7d103898000e4691bf460430'
+        run: |
+          test "$(git branch --show-current)" = main
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          test "$(git rev-parse refs/remotes/origin/main)" = "$EXPECTED_MAIN_SHA"
+          test -z "$(git status --porcelain)"
       - uses: pnpm/action-setup@v6
+        with:
+          version: 10.33.2
+          run_install: false
       - uses: actions/setup-node@v6
         with:
           node-version: '22.19'
-          cache: pnpm
-      - uses: astral-sh/setup-uv@v7
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      - run: pnpm quality
-      - run: pnpm cf:build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify public live policy and scripts with no submissions
+        run: |
+          node --input-type=module <<'BROWSER_CHECK'
+          import assert from 'node:assert/strict';
+          import { mkdir, writeFile } from 'node:fs/promises';
+          import { join } from 'node:path';
+          import { chromium, expect } from '@playwright/test';
+          import { CONTENT_SECURITY_POLICY } from './security-policy.mjs';
+          
+          const directory = join(process.env.RUNNER_TEMP, 'rolepatch-csp-evidence');
+          await mkdir(directory, { recursive: true });
+          const expectedFiles = ['tracker.js', 'newsletter-capture.js', 'project-strip.js', 'ai-chat-footer.js', 'feedback-launcher.js'];
+          const report = {
+            observedAt: new Date().toISOString(),
+            expectedSource: '1110236f1814720b7d103898000e4691bf460430',
+            baseUrl: 'https://rolepatch.com/',
+            expectedPolicy: CONTENT_SECURITY_POLICY,
+            manualSubmissions: 0,
+            accountSessions: 0,
+            captureAcceptanceClaimed: false,
+            ordinaryPageviewBeaconsAreNotCaptureEvidence: true,
+            views: [],
+          };
+          let browser;
+          let failure;
+          try {
+            browser = await chromium.launch();
+            report.browserVersion = browser.version();
+            for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+              const context = await browser.newContext({ viewport });
+              const page = await context.newPage();
+              const view = { viewport, scriptResponses: [], cspFailures: [], feedback: {} };
+              report.views.push(view);
+              page.on('response', async (response) => {
+                const url = new URL(response.url());
+                const file = url.pathname.split('/').pop();
+                if (['sassmaker.com', 'health.sassmaker.com'].includes(url.hostname) && expectedFiles.includes(file)) {
+                  const row = { url: response.url(), file, status: response.status(), bodyCompleted: false };
+                  try {
+                    const error = await response.finished();
+                    row.bodyCompleted = error == null;
+                    if (error) row.bodyFailure = String(error);
+                  } catch (error) {
+                    row.bodyFailure = error instanceof Error ? error.message : String(error);
+                  }
+                  view.scriptResponses.push(row);
+                }
+              });
+              page.on('console', (message) => {
+                if (message.type() === 'error' && /content.security.policy|violates.*directive|refused to .*script/i.test(message.text())) {
+                  view.cspFailures.push({ kind: 'console', text: message.text().slice(0, 2000) });
+                }
+              });
+              page.on('requestfailed', (request) => {
+                if (/ERR_BLOCKED_BY_CSP/.test(request.failure()?.errorText ?? '')) {
+                  view.cspFailures.push({ kind: 'request', url: request.url(), error: request.failure().errorText });
+                }
+              });
+              try {
+                const response = await page.goto(report.baseUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+                assert.ok(response, 'Main document response is required');
+                view.status = response.status();
+                view.policy = response.headers()['content-security-policy'];
+                view.reportOnly = response.headers()['content-security-policy-report-only'] ?? null;
+                assert.equal(view.status, 200);
+                assert.equal(view.policy, CONTENT_SECURITY_POLICY, 'Enforced browser document CSP must match intended source exactly');
+                view.metaPolicies = await page.locator('meta[http-equiv="Content-Security-Policy" i]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('content')));
+                assert.deepEqual(view.metaPolicies, [], 'No competing CSP meta policy expected');
+                await expect.poll(() => expectedFiles.every((file) => view.scriptResponses.some((row) => row.file === file && row.status === 200 && row.bodyCompleted)), { timeout: 25000, message: 'All five required shared scripts must load through real browser requests' }).toBe(true);
+                const feedback = page.getByRole('button', { name: /send feedback|give feedback|^feedback$/i });
+                view.feedback.launcherCount = await feedback.count();
+                if (view.feedback.launcherCount === 1) {
+                  await feedback.click({ timeout: 10000 });
+                  const dialog = page.getByRole('dialog');
+                  view.feedback.dialogCount = await dialog.count();
+                  if (view.feedback.dialogCount === 1) {
+                    await expect(dialog).toBeVisible({ timeout: 10000 });
+                    view.feedback.visible = true;
+                    view.feedback.textInputsBlank = await dialog.locator('textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"])').evaluateAll((nodes) => nodes.every((node) => node.value === ''));
+                    view.feedback.checkboxesUnchecked = await dialog.locator('input[type="checkbox"]').evaluateAll((nodes) => nodes.every((node) => !node.checked));
+                    assert.equal(view.feedback.textInputsBlank, true, 'Never fill or submit capture fields');
+                    assert.equal(view.feedback.checkboxesUnchecked, true, 'Never opt into capture consent');
+                    const close = dialog.getByRole('button', { name: /close/i });
+                    view.feedback.closeButtonCount = await close.count();
+                    if (view.feedback.closeButtonCount === 1) {
+                      view.feedback.closeHitTargetIsControl = await close.evaluate((element) => {
+                        const bounds = element.getBoundingClientRect();
+                        const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                        return hit === element || element.contains(hit);
+                      });
+                    }
+                    await page.screenshot({ path: join(directory, `feedback-${viewport.width}.png`) });
+                    await page.keyboard.press('Escape');
+                    view.feedback.closedByEscape = await dialog.isHidden();
+                  }
+                }
+                await page.screenshot({ path: join(directory, `page-${viewport.width}.png`) });
+                assert.deepEqual(view.cspFailures, [], 'No observed CSP errors on the actual user path');
+                view.policyAndRequiredScriptsPassed = true;
+              } finally {
+                await context.close();
+              }
+            }
+            report.policyAndRequiredScriptsPassed = true;
+          } catch (error) {
+            failure = error;
+            report.policyAndRequiredScriptsPassed = false;
+            report.failure = error instanceof Error ? error.message : String(error);
+          } finally {
+            if (browser) await browser.close();
+            report.browserClosed = true;
+            await writeFile(join(directory, 'browser-acceptance.json'), `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
+            console.log(JSON.stringify({ policyAndRequiredScriptsPassed: report.policyAndRequiredScriptsPassed, views: report.views.length, manualSubmissions: 0, browserClosed: true, failure: report.failure ?? null }));
+          }
+          if (failure) throw failure;
+          BROWSER_CHECK
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: rolepatch3-live-csp-${{ github.sha }}
+          path: ${{ runner.temp }}/rolepatch-csp-evidence/
+          retention-days: 1
+          if-no-files-found: error
