@@ -1,6 +1,31 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-09-09
+Last updated: 2026-10-06
+
+## Root CSP release — 6 October
+
+[PR #8](https://github.com/Significant-Hobbies/rolepatch/pull/8) restores the
+existing intended policy on the Astro homepage and Worker asset responses.
+Released code source `1110236f1814720b7d103898000e4691bf460430` passed
+[exact-main CI](https://github.com/Significant-Hobbies/rolepatch/actions/runs/37466110707)
+and the [deploy guard](https://github.com/Significant-Hobbies/rolepatch/actions/runs/37466778432).
+Provider readback confirms Worker `resume-tailor` version
+`b1116d1c-bc49-48b4-8dbe-4ffb193a47f9` at 100% traffic with that source tag.
+The [deployment workflow](https://github.com/Significant-Hobbies/rolepatch/actions/runs/37466978882)
+failed at the routes API permission check after activation; its smoke was skipped.
+The separate anonymous production smoke passed 6/6. Authenticated apply-agent
+checks were not run. This status-only update does not change the released code.
+
+[Live Chromium verification](https://github.com/Significant-Hobbies/rolepatch/actions/runs/37471305697)
+passed the exact enforcing CSP and all five completed script responses at 1440×900
+and 390×844, with no observed CSP failures. Feedback opened and Escape dismissed
+it, but screenshots and hit testing show header/dialog overlap at both sizes and
+stronger layering problems on mobile. No form was submitted or consent selected;
+accepted capture and telemetry privacy remain unverified. The browser verifier
+was isolated to a helper branch and its original workflow was restored.
+[Issue #3](https://github.com/Significant-Hobbies/rolepatch/issues/3) remains open
+for the responsive feedback gate; broader capture and footer-owner acceptance
+remain separate. Earlier release entries below are historical checkpoints.
 
 ## Free AI gateway source update — 2 October
 
