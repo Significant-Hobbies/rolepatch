@@ -52,36 +52,14 @@ const baselines = {
     unresolved: 0,
   },
   suppressions: 13,
-  dependencies: { critical: 0, highIds: 22, highFindings: 30 },
+  dependencies: { critical: 0, highIds: 1, highFindings: 1 },
 };
 const acceptedUnusedDependencies = new Set([
   'landing-astro/package.json:@fontsource-variable/geist',
 ]);
 const acceptedHighAdvisories = new Set([
-  'GHSA-28wg-ghj8-5hjv',
-  'GHSA-2p49-hgcm-8545',
-  'GHSA-2pvr-wf23-7pc7',
-  'GHSA-2v37-7h3g-55p8',
-  'GHSA-4cwx-7wf7-3272',
-  'GHSA-52cp-r559-cp3m',
-  'GHSA-5p4m-2wfm-xmqj',
-  'GHSA-6g55-p6wh-862q',
-  'GHSA-7p8r-x3mc-p8w7',
-  'GHSA-8hv8-536x-4wqp',
-  'GHSA-96hv-2xvq-fx4p',
-  'GHSA-9wv6-86v2-598j',
   // http-cache-semantics <=4.2.0 via dev tooling; no patched version exists upstream. Re-review when a fix is released.
   'GHSA-ch52-4w7c-c8xp',
-  'GHSA-f88m-g3jw-g9cj',
-  'GHSA-hm92-r4w5-c3mj',
-  'GHSA-jmr9-qjv8-65gv',
-  'GHSA-mh99-v99m-4gvg',
-  'GHSA-mwp4-54f8-5fhr',
-  'GHSA-r28c-9q8g-f849',
-  'GHSA-rgw5-rvv9-x895',
-  'GHSA-rpmf-866q-6p89',
-  'GHSA-vmh5-mc38-953g',
-  'GHSA-vxpw-j846-p89q',
 ]);
 
 function run(command, args, options = {}) {
