@@ -100,7 +100,7 @@ See `.env.example`. Required for full use:
 - `__tests__/` — vitest · `e2e/` — playwright
 - `src/lib/job-search.ts` — native in-Worker job search (LinkedIn)
 
-More in `agents.md`.
+More in `AGENTS.md`.
 
 ## Job discovery
 
