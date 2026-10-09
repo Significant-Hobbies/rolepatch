@@ -1,27 +1,30 @@
 ---
 interface Props {
   active?: 'home' | 'faq' | 'changelog' | 'docs';
+  precision?: boolean;
 }
 
-const { active = 'home' } = Astro.props;
+const { active = 'home', precision = false } = Astro.props;
 ---
 
 <header class="site-header">
-  <div class="site-shell header-inner">
+  <div class:list={[precision ? "shell" : "site-shell", "header-inner"]}>
     <a href="/" class="brand-link" aria-label="RolePatch home">
-      <span class="brand-mark" aria-hidden="true">RP</span>
+      <span class="brand-mark" aria-hidden="true">↗</span>
       <span>RolePatch</span>
     </a>
     <nav class="desktop-nav" aria-label="Primary navigation">
       <a href="/#method">How it works</a>
-      <a href="/#proof">Evidence rule</a>
-      <a href="/jobs">Jobs</a>
-      <a href="/tools" data-app-health-event="free_tools_opened">Free tools</a>
+      <a href="/#proof">See the patch</a>
+      {!precision && (
+        <>
+          <a href="/jobs">Jobs</a>
+          <a href="/tools" data-app-health-event="free_tools_opened">Free tools</a>
+        </>
+      )}
       <a href="/pricing" data-app-health-event="pricing_opened">Pricing</a>
-      <a href="/faq" aria-current={active === 'faq' ? 'page' : undefined}>FAQ</a>
-      <a href="/docs" aria-current={active === 'docs' ? 'page' : undefined}>Docs</a>
-      <a href="/changelog" aria-current={active === 'changelog' ? 'page' : undefined}>Changelog</a>
+      {!precision && <a href="/faq" aria-current={active === 'faq' ? 'page' : undefined}>FAQ</a>}
     </nav>
-    <a href="/dashboard" class="header-cta" data-app-health-event="workspace_opened">Open RolePatch <span aria-hidden="true">↗</span></a>
+    <a href="/dashboard" class="header-cta" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a>
   </div>
 </header>

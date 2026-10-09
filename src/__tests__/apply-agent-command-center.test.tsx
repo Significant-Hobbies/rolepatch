@@ -182,7 +182,7 @@ describe('ApplyAgentCommandCenter', () => {
       ],
     });
 
-    expect(screen.getByText('Command center')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Review applications' })).toBeDefined();
     expect(screen.getByText('Needs tailoring')).toBeDefined();
     expect(screen.getByText('Ready for review')).toBeDefined();
     expect(screen.getByText('Submitted / tracked')).toBeDefined();
@@ -192,8 +192,8 @@ describe('ApplyAgentCommandCenter', () => {
   it('marks guarded submit live while bulk unattended apply remains planned', () => {
     renderCommandCenter({ resumeCount: 0 });
 
-    expect(screen.getByText(/Guarded submit is live/i)).toBeDefined();
-    expect(screen.getByText('Apply mode gates')).toBeDefined();
+    expect(screen.getByText(/review each application before submitting/i)).toBeDefined();
+    expect(screen.getByText('Application options')).toBeDefined();
     expect(screen.getByText('Review mode')).toBeDefined();
     expect(screen.getByText('Assisted fill')).toBeDefined();
     expect(screen.getByText('Unattended apply')).toBeDefined();

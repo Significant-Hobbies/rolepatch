@@ -18,7 +18,8 @@ describe('production smoke harness', () => {
     expect(normalizeBaseUrl('https://rolepatch.com/')).toBe('https://rolepatch.com');
     expect(buildSmokeChecks({ hasSessionCookie: false }).map((check) => check.name)).toEqual([
       'landing',
-      'jobs browser',
+      'jobs workspace',
+      'resume builder',
       'pricing',
       'proof project',
       'truehire proof preview guard',
@@ -32,7 +33,11 @@ describe('production smoke harness', () => {
   it('runs public smoke checks without a session cookie', async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
       const url = input instanceof Request ? input.url : String(input);
-      if (url.endsWith('/jobs')) return new Response('<h1>Find roles</h1>');
+      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1><h2>History</h2>');
+      if (url.endsWith('/resume-builder'))
+        return new Response(
+          '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'
+        );
       if (url.endsWith('/pricing')) return new Response('<h1>Tokens</h1>');
       if (url.endsWith('/proof')) {
         return new Response('<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>');
@@ -44,7 +49,7 @@ describe('production smoke harness', () => {
         );
       }
       if (url.endsWith('/settings')) {
-        return new Response('<h1>Operational readiness</h1><h2>Chrome extension</h2>');
+        return new Response('<h1>Feature availability</h1><h2>Chrome extension</h2>');
       }
       return new Response('<h1>RolePatch</h1>', {
         headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
@@ -58,8 +63,8 @@ describe('production smoke harness', () => {
 
     expect(summary.authenticated).toBe(false);
     expect(summary.failed).toBe(0);
-    expect(summary.passed).toBe(6);
-    expect(fetchImpl).toHaveBeenCalledTimes(6);
+    expect(summary.passed).toBe(7);
+    expect(fetchImpl).toHaveBeenCalledTimes(7);
     expect(fetchImpl.mock.calls.some(([url]) => String(url).includes('/api/apply-agent'))).toBe(
       false
     );
@@ -101,7 +106,11 @@ describe('production smoke harness', () => {
       if (url.endsWith('/api/apply-agent/receipts')) {
         return Response.json({ receipts: [] });
       }
-      if (url.endsWith('/jobs')) return new Response('<h1>Find roles</h1>');
+      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1><h2>History</h2>');
+      if (url.endsWith('/resume-builder'))
+        return new Response(
+          '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'
+        );
       if (url.endsWith('/pricing')) return new Response('<h1>Tokens</h1>');
       if (url.endsWith('/proof')) {
         return new Response('<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>');
@@ -113,7 +122,7 @@ describe('production smoke harness', () => {
         );
       }
       if (url.endsWith('/settings')) {
-        return new Response('<h1>Operational readiness</h1><h2>Chrome extension</h2>');
+        return new Response('<h1>Feature availability</h1><h2>Chrome extension</h2>');
       }
       return new Response('<h1>RolePatch</h1>', {
         headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
@@ -128,7 +137,7 @@ describe('production smoke harness', () => {
 
     expect(summary.authenticated).toBe(true);
     expect(summary.failed).toBe(0);
-    expect(summary.passed).toBe(9);
+    expect(summary.passed).toBe(10);
     expect(fetchImpl.mock.calls.map(([url]) => String(url))).toEqual(
       expect.arrayContaining([
         'https://rolepatch.com/api/apply-agent/queue',
@@ -150,7 +159,7 @@ describe('production smoke harness', () => {
     });
 
     expect(summary.passed).toBe(0);
-    expect(summary.failed).toBe(6);
+    expect(summary.failed).toBe(7);
     expect(summary.results[0]).toMatchObject({
       ok: false,
       status: 0,
@@ -185,7 +194,9 @@ describe('production smoke harness', () => {
           '/': '<h1>RolePatch</h1>',
           '/pricing': '<h1>Tokens</h1>',
           '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
-          '/settings': '<h1>Operational readiness</h1><h2>Chrome extension</h2>',
+          '/resume-builder':
+            '<h1>Resume Builder</h1><h2>Achievements &amp; sources</h2><h2>Extra experience</h2>',
+          '/settings': '<h1>Feature availability</h1><h2>Chrome extension</h2>',
         }[path] ?? '<h1>Unexpected route</h1>'
       );
     });
@@ -240,7 +251,7 @@ describe('production smoke harness', () => {
       });
 
       expect(spacedScriptPath).toContain(' ');
-      expect(stdout).toContain('RolePatch production smoke: 5/6 passed');
+      expect(stdout).toContain('RolePatch production smoke: 6/7 passed');
       expect(code).toBe(1);
       expect(stderr).toBe('');
       expect(
@@ -250,16 +261,18 @@ describe('production smoke harness', () => {
           .map((line) => line.replace(/^(PASS|FAIL) /, '').replace(/ \d+ \d+ms.*$/, ''))
       ).toEqual([
         'landing',
-        'jobs browser',
+        'jobs workspace',
+        'resume builder',
         'pricing',
         'proof project',
         'truehire proof preview guard',
         'settings readiness',
       ]);
-      expect(stdout).toContain('FAIL jobs browser 503');
+      expect(stdout).toContain('FAIL jobs workspace 503');
       expect(requestedPaths).toEqual([
         '/',
         '/jobs',
+        '/resume-builder',
         '/pricing',
         '/proof',
         '/api/proof/truehire-preview',

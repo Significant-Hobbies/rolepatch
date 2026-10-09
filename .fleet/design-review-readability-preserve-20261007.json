@@ -1,0 +1,233 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Bounded app font, contrast and clarity pass within approved Precision Studio; geometry, landing and footer preserved",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Approved actual Astro /, all landing sources and footer frozen",
+      "app": "Existing Next /dashboard, /stash, /evidence, /settings, /tailor/[jobId], /cover-letter/[jobId], /interview-prep/[jobId], /jobs, /tools; same layouts and routes",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/readability-20261007/approved-landing.jpg",
+      "app": ".fleet-local/readability-20261007/actual-stash-before.png"
+    },
+    "source": "existing",
+    "references": [],
+    "probes": [],
+    "selected": "precision",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/readability-20261007/scope-correction.md",
+      "quote": "why the hell are u redesigning? ... just try to use it, and we need better colors and fonts"
+    },
+    "supplied": "",
+    "before": ".fleet-local/readability-20261007/actual-stash-before.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/stash-list.tsx",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/achievement-evidence-bank.tsx",
+        "https://github.com/google/fonts/tree/main/ofl/spacegrotesk"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Preserve native forms, cards, navigation, route composition and actions. Local type and contrast corrections only; no standard component replacement or dependency."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "PRODUCT.md, PROJECT_STATUS.md, approved premium receipt with verified canonical purpose",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers organizing supplied experience and preparing a specific application.",
+      "job": "Read existing app controls, save reusable experience, tailor and review an application without ambiguous labels or pale text.",
+      "thesis": "Preserve approved Precision Studio and correct secondary typography and color drift.",
+      "system": "Same graphite actions, neutral surfaces, existing component geometry and layouts. Geist reading/interface font instead of unintended Arial; Space Grotesk 650-700 on app headings only for the requested character. Darker helper text, readable status colors and labels. No Astro changes or inherited footer token changes.",
+      "signature": "Resume source, supplied achievements and reviewable patch stay visibly connected; familiar existing screens retain their composition.",
+      "risk": "Heavier type can crowd narrow controls. Restrict expressive font to headings; retain body regular/medium and test real forms on desktop and compact screens. Local plain Next lacks Workers D1/AI, so external runtime results remain unqualified.",
+      "qualityBar": "Owner says keep approved design and use the actual product. Address faint copy, Arial fallback, hard-to-see actions and jargon through scoped font/contrast/copy changes; do not create a new concept round or change landing/footer/layouts."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex rendered review and actual isolated browser use",
+      "report": ".fleet-local/readability-20261007/product-continuity.md",
+      "surfaces": {
+        "landing": ".fleet-local/readability-20261007/landing-1440-final.png",
+        "app": ".fleet-local/readability-20261007/tailor-390-final.png"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Landing source frozen; app retains graphite/neutral/paper system with requested Space Grotesk headings and Geist body. No new layout system."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Arrow mark and resume/source/patch relationship retained; document formatter and footer unchanged."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Resume, job, experience and review labels now straightforward. Experience replaces Stash; source routes/storage preserved."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Real QA guest records; unverified proof remains textual, original keywords 40/100 is overlap only. AI error explicitly unqualified."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Actual landing Tailor my resume CTA opens dashboard; real create/save/reload/export/pasted-job and guest prep route tested."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4340/ http://localhost:4340/stash http://localhost:4340/evidence http://localhost:4340/dashboard --json",
+          "report": ".fleet-local/readability-20261007/slop-iteration-actual.json",
+          "findingsReview": "Intentional Geist/Space Grotesk; retained approved centered landing, FAQ, steps and nested paper cards. App native cards/icons remain per preservation instruction. Evidence flat-type heuristic checked against actual heading/body/count hierarchy. Increased label size and darker badges address real readable contrast; no composition changes merely to lower score. First render revealed populated evidence light 300 badges and white editor actions; fixed before final."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4340/ http://localhost:4340/stash http://localhost:4340/evidence http://localhost:4340/dashboard --json",
+          "report": ".fleet-local/readability-20261007/slop-final-actual.json",
+          "findingsReview": "Intentional Geist/Space Grotesk; retained approved centered landing, FAQ, steps and nested paper cards. App native cards/icons remain per preservation instruction. Evidence flat-type heuristic checked against actual heading/body/count hierarchy. Increased label size and darker badges address real readable contrast; no composition changes merely to lower score. Final populated captures confirm contrast, loaded fonts, usable actions and phone overflow correction."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex actual render review",
+      "direction": "precision",
+      "report": ".fleet-local/readability-20261007/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Graphite actions, dark headings and helper text clarify tasks across actual app forms; no layout replacement."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Space Grotesk 700 headings, Geist interface, 12px micro-label floor; computed fonts loaded. Paper retains Charter."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Approved layout geometry retained; responsive evidence header wraps and intrinsic card overflow corrected. Existing dashboard density acknowledged."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Arrow mark, neutral working canvas and source/paper/patch retained; expressive font restricted to headings."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Actual form saves/reloads, resume edit/download, Enter/Escape experience edit, pasted-job entry and guest prep navigation pass. AI failure honest."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "390/768/1440 actual screenshots. Populated dashboard/evidence document widths match viewport after min-w-0 fix; phone modal and editor controls reachable."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/readability-20261007/stash-390-final.png"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/readability-20261007/stash-768-final.png"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/readability-20261007/stash-1440-final.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm test (6 focused suites, 70 tests); pnpm typecheck; scoped pnpm exec biome check; pnpm docs:check; pnpm cf:build",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 34,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 6,
+        "identity": 7,
+        "interaction": 3,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 16,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 4,
+        "behavior": 3,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        {
+          "pattern": "font fingerprint",
+          "disposition": "intentional self-hosted, rendered review supports requested typography"
+        }
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "not-required",
+    "note": "Bounded preserve correction authorized by owner request for fonts/colors and actual use; no new design selection needed. Finished-result owner acceptance remains pending, not inferred from prior direction approval."
+  }
+}

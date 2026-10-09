@@ -22,11 +22,18 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       requiredHeaders: { 'content-security-policy': CONTENT_SECURITY_POLICY },
     },
     {
-      name: 'jobs browser',
+      name: 'jobs workspace',
       method: 'GET',
       path: '/jobs',
       expectStatus: 200,
-      requiredText: ['Find roles'],
+      requiredText: ['Jobs', 'History'],
+    },
+    {
+      name: 'resume builder',
+      method: 'GET',
+      path: '/resume-builder',
+      expectStatus: 200,
+      requiredText: ['Resume Builder', 'Achievements &amp; sources', 'Extra experience'],
     },
     {
       name: 'pricing',
@@ -54,7 +61,7 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       method: 'GET',
       path: '/settings',
       expectStatus: 200,
-      requiredText: ['Operational readiness', 'Chrome extension'],
+      requiredText: ['Feature availability', 'Chrome extension'],
     },
   ];
 

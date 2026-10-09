@@ -696,16 +696,16 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
         </div>
         <div className="rounded-2xl border border-[var(--border)]/60 bg-[var(--card)] p-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-            Watch yield
+            Jobs found
           </p>
           <p className="mt-2 text-2xl font-bold">{discoverySummary.watchedRolesFound}</p>
           <p className="text-xs text-[var(--muted-foreground)]">
-            roles found in latest company checks
+            From the latest checks of saved companies
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--border)]/60 bg-[var(--card)] p-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-            Source health
+            Search status
           </p>
           <p className="mt-2 text-sm font-bold">{discoverySummary.sourceDecision.label}</p>
           <p className="text-xs text-[var(--muted-foreground)]">
@@ -752,10 +752,14 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
         className="bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl p-5 grid grid-cols-1 md:grid-cols-[1.4fr_1fr_auto_auto] gap-3 items-end"
       >
         <div>
-          <label className="block text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1.5">
-            What
+          <label
+            htmlFor="job-search-query"
+            className="block text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1.5"
+          >
+            Role or keywords
           </label>
           <input
+            id="job-search-query"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="python engineer, staff PM, ..."
@@ -763,10 +767,14 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
           />
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1.5">
-            Where (optional)
+          <label
+            htmlFor="job-search-location"
+            className="block text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1.5"
+          >
+            Location (optional)
           </label>
           <input
+            id="job-search-location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="San Francisco, Remote, ..."

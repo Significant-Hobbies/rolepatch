@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import { markdownToHtml, renderPdf } from '@/lib/pdf';
+import { stripResumePins } from '@/lib/resume-pins';
 import type { ResumeRenderConfig } from '@/lib/resume-templates';
 
 export const runtime = 'nodejs';
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   // TXT export — raw markdown
   if (format === 'txt') {
-    return new NextResponse(row.source, {
+    return new NextResponse(stripResumePins(row.source), {
       status: 200,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',

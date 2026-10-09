@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { recordResumeHistory } from '@/lib/actions/resume-history-actions';
 import type { JobApplication, JobDetailsPatch, TailorChange, TailoredResume } from '@/lib/types';
 
 type SqlArg = string | number | null;
@@ -115,27 +116,24 @@ export async function saveTailoredResume(
   source: string,
   changes: TailorChange[] = []
 ): Promise<string> {
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('Sign in to save tailored resumes');
-  const id = uuid();
-  await db.execute({
-    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, changes_json, user_id)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-    args: [id, jobId, resumeId, source, JSON.stringify(changes ?? []), userId],
+  if (!(await getCurrentUserId())) throw new Error('Sign in to save resume history');
+  const job = await getJobApplication(jobId);
+  if (!job) throw new Error('Job not found');
+  const history = await recordResumeHistory({
+    job_id: jobId,
+    resume_id: resumeId,
+    jd_text: job.jd_text,
+    source,
+    changes: changes ?? [],
   });
-  await db.execute({
-    sql: `UPDATE job_applications SET status = 'tailored', updated_at = unixepoch() WHERE id = ? AND user_id = ?`,
-    args: [jobId, userId],
-  });
-  revalidatePath('/');
-  return id;
+  return history.id;
 }
 
 export async function getTailoredResumes(jobId: string): Promise<TailoredResume[]> {
   const userId = await getCurrentUserId();
   if (!userId) return [];
   const result = await db.execute({
-    sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC',
+    sql: 'SELECT * FROM tailored_resumes WHERE job_id = ? AND user_id = ? ORDER BY created_at DESC, rowid DESC',
     args: [jobId, userId],
   });
   const rows = JSON.parse(JSON.stringify(result.rows)) as Array<

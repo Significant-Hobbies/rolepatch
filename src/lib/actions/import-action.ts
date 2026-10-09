@@ -101,16 +101,17 @@ export async function importResumeFromFile(
       ? fallbackTypes[extension ?? ''] || file.type
       : file.type;
 
-  let trimmed: string;
+  let extracted: string;
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    trimmed = (await extractText(buffer, mimeType)).trim();
+    extracted = await extractText(buffer, mimeType);
   } catch {
     return {
       success: false,
       error: 'Could not read this file. Try a text-based PDF, DOCX, TXT, or Markdown file.',
     };
   }
+  const trimmed = extracted.trim();
   if (trimmed.length < 50) {
     return {
       success: false,
@@ -119,17 +120,22 @@ export async function importResumeFromFile(
   }
 
   let markdown: string;
-  try {
-    const model = getAIModel(aiConfig);
-    const result = await generateText({
-      model,
-      ...getAIModelRetryOptions(model),
-      system: STRUCTURING_SYSTEM_PROMPT,
-      prompt: `Raw resume text:\n\n${trimmed}`,
-    });
-    markdown = result.text;
-  } catch (err) {
-    return { success: false, error: toUserFacingAIError(err).message };
+  if (mimeType === 'text/markdown' || (extension === 'md' && mimeType === 'text/plain')) {
+    // The master already has approved wording and structure. Import it losslessly.
+    markdown = extracted;
+  } else {
+    try {
+      const model = getAIModel(aiConfig);
+      const result = await generateText({
+        model,
+        ...getAIModelRetryOptions(model),
+        system: STRUCTURING_SYSTEM_PROMPT,
+        prompt: `Raw resume text:\n\n${trimmed}`,
+      });
+      markdown = result.text;
+    } catch (err) {
+      return { success: false, error: toUserFacingAIError(err).message };
+    }
   }
   if (!markdown.trim())
     return { success: false, error: 'The AI service returned an empty resume. Please try again.' };

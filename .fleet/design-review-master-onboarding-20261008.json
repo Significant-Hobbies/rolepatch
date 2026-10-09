@@ -1,0 +1,234 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Complete-master-resume-onboarding",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Public Astro landing, unchanged approved Precision Studio",
+      "app": "Existing create-resume dialog and editor completeness disclosure, dashboard onboarding copy",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/master-onboarding-20261008/landing-before.jpg",
+      "app": ".fleet-local/master-onboarding-20261008/before.jpg"
+    },
+    "source": "existing",
+    "references": [],
+    "probes": [],
+    "selected": "precision",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/readability-20261007/scope-correction.md",
+      "quote": "why the hell are u redesigning? ... just try to use it, and we need better colors and fonts"
+    },
+    "supplied": "",
+    "before": ".fleet-local/master-onboarding-20261008/before.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/create-resume-button.tsx",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/resume-editor.tsx"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Existing project-native dialog, input-base fields, native fieldsets/details and actions are extended; no standard component replaced or dependency added."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "PRODUCT.md, PROJECT_STATUS.md, approved premium receipt with verified canonical purpose",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers organizing supplied experience and preparing a specific application.",
+      "job": "Enter every factual achievement, project, education and skill once in the master before tailoring for a JD.",
+      "thesis": "Extend the existing dialog with labeled native form sections and reusable repeatable role/project fields; retain the editor and document preview.",
+      "system": "Existing Geist and Space Grotesk interface, Charter paper, graphite actions, neutral surfaces, input-base fields, modal-content and native details. No footer, landing or global token changes.",
+      "signature": "Resume source, supplied achievements and reviewable patch stay visibly connected; familiar existing screens retain their composition.",
+      "risk": "A complete history can make the form long; bound the existing modal to the viewport with internal scrolling, allow saving an unfinished draft and add repeated roles/projects without deleting existing text.",
+      "qualityBar": "Human-readable labels, truthful empty fields, all facts preserved, useful import guidance, error recovery, keyboard operation and no horizontal overflow at 390/768/1440."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex direct actual CUA onboarding/import/reload and responsive review",
+      "report": ".fleet-local/master-onboarding-20261008/review.md",
+      "surfaces": {
+        "landing": ".fleet-local/master-onboarding-20261008/landing-before.jpg",
+        "app": ".fleet-local/master-onboarding-20261008/final-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Approved graphite/neutral interface, Geist/Space Grotesk labels and Charter paper retained; landing/footer unchanged."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Same RolePatch mark and source/job/review relationship; master creation uses native existing patterns."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Complete master, achievements, projects, education, job description and reviewable draft use consistent product language."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Builder stores entered wording; summary only is generated; readiness checks minimum sections, not career completeness or truth."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Actual guest master creation, import completion, pins/save/reload pass; focused desktop/mobile onboarding-to-pasted-JD handoff passes. Public generation and target assistant connection are separate gates."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4351/dashboard --json",
+          "report": ".fleet-local/master-onboarding-20261008/slop-iteration-webpack.json",
+          "score": 22,
+          "findingsReview": "Approved font stack and pre-existing dashboard all-caps/icon-card/sparkle/nested-card patterns intentionally retained. Empty dashboard scanned; open modal/populated editor verified by fresh actual browser evidence."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4351/dashboard --json",
+          "report": ".fleet-local/master-onboarding-20261008/slop-final.json",
+          "score": 22,
+          "findingsReview": "Approved font stack and pre-existing dashboard all-caps/icon-card/sparkle/nested-card patterns intentionally retained. Empty dashboard scanned; open modal/populated editor verified by fresh actual browser evidence."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct actual CUA onboarding/import/reload and responsive review",
+      "direction": "precision",
+      "report": ".fleet-local/master-onboarding-20261008/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Existing dialog heading and readable section legends; Save master/Save draft distinguish minimum coverage. Editor guide folds on readiness."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Current type system retained with 14px readable field/help text and bold labels; no new global typography."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Original dashboard and editor split retained; bounded internally scrolling modal, repeatable role/project groups and bounded disclosure."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Factual resume content remains central; neutral paper/interface pair retained."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Actual two-role/two-project master saves/reloads with one pin; real incomplete file import completed without changing original points. Failed-save/pending-auth regressions pass."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Fresh 390/768/1440 captures; form horizontal scroll equals client width; phone and desktop bounded heights verified."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/master-onboarding-20261008/final-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/master-onboarding-20261008/final-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/master-onboarding-20261008/final-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm release:verify (623 unit tests, 28 desktop/mobile E2E, typecheck/lint, extension/full Cloudflare/Astro build, route verification, 6/6 local smoke); pnpm docs:check; actual CUA create/import/pins/save/reload; 6/6 public production smoke; two live runs each 4/4 desktop/mobile onboarding E2E. Selected actual API successes retain coverage; provider reliability and semantic relevance remain open in issue11.",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 34,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 6,
+        "typography": 7,
+        "composition": 6,
+        "identity": 7,
+        "interaction": 4,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 16,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 3,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        {
+          "pattern": "approved font fingerprint and existing dashboard card patterns",
+          "disposition": "intentional preserve; direct rendered review qualifies changed form"
+        }
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "not-required",
+    "note": "User selected Precision Studio earlier, requested no redesign, and now asks master completion in onboarding. Bounded extension of existing native patterns; acceptance of this result is not assumed."
+  }
+}

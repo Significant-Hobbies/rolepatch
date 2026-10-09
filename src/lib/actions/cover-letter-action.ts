@@ -10,6 +10,8 @@ import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig, CoverLetter } from '@/lib/types';
 
+import { type AIActionResult, aiActionFailure } from '@/lib/ai-action-result';
+
 import { scrapeJobUrl } from './scrape-action';
 
 export type CoverLetterTone = 'formal' | 'conversational' | 'enthusiastic';
@@ -67,10 +69,18 @@ export async function generateCoverLetter(
   const userFeedback = options.userFeedback?.slice(0, MAX_FEEDBACK_CHARS);
   const previousDraft = options.previousDraft?.slice(0, MAX_DRAFT_CHARS);
 
-  // Debit token before AI call
   const userId = await getCurrentUserId();
   let debited = false;
   if (userId) {
+    // Validate ownership before charging. Guests save generated text locally.
+    const ownershipCheck = await db.execute({
+      sql: `SELECT 1
+            FROM job_applications ja
+            JOIN resumes r ON r.id = ?
+            WHERE ja.id = ? AND ja.user_id = ? AND r.user_id = ?`,
+      args: [resumeId, jobId, userId, userId],
+    });
+    if (ownershipCheck.rows.length === 0) throw new Error('Job or resume not found');
     const result = await debitToken('cover_letter', 'pending');
     if (!result.success) {
       throw new Error(
@@ -82,22 +92,8 @@ export async function generateCoverLetter(
     debited = true;
   }
 
-  if (!userId) {
-    throw new Error('Authentication required to generate.');
-  }
-
-  const ownershipCheck = await db.execute({
-    sql: `SELECT 1
-          FROM job_applications ja
-          JOIN resumes r ON r.id = ?
-          WHERE ja.id = ? AND ja.user_id = ? AND r.user_id = ?`,
-    args: [resumeId, jobId, userId, userId],
-  });
-  if (ownershipCheck.rows.length === 0) {
-    throw new Error('Job or resume not found');
-  }
-
   try {
+    const model = getAIModel(aiConfig);
     // Research company
     let companyResearch = '';
     const domain = company.toLowerCase().replace(/\s+/g, '');
@@ -145,7 +141,6 @@ Return ONLY the cover letter text, no explanation, no preamble, no sign-off plac
         .join('\n')
     );
 
-    const model = getAIModel(aiConfig);
     const { text } = await generateText({
       model,
       ...getAIModelRetryOptions(model),
@@ -153,13 +148,14 @@ Return ONLY the cover letter text, no explanation, no preamble, no sign-off plac
       prompt: promptParts.join('\n\n'),
     });
 
-    // Save to DB
-    const id = uuid();
-    await db.execute({
-      sql: `INSERT INTO cover_letters (id, job_id, resume_id, content, company_research, user_id)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [id, jobId, resumeId, text, companyResearch, userId],
-    });
+    if (userId) {
+      const id = uuid();
+      await db.execute({
+        sql: `INSERT INTO cover_letters (id, job_id, resume_id, content, company_research, user_id)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [id, jobId, resumeId, text, companyResearch, userId],
+      });
+    }
 
     trackCoreAction('cover_letter_generated', userId ?? undefined);
 
@@ -171,6 +167,17 @@ Return ONLY the cover letter text, no explanation, no preamble, no sign-off plac
     }
     // Surface a user-facing, retryable error — never a raw provider stack.
     throw toUserFacingAIError(err);
+  }
+}
+
+/** Return expected failures as values so production React preserves their message. */
+export async function generateCoverLetterForClient(
+  ...args: Parameters<typeof generateCoverLetter>
+): Promise<AIActionResult<string>> {
+  try {
+    return { success: true, data: await generateCoverLetter(...args) };
+  } catch (error) {
+    return aiActionFailure(error);
   }
 }
 

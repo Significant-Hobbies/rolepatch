@@ -7,7 +7,7 @@ import { useAuth } from '@/components/auth-provider';
 import {
   type CoverLetterLength,
   type CoverLetterTone,
-  generateCoverLetter,
+  generateCoverLetterForClient,
   updateCoverLetter,
 } from '@/lib/actions/cover-letter-action';
 import {
@@ -131,7 +131,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
           apiKey: settings.apiKey || '',
           model: settings.model || '',
         };
-        const result = await generateCoverLetter(
+        const result = await generateCoverLetterForClient(
           resume.source,
           job.jd_text,
           job.company,
@@ -145,17 +145,21 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
             previousDraft: opts.previousDraft,
           }
         );
-        setContent(result);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
+        setContent(result.data);
         if (isGuest) {
-          const id = localSaveCoverLetter(job.id, resume.id, result, '');
+          const id = localSaveCoverLetter(job.id, resume.id, result.data, '');
           setLetterId(id);
         } else {
           setLetterId('');
         }
         setShowFeedback(false);
         setFeedback('');
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to generate cover letter');
+      } catch {
+        setError('Could not generate the cover letter. Please try again.');
       } finally {
         setGenerating(false);
       }
@@ -207,6 +211,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
     <div className="space-y-6">
       {error && (
         <div
+          role="alert"
           className="px-4 py-2 rounded text-sm border"
           style={{
             background: 'color-mix(in oklch, var(--destructive) 12%, transparent)',
@@ -286,7 +291,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
           href={`/tailor/${job.id}`}
           className="ml-auto text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
         >
-          Back to Tailor
+          Back to resume
         </Link>
       </div>
 
@@ -372,7 +377,7 @@ function SegmentedGroup<T extends string>({
   disabled,
 }: SegmentedGroupProps<T>) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 min-w-0">
       <span className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">
         {label}
       </span>
@@ -392,14 +397,16 @@ function SegmentedGroup<T extends string>({
               aria-checked={active}
               onClick={() => onChange(opt.value)}
               disabled={disabled}
-              className="px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-inset"
+              className="px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-inset"
               style={{
                 background: active ? 'var(--secondary)' : 'transparent',
                 color: active ? 'var(--secondary-foreground)' : 'var(--muted-foreground)',
               }}
             >
               {opt.label}
-              {opt.hint && <span className="ml-1 text-[10px] opacity-70">{opt.hint}</span>}
+              {opt.hint && (
+                <span className="block sm:inline sm:ml-1 text-[10px] opacity-70">{opt.hint}</span>
+              )}
             </button>
           );
         })}

@@ -1,23 +1,30 @@
 'use client';
 
-import { AlertCircle, ArrowRight, Calendar, FileText, Globe, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar, Globe, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
-import { AchievementEvidenceBank } from '@/components/achievement-evidence-bank';
 import { ApplyAgentCommandCenter } from '@/components/apply-agent-command-center';
 import { ApplicationCampaignTracker } from '@/components/application-campaign-tracker';
-import { ATSScoreMini } from '@/components/ats-score-badge';
 import { useAuth } from '@/components/auth-provider';
-import { CreateResumeButton } from '@/components/create-resume-button';
-import { FitScoreBadge } from '@/components/fit-score-card';
+import { JobResumeHistory } from '@/components/job-resume-history';
 import { JobDetailsModal, type JobDetailsModalInitialValues } from '@/components/job-details-modal';
 import { JobDiscovery, type DiscoveryQueueContext } from '@/components/job-discovery';
 import { JobSearchTips } from '@/components/job-search-tips';
 import { MigrationBanner } from '@/components/migration-banner';
 import { NewJobButton } from '@/components/new-job-button';
 import { RecruiterReplyRoutingCard } from '@/components/recruiter-reply-routing-card';
-import { ResumeImportButton } from '@/components/resume-import-button';
 import {
   bulkUpdateApplicationQueueStatus,
   listApplicationPackets,
@@ -45,11 +52,12 @@ import {
   localListApplicationPackets,
   localListApplicationQueue,
   localListApplicationReceipts,
-  localListAchievementEvidence,
   localListJobDiscoveryAlerts,
   localListJobs,
+  localGetJob,
   localListProfileAnswers,
   localListResumes,
+  localListResumeHistory,
   localQueueApplication,
   localRecordManualApplicationReceipt,
   localRefreshApplicationQueueReadiness,
@@ -75,6 +83,7 @@ import type {
   ProfileAnswerCategory,
   RecruiterReplyEvent,
   Resume,
+  TailoredResume,
 } from '@/lib/types';
 
 const STATUS_OPTIONS: JobApplication['status'][] = [
@@ -152,13 +161,15 @@ type DashboardJob = Pick<
   | 'offer_amount'
   | 'notes'
   | 'rejection_reason'
->;
+> & { jd_text?: string };
 
 interface DashboardProps {
+  serverHistory?: TailoredResume[];
   serverResumes: Resume[];
   serverJobs: JobApplication[];
   serverFitScores?: Record<string, number>;
   serverEvidence?: AchievementEvidence[];
+  browseContent?: React.ReactNode;
   serverApplicationQueue?: ApplicationQueueEntry[];
   serverApplicationReceipts?: ApplicationReceipt[];
   serverApplicationPackets?: ApplicationPacket[];
@@ -172,6 +183,7 @@ function toDashboardJob(j: JobApplication): DashboardJob {
   return {
     id: j.id,
     resume_id: j.resume_id,
+    jd_text: j.jd_text,
     url: j.url,
     company: j.company,
     role: j.role,
@@ -205,7 +217,7 @@ export function Dashboard({
   serverResumes,
   serverJobs,
   serverFitScores,
-  serverEvidence = [],
+  browseContent,
   serverApplicationQueue = [],
   serverApplicationReceipts = [],
   serverApplicationPackets = [],
@@ -213,30 +225,54 @@ export function Dashboard({
   serverJobDiscoveryAlerts = [],
   serverReplyRoutingAddress = null,
   serverRecruiterReplyEvents = [],
+  serverHistory = [],
 }: DashboardProps) {
-  const { isGuest } = useAuth();
+  const { isGuest, isPending: authPending } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
   const [jobs, setJobs] = useState<DashboardJob[]>(serverJobs.map(toDashboardJob));
-  const [atsScores, setAtsScores] = useState<
-    Record<string, { original: number; tailored: number }>
-  >({});
+  const [history, setHistory] = useState(serverHistory);
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'applied' | 'resumes'>('all');
+  const [query, setQuery] = useState('');
+  const historyByJob = useMemo(() => {
+    const grouped = new Map<string, TailoredResume[]>();
+    for (const version of history)
+      grouped.set(version.job_id, [...(grouped.get(version.job_id) ?? []), version]);
+    return grouped;
+  }, [history]);
   const [fitScores] = useState<Record<string, number>>(serverFitScores ?? {});
-  const [evidence, setEvidence] = useState(serverEvidence);
   const [applicationQueue, setApplicationQueue] = useState(serverApplicationQueue);
   const [applicationReceipts, setApplicationReceipts] = useState(serverApplicationReceipts);
+  const appliedJobs = jobs.filter(
+    (job) =>
+      ['applied', 'interview', 'offer', 'rejected'].includes(job.status) ||
+      applicationReceipts.some(
+        (receipt) => receipt.job_id === job.id && receipt.status === 'submitted'
+      )
+  );
+  const filteredJobs =
+    historyFilter === 'applied'
+      ? appliedJobs
+      : historyFilter === 'resumes'
+        ? jobs.filter((job) => historyByJob.has(job.id))
+        : jobs;
+  const visibleJobs = filteredJobs.filter((job) =>
+    `${job.role} ${job.company}`.toLowerCase().includes(query.toLowerCase().trim())
+  );
   const [applicationPackets, setApplicationPackets] = useState(serverApplicationPackets);
   const [profileAnswers, setProfileAnswers] = useState(serverProfileAnswers);
   const [jobDiscoveryAlerts, setJobDiscoveryAlerts] = useState(serverJobDiscoveryAlerts);
+  const detailsTrigger = useRef<HTMLButtonElement | null>(null);
   const [detailsJobId, setDetailsJobId] = useState<string | null>(null);
   const [nowSec, setNowSec] = useState<number>(0);
 
   // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
+    if (authPending) return;
     if (isGuest) {
       /* eslint-disable react-hooks/set-state-in-effect */
       setResumes(localListResumes());
       setJobs(localListJobs());
-      setEvidence(localListAchievementEvidence());
+      setHistory(localListResumeHistory());
       setApplicationQueue(localListApplicationQueue());
       setApplicationReceipts(localListApplicationReceipts());
       setApplicationPackets(localListApplicationPackets());
@@ -244,23 +280,11 @@ export function Dashboard({
       setJobDiscoveryAlerts(localListJobDiscoveryAlerts());
       /* eslint-enable react-hooks/set-state-in-effect */
     }
-  }, [isGuest]);
+  }, [authPending, isGuest]);
 
   // Capture a stable "now" for alerts (client-only to avoid impure render)
   useEffect(() => {
     setNowSec(Math.floor(Date.now() / 1000)); // eslint-disable-line react-hooks/set-state-in-effect -- client-only seed
-  }, []);
-
-  // Load cached ATS scores from localStorage
-  useEffect(() => {
-    try {
-      const cached = JSON.parse(localStorage.getItem('rt-ats-scores') ?? '{}');
-      if (Object.keys(cached).length > 0) {
-        setAtsScores(cached); // eslint-disable-line react-hooks/set-state-in-effect -- hydrate from localStorage
-      }
-    } catch {
-      /* ignore */
-    }
   }, []);
 
   async function handleStatusChange(jobId: string, newStatus: string) {
@@ -395,6 +419,7 @@ export function Dashboard({
         url: alert.job_url ?? '',
         company,
         role,
+        jd_text: jdText,
         status: 'draft',
         created_at: now,
         updated_at: now,
@@ -476,6 +501,7 @@ export function Dashboard({
         url: job.job_url ?? '',
         company,
         role,
+        jd_text: jdText,
         status: 'draft',
         created_at: now,
         updated_at: now,
@@ -623,12 +649,6 @@ export function Dashboard({
     await refreshApplyAgentState();
   }
 
-  const stats = {
-    total: jobs.length,
-    active: jobs.filter((j) => ['applied', 'interview'].includes(j.status)).length,
-    offers: jobs.filter((j) => j.status === 'offer').length,
-  };
-
   const alerts = useMemo(() => {
     if (nowSec === 0) return { interviewsThisWeek: 0, overdueFollowUps: 0 };
     const weekFromNow = nowSec + 7 * 24 * 60 * 60;
@@ -667,17 +687,20 @@ export function Dashboard({
   }, [activeDetailsJob]);
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-12">
+    <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
       <MigrationBanner />
 
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-sm font-medium text-[var(--muted-foreground)] mt-2 opacity-80">
-          {isGuest
-            ? 'Guest mode — sign in to save to the cloud'
-            : 'Manage your professional assets'}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
+          <p className="mt-2 text-muted-foreground">
+            {isGuest
+              ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
+              : 'Add a job, review your tailored resume, and track your application.'}
+          </p>
+        </div>
+        <NewJobButton resumes={resumes.map((r) => ({ id: r.id, name: r.name }))} />
       </div>
 
       {/* Alerts — interviews this week, overdue follow-ups */}
@@ -704,273 +727,222 @@ export function Dashboard({
         </div>
       )}
 
-      {/* Stats bar — only show when there are jobs */}
-      {jobs.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12">
-          {[
-            { label: 'Total Applications', value: stats.total, accent: 'text-foreground' },
-            { label: 'Active Pipeline', value: stats.active, accent: 'text-[var(--primary)]' },
-            { label: 'Offers Secured', value: stats.offers, accent: 'text-accent' },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-[var(--card)] border border-[var(--border)]/50 rounded-2xl px-6 py-5 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
-                {stat.label}
-              </p>
-              <p className={`text-3xl font-black mt-2 tracking-tight ${stat.accent}`}>
-                {stat.value}
-              </p>
-            </div>
-          ))}
-        </div>
+      {resumes.length === 0 && (
+        <p className="mb-8 rounded-lg border border-[var(--border)] p-4">
+          Start by{' '}
+          <Link href="/resume-builder" className="font-semibold underline">
+            building your master resume
+          </Link>
+          , then add your first job.
+        </p>
       )}
-
-      <ApplicationCampaignTracker jobs={jobs} onOpenDetails={setDetailsJobId} />
-
-      {!isGuest && (
-        <RecruiterReplyRoutingCard
-          address={serverReplyRoutingAddress}
-          events={serverRecruiterReplyEvents}
-        />
-      )}
-
-      <ApplyAgentCommandCenter
-        jobs={jobs}
-        resumeCount={resumes.length}
-        fitScores={fitScores}
-        queue={applicationQueue}
-        receipts={applicationReceipts}
-        packets={applicationPackets}
-        profileAnswers={profileAnswers}
-        discoveryAlerts={jobDiscoveryAlerts}
-        onQueueApplication={handleQueueApplication}
-        onQueueDiscoveryAlert={handleQueueDiscoveryAlert}
-        onQueueDiscoveryAlerts={handleQueueDiscoveryAlerts}
-        onQueueReadyApplications={handleQueueReadyApplications}
-        onRefreshReadiness={handleRefreshReadiness}
-        onUpdateQueueStatus={handleUpdateQueueStatus}
-        onBulkUpdateQueueStatus={handleBulkUpdateQueueStatus}
-        onRetryQueueEntry={handleRetryQueueEntry}
-        onRecordManualReceipt={handleRecordManualReceipt}
-        onRunBrowserCheck={handleRunBrowserCheck}
-        onRunBrowserCheckBatch={handleRunBrowserCheckBatch}
-        onRunGuardedSubmit={handleRunGuardedSubmit}
-        onRunGuardedSubmitBatch={handleRunGuardedSubmitBatch}
-        onSaveProfileAnswer={handleSaveProfileAnswer}
-        onDeleteProfileAnswer={handleDeleteProfileAnswer}
-      />
-
-      <section className="mb-16">
-        <AchievementEvidenceBank serverEntries={evidence} compact roleHint={jobs[0]?.role ?? ''} />
-      </section>
-
-      {/* Resumes section */}
-      <section className="mb-16">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Resumes</h2>
-              <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-60">
-                Profile bases for AI, frontend, backend, and other tracks
-              </p>
-            </div>
-            <span className="text-[10px] font-bold text-[var(--muted-foreground)] bg-muted px-2.5 py-1 rounded-full">
-              {resumes.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ResumeImportButton />
-            <CreateResumeButton />
-          </div>
-        </div>
-
-        {resumes.length === 0 ? (
-          <div className="border border-dashed border-[var(--border)] rounded-2xl py-20 flex flex-col items-center justify-center bg-muted/20">
-            <div className="w-16 h-16 rounded-full bg-background border border-[var(--border)] flex items-center justify-center mb-6 shadow-sm">
-              <FileText className="w-8 h-8 text-[var(--muted-foreground)]/30" />
-            </div>
-            <p className="text-sm font-bold text-foreground">No resumes curated yet</p>
-            <p className="text-xs font-medium text-[var(--muted-foreground)] mt-2">
-              Create a base profile to begin the tailoring process
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {resumes.map((r) => (
-              <Link
-                key={r.id}
-                href={`/editor/${r.id}`}
-                className="group relative bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl p-6 hover:border-[var(--primary)]/40 transition-all hover:shadow-xl hover:shadow-primary/5"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold truncate text-foreground group-hover:text-[var(--primary)] transition-colors text-lg">
-                      {r.name}
-                    </h3>
-                    <p className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mt-2 opacity-60">
-                      Refined {timeAgo(r.updated_at)}
-                    </p>
-                  </div>
-                  <div className="ml-3 text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors group-hover:translate-x-1 duration-200">
-                    <ArrowRight className="w-5 h-5" />
-                  </div>
-                </div>
-                {/* Subtle preview lines */}
-                <div className="mt-6 space-y-2 opacity-20">
-                  <div className="h-1 bg-foreground rounded-full w-full" />
-                  <div className="h-1 bg-foreground rounded-full w-4/5" />
-                  <div className="h-1 bg-foreground rounded-full w-2/3" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Discover jobs section */}
-      <section className="mb-16">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Discover jobs</h2>
-            <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-60">
-              Search LinkedIn or paste any ATS job URL — Ashby, Greenhouse, Lever, and more
-            </p>
-          </div>
-        </div>
-        <JobDiscovery
-          resumes={resumes.map((r) => ({ id: r.id, name: r.name, source: r.source }))}
-          onQueueDiscoveredJob={handleQueueDiscoveredJob}
-        />
-        <div className="mt-4">
-          <JobSearchTips />
-        </div>
-      </section>
 
       {/* Job Applications section */}
-      <section>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-accent/5 flex items-center justify-center text-accent shadow-sm">
-              <Globe className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Applications</h2>
-              <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-60">
-                Your active job pipeline
-              </p>
-            </div>
-            <span className="text-[10px] font-bold text-[var(--muted-foreground)] bg-muted px-2.5 py-1 rounded-full">
-              {jobs.length}
-            </span>
+      <section id="history" aria-labelledby="history-heading">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 id="history-heading" className="text-base font-semibold">
+              History
+            </h2>
+            <Badge variant="secondary">
+              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
+            </Badge>
           </div>
-          <NewJobButton resumes={resumes.map((r) => ({ id: r.id, name: r.name }))} />
+          <Input
+            aria-label="Search jobs"
+            placeholder="Search jobs…"
+            className="w-full sm:w-64"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
         </div>
-
-        {jobs.length === 0 ? (
-          <div className="border border-dashed border-[var(--border)] rounded-2xl py-20 flex flex-col items-center justify-center bg-muted/20">
-            <div className="w-16 h-16 rounded-full bg-background border border-[var(--border)] flex items-center justify-center mb-6 shadow-sm">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Every job and its saved tailored resumes. Generating a draft does not apply for a job.
+        </p>
+        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
+          {(
+            [
+              { id: 'all', label: `All jobs (${jobs.length})` },
+              { id: 'applied', label: `Applied and later (${appliedJobs.length})` },
+              {
+                id: 'resumes',
+                label: `With resumes (${jobs.filter((job) => historyByJob.has(job.id)).length})`,
+              },
+            ] as const
+          ).map((filter) => (
+            <Button
+              key={filter.id}
+              variant={historyFilter === filter.id ? 'secondary' : 'ghost'}
+              type="button"
+              aria-pressed={historyFilter === filter.id}
+              onClick={() => setHistoryFilter(filter.id)}
+            >
+              {filter.label}
+            </Button>
+          ))}
+        </div>
+        {visibleJobs.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-md bg-muted">
               <Globe className="w-8 h-8 text-[var(--muted-foreground)]/30" />
             </div>
-            <p className="text-sm font-bold text-foreground">No active applications</p>
+            <p className="text-sm font-bold text-foreground">
+              {jobs.length ? 'No jobs match this filter' : 'No job history yet'}
+            </p>
             <p className="text-xs font-medium text-[var(--muted-foreground)] mt-2">
-              Add your target job URL to start the AI tailoring engine
+              Add a job URL or paste its description to tailor your resume.
             </p>
           </div>
         ) : (
-          <div className="bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <div className="min-w-[640px]">
-                {/* Table header */}
-                <div className="grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px_40px] gap-4 px-6 py-4 bg-muted/30 border-b border-[var(--border)] text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest">
-                  <span>Position</span>
-                  <span>Organization</span>
-                  <span>Status</span>
-                  <span>Fit</span>
-                  <span>Keyword score</span>
-                  <span className="text-right">Initiated</span>
-                  <span />
-                </div>
-                {/* Table rows */}
-                {jobs.map((job, i) => {
-                  const cfg = statusConfig[job.status] ?? statusConfig.draft;
-                  const ats = atsScores[job.id];
-                  const fit = fitScores[job.id];
-                  return (
-                    <div
-                      key={job.id}
-                      className={`group grid grid-cols-[1.2fr_1fr_140px_80px_80px_100px_40px] gap-4 px-6 py-5 items-center hover:bg-muted/10 transition-colors ${i < jobs.length - 1 ? 'border-b border-[var(--border)]/40' : ''}`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setDetailsJobId(job.id)}
-                        className="font-bold truncate text-foreground group-hover:text-accent transition-colors text-left"
-                      >
-                        {job.role || 'Untitled Role'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDetailsJobId(job.id)}
-                        className="text-sm font-medium text-[var(--muted-foreground)] truncate opacity-80 text-left"
-                      >
-                        {job.company || 'Unknown Company'}
-                      </button>
-                      <div>
-                        <select
-                          value={job.status}
-                          onChange={(e) => handleStatusChange(job.id, e.target.value)}
-                          className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border appearance-none cursor-pointer focus:outline-none transition-all ${cfg.bg} ${cfg.text} ${cfg.border} hover:scale-105 active:scale-95`}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Role & company</TableHead>
+                  <TableHead>Stage</TableHead>
+                  <TableHead>Resumes</TableHead>
+                  <TableHead>Added</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Open job</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleJobs.map((job) => (
+                  <Fragment key={job.id}>
+                    <TableRow>
+                      <TableCell>
+                        <button
+                          type="button"
+                          className="text-left font-medium hover:underline"
+                          onClick={(event) => {
+                            detailsTrigger.current = event.currentTarget;
+                            setDetailsJobId(job.id);
+                          }}
                         >
-                          {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s}>
-                              {statusConfig[s]?.label ?? s}
+                          {job.role || 'Untitled Role'}
+                        </button>
+                        <div className="text-sm text-muted-foreground">
+                          {job.company || 'Unknown Company'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <select
+                          aria-label={`Application status for ${job.role || 'Untitled Role'}`}
+                          value={job.status}
+                          onChange={(event) => handleStatusChange(job.id, event.target.value)}
+                          className="h-8 rounded-md border border-input bg-transparent px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {STATUS_OPTIONS.map((status) => (
+                            <option key={status} value={status}>
+                              {statusConfig[status]?.label ?? status}
                             </option>
                           ))}
                         </select>
-                      </div>
-                      <span className="font-bold">
-                        {fit != null ? (
-                          <FitScoreBadge score={fit} />
-                        ) : (
-                          <span className="text-[10px] font-black text-[var(--muted-foreground)] opacity-30">
-                            --
-                          </span>
-                        )}
-                      </span>
-                      <span className="font-bold">
-                        {ats ? (
-                          <ATSScoreMini score={ats.tailored} />
-                        ) : (
-                          <span className="text-[10px] font-black text-[var(--muted-foreground)] opacity-30">
-                            --
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-[10px] font-bold text-[var(--muted-foreground)] text-right opacity-60">
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{historyByJob.get(job.id)?.length ?? 0}</Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
                         {timeAgo(job.created_at)}
-                      </span>
-                      <Link
-                        href={`/tailor/${job.id}`}
-                        className="flex items-center justify-center w-11 h-11 -my-3 text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors justify-self-end"
-                        aria-label="Open tailor"
-                      >
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link
+                            href={`/tailor/${job.id}`}
+                            aria-label="Open tailor"
+                            prefetch={false}
+                          >
+                            <ArrowRight />
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={5}>
+                        <JobResumeHistory
+                          role={job.role || 'Job description'}
+                          company={job.company}
+                          versions={historyByJob.get(job.id) ?? []}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  </Fragment>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </section>
+
+      <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
+        <summary className="cursor-pointer text-lg font-bold">Find more jobs</summary>
+        {/* Stats bar — only show when there are jobs */}
+        {/* Discover jobs section */}
+        <section className="mb-16">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">Discover jobs</h2>
+              <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-100">
+                Search LinkedIn or paste any ATS job URL — Ashby, Greenhouse, Lever, and more
+              </p>
+            </div>
+          </div>
+          <JobDiscovery
+            resumes={resumes.map((r) => ({ id: r.id, name: r.name, source: r.source }))}
+            onQueueDiscoveredJob={handleQueueDiscoveredJob}
+          />
+          <div className="mt-4">
+            <JobSearchTips />
+          </div>
+        </section>
+
+        {browseContent}
+      </details>
+      <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
+        <summary className="cursor-pointer text-lg font-bold">
+          Application preparation & follow-ups
+        </summary>
+        <div className="pt-6">
+          <ApplicationCampaignTracker jobs={jobs} onOpenDetails={setDetailsJobId} />
+
+          {!isGuest && (
+            <RecruiterReplyRoutingCard
+              address={serverReplyRoutingAddress}
+              events={serverRecruiterReplyEvents}
+            />
+          )}
+
+          <ApplyAgentCommandCenter
+            jobs={jobs}
+            resumeCount={resumes.length}
+            fitScores={fitScores}
+            queue={applicationQueue}
+            receipts={applicationReceipts}
+            packets={applicationPackets}
+            profileAnswers={profileAnswers}
+            discoveryAlerts={jobDiscoveryAlerts}
+            onQueueApplication={handleQueueApplication}
+            onQueueDiscoveryAlert={handleQueueDiscoveryAlert}
+            onQueueDiscoveryAlerts={handleQueueDiscoveryAlerts}
+            onQueueReadyApplications={handleQueueReadyApplications}
+            onRefreshReadiness={handleRefreshReadiness}
+            onUpdateQueueStatus={handleUpdateQueueStatus}
+            onBulkUpdateQueueStatus={handleBulkUpdateQueueStatus}
+            onRetryQueueEntry={handleRetryQueueEntry}
+            onRecordManualReceipt={handleRecordManualReceipt}
+            onRunBrowserCheck={handleRunBrowserCheck}
+            onRunBrowserCheckBatch={handleRunBrowserCheckBatch}
+            onRunGuardedSubmit={handleRunGuardedSubmit}
+            onRunGuardedSubmitBatch={handleRunGuardedSubmitBatch}
+            onSaveProfileAnswer={handleSaveProfileAnswer}
+            onDeleteProfileAnswer={handleDeleteProfileAnswer}
+          />
+        </div>
+      </details>
 
       {detailsInitial && activeDetailsJob && (
         <JobDetailsModal
@@ -978,7 +950,12 @@ export function Dashboard({
           jobTitle={activeDetailsJob.role}
           company={activeDetailsJob.company}
           initial={detailsInitial}
+          description={
+            activeDetailsJob.jd_text ?? (isGuest ? localGetJob(activeDetailsJob.id)?.jd_text : '')
+          }
+          versions={historyByJob.get(activeDetailsJob.id) ?? []}
           onClose={() => setDetailsJobId(null)}
+          onReturnFocus={() => detailsTrigger.current?.focus()}
           onSave={(patch) => handleDetailsSave(activeDetailsJob.id, patch)}
         />
       )}

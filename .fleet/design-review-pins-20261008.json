@@ -1,0 +1,233 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Always-include points in existing resume editor",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Built Astro / preserving approved system; illustrative copy aligned with fixed-wording ranker",
+      "app": "Existing resume editor with bounded mandatory-point controls; tailor page unchanged",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/pinned-points-20261008/landing-astro-final.jpg",
+      "app": ".fleet-local/pinned-points-20261008/before.jpg"
+    },
+    "source": "existing",
+    "references": [],
+    "probes": [],
+    "selected": "precision",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/readability-20261007/scope-correction.md",
+      "quote": "why the hell are u redesigning? ... just try to use it, and we need better colors and fonts"
+    },
+    "supplied": "",
+    "before": ".fleet-local/pinned-points-20261008/before.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/resume-editor.tsx"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Preserve native forms, cards, navigation, route composition and actions. Local type and contrast corrections only; no standard component replacement or dependency."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "PRODUCT.md, PROJECT_STATUS.md, approved premium receipt with verified canonical purpose",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers organizing supplied experience and preparing a specific application.",
+      "job": "Choose mandatory supplied bullets for every future job draft from the saved base resume.",
+      "thesis": "Preserve the approved editor and add a bounded project-native disclosure for Always include selections.",
+      "system": "Same graphite actions, neutral surfaces, existing component geometry and layouts. Geist reading/interface font instead of unintended Arial; Space Grotesk 650-700 on app headings only for the requested character. Darker helper text, readable status colors and labels. No Astro changes or inherited footer token changes.",
+      "signature": "Resume source, supplied achievements and reviewable patch stay visibly connected; familiar existing screens retain their composition.",
+      "risk": "Long real bullets can overload the editor; keep controls in a bounded scrollable disclosure and preserve normal editing/preview.",
+      "qualityBar": "No redesign or footer change. Readable labels, education checked by default, persistent selections and no overflow at 390/768/1440."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex direct actual local Astro and Worker browser review",
+      "report": ".fleet-local/pinned-points-20261008/review.md",
+      "surfaces": {
+        "landing": ".fleet-local/pinned-points-20261008/landing-astro-final.jpg",
+        "app": ".fleet-local/pinned-points-20261008/final-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Existing graphite/neutral interface, Geist and Charter document retained across paired actual captures."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Arrow mark, job/source/review relationship preserved; footer unchanged in this task."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Resume, job, draft and review vocabulary; clearly labeled Always include and Education."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Landing example corrected to new summary and unchanged bullets; controls say unmarked points are retained too."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Final public Astro landing opens the signed-in dashboard. Imported public master, saved mandatory points, pasted a real Agents JD, generated and saved a draft. Escaped display metadata and pending-session guest hydration were reproduced and fixed; final saved draft direct load/reload and signed-in HTML export pass. Updated 34-point master saves/reloads with both pins."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "iteration",
+          "status": "blocked",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4345/editor/8892a3df-14ce-4862-87c3-7c6f0226f0d1 --json",
+          "report": ".fleet-local/pinned-points-20261008/slop-iteration.json",
+          "reason": "Fresh headless scanner context has no operator guest resume; route remains loading/empty rather than the populated editor. Returned number does not measure requested state.",
+          "findingsReview": "Numeric result excluded. Actual populated responsive screenshots, comment invisibility and save/reload E2E reviewed instead."
+        },
+        {
+          "stage": "final",
+          "status": "blocked",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4345/editor/8892a3df-14ce-4862-87c3-7c6f0226f0d1 --json",
+          "report": ".fleet-local/pinned-points-20261008/slop-final.json",
+          "reason": "Fresh headless scanner context has no operator guest resume; route remains loading/empty rather than the populated editor. Returned number does not measure requested state.",
+          "findingsReview": "Numeric result excluded. Actual populated responsive screenshots, comment invisibility and save/reload E2E reviewed instead."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct populated browser review",
+      "direction": "precision",
+      "report": ".fleet-local/pinned-points-20261008/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Existing primary Save; bounded secondary disclosure; education default is visible."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Existing Geist interface, readable wrapped bullets, Charter document; no font replacement."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Original editor/preview split retained, scrollable 256px list; 768 fixed-size paper panning retained."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Approved graphite/neutral/paper system and arrow mark match actual Astro counterpart."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Two actual pins save/reload; uncheck and hidden-preview metadata tested; education remains checked."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "390/768/1440 actual populated captures reviewed; labels wrap, controls usable, paper has existing internal panning."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/pinned-points-20261008/final-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/pinned-points-20261008/final-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/pinned-points-20261008/final-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm release:verify (613 tests, 24 desktop/mobile E2E, extension/cf build, 6/6 local smoke); pnpm smoke:prod (6/6); actual signed-in save/reload, pasted JD generation, draft save/direct reload and HTML export; pnpm docs:check",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 34,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 6,
+        "identity": 7,
+        "interaction": 3,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 17,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 4,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        {
+          "pattern": "font fingerprint",
+          "disposition": "intentional self-hosted, rendered review supports requested typography"
+        }
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "not-required",
+    "note": "Owner requested Mark bullets Always include. Existing approved Precision Studio is retained for this bounded addition."
+  }
+}

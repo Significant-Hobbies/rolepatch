@@ -1,4 +1,5 @@
 import { Marked } from 'marked';
+import { stripResumePins } from '@/lib/resume-pins';
 import {
   DEFAULT_RENDER_CONFIG,
   type ResumeRenderConfig,
@@ -60,7 +61,7 @@ export function markdownToHtml(
     lineHeight: bounded(config?.lineHeight, DEFAULT_RENDER_CONFIG.lineHeight, 1, 2.5),
     margin: bounded(config?.margin, DEFAULT_RENDER_CONFIG.margin, 0.25, 2),
   };
-  const body = markdown.parse(source, { async: false, gfm: true });
+  const body = markdown.parse(stripResumePins(source), { async: false, gfm: true });
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

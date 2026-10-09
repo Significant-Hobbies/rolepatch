@@ -6,12 +6,16 @@ test.describe('settings operational readiness', () => {
   }) => {
     await page.goto('/settings');
 
-    await expect(page.getByRole('heading', { name: 'Operational readiness' })).toBeVisible();
-    await expect(page.getByText('Cloudflare-first runtime checks')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Feature availability' })).toBeVisible();
+    await expect(
+      page.getByText(
+        'Check whether AI drafting, account storage, email and browser assistance are available.'
+      )
+    ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Browser Rendering' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Outbound email' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Sender identity' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'AI gateway' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'AI runtime' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Auth and OAuth' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Payment checkout' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Payment webhook' })).toBeVisible();

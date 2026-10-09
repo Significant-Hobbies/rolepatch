@@ -1,0 +1,278 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "shadcn Resume Builder and Jobs",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "https://rolepatch.com/ (existing Astro overlay; preserved)",
+      "app": "/resume-builder and /jobs (Next/React)",
+      "reason": "Only app composition changes; existing landing/footer anchor identity."
+    },
+    "pairedPreview": {
+      "landing": "",
+      "app": ""
+    },
+    "source": "comparison",
+    "references": [
+      "https://ui.shadcn.com/docs/components/card",
+      "https://ui.shadcn.com/docs/components/sidebar",
+      "DESIGN.md (existing identity)"
+    ],
+    "probes": [
+      {
+        "id": "compact-outline",
+        "thesis": "Quiet, dense shadcn workspace with familiar outline editing.",
+        "layout": "Two primary links in compact sidebar; section outline beside the form. Jobs use a table with a document/history detail.",
+        "typography": "Geist 28px heading, 18px section, 13px form text, 12px helper text; stronger weight only for hierarchy.",
+        "artifact": ".fleet-local/shadcn-directions-20261008/capture-1.jpg",
+        "surfaces": {
+          "landing": ".fleet-local/shadcn-directions-20261008/landing.jpg",
+          "app": ".fleet-local/shadcn-directions-20261008/capture-1.jpg"
+        }
+      },
+      {
+        "id": "document-workspace",
+        "thesis": "Master wording and actual document appear together.",
+        "layout": "Top navigation; point list and selected editor beside paper. Jobs use list/detail split.",
+        "typography": "Geist interface; Georgia paper preserving the existing landing specimen relationship.",
+        "artifact": ".fleet-local/shadcn-directions-20261008/capture-2.jpg",
+        "surfaces": {
+          "landing": ".fleet-local/shadcn-directions-20261008/landing.jpg",
+          "app": ".fleet-local/shadcn-directions-20261008/capture-2.jpg"
+        }
+      },
+      {
+        "id": "focused-sections",
+        "thesis": "One resume section at a time, with minimal supporting guidance.",
+        "layout": "Top navigation; progressive section row, focused editor, quiet contextual help. Jobs show stage columns.",
+        "typography": "Geist 32px title and 18px section, moderate spacing, short readable lines.",
+        "artifact": ".fleet-local/shadcn-directions-20261008/capture-3.jpg",
+        "surfaces": {
+          "landing": ".fleet-local/shadcn-directions-20261008/landing.jpg",
+          "app": ".fleet-local/shadcn-directions-20261008/capture-3.jpg"
+        }
+      }
+    ],
+    "selected": "",
+    "approval": "pending",
+    "ownerEvidence": {
+      "path": "",
+      "quote": ""
+    },
+    "supplied": "",
+    "before": ".fleet-local/shadcn-directions-20261008/before.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "shadcn/ui, explicitly requested by owner",
+      "sources": [
+        "https://ui.shadcn.com/r/styles/new-york/card.json",
+        "https://ui.shadcn.com/r/styles/new-york/input.json",
+        "https://ui.shadcn.com/r/styles/new-york/textarea.json",
+        "https://ui.shadcn.com/r/styles/new-york/button.json",
+        "https://github.com/shadcn-ui/ui/blob/main/LICENSE.md"
+      ],
+      "runtime": "Preview uses existing React, Tailwind and lucide; copied Card/Input/Textarea; native Button with inspected upstream variants, no Slot or CVA. No production dependency added.",
+      "customReplacement": {
+        "used": false,
+        "authorization": "Owner requested shadcn",
+        "reason": "Inspected MIT React components fit the existing Next/React/Tailwind stack; no Preline adoption."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare relevant resumes by ranking approved master achievements and complete projects against a job description, generating a summary and preserving education.",
+      "purposeSource": "DESIGN.md, PROJECT_STATUS.md, owner two-workspace instructions; Site Health purposeContract",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "Catalog correctly describes purpose/audience/outcome. Shipped ranking/API and qualified local OAuth are newer details; no landing promise changes in this pass.",
+      "audience": "Job seekers preparing a specific application from their complete master resume",
+      "job": "Edit complete master details; review each job and retrieve its exact saved tailored resume",
+      "thesis": "Use standard shadcn components, clear task hierarchy and quieter supporting controls instead of oversized generic panels.",
+      "system": "Geist shared with landing; neutral white/zinc surfaces, graphite actions, forest saved/tailored states; 4/8px rhythm; 6-9px control/card radii; two primary destinations; details and pricing contextual.",
+      "signature": "Always include pins and education are visibly tied to the master, and each job exposes its saved document/history.",
+      "risk": "Direction 1 favors familiar form editing over simultaneous live paper; direction 2 needs more desktop width; direction 3 trades global overview for guided sections.",
+      "qualityBar": "Owner rejected current design as ugly. Reduce oversized space and competing headings; keep labels legible and bold enough, group sources with points, use actual resume evidence, expose exact saved documents and show compact behavior. Footer and current landing remain intact."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pending",
+      "reason": "Paired direction artifacts retain actual landing. Production handoff of a new design awaits owner selection and integration; no completion claimed.",
+      "reviewer": "",
+      "report": "artifacts/design/product-continuity.md",
+      "surfaces": {
+        "landing": "artifacts/design/landing.png",
+        "app": "artifacts/design/app.png"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pending",
+          "observation": ""
+        },
+        "identity": {
+          "status": "pending",
+          "observation": ""
+        },
+        "vocabulary": {
+          "status": "pending",
+          "observation": ""
+        },
+        "productTruth": {
+          "status": "pending",
+          "observation": ""
+        },
+        "handoff": {
+          "status": "pending",
+          "observation": ""
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "directions",
+          "direction": "compact-outline",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com/ http://127.0.0.1:4367/1 http://127.0.0.1:4367/1/jobs --json",
+          "report": ".fleet-local/shadcn-directions-20261008/slop-retry-direction-1.json",
+          "findingsReview": "Direct review in .fleet-local/shadcn-directions-20261008/review-notes.md: Geist intentional shared font; account/source disclosures intentional; neutral initials are not gradients. Option2 uppercase paper headings and option3 numbered sections serve their actual content. Existing landing hero/FAQ/method/paper retained by owner scope. Reports advisory, no acceptance inferred."
+        },
+        {
+          "stage": "directions",
+          "direction": "document-workspace",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com/ http://127.0.0.1:4367/2 http://127.0.0.1:4367/2/jobs --json",
+          "report": ".fleet-local/shadcn-directions-20261008/slop-retry-direction-2.json",
+          "findingsReview": "Direct review in .fleet-local/shadcn-directions-20261008/review-notes.md: Geist intentional shared font; account/source disclosures intentional; neutral initials are not gradients. Option2 uppercase paper headings and option3 numbered sections serve their actual content. Existing landing hero/FAQ/method/paper retained by owner scope. Reports advisory, no acceptance inferred."
+        },
+        {
+          "stage": "directions",
+          "direction": "focused-sections",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com/ http://127.0.0.1:4367/3 http://127.0.0.1:4367/3/jobs --json",
+          "report": ".fleet-local/shadcn-directions-20261008/slop-retry-direction-3.json",
+          "findingsReview": "Direct review in .fleet-local/shadcn-directions-20261008/review-notes.md: Geist intentional shared font; account/source disclosures intentional; neutral initials are not gradients. Option2 uppercase paper headings and option3 numbered sections serve their actual content. Existing landing hero/FAQ/method/paper retained by owner scope. Reports advisory, no acceptance inferred."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pending",
+      "reviewer": "Primary Codex direct direction review; final selected production review pending",
+      "direction": "",
+      "report": ".fleet-local/shadcn-directions-20261008/review-notes.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pending",
+          "observation": ""
+        },
+        "typography": {
+          "status": "pending",
+          "observation": ""
+        },
+        "composition": {
+          "status": "pending",
+          "observation": ""
+        },
+        "identity": {
+          "status": "pending",
+          "observation": ""
+        },
+        "interaction": {
+          "status": "pending",
+          "observation": ""
+        },
+        "responsive": {
+          "status": "pending",
+          "observation": ""
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/after-390.png"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "Managed build.mjs compiles React SSR/client and Tailwind; node scripts/check-docs.mjs; actual CUA preview use",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 0,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 0,
+        "typography": 0,
+        "composition": 0,
+        "identity": 0,
+        "interaction": 0,
+        "responsive": 0
+      }
+    },
+    "audit": {
+      "score": 0,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 0,
+        "accessibility": 0,
+        "behavior": 0,
+        "responsive": 0,
+        "performance": 0
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "reject",
+    "note": "Owner: \"None of them look like shadecn.\" Custom component overrides and native replacements missed the requested upstream appearance. Historical artifacts retained; replaced by the official-component comparison."
+  }
+}

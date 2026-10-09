@@ -2,13 +2,11 @@ import './globals.css';
 
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { createElement } from 'react';
-import Script from 'next/script';
 
 import { AuthProvider } from '@/components/auth-provider';
 import { AnalyticsProvider } from '@/components/posthog-provider';
 import { SaaSMakerFeedback } from '@/components/saasmaker-feedback';
-import { SiteNav } from '@/components/site-nav';
+import { WorkspaceShell } from '@/components/workspace-shell';
 import { VitalsReporter } from '@/components/VitalsReporter';
 
 const geistSans = Geist({
@@ -101,18 +99,6 @@ export const metadata: Metadata = {
   // and de-indexed free tools. Homepage and routes set self-canonicals.
 };
 
-function footerCustomElement(
-  tag: string,
-  attributes: Record<string, string>,
-  ...children: React.ReactNode[]
-) {
-  return createElement(
-    tag,
-    attributes as unknown as React.HTMLAttributes<HTMLElement>,
-    ...children
-  );
-}
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -145,64 +131,16 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AnalyticsProvider>
           <AuthProvider>
-            <SiteNav />
-            {children}
-            {footerCustomElement(
-              'fleet-footer-extension',
-              {
-                'data-fleet-footer-project': 'rolepatch',
-                'product-name': 'RolePatch',
-                'art-src': 'https://sassmaker.com/footer-art/rolepatch.webp',
-                class: 'precise-footer',
-                'signature-name': 'RolePatch',
-                'font-base': 'https://sassmaker.com/fonts/fleet-footer-precise-v1/',
-                theme: 'dark',
-                surface: 'app',
-                'art-alt':
-                  'RolePatch: A careful application-tailoring desk centers a plain resume sheet beside a job-description card, joined by removable revision strips. A source folder and separate review tray occupy the sides, making approval visible before action.',
-                'art-width': '2170',
-                'art-height': '725',
-                'art-position': '50% 50%',
-                'art-credit': 'Original illustration for RolePatch',
-              },
-              <>
-                <footer
-                  slot="navigation"
-                  data-fleet-footer-navigation
-                  className="text-sm text-muted-foreground"
-                >
-                  <SaaSMakerFeedback />
-                  <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-                    <span>RolePatch</span>
-                    <a href="/proof" className="transition-colors hover:text-foreground">
-                      TrueHire proof
-                    </a>
-                  </div>
-                </footer>
-                {footerCustomElement('portfolio-project-strip', {
-                  slot: 'projects',
-                  layout: 'studio',
-                  theme: 'dark',
-                  'current-project': 'rolepatch',
-                  label: 'Other Fleet projects',
-                })}
-              </>
-            )}
-            <Script
-              src="https://sassmaker.com/project-strip.js?v=precise-b0adaa67"
-              data-project="rolepatch"
-              data-host-only="true"
-              data-theme="dark"
-              strategy="afterInteractive"
-            />
-            <Script
-              src="https://sassmaker.com/ai-chat-footer.js?v=precise-b0adaa67"
-              data-name="RolePatch"
-              data-theme="dark"
-              data-host-only="true"
-              data-project="rolepatch"
-              strategy="afterInteractive"
-            />
+            <WorkspaceShell>{children}</WorkspaceShell>
+            <footer className="border-t border-border/60 px-6 py-6 text-sm text-muted-foreground">
+              <SaaSMakerFeedback />
+              <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+                <span>RolePatch</span>
+                <a href="/proof" className="transition-colors hover:text-foreground">
+                  TrueHire proof
+                </a>
+              </div>
+            </footer>
           </AuthProvider>
           <VitalsReporter />
         </AnalyticsProvider>

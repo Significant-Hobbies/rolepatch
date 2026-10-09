@@ -46,11 +46,11 @@ const BOARD_RULES: BoardRule[] = [
   {
     board: 'greenhouse',
     boardName: 'Greenhouse',
-    hostPattern: /boards\.greenhouse\.io|greenhouse\.io/i,
+    hostPattern: /^(?:[^.]+\.)?greenhouse\.io$/i,
     // boards.greenhouse.io/<company>  OR  <company>.greenhouse.io
     extractCompany: (url) => {
       const sub = url.hostname.match(/^([^.]+)\.greenhouse\.io$/i);
-      if (sub && sub[1] !== 'boards') return sub[1];
+      if (sub && !['boards', 'job-boards'].includes(sub[1].toLowerCase())) return sub[1];
       const segs = url.pathname.split('/').filter(Boolean);
       return segs[0] ?? null;
     },

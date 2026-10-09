@@ -7,6 +7,7 @@ const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ?? 'pnpm dev'
 
 export default defineConfig({
   testDir: './e2e',
+  outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? 'test-results',
   timeout: 30_000,
   expect: { timeout: 5_000 },
   fullyParallel: true,

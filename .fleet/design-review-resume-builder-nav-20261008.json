@@ -1,0 +1,353 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Resume-Builder-and-navigation",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Actual public Astro https://rolepatch.com, unchanged approved Precision Studio and frozen footer.",
+      "app": "Signed-in primary navigation and consolidated Resume Builder; settings in account menu, pricing at action cost/insufficient balance or explicit billing intent.",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": "",
+      "app": ""
+    },
+    "source": "comparison",
+    "references": [],
+    "probes": [
+      {
+        "id": "direction-1",
+        "name": "Section tabs",
+        "thesis": "Tabbed master editing plus live paper; separate detailed source/extra-experience views inside one page.",
+        "layout": "Section tabs, split form/paper; compact stacks form and paper.",
+        "typography": "Approved Space Grotesk headings, Geist form labels/body; Charter/Georgia document specimen. No palette or font redesign.",
+        "surfaces": {
+          "landing": ".fleet-local/resume-builder-nav-20261008/landing-current.png",
+          "app": ".fleet-local/resume-builder-nav-20261008/capture-1.png"
+        },
+        "compact": ".fleet-local/resume-builder-nav-20261008/capture-1-390.png",
+        "secondary": ".fleet-local/resume-builder-nav-20261008/context-1.png",
+        "path": ".fleet-local/resume-builder-nav-20261008/capture-1.png"
+      },
+      {
+        "id": "direction-2",
+        "name": "Resume outline",
+        "thesis": "An indexed single master page, with source details folded at the achievement and preview on demand.",
+        "layout": "Sticky left outline, wide continuous form; compact wraps section shortcuts.",
+        "typography": "Approved Space Grotesk headings, Geist form labels/body; Charter/Georgia document specimen. No palette or font redesign.",
+        "surfaces": {
+          "landing": ".fleet-local/resume-builder-nav-20261008/landing-current.png",
+          "app": ".fleet-local/resume-builder-nav-20261008/capture-2.png"
+        },
+        "compact": ".fleet-local/resume-builder-nav-20261008/capture-2-390.png",
+        "secondary": ".fleet-local/resume-builder-nav-20261008/context-2.png",
+        "path": ".fleet-local/resume-builder-nav-20261008/capture-2.png"
+      },
+      {
+        "id": "direction-3",
+        "name": "Document first",
+        "thesis": "The resume paper is the primary editing surface, with a contextual point/source panel.",
+        "layout": "Wide paper canvas, contextual editing pane; compact prioritizes selected-point controls.",
+        "typography": "Approved Space Grotesk headings, Geist form labels/body; Charter/Georgia document specimen. No palette or font redesign.",
+        "surfaces": {
+          "landing": ".fleet-local/resume-builder-nav-20261008/landing-current.png",
+          "app": ".fleet-local/resume-builder-nav-20261008/capture-3.png"
+        },
+        "compact": ".fleet-local/resume-builder-nav-20261008/capture-3-390.png",
+        "secondary": ".fleet-local/resume-builder-nav-20261008/context-3.png",
+        "path": ".fleet-local/resume-builder-nav-20261008/capture-3.png"
+      }
+    ],
+    "selected": "direction-2",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/resume-builder-nav-20261008/owner-selection-20261008.md",
+      "quote": "2 — Outline (recommended)"
+    },
+    "supplied": "",
+    "before": ".fleet-local/history-api-20261008/production-1440.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/site-nav.tsx",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/master-resume-fields.tsx",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/master-resume-guide.tsx"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Keep project-native links, fieldsets, forms, document formatter and native disclosures; no new production dependency. React-rendered direction probes only."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "DESIGN.md approved purpose; current PROJECT_STATUS.md resume API/history/onboarding implementation; owner current consolidation brief. Public catalog lookup returned no applicable purposeContract.",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers organizing supplied experience and preparing a specific application.",
+      "job": "Manage every master-resume fact and supporting source in one place, then tailor for a JD; encounter purchase options only when needed.",
+      "thesis": "Consolidate the nine-link application into Resume Builder and Jobs using approved Precision Studio fonts/colors; compare tabs, outline and document-first editing before selecting.",
+      "system": "Current Geist and Space Grotesk, graphite actions, neutral surfaces and document typography; existing project-native forms/disclosures and account menu. Landing/footer fixed.",
+      "signature": "A factual achievement, its source and Always include selection are edited together; roles/projects/education remain one master feeding job-specific versions.",
+      "risk": "Consolidation can create a long page; each direction offers a different section-discovery/editing model without adding primary destinations.",
+      "qualityBar": "Two primary signed-in destinations; no top-level Pricing/Tools/Blog/Evidence/Proof/Experience/Settings. All original master, evidence and stash data stays reachable, sources do not imply verification, phone editing usable, price/cost states contextual. Latest owner scope: only Resume Builder and Jobs are primary workspaces; application actions/status and resume History are together under Jobs."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex owner agent, direct rendered inspection",
+      "report": ".fleet-local/resume-builder-nav-20261008/product-continuity.md",
+      "surfaces": {
+        "landing": ".fleet-local/resume-builder-nav-20261008/final-landing.png",
+        "app": ".fleet-local/resume-builder-nav-20261008/candidate-builder-1440.png"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Approved display/body fonts, graphite actions, neutral surfaces and document specimen reviewed on actual landing and app."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Same RolePatch identity; public marketing links deliberately differ from the two working app destinations."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Bring a resume and a job maps to one master in Builder, job-specific versions and status in Jobs; source links do not claim verification."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Illustrative landing content is labelled; generating a resume does not submit an application; guest browser storage and independent AI/auth limits remain explicit."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Clicked actual public landing CTA /dashboard with explicit redirect into the built local candidate. Jobs links Builder; complete onboarding, second-master selection and pasted-JD handoff to tailoring passed. Built-server source/pin/history checks pass; no cloud persistence inference."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "directions",
+          "direction": "direction-1",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4357/1 https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-direction-1.json",
+          "findingsReview": "Approved font fingerprint intentionally retained. Native supporting-source disclosures are classified as FAQ by scanner; actual function is claim detail editing. Public landing 24/Mild: unchanged approved fonts/document labels/card fingerprints; no scanner-driven redesign. Direct actual desktop and phone capture review performed; advisory scores do not establish quality or acceptance."
+        },
+        {
+          "stage": "directions",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4357/2 https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-direction-2.json",
+          "findingsReview": "Approved font fingerprint intentionally retained. Native supporting-source disclosures are classified as FAQ by scanner; actual function is claim detail editing. Numbered resume outline represents section order, not promotional steps. Public landing 24/Mild: unchanged approved fonts/document labels/card fingerprints; no scanner-driven redesign. Direct actual desktop and phone capture review performed; advisory scores do not establish quality or acceptance."
+        },
+        {
+          "stage": "directions",
+          "direction": "direction-3",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4357/3 https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-direction-3.json",
+          "findingsReview": "Approved font fingerprint intentionally retained. Public landing 24/Mild: unchanged approved fonts/document labels/card fingerprints; no scanner-driven redesign. Direct actual desktop and phone capture review performed; advisory scores do not establish quality or acceptance."
+        },
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4362/resume-builder http://localhost:4362/jobs https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final-built.json",
+          "findingsReview": "Production-equivalent iteration after the duplicate-search repair, before final direct candidate review. Builder 8, Jobs 22, landing 24. Retain approved body fonts, document specimen, status labels and optional native disclosures; populated screenshots directly inspected after this scan. Historical blocked and earlier app-only scans are preserved separately."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4362/resume-builder http://localhost:4362/jobs https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final-built-reviewed.json",
+          "findingsReview": "Fresh paired scan after direct final built review. No new UI source edits following that review. Fonts/uppercase metadata/document and optional nested/native disclosure fingerprints intentionally retained; advisory findings are explained in rendered-review.md. No low-contrast trigger on sampled initial states; not a comprehensive accessibility claim."
+        }
+      ],
+      "historicalCheckpoints": [
+        {
+          "stage": "iteration",
+          "direction": "direction-2",
+          "status": "blocked",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4361/resume-builder http://127.0.0.1:4361/jobs --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/workspace-admission-blocked.json",
+          "findingsReview": "Initial development renderer failed on the existing favicon decoder; the scan then encountered a refused connection during its controlled shutdown. A fresh Webpack render/session was denied by the shared workspace disk limit. No implemented UI render or advisory score is claimed. Fresh iteration and final reports are required once admission is restored."
+        },
+        {
+          "stage": "iteration",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4361/resume-builder http://localhost:4361/jobs --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-iteration.json",
+          "findingsReview": "Builder 8: existing approved body-font fingerprint. Jobs 22: font, uppercase metadata, icon-card/sparkle/nested-card fingerprints in retained optional discovery/preparation. Direct populated History is a flat table/phone list. No redesign of approved fonts; advisory patterns are explained in rendered-review.md."
+        },
+        {
+          "stage": "final",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4361/resume-builder http://localhost:4361/jobs --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final.json",
+          "findingsReview": "Builder 8: existing approved body-font fingerprint. Jobs 22: font, uppercase metadata, icon-card/sparkle/nested-card fingerprints in retained optional discovery/preparation. Direct populated History is a flat table/phone list. No redesign of approved fonts; advisory patterns are explained in rendered-review.md."
+        },
+        {
+          "stage": "final",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final-landing.json",
+          "findingsReview": "Fresh unchanged public landing counterpart; preserve approved identity, document specimen and frozen footer. Existing advisory fingerprints do not warrant a new landing redesign."
+        },
+        {
+          "stage": "final",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4362/resume-builder http://localhost:4362/jobs https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final-built.json",
+          "findingsReview": "Fresh production-equivalent paired scan after removing the duplicate discovery form/tips. Approved body fonts and compact status/table metadata retained. Populated Builder/History and single optional discovery are directly reviewed; patterns remain advisory."
+        },
+        {
+          "stage": "iteration",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4362/resume-builder http://localhost:4362/jobs https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final-built.json",
+          "findingsReview": "Production-equivalent iteration after the duplicate-search repair, before final direct candidate review. Builder 8, Jobs 22, landing 24. Retain approved body fonts, document specimen, status labels and optional native disclosures; populated screenshots directly inspected after this scan. Historical blocked and earlier app-only scans are preserved separately."
+        },
+        {
+          "stage": "final",
+          "direction": "direction-2",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4362/resume-builder http://localhost:4362/jobs https://rolepatch.com --json",
+          "report": ".fleet-local/resume-builder-nav-20261008/slop-final-built-reviewed.json",
+          "findingsReview": "Fresh paired scan after direct final built review. No new UI source edits following that review. Fonts/uppercase metadata/document and optional nested/native disclosure fingerprints intentionally retained; advisory findings are explained in rendered-review.md. No low-contrast trigger on sampled initial states; not a comprehensive accessibility claim."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex owner agent, direct rendered inspection",
+      "direction": "direction-2",
+      "report": ".fleet-local/resume-builder-nav-20261008/rendered-review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Only Resume Builder and Jobs in primary navigation; clear master selector/save feedback and Jobs History/Add Job hierarchy."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Approved fonts retained; strong labels and readable individual achievement fields at 390/768/1440. Source links remain lossless Markdown in metadata editing."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Sticky desktop outline with wide continuous form; compact wrapped shortcuts; Jobs table becomes readable mobile rows. Long master remains a deliberate continuous document."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Existing RolePatch arrow, graphite actions and neutral/document treatment paired with untouched actual Astro landing."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Native labelled fields, individual pins, save feedback, owned-storage handlers, legacy redirects and exact History controls; focused unit and built-server E2E checks pass. No blanket browser-back guard claim."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Direct actual final screenshots and automated overflow assertions at 390, 768 and 1440; mobile navigation retains both destinations, jobs filters/status/version controls stay reachable."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/resume-builder-nav-20261008/candidate-builder-390.png"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/resume-builder-nav-20261008/candidate-builder-768.png"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/resume-builder-nav-20261008/candidate-builder-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm release:verify; pnpm docs:check",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 7,
+        "identity": 7,
+        "interaction": 3,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner selected 2 — Outline (recommended) for the two-page Resume Builder and Jobs app. Preserve approved fonts/colors/footer."
+  }
+}

@@ -14,8 +14,7 @@ when a route is added or removed.
 | --- | --- |
 | `/` | Landing page. Astro static HTML overlaid during `cf:build`; Worker edge-caches the result. See [landing-astro runbook](../operations/runbooks/landing-astro.md). |
 | `/pricing` | Token packs + Dodo checkout. Edge-cached. |
-| `/proof` | TrueHire proof project showcase. Edge-cached. |
-| `/evidence` | Achievement evidence bank marketing surface. Edge-cached. |
+| `/proof` | Public TrueHire project showcase; signed-in visitors open Resume Builder sources. |
 | `/tools` | Free tools hub. Edge-cached. |
 | `/tools/ats-check` | ATS-friendliness score (local heuristics, no network). |
 | `/tools/bullet-check` | Resume bullet quality check. |
@@ -35,21 +34,28 @@ when a route is added or removed.
 
 | Route | Purpose |
 | --- | --- |
-| `/dashboard` | Main app — resumes + jobs list, campaign CRM, discovery, apply-agent command center. |
+| `/resume-builder` | Continuous master-resume outline: edit original facts, pin points, add roles/projects, manage achievements/sources and extra experience. |
+| `/dashboard` | Compatibility alias for the Jobs workspace. |
 | `/editor/[id]` | Markdown resume editor with live preview (CodeMirror). Autosaves drafts to localStorage. |
-| `/tailor/[jobId]` | Scrape JD → AI tailor → `react-diff-viewer` diff view. 1 token. |
+| `/tailor/[jobId]` | Job description → AI tailor → document preview, explained changes and editable diff. Signed-in generation: 1 token. |
 | `/cover-letter/[jobId]` | Cover letter generation with company research. 1 token. |
 | `/interview-prep/[jobId]` | STAR+R story generation. |
-| `/evidence` | Achievement evidence bank (signed-in: D1; guest: localStorage). |
-| `/stash` | Extra content pool for AI tailoring context. |
-| `/jobs` | Standalone live job browser (LinkedIn search). |
-| `/settings` | AI provider config + apply-agent readiness. |
+| `/evidence` | Compatibility redirect to `/resume-builder#sources`; the existing evidence bank retains D1/localStorage persistence. |
+| `/stash` | Compatibility redirect to `/resume-builder#extra-experience`; the existing extra-content pool is preserved. |
+| `/jobs` | Job intake, status and exact tailored-resume History; search/observed feed and reviewed application preparation are contextual disclosures. |
+| `/settings` | Account-menu settings: AI provider config and apply-agent readiness. |
+
+The primary app navigation contains **Resume Builder** and **Jobs** only.
+Settings lives in the account menu. The credit balance is informational; purchase
+links remain at an insufficient-credit/action cost state or explicit billing intent.
+Public marketing and tool routes remain available.
 
 ## API routes
 
 | Route | Purpose |
 | --- | --- |
 | `/api/auth/[...all]` | better-auth handler. |
+| `/api/mcp` | Stateless resume MCP (POST JSON); explicit guest resume text or owned signed-in IDs. See [resume MCP runbook](../operations/runbooks/resume-mcp.md). |
 | `/api/jobs/search` | Native in-Worker LinkedIn job search. |
 | `/api/ai/models` | Available AI models. |
 | `/api/checkout` | Dodo Payments checkout session creator. |

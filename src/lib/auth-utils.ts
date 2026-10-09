@@ -2,8 +2,11 @@ import { headers } from 'next/headers';
 
 import { getAuth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { getResumeApiUserId } from '@/lib/resume-access';
 
 export async function getCurrentUserId(requestHeaders?: Headers): Promise<string | null> {
+  const apiUser = getResumeApiUserId();
+  if (apiUser) return apiUser;
   const session = await getAuth().api.getSession({ headers: requestHeaders ?? (await headers()) });
   const user = session?.user;
   if (!user?.id) return null;

@@ -1,0 +1,232 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Job-and-resume-history",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Public Astro landing, unchanged approved Precision Studio",
+      "app": "Existing dashboard Applications rows extended with History filters, saved versions and links; existing tailoring view selects saved versions.",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/history-api-20261008/landing-before-desktop.png",
+      "app": ".fleet-local/history-api-20261008/before-desktop.png"
+    },
+    "source": "existing",
+    "references": [],
+    "probes": [],
+    "selected": "precision",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/readability-20261007/scope-correction.md",
+      "quote": "why the hell are u redesigning? ... just try to use it, and we need better colors and fonts"
+    },
+    "supplied": "",
+    "before": ".fleet-local/history-api-20261008/before-desktop.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/dashboard.tsx",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/tailor-flow.tsx"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Existing project-native dialog, input-base fields, native fieldsets/details and actions are extended; no standard component replaced or dependency added."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "PRODUCT.md, PROJECT_STATUS.md, approved premium receipt with verified canonical purpose",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers organizing supplied experience and preparing a specific application.",
+      "job": "Find the exact tailored resume for a job, distinguish draft history from application stage, and reopen/export old versions.",
+      "thesis": "Extend existing dashboard rows with native filters and saved-version disclosures, retaining its composition, typography and existing document view.",
+      "system": "Existing graphite/neutral Precision Studio, Geist/Space Grotesk interface, native links/select/details and existing document preview. Landing/footer unchanged.",
+      "signature": "Job requirements, master source and exact saved generated resume stay linked; draft generation is visually separate from applied status.",
+      "risk": "Version lists may become long; show newest version first with bounded native disclosure and preserve per-job grouping.",
+      "qualityBar": "Applied/later-stage filter does not include ordinary generated drafts; every history link opens exact stored source, older versions and exports work, clear empty/unsaved states, mobile usable without redesign."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex direct review of actual repo Playwright captures and browser assertions; CUA unavailable",
+      "report": ".fleet-local/history-api-20261008/review.md",
+      "surfaces": {
+        "landing": ".fleet-local/history-api-20261008/landing-before-desktop.png",
+        "app": ".fleet-local/history-api-20261008/final-1440.png"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Actual public Astro landing paired with populated app; current approved typography and graphite semantic palette retained."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Same RolePatch mark and factual resume/job vocabulary."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "History, tailored resume, master and applied status have explicit meanings."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Draft generation never claims submission; exact saved versions are not certified external uploads."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Existing onboarding/JD regression path retained in full release checks; version/history navigation directly passes desktop/mobile browser tests."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4351/dashboard https://rolepatch.com --json",
+          "report": ".fleet-local/history-api-20261008/slop-iteration.json",
+          "findingsReview": "Dashboard 22/Mild and public landing 24/Mild; approved font/card/all-caps/icon/sparkle patterns intentionally retained. Empty dashboard scanned; populated History is qualified with separate actual browser captures and assertions. Phone overflow/clipped names fixed after first render."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4351/dashboard https://rolepatch.com --json",
+          "report": ".fleet-local/history-api-20261008/slop-final-polished.json",
+          "findingsReview": "Dashboard 22/Mild and public landing 24/Mild; approved font/card/all-caps/icon/sparkle patterns intentionally retained. Empty dashboard scanned; populated History is qualified with separate actual browser captures and assertions. Phone overflow/clipped names fixed after first render."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct review of actual repo Playwright captures and browser assertions; CUA unavailable",
+      "direction": "precision",
+      "report": ".fleet-local/history-api-20261008/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "History, draft/application distinction and filters precede job rows; version controls subordinate."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Approved font system, bold labels and readable metadata retained."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Existing rows retained; collapsed native disclosures group versions; expanded list adds bounded density."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "RolePatch graphite system and job/source/document relationship preserved."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Desktop/mobile filters, exact old-version reopening/reload, latest selection and Markdown download pass; storage failure recovery tested."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Reviewed corrected actual 390/768/1440 captures; phone history actions wrap and fit, wide status table remains horizontally scrollable."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/history-api-20261008/final-390.png"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/history-api-20261008/final-768.png"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/history-api-20261008/final-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm release:verify: 643 unit tests, 30 desktop/mobile E2E, typecheck/lint, extension build, full Cloudflare/Astro build, route parity, 6 local smoke checks; pnpm docs:check. Local built Worker REST validation/auth guards pass; shared AI service returns 503, API returns truthful 502 with no success. Authenticated production API persistence remains unqualified; SQL/action ownership and rollback qualified locally. Deployed Worker f467fa78-60c9-4e44-80bb-ea655f11f686 at 100%; 6/6 public smoke on recheck and 2/2 public guest History tests pass. Three fresh public REST generation calls fail at shared AI gateway; no success/reliability or authenticated live persistence is claimed.",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 34,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 6,
+        "identity": 7,
+        "interaction": 4,
+        "responsive": 3
+      }
+    },
+    "audit": {
+      "score": 16,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 3,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        {
+          "pattern": "Approved typography and pre-existing card/icon patterns",
+          "disposition": "Intentional preserve; separate direct rendered history review performed."
+        }
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "not-required",
+    "note": "Owner expressly preserved approved design and now requests functional history in existing dashboard. Bounded project-native extension, not a new composition or navigation system. No final acceptance assumed."
+  }
+}

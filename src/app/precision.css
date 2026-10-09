@@ -1,0 +1,109 @@
+/* Precision Studio is scoped to application content; existing footer tokens stay intact. */
+.precision-app, .precision-app-nav {
+  --background: #fcfcfb;
+  --foreground: #191c20;
+  --card: #ffffff;
+  --card-foreground: #191c20;
+  --primary: #20252d;
+  --primary-foreground: #ffffff;
+  --accent: #20252d;
+  --accent-foreground: #ffffff;
+  --secondary: #eef0ee;
+  --secondary-foreground: #191c20;
+  --muted: #f2f3f2;
+  --muted-foreground: #686c74;
+  --border: #dfe1e3;
+  --input: #dfe1e3;
+  --ring: #20252d;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+}
+.precision-app-nav { background: #fcfcfb; }
+.precision-app-nav > div:first-child { max-width: 1280px; height: 72px; }
+.precision-app-nav a { white-space: nowrap; }
+.precision-workspace { width: min(1232px, calc(100% - 96px)); margin: auto; padding: 32px 0 48px; min-height: calc(100dvh - 72px); }
+.precision-workspace-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+.precision-crumb { color: var(--muted-foreground); font-size: 11px; margin-bottom: 12px; }
+.precision-workspace-heading h1 { font-size: 31px; line-height: 1.2; font-weight: 550; letter-spacing: -.04em; margin-bottom: 9px; }
+.precision-workspace-heading > div > p:last-child { font-size: 12px; }
+.precision-job-context { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 19px 0; border-block: 1px solid var(--border); margin-bottom: 24px; }
+.precision-job-context h2 { font-size: 15px; font-weight: 550; }
+.precision-job-context p { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
+.precision-panels { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 26px; align-items: start; }
+.precision-job-rail { min-width: 0; }
+.precision-context-toggle { display: none; }
+.precision-job-rail #job-preparation > div:first-child { padding: 0 0 16px; background: transparent; }
+.precision-job-rail #job-preparation > div:first-child a { overflow-wrap: anywhere; white-space: normal; }
+.precision-job-content { padding: 18px 0; }
+.precision-job-content pre { font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.precision-job-content button, .precision-job-content a { border-radius: 5px; min-height: 44px; }
+.precision-job-content h3 { font-weight: 550; letter-spacing: .02em; }
+.precision-output { min-width: 0; }
+.precision-toolbar { border-bottom: 1px solid var(--border); padding: 0 0 16px; }
+.precision-toolbar button, .precision-toolbar a { min-height: 44px; border-radius: 5px; }
+.precision-document-region { min-width: 0; margin-top: 18px; }
+.precision-document-canvas { background: var(--muted); border: 1px solid var(--border); border-radius: 5px; padding: 24px; }
+.precision-review-grid { display: grid; grid-template-columns: minmax(0, 1fr) 235px; gap: 26px; align-items: start; }
+.precision-paper-wrap { min-width: 0; }
+.precision-document-label { display: flex; justify-content: space-between; gap: 12px; color: var(--muted-foreground); font-size: 10px; margin-bottom: 16px; }
+.precision-app .resume-studio-preview { min-height: 700px; height: 700px; border-radius: 0; border: 1px solid #dfe1e3; box-shadow: 0 12px 24px #19251c08; }
+.precision-inspector { padding: 0; }
+.precision-inspector > h3 { font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+.precision-inspector p, .precision-inspector li { font-size: 12px; line-height: 1.8; }
+.precision-inspector li { overflow-wrap: anywhere; }
+.precision-dashboard { max-width: 1280px; min-height: calc(100dvh - 72px); }
+.precision-dashboard h1 { font-weight: 550; letter-spacing: -.04em; }
+.precision-dashboard h2 { font-weight: 550; letter-spacing: -.025em; }
+.precision-app :focus-visible, .precision-app-nav :focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+@media(max-width:1200px) { .precision-review-grid { grid-template-columns: minmax(0,1fr); } .precision-inspector { padding-top: 4px; } .precision-inspector ul { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; } }
+@media(max-width:1050px) {
+  .precision-workspace { width: calc(100% - 56px); }
+  .precision-panels { display: block; }
+  .precision-job-rail { margin-bottom: 24px; }
+  .precision-context-toggle { display: block; width: 100%; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 13px; text-align: left; }
+  .precision-preparation { display: none; }
+  .precision-preparation.is-open { display: block; padding-top: 18px; }
+  .precision-review-grid { grid-template-columns: minmax(0,1fr) 250px; }
+  .precision-inspector ul { display: block; }
+}
+@media(max-width:900px) { .precision-review-grid { grid-template-columns: minmax(0,1fr); } .precision-inspector { border-top: 1px solid var(--border); padding-top: 24px; } .precision-inspector ul { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) {
+  .precision-app-nav > div:first-child { height: 64px; }
+  .precision-workspace { width: calc(100% - 40px); padding-top: 26px; }
+  .precision-workspace-heading { align-items: start; gap: 16px; }
+  .precision-workspace-heading h1 { font-size: 29px; }
+  .precision-workspace-heading > div > p:last-child { font-size: 11px; line-height: 1.8; }
+  .precision-job-context { align-items: start; gap: 16px; }
+  .precision-job-context > p { max-width: 100px; text-align: right; }
+  .precision-document-canvas { padding: 16px; }
+  .precision-inspector ul { display: block; }
+  .precision-dashboard { padding: 32px 20px; }
+  .precision-dashboard h1 { font-size: 30px; }
+}
+@media(prefers-reduced-motion:reduce) { .precision-app { animation:none; } }
+
+.precision-job-content .flex.items-start.justify-between { flex-wrap: wrap; gap: 12px; }
+.precision-job-content h3 { font-size: 14px; }
+
+@media(max-width:700px) {
+  .precision-toolbar { position: relative; }
+  .precision-toolbar .keyword-score-wrapper { position: static; }
+  .precision-toolbar .keyword-analysis { max-width: 100%; }
+}
