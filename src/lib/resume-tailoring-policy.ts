@@ -155,6 +155,9 @@ function numericClaims(text: string): string[] {
   });
 }
 
+export class ResumeIdentityError extends Error {}
+export class SummaryBoundsError extends Error {}
+
 /** References and numbers are bounded checks; they cannot prove semantic entailment. */
 export function validateGeneratedSummary(
   summary: GeneratedResumeSummary,
@@ -168,7 +171,7 @@ export function validateGeneratedSummary(
     text.split(/\s+/).length > 90 ||
     /[\r\n<>`[\]*]|@|https?:\/\/|^\s*(?:#|>|-\s|\d+\.\s)/i.test(text)
   )
-    throw new Error('Invalid response: summary must be a short plain-text paragraph');
+    throw new SummaryBoundsError('Invalid response: summary must be a short plain-text paragraph');
   const byId = new Map(evidence.map((fact) => [fact.id, fact]));
   if (
     !summary.evidence_ids.length ||
@@ -280,9 +283,9 @@ export function assertResumeIdentityPreserved(source: string, tailored: string):
   const [beforeHeader, ...before] = identityFacts(source);
   const [afterHeader, ...after] = identityFacts(tailored);
   if (beforeHeader !== afterHeader)
-    throw new Error('Invalid response: name and contact block must remain unchanged');
+    throw new ResumeIdentityError('Invalid response: name and contact block must remain unchanged');
   if (JSON.stringify(before) !== JSON.stringify(after))
-    throw new Error(
+    throw new ResumeIdentityError(
       'Invalid response: contact links, dates and headings outside the summary must remain unchanged'
     );
 }

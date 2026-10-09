@@ -1,3 +1,4 @@
+import { getAIErrorDiagnostics } from '@/lib/ai-error-diagnostics';
 import {
   assembleRankedProjects,
   assembleRankedResume,
@@ -5,11 +6,47 @@ import {
   extractResumeProjectGroups,
 } from '@/lib/resume-bullet-ranking';
 import {
+  ResumeIdentityError,
+  SummaryBoundsError,
   applyGeneratedSummary,
   assertRequiredResumeCoverage,
   validateGeneratedSummary,
   type SummaryEvidence,
 } from '@/lib/resume-tailoring-policy';
+
+export type FallbackReason =
+  | `gateway_error:${number}`
+  | 'gateway_error:unknown'
+  | 'invalid_output'
+  | 'identity_mismatch'
+  | 'grounding_dropped_all'
+  | 'grounding_too_short'
+  | 'summary_invalid'
+  | 'coverage_failed'
+  | 'unknown';
+
+export type FallbackStage = 'gateway' | 'repaired_summary' | FallbackReason;
+
+/** Classify by operation and bounded diagnostics, never error messages or generated text. */
+export function classifyFallbackReason(error: unknown, stage: FallbackStage): FallbackReason {
+  if (error instanceof ResumeIdentityError) return 'identity_mismatch';
+  if (stage === 'gateway') {
+    const diagnostics = getAIErrorDiagnostics(error);
+    if (
+      ['AI_NoObjectGeneratedError', 'AI_JSONParseError', 'AI_TypeValidationError'].includes(
+        diagnostics.type
+      )
+    )
+      return 'invalid_output';
+    const status = diagnostics.statusCode;
+    return status !== null && status >= 100 && status <= 599
+      ? `gateway_error:${status}`
+      : 'gateway_error:unknown';
+  }
+  if (stage === 'repaired_summary')
+    return error instanceof SummaryBoundsError ? 'grounding_too_short' : 'summary_invalid';
+  return stage;
+}
 
 const stopWords = new Set(
   'a an and are as at be by for from has have in is it of on or our that the their this to we with you your will work working experience role company team candidate required requirements responsibilities'.split(
@@ -128,7 +165,12 @@ export function extractiveSummary(evidence: SummaryEvidence[], jd: string): stri
   return validateGeneratedSummary({ text, evidence_ids: chosen.map((fact) => fact.id) }, evidence);
 }
 
-export function buildSourceFallback(source: string, jd: string, evidence: SummaryEvidence[]) {
+export function buildSourceFallback(
+  source: string,
+  jd: string,
+  evidence: SummaryEvidence[],
+  reason: FallbackReason = 'unknown'
+) {
   const groups = extractResumeBulletGroups(source);
   const bullets = assembleRankedResume(
     source,
@@ -151,6 +193,7 @@ export function buildSourceFallback(source: string, jd: string, evidence: Summar
   return {
     tailored,
     generation_method: 'source_fallback' as const,
+    fallback_reason: reason,
     changes: [
       {
         snippet: summary.slice(0, 240),

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   generate: vi.fn(),
@@ -6,7 +6,9 @@ const mocks = vi.hoisted(() => ({
   debit: vi.fn(),
   credit: vi.fn(),
   execute: vi.fn(),
+  ping: vi.fn(),
 }));
+vi.mock('@/lib/ping', () => ({ ping: mocks.ping }));
 vi.mock('ai', () => ({ generateObject: mocks.generate }));
 vi.mock('@/lib/ai-cloudflare', () => ({
   getAIModel: () => ({}),
@@ -24,6 +26,8 @@ vi.mock('@/lib/actions/achievement-evidence-actions', () => ({
 vi.mock('@/lib/analytics', () => ({ trackActivated: vi.fn(), trackCoreAction: vi.fn() }));
 vi.mock('@/lib/db', () => ({ db: { execute: mocks.execute } }));
 
+const policy = await import('@/lib/resume-tailoring-policy');
+const grounding = await import('@/lib/resume-claim-grounding');
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
 import { SharedAiBudgetDenied } from '@/lib/shared-ai-budget';
 import { getAIErrorDiagnostics } from '@/lib/ai-error-diagnostics';
@@ -42,6 +46,7 @@ const summarized = (source: string) =>
 describe('tailoring server action boundary', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.ping.mockResolvedValue(false);
     mocks.user.mockResolvedValue(null);
     mocks.debit.mockResolvedValue({ success: true, balance: 2 });
     mocks.credit.mockResolvedValue(undefined);
@@ -56,7 +61,7 @@ describe('tailoring server action boundary', () => {
     const result = await tailorResumeForClient(resume, 'job', config, '');
     expect(JSON.parse(JSON.stringify(result))).toMatchObject({
       success: true,
-      data: { generation_method: 'source_fallback' },
+      data: { generation_method: 'source_fallback', fallback_reason: 'gateway_error:429' },
     });
     if (!result.success) throw new Error('Expected fallback');
     expect(result.data.tailored).toContain('## Summary');
@@ -64,7 +69,14 @@ describe('tailoring server action boundary', () => {
     expect(result.data.changes[0].reason).toContain('AI result was unavailable');
     expect(mocks.debit).not.toHaveBeenCalled();
     expect(mocks.execute).not.toHaveBeenCalled();
-    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain('private resume');
+    expect(mocks.ping).toHaveBeenCalledExactlyOnceWith('tailor.fallback', {
+      level: 'warn',
+      props: { reason: 'gateway_error:429' },
+    });
+    const logs = JSON.stringify([vi.mocked(console.error).mock.calls, mocks.ping.mock.calls]);
+    expect(logs).not.toContain('private resume');
+    expect(logs).not.toContain('Synthetic Person');
+    expect(logs).not.toContain('Built React UI');
   });
 
   it('refunds a signed-in debit once when generation fails', async () => {
@@ -387,6 +399,7 @@ describe('AI diagnostics', () => {
 describe('identity and grounding (#11 reproduction, synthetic)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.ping.mockResolvedValue(false);
     mocks.user.mockResolvedValue(null);
     mocks.debit.mockResolvedValue({ success: true, balance: 2 });
     mocks.credit.mockResolvedValue(undefined);
@@ -439,5 +452,100 @@ describe('identity and grounding (#11 reproduction, synthetic)', () => {
       'refund',
       'ai_failure'
     );
+  });
+});
+
+describe('fallback reason boundaries', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.user.mockResolvedValue(null);
+    mocks.ping.mockResolvedValue(false);
+    mocks.generate.mockResolvedValue({
+      object: {
+        summary,
+        rankings: [{ group_id: 'g1', bullet_ids: ['g1b1', 'g1b2'] }],
+      },
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([
+    'gateway_error:503',
+    'gateway_error:unknown',
+    'invalid_output',
+    'identity_mismatch',
+    'grounding_dropped_all',
+    'grounding_too_short',
+    'summary_invalid',
+    'coverage_failed',
+    'unknown',
+  ] as const)('returns %s from the failing operation', async (reason) => {
+    switch (reason) {
+      case 'gateway_error:503':
+        mocks.generate.mockRejectedValue(Object.assign(new Error(resume), { statusCode: 503 }));
+        break;
+      case 'gateway_error:unknown':
+        mocks.generate.mockRejectedValue(new Error(resume));
+        break;
+      case 'invalid_output':
+        mocks.generate.mockResolvedValue({
+          object: { summary, rankings: [{ group_id: 'g1', bullet_ids: ['g1b1', 'foreign'] }] },
+        });
+        break;
+      case 'identity_mismatch':
+        vi.spyOn(policy, 'assertRequiredResumeCoverage').mockImplementationOnce(() => {
+          throw new policy.ResumeIdentityError(resume);
+        });
+        break;
+      case 'grounding_dropped_all':
+        vi.spyOn(grounding, 'createClaimGrounding').mockReturnValueOnce({
+          unsupportedTerms: () => [],
+          repair: () => ({ text: '', removed: [resume] }),
+        });
+        break;
+      case 'grounding_too_short':
+        vi.spyOn(grounding, 'createClaimGrounding').mockReturnValueOnce({
+          unsupportedTerms: () => [],
+          repair: () => ({ text: 'Built APIs.', removed: [resume] }),
+        });
+        break;
+      case 'summary_invalid':
+        vi.spyOn(policy, 'validateGeneratedSummary').mockImplementationOnce(() => {
+          throw new Error(resume);
+        });
+        break;
+      case 'coverage_failed':
+        vi.spyOn(policy, 'assertRequiredResumeCoverage').mockImplementationOnce(() => {
+          throw new Error(resume);
+        });
+        break;
+      case 'unknown':
+        vi.spyOn(grounding, 'createClaimGrounding').mockImplementationOnce(() => {
+          throw new Error(resume);
+        });
+    }
+    expect(await tailorResumeForClient(resume, 'job', config, '')).toMatchObject({
+      success: true,
+      data: { generation_method: 'source_fallback', fallback_reason: reason },
+    });
+    expect(mocks.ping).toHaveBeenCalledWith('tailor.fallback', {
+      level: 'warn',
+      props: { reason },
+    });
+    expect(JSON.stringify(mocks.ping.mock.calls)).not.toContain(resume);
+  });
+
+  it('does not wait for telemetry delivery', async () => {
+    mocks.generate.mockRejectedValue(new Error('synthetic timeout'));
+    mocks.ping.mockReturnValue(new Promise(() => {}));
+    expect(await tailorResumeForClient(resume, 'job', config, '')).toMatchObject({ success: true });
+  });
+
+  it('ignores a rejected telemetry delivery', async () => {
+    mocks.generate.mockRejectedValue(new Error('synthetic timeout'));
+    mocks.ping.mockRejectedValue(new Error('synthetic telemetry failure'));
+    expect(await tailorResumeForClient(resume, 'job', config, '')).toMatchObject({ success: true });
   });
 });

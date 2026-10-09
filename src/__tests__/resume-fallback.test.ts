@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildSourceFallback, extractiveSummary, rankSourceItems } from '@/lib/resume-fallback';
+import {
+  buildSourceFallback,
+  classifyFallbackReason,
+  extractiveSummary,
+  rankSourceItems,
+} from '@/lib/resume-fallback';
 import { prepareResumePolicy } from '@/lib/resume-tailoring-policy';
 
 const source = `# Ada Example
@@ -128,5 +133,21 @@ describe('source-preserving outage reranker', () => {
     expect(summary).toContain('Next.js');
     expect(summary).not.toContain('financial planning');
     expect(summary).not.toContain('React');
+  });
+});
+
+describe('safe generation diagnostics', () => {
+  it.each(['AI_NoObjectGeneratedError', 'AI_JSONParseError', 'AI_TypeValidationError'])(
+    'classifies %s as invalid output even with a status',
+    (name) => {
+      expect(classifyFallbackReason({ name, statusCode: 200, message: source }, 'gateway')).toBe(
+        'invalid_output'
+      );
+    }
+  );
+  it('does not incorporate arbitrary error names or out-of-range status codes', () => {
+    expect(classifyFallbackReason({ name: source, statusCode: 999999 }, 'gateway')).toBe(
+      'gateway_error:unknown'
+    );
   });
 });

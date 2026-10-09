@@ -79,6 +79,21 @@ describe('resume identity preservation (#11)', () => {
 });
 
 describe('summary claim grounding (#11)', () => {
+  it('folds -ate verb forms found in live model output without loosening ledger claims', () => {
+    const own = createClaimGrounding([
+      {
+        context: 'Projects / StreamLens',
+        text: 'Built a streaming service in Go that aggregates events and integrates alerting.',
+      },
+    ]);
+    expect(
+      own.unsupportedTerms('Experienced in aggregating events and integrated alerting.')
+    ).toEqual([]);
+    expect(own.unsupportedTerms('Experienced in aggregating ledger accounting events.')).toEqual(
+      expect.arrayContaining(['ledger', 'accounting'])
+    );
+  });
+
   it('flags ledger/accounting vocabulary the source never states', () => {
     expect(
       grounding.unsupportedTerms(

@@ -203,6 +203,9 @@ export async function tailorResumeFromReference(raw: unknown, historyByDefault =
       markdown: result.data.tailored,
       changes: result.data.changes,
       generation_method: result.data.generation_method ?? 'ai',
+      ...(result.data.generation_method === 'source_fallback'
+        ? { fallback_reason: result.data.fallback_reason }
+        : {}),
       ...(input.format === 'html'
         ? { html: markdownToHtml(result.data.tailored, 'Tailored resume') }
         : {}),
