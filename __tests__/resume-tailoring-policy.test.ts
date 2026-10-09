@@ -241,13 +241,13 @@ describe('minimum resume coverage and summary-only generation', () => {
       )
     ).toContain('50K');
     for (const [text, ids] of [
-      ['Engineer building reliable services with 99,000 checks and safe releases.', ['f1']],
-      ['Engineer building reliable services with 20 checks and safe releases.', ['f1']],
-      ['Engineer building reliable services with 20% fewer failures and safe releases.', ['f2']],
-      ['Engineer with 2.2 years of experience building services and safe releases.', ['f2']],
-      ['Engineer with ten years of experience building services and safe releases.', ['f2']],
-      ['Engineer with a decade of experience building services and safe releases.', ['f2']],
-      ['Engineer with 2.2-year experience building services and safe releases.', ['f2']],
+      ['Engineer building reliable services with 99,000 checks and served queries.', ['f1']],
+      ['Engineer building reliable services with 20 checks and served queries.', ['f1']],
+      ['Engineer building reliable services with 20% fewer failures and served queries.', ['f2']],
+      ['Engineer with 2.2 years of experience building services and served queries.', ['f2']],
+      ['Engineer with ten years of experience building services and served queries.', ['f2']],
+      ['Engineer with a decade of experience building services and served queries.', ['f2']],
+      ['Engineer with 2.2-year experience building services and served queries.', ['f2']],
     ] as const)
       expect(() => validateGeneratedSummary({ text, evidence_ids: [...ids] }, evidence)).toThrow(
         'unsupported'
@@ -255,7 +255,7 @@ describe('minimum resume coverage and summary-only generation', () => {
     expect(
       validateGeneratedSummary(
         {
-          text: 'Engineer with 4+ years of experience building services and safe releases.',
+          text: 'Engineer with 4+ years of experience building services and served queries.',
           evidence_ids: ['f3'],
         },
         evidence
