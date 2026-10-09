@@ -1,5 +1,3 @@
-export const PRODUCT_TITLE = 'RolePatch — Evidence-bound resume tailoring';
-
 export const PRODUCT_DESCRIPTION =
   'Tailor a resume to one job using claims supported by your experience, then review every proposed change before it becomes part of the application.';
 

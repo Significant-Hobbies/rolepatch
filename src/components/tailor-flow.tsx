@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 
 import { ATSScoreBadge } from '@/components/ats-score-badge';
 import { useAuth } from '@/components/auth-provider';
@@ -20,7 +27,7 @@ import {
 import { generateFitScoreForClient } from '@/lib/actions/fit-score-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
-import { calculateATSScore } from '@/lib/ats-score';
+import { type ATSResult, calculateATSScore } from '@/lib/ats-score';
 import {
   localGetFitScore,
   localGetJob,
@@ -53,17 +60,18 @@ interface TailorFlowProps {
   existingFitScore?: FitScore | null;
 }
 
-export function TailorFlow({
-  jobId,
-  job,
-  serverResume,
-  serverResumes,
-  serverStashEntries,
-  serverEvidence,
-  existingTailored,
-  existingFitScore,
-  initialVersionId,
-}: TailorFlowProps) {
+export function TailorFlow(props: TailorFlowProps) {
+  const {
+    jobId,
+    job,
+    serverResume,
+    serverResumes,
+    serverStashEntries,
+    serverEvidence,
+    existingTailored,
+    existingFitScore,
+    initialVersionId,
+  } = props;
   const { isGuest, isPending: authPending } = useAuth();
   const [showDiff, setShowDiff] = useState(false);
   const [showJobContext, setShowJobContext] = useState(false);
@@ -237,12 +245,7 @@ export function TailorFlow({
     setSavedNotice('');
     startTransition(async () => {
       try {
-        const settings = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
-        const aiConfig = {
-          endpointUrl: settings.endpointUrl || '',
-          apiKey: settings.apiKey || '',
-          model: settings.model || '',
-        };
+        const aiConfig = readAiConfig();
         const response = await tailorResumeForClient(
           resume.source,
           activeJob.jd_text,
@@ -335,12 +338,7 @@ export function TailorFlow({
     if (!resume || !activeJob) return;
     setFitScoreLoading(true);
     setFitScoreError(null);
-    const settings = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
-    const aiConfig = {
-      endpointUrl: settings.endpointUrl || '',
-      apiKey: settings.apiKey || '',
-      model: settings.model || '',
-    };
+    const aiConfig = readAiConfig();
     generateFitScoreForClient(resume.source, activeJob.jd_text, jobId, aiConfig)
       .then((result) => {
         if (!result.success) {
@@ -358,64 +356,30 @@ export function TailorFlow({
       .finally(() => setFitScoreLoading(false));
   }
 
-  const showNoTokens = !isGuest && tokenBalance !== null && tokenBalance <= 0;
-
   return (
     <div className="precision-flow">
       {tailoredList.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-[var(--border)] text-sm">
-          <label htmlFor="resume-history-version" className="font-bold">
-            Saved resume version
-          </label>
-          <select
-            id="resume-history-version"
-            className="input-base max-w-full"
-            value={selectedVersionId || latestTailored?.id || ''}
-            onChange={(event) => {
-              const version = tailoredList.find((item) => item.id === event.target.value);
-              if (version) {
-                setSelectedVersionId(version.id);
-                setSelectedResumeId(version.resume_id);
-                setSavedNotice('');
-              }
-            }}
-          >
-            {tailoredList.map((version, index) => (
-              <option key={version.id} value={version.id}>
-                {index === 0 ? 'Latest' : `Version ${tailoredList.length - index}`} ·{' '}
-                {new Date(version.created_at * 1000).toLocaleString()}
-              </option>
-            ))}
-          </select>
-          <Link
-            href="/dashboard#history"
-            className="min-h-11 inline-flex items-center font-medium text-primary hover:underline"
-          >
-            Back to History
-          </Link>
-        </div>
+        <VersionHistoryBar
+          versions={tailoredList}
+          value={selectedVersionId || latestTailored?.id || ''}
+          onSelect={(version) => {
+            setSelectedVersionId(version.id);
+            setSelectedResumeId(version.resume_id);
+            setSavedNotice('');
+          }}
+        />
       )}
-      {initialVersionId &&
-        !authPending &&
-        historyReady &&
-        !tailoredList.some((item) => item.id === initialVersionId) && (
-          <p role="alert" className="px-4 py-3 text-sm text-destructive">
-            The requested resume version was not found.{' '}
-            {tailoredList.length
-              ? 'The latest saved version is shown.'
-              : 'Your base resume is shown.'}
-          </p>
-        )}
-      {historySaveError && (
-        <p role="alert" className="px-4 py-3 text-sm text-destructive">
-          {historySaveError}
-        </p>
-      )}
-      {savedNotice && (
-        <p role="status" className="px-4 py-3 text-sm">
-          {savedNotice}
-        </p>
-      )}
+      <HistoryNotices
+        missingVersion={
+          Boolean(initialVersionId) &&
+          !authPending &&
+          historyReady &&
+          !tailoredList.some((item) => item.id === initialVersionId)
+        }
+        hasSavedVersions={tailoredList.length > 0}
+        historySaveError={historySaveError}
+        savedNotice={savedNotice}
+      />
       <section className="precision-job-context" aria-label="Target job">
         <div>
           <h2>{activeJob.role}</h2>
@@ -461,72 +425,11 @@ export function TailorFlow({
                 {activeJob.jd_text}
               </pre>
 
-              {remixOptions.length > 0 && (
-                <div className="border-t border-[var(--border)] pt-4">
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-                      Include extra experience
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedRemixIds(new Set(remixOptions.map((option) => option.id)))
-                        }
-                        className="text-[10px] font-bold text-[var(--primary)] hover:underline"
-                      >
-                        All
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRemixIds(new Set())}
-                        className="text-[10px] font-bold text-[var(--muted-foreground)] hover:text-foreground"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {remixOptions.map((option) => {
-                      const checked = selectedRemixIds.has(option.id);
-                      return (
-                        <label
-                          key={option.id}
-                          className={`block rounded-xl border p-3 text-left transition-colors ${
-                            checked
-                              ? 'border-[var(--primary)]/40 bg-[var(--primary)]/5'
-                              : 'border-[var(--border)]/70 hover:bg-muted/10'
-                          }`}
-                        >
-                          <div className="flex items-start gap-2">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(event) => {
-                                setSelectedRemixIds((prev) => {
-                                  const next = new Set(prev);
-                                  if (event.target.checked) next.add(option.id);
-                                  else next.delete(option.id);
-                                  return next;
-                                });
-                              }}
-                              className="mt-0.5 accent-[var(--primary)]"
-                            />
-                            <span className="min-w-0">
-                              <span className="block truncate text-xs font-bold text-foreground">
-                                {option.label}
-                              </span>
-                              <span className="mt-0.5 block text-[10px] font-black uppercase tracking-wide text-[var(--muted-foreground)]">
-                                {option.type} · {option.category}
-                              </span>
-                            </span>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <RemixOptionsPanel
+                options={remixOptions}
+                selectedIds={selectedRemixIds}
+                onChange={setSelectedRemixIds}
+              />
 
               {/* Fit Score + Interview Prep section */}
               <div className="border-t border-[var(--border)] pt-4 space-y-3">
@@ -592,134 +495,385 @@ export function TailorFlow({
               </div>
 
               {/* ATS Score badges */}
-              {originalATS && originalATS.totalKeywords > 0 && (
-                <div className="flex items-center gap-2">
-                  <ATSScoreBadge
-                    score={originalATS.score}
-                    matchedKeywords={originalATS.matchedKeywords}
-                    missingKeywords={originalATS.missingKeywords}
-                    label="Original keywords"
-                  />
-                  {tailoredATS && (
-                    <>
-                      <span className="text-[var(--muted-foreground)] text-xs">{'\u2192'}</span>
-                      <ATSScoreBadge
-                        score={tailoredATS.score}
-                        matchedKeywords={tailoredATS.matchedKeywords}
-                        missingKeywords={tailoredATS.missingKeywords}
-                        label="Tailored keywords"
-                      />
-                    </>
-                  )}
-                </div>
-              )}
+              <ATSComparison original={originalATS} tailored={tailoredATS} />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Token balance indicator for signed-in users */}
-              {!isGuest && tokenBalance !== null && (
-                <span className="text-xs text-[var(--muted-foreground)] mr-1">
-                  Uses 1 token ({tokenBalance} remaining)
-                </span>
-              )}
-              <Link
-                href={`/cover-letter/${jobId}`}
-                className="inline-flex items-center min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors"
-              >
-                Generate Cover Letter
-              </Link>
-              {tailoredSource && (
-                <>
-                  <button
-                    onClick={handleSave}
-                    disabled={isPending || authPending}
-                    className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
-                  >
-                    {isPending ? 'Saving...' : 'Accept & Save'}
-                  </button>
-                  <LocalResumeExport source={tailoredSource} name={`${resume.name} tailored`} />
-                </>
-              )}
-              {!isGuest && latestTailored?.id && tailoredATS && (
-                <ShareScoreButton tailoredId={latestTailored.id} />
-              )}
-              {showNoTokens ? (
-                <Link
-                  href="/pricing"
-                  className="inline-flex items-center min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors"
-                >
-                  Buy Tokens
-                </Link>
-              ) : (
-                <button
-                  onClick={handleGenerate}
-                  disabled={isPending || authPending}
-                  className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-colors"
-                >
-                  {isPending ? 'Generating...' : 'Generate Tailored Resume'}
-                </button>
-              )}
-            </div>
+            <GenerateControls
+              isGuest={isGuest}
+              tokenBalance={tokenBalance}
+              jobId={jobId}
+              tailoredSource={tailoredSource}
+              resumeName={resume.name}
+              shareTailoredId={tailoredATS ? latestTailored?.id : undefined}
+              isPending={isPending}
+              authPending={authPending}
+              onSave={handleSave}
+              onGenerate={handleGenerate}
+            />
           </div>
 
-          {error && (
-            <div
-              role="alert"
-              className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 text-sm text-red-700 flex items-center justify-between"
-            >
-              <span>{error}</span>
-              {error.includes('No tokens remaining') && (
-                <Link
-                  href="/pricing"
-                  className="text-xs font-medium text-[var(--accent)] hover:text-[var(--accent)]/80 underline ml-3"
-                >
-                  Buy more tokens
-                </Link>
-              )}
-            </div>
-          )}
+          <TailorErrorBanner error={error} />
 
-          {tailoredSource && (
-            <div
-              role="group"
-              className="flex gap-2 px-4 py-2 border-b bg-card"
-              aria-label="Resume view"
-            >
-              <button
-                type="button"
-                aria-pressed={!showDiff}
-                onClick={() => setShowDiff(false)}
-                className={`min-h-11 px-3 rounded text-sm ${!showDiff ? 'bg-secondary text-primary font-semibold' : 'text-muted-foreground'}`}
-              >
-                Resume preview
-              </button>
-              <button
-                type="button"
-                aria-pressed={showDiff}
-                onClick={() => setShowDiff(true)}
-                className={`min-h-11 px-3 rounded text-sm ${showDiff ? 'bg-secondary text-primary font-semibold' : 'text-muted-foreground'}`}
-              >
-                Compare and edit changes
-              </button>
-            </div>
-          )}
-          <div className="precision-document-region">
-            {tailoredSource && showDiff ? (
-              <ResumeDiff
-                original={resume.source}
-                modified={tailoredSource}
-                onModifiedChange={setTailoredSource}
-                changes={changes}
-              />
-            ) : (
-              <ResumeStudioPreview
-                source={tailoredSource || resume.source}
-                changes={tailoredSource ? changes : []}
-                hasDraft={Boolean(tailoredSource)}
-              />
-            )}
-          </div>
+          <ResumeView
+            original={resume.source}
+            tailoredSource={tailoredSource}
+            changes={changes}
+            showDiff={showDiff}
+            onShowDiffChange={setShowDiff}
+            onTailoredChange={setTailoredSource}
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+function readAiConfig() {
+  const settings = JSON.parse(localStorage.getItem('ai-settings') ?? '{}');
+  return {
+    endpointUrl: settings.endpointUrl || '',
+    apiKey: settings.apiKey || '',
+    model: settings.model || '',
+  };
+}
+
+function VersionHistoryBar({
+  versions,
+  value,
+  onSelect,
+}: {
+  versions: TailoredResume[];
+  value: string;
+  onSelect: (version: TailoredResume) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-[var(--border)] text-sm">
+      <label htmlFor="resume-history-version" className="font-bold">
+        Saved resume version
+      </label>
+      <select
+        id="resume-history-version"
+        className="input-base max-w-full"
+        value={value}
+        onChange={(event) => {
+          const version = versions.find((item) => item.id === event.target.value);
+          if (version) onSelect(version);
+        }}
+      >
+        {versions.map((version, index) => (
+          <option key={version.id} value={version.id}>
+            {index === 0 ? 'Latest' : `Version ${versions.length - index}`} ·{' '}
+            {new Date(version.created_at * 1000).toLocaleString()}
+          </option>
+        ))}
+      </select>
+      <Link
+        href="/dashboard#history"
+        className="min-h-11 inline-flex items-center font-medium text-primary hover:underline"
+      >
+        Back to History
+      </Link>
+    </div>
+  );
+}
+
+interface RemixOption {
+  id: string;
+  type: string;
+  category: string;
+  label: string;
+}
+
+function RemixOptionsPanel({
+  options,
+  selectedIds,
+  onChange,
+}: {
+  options: RemixOption[];
+  selectedIds: Set<string>;
+  onChange: Dispatch<SetStateAction<Set<string>>>;
+}) {
+  if (options.length === 0) return null;
+  return (
+    <div className="border-t border-[var(--border)] pt-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="text-xs font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+          Include extra experience
+        </h3>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onChange(new Set(options.map((option) => option.id)))}
+            className="text-[10px] font-bold text-[var(--primary)] hover:underline"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(new Set())}
+            className="text-[10px] font-bold text-[var(--muted-foreground)] hover:text-foreground"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {options.map((option) => {
+          const checked = selectedIds.has(option.id);
+          return (
+            <label
+              key={option.id}
+              className={`block rounded-xl border p-3 text-left transition-colors ${
+                checked
+                  ? 'border-[var(--primary)]/40 bg-[var(--primary)]/5'
+                  : 'border-[var(--border)]/70 hover:bg-muted/10'
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(event) => {
+                    onChange((prev) => {
+                      const next = new Set(prev);
+                      if (event.target.checked) next.add(option.id);
+                      else next.delete(option.id);
+                      return next;
+                    });
+                  }}
+                  className="mt-0.5 accent-[var(--primary)]"
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-bold text-foreground">
+                    {option.label}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] font-black uppercase tracking-wide text-[var(--muted-foreground)]">
+                    {option.type} · {option.category}
+                  </span>
+                </span>
+              </div>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ATSComparison({
+  original,
+  tailored,
+}: {
+  original: ATSResult | null;
+  tailored: ATSResult | null;
+}) {
+  if (!original || original.totalKeywords <= 0) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <ATSScoreBadge
+        score={original.score}
+        matchedKeywords={original.matchedKeywords}
+        missingKeywords={original.missingKeywords}
+        label="Original keywords"
+      />
+      {tailored && (
+        <>
+          <span className="text-[var(--muted-foreground)] text-xs">{'→'}</span>
+          <ATSScoreBadge
+            score={tailored.score}
+            matchedKeywords={tailored.matchedKeywords}
+            missingKeywords={tailored.missingKeywords}
+            label="Tailored keywords"
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+interface GenerateControlsProps {
+  isGuest: boolean;
+  tokenBalance: number | null;
+  jobId: string;
+  tailoredSource: string | null;
+  resumeName: string;
+  shareTailoredId: string | undefined;
+  isPending: boolean;
+  authPending: boolean;
+  onSave: () => void;
+  onGenerate: () => void;
+}
+
+function GenerateControls(props: GenerateControlsProps) {
+  const {
+    isGuest,
+    tokenBalance,
+    jobId,
+    tailoredSource,
+    resumeName,
+    shareTailoredId,
+    isPending,
+    authPending,
+    onSave,
+    onGenerate,
+  } = props;
+  const showNoTokens = !isGuest && tokenBalance !== null && tokenBalance <= 0;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Token balance indicator for signed-in users */}
+      {!isGuest && tokenBalance !== null && (
+        <span className="text-xs text-[var(--muted-foreground)] mr-1">
+          Uses 1 token ({tokenBalance} remaining)
+        </span>
+      )}
+      <Link
+        href={`/cover-letter/${jobId}`}
+        className="inline-flex items-center min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors"
+      >
+        Generate Cover Letter
+      </Link>
+      {tailoredSource && (
+        <>
+          <button
+            onClick={onSave}
+            disabled={isPending || authPending}
+            className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
+          >
+            {isPending ? 'Saving...' : 'Accept & Save'}
+          </button>
+          <LocalResumeExport source={tailoredSource} name={`${resumeName} tailored`} />
+        </>
+      )}
+      {!isGuest && shareTailoredId && <ShareScoreButton tailoredId={shareTailoredId} />}
+      {showNoTokens ? (
+        <Link
+          href="/pricing"
+          className="inline-flex items-center min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors"
+        >
+          Buy Tokens
+        </Link>
+      ) : (
+        <button
+          onClick={onGenerate}
+          disabled={isPending || authPending}
+          className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-colors"
+        >
+          {isPending ? 'Generating...' : 'Generate Tailored Resume'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TailorErrorBanner({ error }: { error: string | null }) {
+  if (!error) return null;
+  return (
+    <div
+      role="alert"
+      className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 text-sm text-red-700 flex items-center justify-between"
+    >
+      <span>{error}</span>
+      {error.includes('No tokens remaining') && (
+        <Link
+          href="/pricing"
+          className="text-xs font-medium text-[var(--accent)] hover:text-[var(--accent)]/80 underline ml-3"
+        >
+          Buy more tokens
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function ResumeView({
+  original,
+  tailoredSource,
+  changes,
+  showDiff,
+  onShowDiffChange,
+  onTailoredChange,
+}: {
+  original: string;
+  tailoredSource: string | null;
+  changes: TailorChange[];
+  showDiff: boolean;
+  onShowDiffChange: (showDiff: boolean) => void;
+  onTailoredChange: (source: string) => void;
+}) {
+  return (
+    <>
+      {tailoredSource && (
+        <div
+          role="group"
+          className="flex gap-2 px-4 py-2 border-b bg-card"
+          aria-label="Resume view"
+        >
+          <button
+            type="button"
+            aria-pressed={!showDiff}
+            onClick={() => onShowDiffChange(false)}
+            className={`min-h-11 px-3 rounded text-sm ${!showDiff ? 'bg-secondary text-primary font-semibold' : 'text-muted-foreground'}`}
+          >
+            Resume preview
+          </button>
+          <button
+            type="button"
+            aria-pressed={showDiff}
+            onClick={() => onShowDiffChange(true)}
+            className={`min-h-11 px-3 rounded text-sm ${showDiff ? 'bg-secondary text-primary font-semibold' : 'text-muted-foreground'}`}
+          >
+            Compare and edit changes
+          </button>
+        </div>
+      )}
+      <div className="precision-document-region">
+        {tailoredSource && showDiff ? (
+          <ResumeDiff
+            original={original}
+            modified={tailoredSource}
+            onModifiedChange={onTailoredChange}
+            changes={changes}
+          />
+        ) : (
+          <ResumeStudioPreview
+            source={tailoredSource || original}
+            changes={tailoredSource ? changes : []}
+            hasDraft={Boolean(tailoredSource)}
+          />
+        )}
+      </div>
+    </>
+  );
+}
+
+function HistoryNotices({
+  missingVersion,
+  hasSavedVersions,
+  historySaveError,
+  savedNotice,
+}: {
+  missingVersion: boolean;
+  hasSavedVersions: boolean;
+  historySaveError: string;
+  savedNotice: string;
+}) {
+  return (
+    <>
+      {missingVersion && (
+        <p role="alert" className="px-4 py-3 text-sm text-destructive">
+          The requested resume version was not found.{' '}
+          {hasSavedVersions ? 'The latest saved version is shown.' : 'Your base resume is shown.'}
+        </p>
+      )}
+      {historySaveError && (
+        <p role="alert" className="px-4 py-3 text-sm text-destructive">
+          {historySaveError}
+        </p>
+      )}
+      {savedNotice && (
+        <p role="status" className="px-4 py-3 text-sm">
+          {savedNotice}
+        </p>
+      )}
+    </>
   );
 }

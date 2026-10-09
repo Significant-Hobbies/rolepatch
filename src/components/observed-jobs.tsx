@@ -1,18 +1,8 @@
-import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Building2, Clock3, ExternalLink, MapPin } from 'lucide-react';
 
 import { listObservedJobFeedPage } from '@/lib/actions/job-discovery-actions';
-
-export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-  title: 'Browse Jobs',
-  description:
-    'Search live job matches, shortlist roles, and queue applications for reviewed RolePatch apply-agent preparation.',
-  alternates: { canonical: 'https://rolepatch.com/jobs' },
-};
 
 function formatFirstSeen(createdAt: number): string {
   if (!Number.isFinite(createdAt) || createdAt <= 0) return 'First seen unknown';

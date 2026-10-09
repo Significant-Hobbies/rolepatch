@@ -68,6 +68,7 @@ import {
   localUpdateJobDetails,
   localUpdateJobStatus,
 } from '@/lib/local-storage';
+import { jobDetailsOrNull } from '@/lib/job-details';
 import { normalizeJobUrl } from '@/lib/job-discovery-alerts';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 import type {
@@ -190,14 +191,7 @@ function toDashboardJob(j: JobApplication): DashboardJob {
     status: j.status,
     created_at: j.created_at,
     updated_at: j.updated_at,
-    interview_date: j.interview_date ?? null,
-    follow_up_at: j.follow_up_at ?? null,
-    salary_min: j.salary_min ?? null,
-    salary_max: j.salary_max ?? null,
-    salary_currency: j.salary_currency ?? null,
-    offer_amount: j.offer_amount ?? null,
-    notes: j.notes ?? null,
-    rejection_reason: j.rejection_reason ?? null,
+    ...jobDetailsOrNull(j),
   };
 }
 

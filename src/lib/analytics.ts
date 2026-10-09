@@ -61,7 +61,7 @@ function emitServer(event: string, props: Record<string, unknown>, distinctId?: 
   });
 }
 
-export function trackEvent(
+function trackEvent(
   event: string,
   properties: Record<string, unknown> = {},
   distinctId?: string

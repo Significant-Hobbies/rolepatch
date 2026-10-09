@@ -137,16 +137,3 @@ export function ATSScoreBadge({
     </div>
   );
 }
-
-/** Compact inline badge for dashboard cards */
-export function ATSScoreMini({ score }: { score: number }) {
-  const color = scoreColor(score);
-  return (
-    <span
-      title="RolePatch weighted keyword score, not an employer ATS score"
-      className={`text-xs font-bold ${color.text} ${color.bg} border ${color.border} px-2 py-0.5 rounded-full`}
-    >
-      {score}
-    </span>
-  );
-}
