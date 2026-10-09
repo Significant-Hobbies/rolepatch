@@ -619,19 +619,26 @@ export function supportsCareerUrl(careerUrl: string | null | undefined): boolean
   }
 }
 
+const ATS_DISCOVERERS: ReadonlyArray<
+  (url: URL, watch: CompanyWatch) => Promise<CareerDiscoveryResult | null>
+> = [
+  discoverGreenhouse,
+  discoverLever,
+  discoverAshby,
+  discoverWorkable,
+  discoverRecruitee,
+  discoverPersonio,
+  discoverSmartRecruiters,
+];
+
 export async function discoverCompanyCareerJobs(
   watch: CompanyWatch
 ): Promise<CareerDiscoveryResult | null> {
   if (!supportsCareerUrl(watch.career_url)) return null;
   const url = new URL(watch.career_url as string);
-  return (
-    (await discoverGreenhouse(url, watch)) ??
-    (await discoverLever(url, watch)) ??
-    (await discoverAshby(url, watch)) ??
-    (await discoverWorkable(url, watch)) ??
-    (await discoverRecruitee(url, watch)) ??
-    (await discoverPersonio(url, watch)) ??
-    (await discoverSmartRecruiters(url, watch)) ??
-    discoverCareerPage(url, watch)
-  );
+  for (const discover of ATS_DISCOVERERS) {
+    const result = await discover(url, watch);
+    if (result != null) return result;
+  }
+  return discoverCareerPage(url, watch);
 }

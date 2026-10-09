@@ -1,7 +1,7 @@
 import { Lexer } from 'marked';
 import type { TailorChange } from '@/lib/types';
 
-export interface ResumeBullet {
+interface ResumeBullet {
   id: string;
   text: string;
   start: number;

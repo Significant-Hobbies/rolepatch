@@ -21,6 +21,7 @@
     "worker.mjs"
   ],
   "ignore": ["open-next.config.ts"],
+  "ignoreIssues": { "src/components/ui/**": ["exports", "types"] },
   "ignoreDependencies": [
     "@mozilla/readability",
     "@sparticuz/chromium",

@@ -537,16 +537,25 @@ function pendingUploadFields(): string[] {
     .slice(0, 12);
 }
 
-function fieldValueForSnapshot(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string | null {
-  if (el instanceof HTMLInputElement && ['hidden', 'password', 'submit', 'button'].includes(el.type)) {
+/** Returns undefined when the input type has no special snapshot handling. */
+function specialInputValueForSnapshot(el: HTMLInputElement): string | null | undefined {
+  if (['hidden', 'password', 'submit', 'button'].includes(el.type)) {
     return null;
   }
-  if (el instanceof HTMLInputElement && el.type === 'file') {
+  if (el.type === 'file') {
     return el.files?.length ? Array.from(el.files).map((file) => file.name).join(', ') : null;
   }
-  if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+  if (el.type === 'checkbox' || el.type === 'radio') {
     if (!el.checked) return null;
     return optionLabel(el) || el.value || 'Selected';
+  }
+  return undefined;
+}
+
+function fieldValueForSnapshot(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string | null {
+  if (el instanceof HTMLInputElement) {
+    const special = specialInputValueForSnapshot(el);
+    if (special !== undefined) return special;
   }
   const value = el.value?.trim();
   if (!value) return null;

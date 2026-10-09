@@ -63,6 +63,6 @@ export async function verifyResumeOAuth(request: Request): Promise<string | null
     : null;
 }
 
-export class ResumeOAuthScopeError extends Error {
+class ResumeOAuthScopeError extends Error {
   override readonly name = 'ResumeOAuthScopeError';
 }

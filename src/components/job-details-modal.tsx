@@ -67,17 +67,18 @@ function dollarsToCents(value: string): number | null {
   return Math.round(num * 100);
 }
 
-export function JobDetailsModal({
-  open,
-  jobTitle,
-  company,
-  initial,
-  description = '',
-  versions = [],
-  onClose,
-  onReturnFocus,
-  onSave,
-}: JobDetailsModalProps) {
+export function JobDetailsModal(props: JobDetailsModalProps) {
+  const {
+    open,
+    jobTitle,
+    company,
+    initial,
+    description = '',
+    versions = [],
+    onClose,
+    onReturnFocus,
+    onSave,
+  } = props;
   const [interviewDate, setInterviewDate] = useState('');
   const [followUpAt, setFollowUpAt] = useState('');
   const [salaryMin, setSalaryMin] = useState('');

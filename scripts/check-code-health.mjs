@@ -35,20 +35,18 @@ const hygienePaths = [
   'tsconfig.json',
 ];
 const sourceExtensions = new Set(['.astro', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx']);
-// Complexity and unused export/type maxima were raised to match the production
-// snapshot (resume MCP/OAuth, vendored shadcn ui/*); ratchet back down in a follow-up.
 const baselines = {
-  complexity: { violations: 82, maxCcn: 68, maxLength: 615, maxParams: 10 },
+  complexity: { violations: 77, maxCcn: 49, maxLength: 600, maxParams: 9 },
   duplication: {
     clones: 43,
-    duplicatedLines: 716,
-    percentage: 2.044254104211278,
+    duplicatedLines: 667,
+    percentage: 1.5119916579770596,
   },
   unused: {
     files: 0,
-    exports: 34,
-    types: 4,
-    dependencies: 1,
+    exports: 0,
+    types: 0,
+    dependencies: 0,
     devDependencies: 0,
     unlisted: 0,
     unresolved: 0,

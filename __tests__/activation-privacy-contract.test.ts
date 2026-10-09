@@ -109,7 +109,7 @@ describe('trackEvent signature does not accept raw private payloads', () => {
   it('trackEvent accepts event + properties + distinctId only', async () => {
     const analytics = await read('src/lib/analytics.ts');
     expect(analytics).toMatch(
-      /export function trackEvent\(\s*event:\s*string,\s*properties:\s*Record<string,\s*unknown>\s*=\s*\{\},\s*distinctId\?:\s*string\s*\)/
+      /function trackEvent\(\s*event:\s*string,\s*properties:\s*Record<string,\s*unknown>\s*=\s*\{\},\s*distinctId\?:\s*string\s*\)/
     );
   });
 });

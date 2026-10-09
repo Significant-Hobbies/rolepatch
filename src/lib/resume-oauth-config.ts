@@ -1,7 +1,7 @@
 import { mcp } from '@better-auth/mcp';
 import { jwt } from 'better-auth/plugins';
 
-export function resumeOAuthOrigin(baseURL?: string) {
+function resumeOAuthOrigin(baseURL?: string) {
   return new URL(baseURL || 'http://localhost:3000').origin;
 }
 
