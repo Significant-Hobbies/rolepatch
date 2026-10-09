@@ -9,7 +9,13 @@ import { listStashEntries } from '@/lib/actions/stash-actions';
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
 import { AIServiceError, getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { createClaimGrounding } from '@/lib/resume-claim-grounding';
-import { buildSourceFallback } from '@/lib/resume-fallback';
+import {
+  buildSourceFallback,
+  classifyFallbackReason,
+  type FallbackReason,
+  type FallbackStage,
+} from '@/lib/resume-fallback';
+import { ping } from '@/lib/ping';
 import { findSharedAiBudgetDenied } from '@/lib/shared-ai-budget';
 import { getAIErrorDiagnostics } from '@/lib/ai-error-diagnostics';
 import { trackActivated, trackCoreAction } from '@/lib/analytics';
@@ -54,11 +60,13 @@ const rankingSchema = z.object({
     .default([]),
 });
 
-interface TailorResult {
+type TailorResult = {
   tailored: string;
   changes: TailorChange[];
-  generation_method?: 'source_fallback';
-}
+} & (
+  | { generation_method: 'source_fallback'; fallback_reason: FallbackReason }
+  | { generation_method?: undefined; fallback_reason?: never }
+);
 
 type TailorActionResult =
   | { success: true; data: TailorResult }
@@ -177,7 +185,9 @@ async function tailorResume(
         false
       );
     let ranked: TailorResult;
+    let fallbackStage: FallbackStage = 'unknown';
     try {
+      fallbackStage = 'gateway';
       const model = getAIModel(aiConfig);
       const { object } = await generateObject({
         model,
@@ -219,18 +229,27 @@ async function tailorResume(
           })),
         }),
       });
+      fallbackStage = 'invalid_output';
       const parsed = rankingSchema.parse(object);
+      fallbackStage = 'unknown';
       // Bounded, deterministic repair: drop summary sentences whose words the source never
       // states. If too little survives, validation throws and the source fallback is used.
       const grounded = createClaimGrounding(summaryEvidence).repair(parsed.summary.text);
       if (grounded.removed.length)
         console.warn('tailor_summary_repaired', { removed_sentences: grounded.removed.length });
+      fallbackStage = grounded.removed.length ? 'repaired_summary' : 'summary_invalid';
+      if (grounded.removed.length && !grounded.text.trim()) {
+        fallbackStage = 'grounding_dropped_all';
+        throw new Error('No grounded summary sentences');
+      }
       const summary = validateGeneratedSummary(
         { ...parsed.summary, text: grounded.text },
         summaryEvidence
       );
+      fallbackStage = 'invalid_output';
       const bullets = assembleRankedResume(source, groups, parsed.rankings);
       const projects = assembleRankedProjects(bullets.tailored, parsed.project_rankings);
+      fallbackStage = 'summary_invalid';
       ranked = {
         tailored: applyGeneratedSummary(projects.tailored, summary),
         changes: [
@@ -245,12 +264,15 @@ async function tailorResume(
         ].slice(0, 8),
       };
       // Compare with the assembled source (resume + saved material) so identity checks see both.
+      fallbackStage = 'coverage_failed';
       assertRequiredResumeCoverage(source, ranked.tailored);
     } catch (error) {
       // Do not convert a shared-budget denial into a successful AI request.
       if (findSharedAiBudgetDenied(error)) throw error;
-      console.error('tailor_source_fallback', getAIErrorDiagnostics(error));
-      ranked = buildSourceFallback(source, jdText, summaryEvidence);
+      const reason = classifyFallbackReason(error, fallbackStage);
+      console.error('tailor_source_fallback', { reason });
+      void ping('tailor.fallback', { level: 'warn', props: { reason } }).catch(() => {});
+      ranked = buildSourceFallback(source, jdText, summaryEvidence, reason);
       if (debited && userId) {
         await creditTokens(userId, 1, 'refund', 'ai_failure');
         debited = false;

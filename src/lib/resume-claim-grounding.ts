@@ -77,6 +77,7 @@ function stem(word: string): string {
     'ization',
     'ations',
     'ation',
+    'ating',
     'ments',
     'ment',
     'ings',

@@ -34,7 +34,7 @@ vi.mock('@opennextjs/cloudflare', () => ({
   },
 }));
 vi.mock('@/lib/db', () => ({ db: { execute: vi.fn(), batch: vi.fn() } }));
-vi.mock('@/lib/ping', () => ({ ping: vi.fn() }));
+vi.mock('@/lib/ping', () => ({ ping: vi.fn().mockResolvedValue(false) }));
 vi.mock('@/lib/analytics', () => ({ trackActivated: vi.fn(), trackCoreAction: vi.fn() }));
 vi.mock('ai', () => ({ generateObject: state.generate }));
 vi.mock('@/lib/ai-cloudflare', () => ({
@@ -153,6 +153,7 @@ it('issues from real Better Auth local session and saves the returned exact resu
     ok: true,
     persisted: true,
     generation_method: 'source_fallback',
+    fallback_reason: 'gateway_error:502',
     history: { saved: true },
   });
   expect(
@@ -231,4 +232,20 @@ it('scopes tokens to the two resume APIs and isolates overlapping guest requests
 it('requires an ordinary signed-in session to issue capabilities', async () => {
   state.requestHeaders = new Headers();
   expect(await createResumeApiAccess()).toMatchObject({ ok: false });
+});
+
+it('omits fallback_reason on an AI-generated API response', async () => {
+  state.generate.mockResolvedValue({
+    object: {
+      summary: {
+        text: 'Built React screens and tested keyboard navigation. Built scheduling APIs with Node.js request validation.',
+        evidence_ids: ['f1', 'f2'],
+      },
+      rankings: [{ group_id: 'g1', bullet_ids: ['g1b1', 'g1b2'] }],
+      project_rankings: [],
+    },
+  });
+  const output = await tailorResumeFromReference({ resume_id: 'master', jd_text: jd });
+  expect(output).toMatchObject({ ok: true, generation_method: 'ai' });
+  expect(output).not.toHaveProperty('fallback_reason');
 });
