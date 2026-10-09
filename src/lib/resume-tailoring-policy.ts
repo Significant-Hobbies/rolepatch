@@ -1,5 +1,6 @@
 import type { Token } from 'marked';
 import { lexResumeMarkdown } from '@/lib/resume-bullet-ranking';
+import { createClaimGrounding, splitSentences } from '@/lib/resume-claim-grounding';
 import { assertPinnedResumePoints } from '@/lib/resume-pins';
 
 const PROJECT_SECTION = /\b(projects?|products?)\b/i;
@@ -218,6 +219,11 @@ export function validateGeneratedSummary(
     if (!normalize(cited).includes(normalize(claim)))
       throw new Error('Invalid response: summary contains unsupported years of experience');
   }
+  const grounding = createClaimGrounding(evidence);
+  if (splitSentences(text).some((sentence) => grounding.unsupportedTerms(sentence).length))
+    throw new Error(
+      'Invalid response: summary contains unsupported words not found in the source resume'
+    );
   return text;
 }
 
@@ -248,9 +254,43 @@ export function applyGeneratedSummary(source: string, text: string): string {
   );
 }
 
+const IDENTITY_TOKEN =
+  /https?:\/\/[^\s)>\]|]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+|\+?\d[\d ().-]{7,}\d|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{4}\b|\b(?:19|20)\d{2}\b|\bpresent\b/gi;
+
+/** Name/contact block before the first section, then sorted links, emails, phones, dates and headings. */
+function identityFacts(markdown: string): string[] {
+  const parsed = sections(markdown);
+  const kept = parsed.filter((section) => !SUMMARY_SECTION.test(plain(section.title)));
+  const headings = kept.flatMap((section) => [
+    section.title,
+    ...section.tokens.flatMap((token) => (token.type === 'heading' ? [token.raw.trim()] : [])),
+  ]);
+  const text = kept.map((section) => section.raw).join('\n');
+  return [
+    markdown.slice(0, parsed[0]?.start ?? markdown.length).replace(/\s+$/, ''),
+    ...[
+      ...(text.match(IDENTITY_TOKEN) ?? []).map((token) => token.toLowerCase()),
+      ...headings,
+    ].sort(),
+  ];
+}
+
+/** Generated output must never rewrite who the candidate is or when they worked (#11). */
+export function assertResumeIdentityPreserved(source: string, tailored: string): void {
+  const [beforeHeader, ...before] = identityFacts(source);
+  const [afterHeader, ...after] = identityFacts(tailored);
+  if (beforeHeader !== afterHeader)
+    throw new Error('Invalid response: name and contact block must remain unchanged');
+  if (JSON.stringify(before) !== JSON.stringify(after))
+    throw new Error(
+      'Invalid response: contact links, dates and headings outside the summary must remain unchanged'
+    );
+}
+
 /** Defense against any future selection/page-budget logic silently dropping basic sections. */
 export function assertRequiredResumeCoverage(source: string, tailored: string): void {
   assertPinnedResumePoints(source, tailored);
+  assertResumeIdentityPreserved(source, tailored);
   prepareResumePolicy(tailored);
   const before = sections(source);
   const after = sections(tailored);

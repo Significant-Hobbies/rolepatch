@@ -46,6 +46,7 @@ describe('tailoring server action boundary', () => {
     mocks.debit.mockResolvedValue({ success: true, balance: 2 });
     mocks.credit.mockResolvedValue(undefined);
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   it('returns a disclosed source fallback without leaking provider payloads', async () => {
@@ -380,5 +381,63 @@ describe('AI diagnostics', () => {
       statusCode: null,
       causeType: null,
     });
+  });
+});
+
+describe('identity and grounding (#11 reproduction, synthetic)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.user.mockResolvedValue(null);
+    mocks.debit.mockResolvedValue({ success: true, balance: 2 });
+    mocks.credit.mockResolvedValue(undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  const contact = '# Synthetic Person\n\nperson@example.com | https://person.example.dev\n\n';
+  const withContact = resume.replace('# Synthetic Person\n\n', contact);
+  const respond = (text: string) =>
+    mocks.generate.mockResolvedValue({
+      object: {
+        summary: { text, evidence_ids: ['f1', 'f2', 'f3'] },
+        rankings: [{ group_id: 'g1', bullet_ids: ['g1b1', 'g1b2'] }],
+        project_rankings: [],
+      },
+    });
+
+  it('removes an ungrounded ledger sentence and keeps the contact block byte-identical', async () => {
+    respond(
+      'Software engineer building APIs, React interfaces and task management products. Brings ledger-style backend and high-integrity accounting ownership.'
+    );
+    const result = await tailorResumeForClient(withContact, 'Fintech ledger engineer', config, '');
+    if (!result.success) throw new Error('Expected repaired success');
+    expect(result.data.generation_method).toBeUndefined();
+    expect(result.data.tailored.startsWith(contact)).toBe(true);
+    expect(result.data.tailored).toContain('https://person.example.dev');
+    expect(result.data.tailored).not.toMatch(/ledger|accounting|integrity/i);
+    expect(result.data.changes[0]).toEqual({
+      snippet: 'Software engineer building APIs, React interfaces and task management products.',
+      reason: expect.stringContaining('removed 1 generated sentence(s)'),
+    });
+    expect(JSON.stringify(vi.mocked(console.warn).mock.calls)).not.toContain('ledger');
+  });
+
+  it('uses the disclosed source fallback and refunds once when no grounded sentence survives', async () => {
+    mocks.user.mockResolvedValue('synthetic-user');
+    respond(
+      'Engineer delivering blockchain settlement and ledger reconciliation. Brings high-integrity accounting ownership for crypto exchanges.'
+    );
+    const result = await tailorResumeForClient(withContact, 'Crypto ledger engineer', config, '');
+    expect(result).toMatchObject({ success: true, data: { generation_method: 'source_fallback' } });
+    if (result.success) {
+      expect(result.data.tailored).not.toMatch(/blockchain|ledger|crypto|accounting/i);
+      expect(result.data.tailored.startsWith(contact)).toBe(true);
+    }
+    expect(mocks.credit).toHaveBeenCalledExactlyOnceWith(
+      'synthetic-user',
+      1,
+      'refund',
+      'ai_failure'
+    );
   });
 });
