@@ -19,7 +19,7 @@ the Markdown here; it is the canonical source of truth.
 - [App surfaces](product/surfaces.md) — every route and what it does.
 - [STATUS.md](../STATUS.md) — short view: current objective, active work, blockers, next steps.
 - [PROJECT_STATUS.md](../PROJECT_STATUS.md) — durable fleet-mandated status record (detail).
-- [agents.md](../agents.md) — agent bootloader (commands, constraints, doc nav).
+- [AGENTS.md](../AGENTS.md) — agent bootloader (commands, constraints, doc nav).
 
 ## Architecture
 

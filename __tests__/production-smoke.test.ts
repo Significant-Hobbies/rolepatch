@@ -1,4 +1,11 @@
+import { spawn } from 'node:child_process';
+import { copyFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it, vi } from 'vitest';
+import { CONTENT_SECURITY_POLICY } from '../security-policy.mjs';
 
 import {
   buildSmokeChecks,
@@ -44,7 +51,9 @@ describe('production smoke harness', () => {
       if (url.endsWith('/settings')) {
         return new Response('<h1>Feature availability</h1><h2>Chrome extension</h2>');
       }
-      return new Response('<h1>RolePatch</h1>');
+      return new Response('<h1>RolePatch</h1>', {
+        headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
+      });
     });
 
     const summary = await runProductionSmoke({
@@ -60,6 +69,30 @@ describe('production smoke harness', () => {
       false
     );
   });
+
+  it.each([undefined, '', 'default-src *'])(
+    'rejects a missing, empty or different landing CSP: %s',
+    async (policy) => {
+      const summary = await runProductionSmoke({
+        baseUrl: 'https://rolepatch.com',
+        fetchImpl: vi.fn(
+          async () =>
+            new Response('<h1>RolePatch</h1>', {
+              headers: policy === undefined ? {} : { 'content-security-policy': policy },
+            })
+        ),
+      });
+      expect(summary.results[0]).toMatchObject({
+        name: 'landing',
+        ok: false,
+        errors: [
+          policy === undefined
+            ? 'missing response header: content-security-policy'
+            : 'unexpected response header: content-security-policy',
+        ],
+      });
+    }
+  );
 
   it('runs authenticated apply-agent read checks when a session cookie is supplied', async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
@@ -91,7 +124,9 @@ describe('production smoke harness', () => {
       if (url.endsWith('/settings')) {
         return new Response('<h1>Feature availability</h1><h2>Chrome extension</h2>');
       }
-      return new Response('<h1>RolePatch</h1>');
+      return new Response('<h1>RolePatch</h1>', {
+        headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
+      });
     });
 
     const summary = await runProductionSmoke({
@@ -130,5 +165,120 @@ describe('production smoke harness', () => {
       status: 0,
       errors: ['connection refused'],
     });
+  });
+
+  it('runs the CLI from a path containing spaces and exits nonzero when a public check fails', async () => {
+    const requestedPaths: string[] = [];
+    const server = createServer((request, response) => {
+      const path = new URL(request.url ?? '/', 'http://127.0.0.1').pathname;
+      requestedPaths.push(path);
+
+      if (path === '/api/proof/truehire-preview') {
+        response.writeHead(400, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ ok: false, error: 'Invalid preview URL.' }));
+        return;
+      }
+
+      if (path === '/jobs') {
+        response.writeHead(503, { 'content-type': 'text/html' });
+        response.end('<h1>Temporarily unavailable</h1>');
+        return;
+      }
+
+      response.writeHead(200, {
+        'content-type': 'text/html',
+        ...(path === '/' ? { 'content-security-policy': CONTENT_SECURITY_POLICY } : {}),
+      });
+      response.end(
+        {
+          '/': '<h1>RolePatch</h1>',
+          '/pricing': '<h1>Tokens</h1>',
+          '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
+          '/settings': '<h1>Operational readiness</h1><h2>Chrome extension</h2>',
+        }[path] ?? '<h1>Unexpected route</h1>'
+      );
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected an ephemeral TCP port');
+
+    const tempDirectory = await mkdtemp(join(process.cwd(), '.rolepatch smoke cli '));
+    try {
+      const sourcePath = join(
+        dirname(fileURLToPath(import.meta.url)),
+        '../scripts/production-smoke.mjs'
+      );
+      const spacedScriptPath = join(tempDirectory, 'scripts', 'production-smoke.mjs');
+      await mkdir(join(tempDirectory, 'scripts'));
+      await copyFile(sourcePath, spacedScriptPath);
+      await copyFile(
+        join(dirname(sourcePath), '../security-policy.mjs'),
+        join(tempDirectory, 'security-policy.mjs')
+      );
+
+      const { code, stdout, stderr } = await new Promise<{
+        code: number | null;
+        stdout: string;
+        stderr: string;
+      }>((resolve, reject) => {
+        const child = spawn(
+          process.execPath,
+          [spacedScriptPath, '--base-url', `http://127.0.0.1:${address.port}`],
+          {
+            env: { PATH: process.env.PATH ?? '', NODE_ENV: 'test' },
+            stdio: ['ignore', 'pipe', 'pipe'],
+          }
+        );
+        let childStdout = '';
+        let childStderr = '';
+        child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
+          childStdout += chunk;
+        });
+        child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
+          childStderr += chunk;
+        });
+        child.once('error', reject);
+        child.once('close', (exitCode) =>
+          resolve({ code: exitCode, stdout: childStdout, stderr: childStderr })
+        );
+      });
+
+      expect(spacedScriptPath).toContain(' ');
+      expect(stdout).toContain('RolePatch production smoke: 5/6 passed');
+      expect(code).toBe(1);
+      expect(stderr).toBe('');
+      expect(
+        stdout
+          .split(/\r?\n/)
+          .filter((line) => /^(PASS|FAIL) /.test(line))
+          .map((line) => line.replace(/^(PASS|FAIL) /, '').replace(/ \d+ \d+ms.*$/, ''))
+      ).toEqual([
+        'landing',
+        'jobs browser',
+        'pricing',
+        'proof project',
+        'truehire proof preview guard',
+        'settings readiness',
+      ]);
+      expect(stdout).toContain('FAIL jobs browser 503');
+      expect(requestedPaths).toEqual([
+        '/',
+        '/jobs',
+        '/pricing',
+        '/proof',
+        '/api/proof/truehire-preview',
+        '/settings',
+      ]);
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve()))
+      );
+      await rm(tempDirectory, { recursive: true, force: true });
+    }
   });
 });
