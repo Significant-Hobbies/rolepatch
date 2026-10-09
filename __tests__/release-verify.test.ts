@@ -12,6 +12,7 @@ import {
 
 describe('release verifier', () => {
   it('executes the CLI checks from a checkout path containing spaces', () => {
+    mkdirSync(join(process.cwd(), '.fleet-local'), { recursive: true });
     const fixture = mkdtempSync(join(process.cwd(), '.fleet-local/release CLI '));
     const bin = join(fixture, 'bin');
     mkdirSync(bin);

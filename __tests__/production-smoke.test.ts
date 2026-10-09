@@ -194,7 +194,9 @@ describe('production smoke harness', () => {
           '/': '<h1>RolePatch</h1>',
           '/pricing': '<h1>Tokens</h1>',
           '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
-          '/settings': '<h1>Operational readiness</h1><h2>Chrome extension</h2>',
+          '/resume-builder':
+            '<h1>Resume Builder</h1><h2>Achievements &amp; sources</h2><h2>Extra experience</h2>',
+          '/settings': '<h1>Feature availability</h1><h2>Chrome extension</h2>',
         }[path] ?? '<h1>Unexpected route</h1>'
       );
     });
@@ -249,7 +251,7 @@ describe('production smoke harness', () => {
       });
 
       expect(spacedScriptPath).toContain(' ');
-      expect(stdout).toContain('RolePatch production smoke: 5/6 passed');
+      expect(stdout).toContain('RolePatch production smoke: 6/7 passed');
       expect(code).toBe(1);
       expect(stderr).toBe('');
       expect(
@@ -259,16 +261,18 @@ describe('production smoke harness', () => {
           .map((line) => line.replace(/^(PASS|FAIL) /, '').replace(/ \d+ \d+ms.*$/, ''))
       ).toEqual([
         'landing',
-        'jobs browser',
+        'jobs workspace',
+        'resume builder',
         'pricing',
         'proof project',
         'truehire proof preview guard',
         'settings readiness',
       ]);
-      expect(stdout).toContain('FAIL jobs browser 503');
+      expect(stdout).toContain('FAIL jobs workspace 503');
       expect(requestedPaths).toEqual([
         '/',
         '/jobs',
+        '/resume-builder',
         '/pricing',
         '/proof',
         '/api/proof/truehire-preview',
