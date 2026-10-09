@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
 import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
+import { type AIActionResult, aiActionFailure } from '@/lib/ai-action-result';
 import { trackCoreAction } from '@/lib/analytics';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
@@ -130,6 +131,17 @@ export async function generateFitScore(
     }
     // Surface a user-facing, retryable error — never a raw provider stack.
     throw toUserFacingAIError(err);
+  }
+}
+
+/** Return expected failures as values so production React preserves their message. */
+export async function generateFitScoreForClient(
+  ...args: Parameters<typeof generateFitScore>
+): Promise<AIActionResult<FitScore>> {
+  try {
+    return { success: true, data: await generateFitScore(...args) };
+  } catch (error) {
+    return aiActionFailure(error);
   }
 }
 

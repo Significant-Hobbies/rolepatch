@@ -1,0 +1,319 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Official shadcn blocks: Resume Builder and Jobs",
+  "surfaceMode": "operate",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "https://rolepatch.com/ (existing Astro overlay; preserved)",
+      "app": "/resume-builder and /jobs (Next/React)",
+      "reason": "Only app composition changes; existing landing/footer anchor identity."
+    },
+    "pairedPreview": {
+      "landing": "",
+      "app": ""
+    },
+    "source": "comparison",
+    "references": [
+      "Official shadcn Sidebar blocks \u2014 https://ui.shadcn.com/blocks/sidebar",
+      "Official shadcn Card \u2014 https://ui.shadcn.com/docs/components/card",
+      "RolePatch identity \u2014 DESIGN.md"
+    ],
+    "probes": [
+      {
+        "id": "inset-workspace",
+        "thesis": "A familiar settings form in the official inset workspace.",
+        "layout": "Sidebar-08 composition, local section links, full experience form and contextual help; Jobs table opens description, resume and history tabs.",
+        "typography": "Default Geist interface and upstream labels; 30px page title, 16px CardTitle, 14px form text.",
+        "signature": "Always include next to each achievement; education visibly mandatory; exact documents grouped with each job.",
+        "risk": "Master editing favors overview over a simultaneous paper preview.",
+        "artifact": ".fleet-local/shadcn-official-20261008/capture-1.jpg",
+        "surfaces": {
+          "landing": ".fleet-local/shadcn-official-20261008/landing.jpg",
+          "app": ".fleet-local/shadcn-official-20261008/capture-1.jpg",
+          "jobs": ".fleet-local/shadcn-official-20261008/jobs-1-1440.jpg",
+          "compact": ".fleet-local/shadcn-official-20261008/builder-1-390.jpg"
+        },
+        "path": ".fleet-local/shadcn-official-20261008/capture-1.jpg"
+      },
+      {
+        "id": "document-editor",
+        "thesis": "Edit a point while seeing the master document.",
+        "layout": "Sidebar-07 icon shell, resume section Tabs, selected-point form beside paper; Jobs list/detail split.",
+        "typography": "Default Geist controls with serif document content, matching the landing document specimen.",
+        "signature": "Approved master wording appears immediately in the paper as the point is edited.",
+        "risk": "The paper stacks below the editor on compact screens.",
+        "artifact": ".fleet-local/shadcn-official-20261008/capture-2.jpg",
+        "surfaces": {
+          "landing": ".fleet-local/shadcn-official-20261008/landing.jpg",
+          "app": ".fleet-local/shadcn-official-20261008/capture-2.jpg",
+          "jobs": ".fleet-local/shadcn-official-20261008/jobs-2-1440.jpg",
+          "compact": ".fleet-local/shadcn-official-20261008/builder-2-390.jpg"
+        },
+        "path": ".fleet-local/shadcn-official-20261008/capture-2.jpg"
+      },
+      {
+        "id": "header-workspace",
+        "thesis": "A site header and focused editor, with jobs grouped by stage.",
+        "layout": "Sidebar-16 header composition; default Tabs and centered form; responsive job cards stack on tablet.",
+        "typography": "Default Geist controls, upstream Card and Tab typography; same title scale.",
+        "signature": "Jobs visibly distinguish Draft, Tailored and Applied without implying an application was submitted.",
+        "risk": "More vertical scrolling on tablet; local section navigation is visible in both sidebar and Tabs.",
+        "artifact": ".fleet-local/shadcn-official-20261008/capture-3.jpg",
+        "surfaces": {
+          "landing": ".fleet-local/shadcn-official-20261008/landing.jpg",
+          "app": ".fleet-local/shadcn-official-20261008/capture-3.jpg",
+          "jobs": ".fleet-local/shadcn-official-20261008/jobs-3-1440.jpg",
+          "compact": ".fleet-local/shadcn-official-20261008/builder-3-390.jpg"
+        },
+        "path": ".fleet-local/shadcn-official-20261008/capture-3.jpg"
+      }
+    ],
+    "selected": "inset-workspace",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/shadcn-official-20261008/owner-selection.md",
+      "quote": "One is fine."
+    },
+    "supplied": "",
+    "before": ".fleet-local/shadcn-directions-20261008/before.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "shadcn/ui explicitly requested by owner",
+      "sources": [
+        "https://ui.shadcn.com/r/styles/new-york/sidebar-08.json",
+        "https://ui.shadcn.com/r/styles/new-york/sidebar-07.json",
+        "https://ui.shadcn.com/r/styles/new-york/sidebar-16.json",
+        "https://ui.shadcn.com/r/styles/new-york/sidebar.json",
+        "https://ui.shadcn.com/r/styles/new-york/card.json",
+        "https://ui.shadcn.com/r/styles/new-york/button.json",
+        "https://ui.shadcn.com/r/styles/new-york/input.json",
+        "https://ui.shadcn.com/r/styles/new-york/textarea.json",
+        "https://ui.shadcn.com/r/styles/new-york/checkbox.json",
+        "https://ui.shadcn.com/r/styles/new-york/tabs.json",
+        "https://ui.shadcn.com/r/styles/new-york/table.json",
+        "https://ui.shadcn.com/r/styles/new-york/sheet.json",
+        "https://ui.shadcn.com/r/colors/zinc.json",
+        "https://github.com/shadcn-ui/ui/blob/main/LICENSE.md"
+      ],
+      "runtime": "selective",
+      "customReplacement": {
+        "used": false,
+        "authorization": "Owner explicitly requested shadcn",
+        "reason": "Actual MIT upstream primitives retained. Eighteen copied source files verified identical after import aliases and equivalent Tailwind v4 variable syntax; no component CSS overrides."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare relevant resumes by ranking approved master achievements and complete projects against a job description, generating a summary and preserving education.",
+      "purposeSource": "DESIGN.md, PROJECT_STATUS.md, owner two-workspace instructions; Site Health purposeContract",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "Catalog correctly describes purpose/audience/outcome. Shipped ranking/API and qualified local OAuth are newer details; no landing promise changes in this pass.",
+      "audience": "Job seekers preparing a specific application from their complete master resume",
+      "job": "Edit complete master details; review each job and retrieve its exact saved tailored resume",
+      "thesis": "Retain official shadcn component appearance and accessible behavior; vary the workspace arrangement rather than restyling the controls.",
+      "system": "Official New York components and Zinc semantic variables; self-hosted Geist shared with landing; upstream control sizing, Card, Tabs, Table and Sidebar. Product compositions use standard Tailwind spacing and responsive grids.",
+      "signature": "Always include pins and education are visibly tied to the master, and each job exposes its saved document/history.",
+      "risk": "Inset editing needs a separate document preview; the split editor needs desktop width; the header and board occupy more vertical space on tablet.",
+      "qualityBar": "Owner rejected the first set because none looked like shadcn. Preserve the actual upstream component CSS and Radix interactions. Make Resume Builder and Jobs immediately legible, keep local section navigation secondary, avoid oversized empty panels, preserve the existing footer, and show real master achievements with clearly illustrative job states."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "Owner selected default shadcn app framing while preserving landing/footer.",
+      "reviewer": "Codex direct rendered review",
+      "report": ".fleet-local/shadcn-integration-20261008/product-continuity.md",
+      "surfaces": {
+        "landing": ".fleet-local/shadcn-integration-20261008/landing-current.jpg",
+        "app": ".fleet-local/shadcn-integration-20261008/live-signed-builder-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "The preserved landing and app share Geist, light surfaces and strong black headings. The owner explicitly chose default shadcn Zinc for app controls; existing landing composition and footer remain unchanged."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "RolePatch naming, the resume/job relationship, approved wording, project coverage and review-first document use are visible on both surfaces."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Master resume, job description, tailored resume and review/export are used consistently. Advanced tools are secondary; no pricing destination is added to app primary navigation."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "The landing labels its example illustrative. The app states generation does not submit an application and guest work stays in the browser. Synthetic status tests are labeled UI verification, without a real application claim."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "The live landing CTA targets /dashboard; Jobs gives a master-builder link when no resume exists. Candidate import/onboarding, add-JD, actual generation and saved History were exercised; built tests cover the full first-value path. Existing public landing artifact SHA is unchanged."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "directions",
+          "direction": "inset-workspace",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com/ http://127.0.0.1:4368/1 http://127.0.0.1:4368/1/jobs --json",
+          "report": ".fleet-local/shadcn-official-20261008/slop-direction-1.json",
+          "findingsReview": "Geist is deliberately retained for the requested shadcn appearance and landing continuity. The header Jobs board nested-card flag reflects actual upstream inset shell and job cards, not decorative feature nesting. Existing landing flags are preserved because landing/footer changes are outside this pass. No score used as owner acceptance."
+        },
+        {
+          "stage": "directions",
+          "direction": "document-editor",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com/ http://127.0.0.1:4368/2 http://127.0.0.1:4368/2/jobs --json",
+          "report": ".fleet-local/shadcn-official-20261008/slop-direction-2.json",
+          "findingsReview": "Geist is deliberately retained for the requested shadcn appearance and landing continuity. The header Jobs board nested-card flag reflects actual upstream inset shell and job cards, not decorative feature nesting. Existing landing flags are preserved because landing/footer changes are outside this pass. No score used as owner acceptance."
+        },
+        {
+          "stage": "directions",
+          "direction": "header-workspace",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs https://rolepatch.com/ http://127.0.0.1:4368/3 http://127.0.0.1:4368/3/jobs --json",
+          "report": ".fleet-local/shadcn-official-20261008/slop-direction-3.json",
+          "findingsReview": "Geist is deliberately retained for the requested shadcn appearance and landing continuity. The header Jobs board nested-card flag reflects actual upstream inset shell and job cards, not decorative feature nesting. Existing landing flags are preserved because landing/footer changes are outside this pass. No score used as owner acceptance."
+        },
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "Pinned slop-score.mjs on public landing plus candidate Resume Builder and Jobs --json",
+          "report": ".fleet-local/shadcn-integration-20261008/03-iteration.txt",
+          "findingsReview": "Geist is intentionally retained for official shadcn and landing continuity. The nested-card findings include the official inset shell and optional supporting evidence/experience surfaces. Jobs all-caps/icon/sparkle flags originate in retained closed advanced tools, not the primary History table. Existing landing flags remain preserved. Findings are advisory and no numeric score is used as owner acceptance."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "Pinned slop-score.mjs on public landing plus candidate Resume Builder and Jobs --json",
+          "report": ".fleet-local/shadcn-integration-20261008/10-final.txt",
+          "findingsReview": "Geist is intentionally retained for official shadcn and landing continuity. The nested-card findings include the official inset shell and optional supporting evidence/experience surfaces. Jobs all-caps/icon/sparkle flags originate in retained closed advanced tools, not the primary History table. Existing landing flags remain preserved. Findings are advisory and no numeric score is used as owner acceptance."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct rendered review",
+      "direction": "inset-workspace",
+      "report": ".fleet-local/shadcn-integration-20261008/visual-review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Resume Builder and Jobs are the only primary links. The 30px title introduces each task, Save/Preview sit above the master, and History/search/stage controls are grouped on Jobs. Optional discovery/follow-up areas remain closed."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Geist uses the upstream 14px form scale, 16px card headings and 30px page title. Long original owner achievements remain fully editable and wrap within the form; metadata stays secondary."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "The selected inset sidebar and white canvas match option 1. Section Cards share alignment, and contextual pin guidance sits beside the form at desktop and below it on tablet/phone. Job description/resumes/details share one Sheet."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Always include is adjacent to each achievement, projects remain complete, education is explicitly retained, and each job exposes exact saved documents. Conventional shadcn framing is intentional owner direction."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Actual owner-master import, pin/save/reload, fresh master onboarding, pasted-JD generation and History succeeded in the normal browser. Built E2E verify edit/add-project persistence, notes/search, Sheet Escape/return focus and exact old-version export/reload."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "390px phone and 1440px actual-owner captures were inspected; exact 768px built browser capture was inspected using an explicitly synthetic master. Forms reflow, Sidebar uses a mobile Sheet, and Jobs table scrolls inside its container. No page overflow in checked Builder widths."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "height": 4074,
+        "path": ".fleet-local/shadcn-integration-20261008/e2e-builder-390.png"
+      },
+      {
+        "width": 768,
+        "height": 3716,
+        "path": ".fleet-local/shadcn-integration-20261008/e2e-builder-768.png"
+      },
+      {
+        "width": 1440,
+        "height": 3364,
+        "path": ".fleet-local/shadcn-integration-20261008/e2e-builder-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm release:verify; pnpm docs:check; pnpm exec wrangler deploy --dry-run",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 7,
+        "identity": 6,
+        "interaction": 4,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner selected the official shadcn Inset workspace; implementation follows this arrangement without component styling overrides."
+  }
+}

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
+
 import { spawn, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, rmSync } from 'node:fs';
 
@@ -25,6 +27,8 @@ export const FOCUSED_E2E_ARGS = [
   'test',
   'e2e/ats-job-flow.spec.ts',
   'e2e/settings-readiness.spec.ts',
+  'e2e/history.spec.ts',
+  'e2e/resume-builder.spec.ts',
   '--workers=1',
 ];
 
@@ -105,7 +109,7 @@ export async function main() {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;

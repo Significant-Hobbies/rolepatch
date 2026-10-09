@@ -8,13 +8,15 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 
 import { LocalResumeExport } from '@/components/local-resume-export';
+import { MasterResumeGuide } from '@/components/master-resume-guide';
 import { useAuth } from '@/components/auth-provider';
 import { renameResume, updateResume } from '@/lib/actions/resume-actions';
 import { localGetResume, localRenameResume, localUpdateResume } from '@/lib/local-storage';
+import { listResumePoints, setResumePointPinned, stripResumePins } from '@/lib/resume-pins';
 import {
   DEFAULT_TEMPLATE,
   RESUME_TEMPLATES,
@@ -139,11 +141,12 @@ function saveConfig(cfg: {
 }
 
 export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
-  const { isGuest } = useAuth();
+  const { isGuest, isPending: authPending } = useAuth();
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [resolvedName, setResolvedName] = useState(resumeName ?? '');
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -151,6 +154,8 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   // For guests, initialSource may be null — resolve from localStorage
   const [source, setSource] = useState(initialSource ?? '');
   const [ready, setReady] = useState(initialSource !== null);
+  const points = useMemo(() => listResumePoints(source), [source]);
+  const pinnedCount = points.filter((point) => point.pinned).length;
   const [showConfig, setShowConfig] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [breakPoints, setBreakPoints] = useState<number[]>([0]);
@@ -166,7 +171,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
 
   // Guest: load resume from localStorage if server returned null
   useEffect(() => {
-    if (initialSource === null && isGuest) {
+    if (!authPending && initialSource === null && isGuest) {
       const local = localGetResume(resumeId);
       if (local) {
         setSource(local.source);
@@ -174,7 +179,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
         setReady(true);
       }
     }
-  }, [initialSource, isGuest, resumeId]);
+  }, [authPending, initialSource, isGuest, resumeId]);
 
   // Load config from localStorage after hydration
   useEffect(() => {
@@ -197,6 +202,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
 
   // Track page breaks via ResizeObserver on the measurement div
   useEffect(() => {
+    if (!ready) return;
     const el = measureRef.current;
     if (!el) return;
     const update = () => {
@@ -207,7 +213,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     // Small delay to let fonts/layout settle
     requestAnimationFrame(update);
     return () => observer.disconnect();
-  }, []);
+  }, [ready]);
 
   // Close popover on outside click
   useEffect(() => {
@@ -236,17 +242,25 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     if (!viewRef.current) return;
     const text = viewRef.current.state.doc.toString();
     setSaving(true);
-    if (isGuest) {
-      localUpdateResume(resumeId, text);
-    } else {
-      await updateResume(resumeId, text);
-      // Server now has the authoritative copy — clear the local draft.
-      try {
-        localStorage.removeItem(`resume-draft-${resumeId}`);
-      } catch {}
+    setSaveError('');
+    try {
+      if (isGuest) {
+        localUpdateResume(resumeId, text);
+      } else {
+        await updateResume(resumeId, text);
+        // Server now has the authoritative copy — clear the local draft.
+        try {
+          localStorage.removeItem(`resume-draft-${resumeId}`);
+        } catch {}
+      }
+      setSource(text);
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : 'Could not save your resume. Try again.'
+      );
+    } finally {
+      setSaving(false);
     }
-    setSource(text);
-    setSaving(false);
   }, [resumeId, isGuest]);
 
   const saveRef = useRef(save);
@@ -404,11 +418,11 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
       {/* Editor pane */}
       <div className="w-full md:w-1/2 min-h-[50vh] md:min-h-0 flex flex-col overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 print-hide">
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 border-b border-gray-200 bg-white">
+        <div className="product-editor-toolbar flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 border-b border-gray-200 bg-white">
           <Link
-            href="/"
+            href={`/resume-builder?resume=${resumeId}`}
             className="flex items-center justify-center w-9 h-9 -m-1.5 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Back to dashboard"
+            title="Back to Resume Builder"
           >
             <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
               <path
@@ -579,7 +593,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                 <button
                   onClick={() => setShowExport((v) => !v)}
                   disabled={downloading}
-                  className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
+                  className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 transition-colors"
                 >
                   {downloading ? 'Generating...' : 'Export'}
                   <svg
@@ -641,12 +655,78 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             <button
               onClick={save}
               disabled={saving}
-              className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-40 transition-colors"
+              className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium product-primary-action rounded-md disabled:opacity-40 transition-colors"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
+        {saveError && (
+          <p role="alert" className="px-4 py-2 text-sm text-red-700">
+            {saveError}
+          </p>
+        )}
+        <MasterResumeGuide
+          source={source}
+          onChange={(updated) => {
+            const view = viewRef.current;
+            if (view)
+              view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: updated } });
+          }}
+        />
+        <details className="border-b border-[var(--border)] bg-[var(--card)] px-4 py-3">
+          <summary className="cursor-pointer text-sm font-semibold">
+            Always include · {pinnedCount} {pinnedCount === 1 ? 'point' : 'points'}
+          </summary>
+          <div className="mt-3 space-y-3">
+            <p className="text-sm text-[var(--muted-foreground)]">
+              Choose points to keep in every new draft from this base resume. Click Save to remember
+              your selections.
+            </p>
+            <label className="flex items-center gap-3 text-sm font-semibold">
+              <input type="checkbox" checked disabled className="accent-[var(--primary)]" />
+              Education · always included
+            </label>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              All other points are currently kept too; the job description changes their order.
+            </p>
+            <div className="max-h-64 overflow-y-auto space-y-3 pr-2">
+              {points.map((point) => (
+                <label key={point.id} className="flex items-start gap-3 text-sm leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={point.pinned}
+                    aria-label={`Always include: ${point.label}`}
+                    className="mt-1 accent-[var(--primary)]"
+                    onChange={(event) => {
+                      const view = viewRef.current;
+                      if (!view) return;
+                      const updated = setResumePointPinned(
+                        view.state.doc.toString(),
+                        point.id,
+                        event.target.checked
+                      );
+                      view.dispatch({
+                        changes: { from: 0, to: view.state.doc.length, insert: updated },
+                      });
+                    }}
+                  />
+                  <span className="min-w-0 break-words">
+                    <span className="block text-xs text-[var(--muted-foreground)]">
+                      {point.context}
+                    </span>
+                    {point.label}
+                  </span>
+                </label>
+              ))}
+              {!points.length && (
+                <p className="text-sm text-[var(--muted-foreground)]">
+                  Add bullets under Experience or Projects to choose your points.
+                </p>
+              )}
+            </div>
+          </div>
+        </details>
         <div ref={editorContainerRef} className="flex-1 overflow-hidden min-h-[40vh] md:min-h-0" />
       </div>
 
@@ -663,7 +743,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
           data-template={template}
           aria-hidden="true"
         >
-          <Markdown>{source}</Markdown>
+          <Markdown>{stripResumePins(source)}</Markdown>
         </div>
 
         {/* Visible page cards */}
@@ -675,7 +755,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             <div key={i} className="resume-page" style={cssVars} data-template={template}>
               <div className="resume-page-clip" style={clipStyle}>
                 <div style={offsetPx > 0 ? { marginTop: `-${offsetPx}px` } : undefined}>
-                  <Markdown>{source}</Markdown>
+                  <Markdown>{stripResumePins(source)}</Markdown>
                 </div>
               </div>
             </div>
@@ -686,7 +766,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
       {/* Hidden print target — continuous flow for browser pagination */}
       <div className="hidden print-show" id="resume-print-only">
         <div className="resume-preview" style={cssVars} data-template={template}>
-          <Markdown>{source}</Markdown>
+          <Markdown>{stripResumePins(source)}</Markdown>
         </div>
       </div>
     </div>

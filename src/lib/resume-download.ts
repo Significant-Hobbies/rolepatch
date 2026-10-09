@@ -1,4 +1,5 @@
 import { markdownToHtml } from '@/lib/resume-html';
+import { stripResumePins } from '@/lib/resume-pins';
 import type { ResumeRenderConfig } from '@/lib/resume-templates';
 
 export type LocalResumeFormat = 'print' | 'txt' | 'html' | 'doc';
@@ -9,6 +10,7 @@ export function buildResumeFile(
   format: Exclude<LocalResumeFormat, 'print'>,
   config?: Partial<ResumeRenderConfig>
 ) {
+  source = stripResumePins(source);
   const slug =
     name
       .replace(/[^a-z0-9]+/gi, '-')
@@ -33,6 +35,7 @@ export function exportLocalResume(
   format: LocalResumeFormat,
   config?: Partial<ResumeRenderConfig>
 ): void {
+  source = stripResumePins(source);
   if (format === 'print') {
     const preview = window.open('', '_blank');
     if (!preview)

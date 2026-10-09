@@ -1225,10 +1225,10 @@ export function ApplyAgentCommandCenter({
             <Bot className="h-3.5 w-3.5" />
             Apply agent
           </div>
-          <h2 className="text-2xl font-bold">Command center</h2>
-          <p className="mt-1 max-w-2xl text-xs font-medium text-[var(--muted-foreground)] opacity-70">
-            Prepare high-volume applications without losing review control. Guarded submit is live;
-            bulk unattended apply remains outside the product boundary.
+          <h2 className="text-2xl font-bold">Review applications</h2>
+          <p className="mt-1 max-w-2xl text-xs font-medium text-[var(--muted-foreground)]">
+            Prepare your materials, check missing answers and review each application before
+            submitting.
           </p>
         </div>
         <Link
@@ -1258,7 +1258,7 @@ export function ApplyAgentCommandCenter({
         <div className="rounded-xl border border-[var(--border)]/60 p-4">
           <div className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Guardrailed roadmap
+            Available features
           </div>
           <div className="space-y-2">
             {roadmap.map((item) => (
@@ -1283,10 +1283,10 @@ export function ApplyAgentCommandCenter({
         <div className="flex items-center justify-between border-b border-[var(--border)]/60 px-4 py-3">
           <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Apply mode gates
+            Application options
           </p>
           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-            review-first
+            Review required
           </span>
         </div>
         <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4">
@@ -1329,7 +1329,7 @@ export function ApplyAgentCommandCenter({
           className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
         >
           <RefreshCw className="h-3.5 w-3.5" />
-          Refresh readiness
+          Check missing items
         </button>
       </div>
 

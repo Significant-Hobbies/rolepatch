@@ -2,7 +2,19 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { JobDetailsPatch } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { JobResumeHistory } from '@/components/job-resume-history';
+import type { TailoredResume, JobDetailsPatch } from '@/lib/types';
 
 export interface JobDetailsModalInitialValues {
   interview_date: number | null;
@@ -20,11 +32,14 @@ interface JobDetailsModalProps {
   jobTitle: string;
   company: string;
   initial: JobDetailsModalInitialValues;
+  description?: string;
+  versions?: TailoredResume[];
   onClose: () => void;
+  onReturnFocus?: () => void;
   onSave: (patch: JobDetailsPatch) => Promise<void> | void;
 }
 
-// unix seconds ↔ <input type="datetime-local"> ("YYYY-MM-DDTHH:MM")
+// unix seconds ↔ <Input type="datetime-local"> ("YYYY-MM-DDTHH:MM")
 function unixToLocalInput(unix: number | null): string {
   if (!unix) return '';
   const d = new Date(unix * 1000);
@@ -57,7 +72,10 @@ export function JobDetailsModal({
   jobTitle,
   company,
   initial,
+  description = '',
+  versions = [],
   onClose,
+  onReturnFocus,
   onSave,
 }: JobDetailsModalProps) {
   const [interviewDate, setInterviewDate] = useState('');
@@ -89,15 +107,6 @@ export function JobDetailsModal({
     if (saving) return;
     onClose();
   }, [saving, onClose]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, close]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,152 +143,188 @@ export function JobDetailsModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 modal-backdrop" onClick={close} />
-      <div className="relative bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 modal-content max-h-[90vh] overflow-y-auto">
-        <div className="mb-5">
-          <h2 className="text-lg font-semibold text-foreground">{jobTitle || 'Untitled Role'}</h2>
-          <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-70">
-            {company || 'Unknown Company'}
-          </p>
-        </div>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) close();
+      }}
+    >
+      <SheetContent
+        onCloseAutoFocus={(event) => {
+          if (onReturnFocus) {
+            event.preventDefault();
+            onReturnFocus();
+          }
+        }}
+        className="overflow-y-auto sm:max-w-xl"
+        onEscapeKeyDown={(event) => {
+          if (saving) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (saving) event.preventDefault();
+        }}
+      >
+        <SheetHeader>
+          <SheetTitle>{jobTitle || 'Untitled Role'}</SheetTitle>
+          <SheetDescription>{company || 'Unknown Company'}</SheetDescription>
+        </SheetHeader>
+        <Tabs defaultValue="description" className="mt-6">
+          <TabsList>
+            <TabsTrigger value="description">Description</TabsTrigger>
+            <TabsTrigger value="resumes">Resumes</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
+          </TabsList>
+          <TabsContent value="description" className="mt-4">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+              {description || 'No job description saved.'}
+            </p>
+          </TabsContent>
+          <TabsContent value="resumes" className="mt-4">
+            <JobResumeHistory role={jobTitle} company={company} versions={versions} />
+          </TabsContent>
+          <TabsContent value="details" className="mt-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    htmlFor="job-details-interviewDate"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Interview
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    id="job-details-interviewDate"
+                    value={interviewDate}
+                    onChange={(e) => setInterviewDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="job-details-followUpAt"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Follow-up
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    id="job-details-followUpAt"
+                    value={followUpAt}
+                    onChange={(e) => setFollowUpAt(e.target.value)}
+                  />
+                </div>
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                Interview
-              </label>
-              <input
-                type="datetime-local"
-                value={interviewDate}
-                onChange={(e) => setInterviewDate(e.target.value)}
-                className="input-base"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                Follow-up
-              </label>
-              <input
-                type="datetime-local"
-                value={followUpAt}
-                onChange={(e) => setFollowUpAt(e.target.value)}
-                className="input-base"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_90px] gap-3">
+                <div>
+                  <label htmlFor="job-details-salaryMin" className="block text-sm font-medium mb-2">
+                    Salary min
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="job-details-salaryMin"
+                    value={salaryMin}
+                    onChange={(e) => setSalaryMin(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="job-details-salaryMax" className="block text-sm font-medium mb-2">
+                    Salary max
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="job-details-salaryMax"
+                    value={salaryMax}
+                    onChange={(e) => setSalaryMax(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="job-details-salaryCurrency"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Currency
+                  </label>
+                  <Input
+                    type="text"
+                    id="job-details-salaryCurrency"
+                    value={salaryCurrency}
+                    onChange={(e) => setSalaryCurrency(e.target.value)}
+                    placeholder="USD"
+                    maxLength={3}
+                    className="uppercase"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-[1fr_1fr_90px] gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                Salary min
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={salaryMin}
-                onChange={(e) => setSalaryMin(e.target.value)}
-                placeholder="0.00"
-                className="input-base"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                Salary max
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={salaryMax}
-                onChange={(e) => setSalaryMax(e.target.value)}
-                placeholder="0.00"
-                className="input-base"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                Cur
-              </label>
-              <input
-                type="text"
-                value={salaryCurrency}
-                onChange={(e) => setSalaryCurrency(e.target.value)}
-                placeholder="USD"
-                maxLength={3}
-                className="input-base uppercase"
-              />
-            </div>
-          </div>
+              <div>
+                <label htmlFor="job-details-offerAmount" className="block text-sm font-medium mb-2">
+                  Offer amount
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  id="job-details-offerAmount"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-              Offer amount
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={offerAmount}
-              onChange={(e) => setOfferAmount(e.target.value)}
-              placeholder="0.00"
-              className="input-base"
-            />
-          </div>
+              <div>
+                <label htmlFor="job-details-notes" className="block text-sm font-medium mb-2">
+                  Notes
+                </label>
+                <Textarea
+                  id="job-details-notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Recruiter name, interviewer, prep notes..."
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-              Notes
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Recruiter name, interviewer, prep notes..."
-              className="input-base resize-y"
-            />
-          </div>
+              <div>
+                <label
+                  htmlFor="job-details-rejectionReason"
+                  className="block text-sm font-medium mb-2"
+                >
+                  Rejection reason
+                </label>
+                <Input
+                  type="text"
+                  id="job-details-rejectionReason"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-              Rejection reason
-            </label>
-            <input
-              type="text"
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Optional"
-              className="input-base"
-            />
-          </div>
+              {error && (
+                <div className="text-sm text-[var(--destructive)] bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 rounded-lg px-3 py-2">
+                  {error}
+                </div>
+              )}
 
-          {error && (
-            <div className="text-sm text-[var(--destructive)] bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 rounded-lg px-3 py-2">
-              {error}
-            </div>
-          )}
-
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={close}
-              disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-[var(--muted-foreground)] hover:text-foreground transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
-            >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button type="button" onClick={close} disabled={saving} variant="outline">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </SheetContent>
+    </Sheet>
   );
 }

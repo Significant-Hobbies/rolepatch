@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 
 describe('UserMenu', () => {
-  it('returns Google sign-in to the dashboard', async () => {
+  it('returns Google sign-in to Resume Builder', async () => {
     const user = userEvent.setup();
     render(<UserMenu />);
 
@@ -33,7 +33,7 @@ describe('UserMenu', () => {
 
     expect(mockSignInSocial).toHaveBeenCalledWith({
       provider: 'google',
-      callbackURL: '/dashboard',
+      callbackURL: '/resume-builder',
     });
   });
 });

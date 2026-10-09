@@ -1,0 +1,310 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Premium full landing and paired workspace; footer frozen",
+  "surfaceMode": "persuade",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Astro / \u2014 landing-astro/src/pages/index.astro, full page above unchanged footer",
+      "app": "Next /dashboard and /tailor/[jobId] \u2014 src/app; primary resume review context",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/premium-20261007/precision-body.jpg",
+      "app": ".fleet-local/premium-20261007/precision-app-full.jpg"
+    },
+    "source": "comparison",
+    "references": [
+      "https://www.resumatic.ai/ \u2014 content inspected 2026-10-07; product-specific resume transformation, no borrowed outcome claims",
+      "https://www.craft.do/ \u2014 first viewport rendered 2026-10-07; editorial hierarchy and document depth, no copied collage/brand",
+      "https://linear.app/ \u2014 first viewport rendered 2026-10-07; composed software proof and restrained layers, no copied styling"
+    ],
+    "probes": [
+      {
+        "id": "folio",
+        "thesis": "An editorial application cover and evidence spread; the full page reads as chapters.",
+        "layout": "Two-column typographic cover above three-part role/document/margin spread; quiet proof spread, ruled process, export inventory and access ledger.",
+        "typography": "Instrument Serif display and italic accents; existing Geist interface; Georgia resume specimen. Plum/ivory roles.",
+        "path": ".fleet-local/premium-20261007/folio.html",
+        "surfaces": {
+          "landing": ".fleet-local/premium-20261007/folio-body.jpg",
+          "app": ".fleet-local/premium-20261007/folio-app-full.jpg"
+        },
+        "name": "Application Folio"
+      },
+      {
+        "id": "precision",
+        "thesis": "A precise software instrument that makes source and proposed wording equally visible.",
+        "layout": "Centered compact proposition, three-pane working canvas, dark redline interlude, horizontal process rows and bright utility sections.",
+        "typography": "Existing Geist hierarchy and interface; Georgia resume specimen. Graphite, white and neutral working surfaces.",
+        "path": ".fleet-local/premium-20261007/precision.html",
+        "surfaces": {
+          "landing": ".fleet-local/premium-20261007/precision-body.jpg",
+          "app": ".fleet-local/premium-20261007/precision-app-full.jpg"
+        },
+        "name": "Precision Studio"
+      },
+      {
+        "id": "room",
+        "thesis": "An ink/champagne review environment with bright paper and careful evidence margins.",
+        "layout": "Asymmetric paper/requirement hero, vertical chapter process, centered export statement with horizontal formats, full-width pricing ledger, narrow FAQ and side-by-side closing action.",
+        "typography": "Georgia editorial display and document specimen; existing Geist controls. Ink surround and restrained champagne actions.",
+        "path": ".fleet-local/premium-20261007/room.html",
+        "surfaces": {
+          "landing": ".fleet-local/premium-20261007/room-body.jpg",
+          "app": ".fleet-local/premium-20261007/room-app-full.jpg"
+        },
+        "name": "Review Room"
+      }
+    ],
+    "selected": "precision",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/premium-20261007/selection.md",
+      "quote": "Let's go with two."
+    },
+    "supplied": "",
+    "before": ".fleet-local/resume-first/landing-first-final.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/landing-astro/src/components/SiteHeader.astro",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/tailor-flow.tsx",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/lib/resume-html.ts",
+        "https://github.com/google/fonts/tree/main/ofl/instrumentserif"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Static direction scaffolds adapt native navigation, FAQ disclosure and document/compare/export concepts; no production interactions replaced or dependencies added."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "PRODUCT.md; PROJECT_STATUS.md; site-health/apps/backend/config/projects.json systems.product.rolepatch.purposeContract",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "A job seeker preparing a serious application for a particular role.",
+      "job": "Understand the resume + job \u2192 editable draft \u2192 portable export workflow and enter the guest workspace.",
+      "thesis": "Precision Studio: a precise software instrument that makes source and proposed wording equally visible.",
+      "system": "Geist display/interface with Georgia resume specimens. Graphite actions, off-white page, neutral working canvas, green source-grounded edits. Centered proposition, three-pane job/source/draft workbench, dark redline interlude, horizontal method and ruled export/access ledger. Shared 8px spacing rhythm and 1232px content boundary. Existing footer and its inherited global styles frozen; new rules scoped to the header/main and app workspace.",
+      "signature": "The job requirement, original resume and proposed wording share one working canvas; the dark redline section exposes the preserved source fact and unsupported requirement.",
+      "risk": "The centered proposition is more conventional than Folio, but its side-by-side source/draft workbench makes the resume-specific mechanism concrete. Mobile prioritizes the tailored paper and exposes source comparison in the actual app. Frozen footer retains its legacy treatment.",
+      "qualityBar": "Address the owner concern: premium enough across the entire page, not only the hero. Distinctive typography and composition, legible paper, varied chapter rhythm, honest illustrative proof and access, a coherent app, mobile reflow. No fake metrics/testimonials or UI/source changes to the footer. See brief.md."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex actual browser review; independent screenshot comprehension",
+      "report": ".fleet-local/premium-20261007/visual-review.md",
+      "surfaces": {
+        "landing": ".fleet-local/premium-20261007/landing-1440.jpg",
+        "app": ".fleet-local/premium-20261007/app-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Actual Astro and Next/React share Geist, graphite controls, neutral rules/canvas and serif paper. Scoped aliases fixed the blue action drift; footer styles remain isolated."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Established arrow retained on both real surfaces to preserve frozen footer continuity; paired source/job/paper relationship follows selected Precision Studio."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Resume, base, job, draft, changes, review and export agree. Keyword score explicitly out of 100 and calculation disclosed."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Marketing proof explicitly illustrative; actual app is base/ready with empty explanations, not a claimed generated result. Guest browser data, account tokens and portable formats stated accurately. No hosted MCP or outcome claims."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Actual Astro CTA reaches same-origin /dashboard, restores synthetic guest resume/job and exposes direct pasted-JD entry. Existing record opens in actual source preview and survives reload; live generation remains an explicit external qualification gate."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "directions",
+          "direction": "folio",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4328/folio.html http://127.0.0.1:4328/folio-app.html --json",
+          "report": ".fleet-local/premium-20261007/slop-folio-reviewed.json",
+          "findingsReview": "First scan found low-contrast secondary labels and paper footer text. Darkened them; reviewed landing/app scans are 16/11 with no low-contrast trigger. Instrument Serif italic accents and existing Geist are deliberate, not evidence of authorship. Uppercase resume sections, three process steps and native FAQ serve the task. Desktop headline wrap was corrected; tablet nav and document reflow were corrected in rendered review."
+        },
+        {
+          "stage": "directions",
+          "direction": "precision",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4328/precision.html http://127.0.0.1:4328/precision-app.html --json",
+          "report": ".fleet-local/premium-20261007/slop-precision-reviewed.json",
+          "findingsReview": "Reviewed landing/app scans are 24/11. Reduced crushed display tracking and corrected paper caption contrast. The centered proposition is an intentional software direction and its conventional nature is a stated tradeoff. The framed workbench encloses actual original/draft papers, rather than decorative nested marketing cards. Existing Geist, resume labels, numbered process and FAQ are intentional."
+        },
+        {
+          "stage": "directions",
+          "direction": "room",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4328/room.html http://127.0.0.1:4328/room-app.html --json",
+          "report": ".fleet-local/premium-20261007/slop-room-final-directions.json",
+          "findingsReview": "Contrast in the paper footer and bright patch captions corrected before reviewed scans. Full-body composition was then revised to vertical chapters, horizontal formats, full-width pricing and narrow FAQ so it differs materially from Folio beyond palette/hero. Existing Geist utilities, serif paper, dark working environment, numbered process and native FAQ are intentional; report contains actual measured results. Final direction scan 23 landing/15 app; horizontal token-pack prices trigger stat-banner, retained as real pricing rather than performance/outcome proof. No low-contrast trigger remains."
+        },
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4340/ http://localhost:4340/dashboard --json",
+          "report": ".fleet-local/premium-20261007/slop-iteration.json",
+          "findingsReview": "First working Astro render and fresh empty guest dashboard, not the populated personal browser workspace. Landing 24: selected Geist, centered proposition, uppercase resume sections, native FAQ and document panes remain intentional. Actual rendered review found old section padding doubling the dark interlude, process specificity reverting to three cramped columns, and inherited Tailwind color aliases leaving app actions blue. Scoped overrides corrected all three; no shared footer CSS changed. Guest scanner state has no stored resume, so populated paper/explanation craft is qualified separately by CUA screenshots."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4340/ http://localhost:4340/dashboard --json",
+          "report": ".fleet-local/premium-20261007/slop-final.json",
+          "findingsReview": "Final actual built landing 24 and fresh empty guest dashboard22, same pin/definitions/preset/viewport as iteration. Geist, centered hero, uppercase manuscript labels, numbered rows, native FAQ and genuine manuscript panes are intentional selected choices. Dashboard icon/nested cards and sparkle come from retained native secondary tools, not new landing proof. No low-contrast or crushed-tracking trigger. Direct review fixed method specificity, legacy padding, color aliases and phone score-panel clipping; independent review recognizes illustrative proof and honest base state. Numeric scans do not establish quality or owner acceptance."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct rendered review",
+      "direction": "precision",
+      "report": ".fleet-local/premium-20261007/visual-review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Centered specific-job proposition, direct workspace CTA and job/source/draft specimen; actual app labels base/original vs draft accurately."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Shared Geist interface/display and serif resume paper; bounded reading measures. Marketing specimen captions remain smaller than interactive text."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Three-pane workbench, dark redline, horizontal method rows, ruled files/access and quieter closing follow the selected full-page system. Fixed cramped method rows and doubled legacy padding."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Same established arrow, graphite actions and neutral surfaces; source-grounded resume patch is the signature. Frozen footer deliberately keeps its existing treatment."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Actual CTA, retained guest resume/job, pasted-description entry, keyboard FAQ, menu/context toggles and score explanation verified. Phone score clipping fixed; generated compare/export remain unqualified without local managed AI."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Actual 390/768/1440 pair captures and DOM widths show no horizontal overflow. Tablet/phone explanations follow the paper; preparation remains accessible through disclosure."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/premium-20261007/landing-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/premium-20261007/landing-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/premium-20261007/landing-1440.jpg"
+      },
+      {
+        "width": 390,
+        "path": ".fleet-local/premium-20261007/app-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/premium-20261007/app-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/premium-20261007/app-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm cf:build; pnpm --dir landing-astro build; node scripts/run-overlay-astro-landing.mjs; pnpm typecheck; pnpm docs:check; scoped Biome and 47 focused tests; CUA actual responsive/handoff review",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 7,
+        "identity": 7,
+        "interaction": 3,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 16,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 2,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Geist and centered proposition intentional in selected Precision; manuscript labels, native FAQ, numbered method and paper panes serve the task.",
+        "Fresh guest dashboard retains denser native secondary tools; no populated paper state is inferred from that scanner context.",
+        "Frozen footer retains prior blue accents/density as requested."
+      ]
+    },
+    "comprehension": {
+      "status": "pass",
+      "reviewer": "Independent fresh_visitor_review agent; screenshot-only new review and final addendum",
+      "answers": {
+        "product": "AI resume tailoring for one specific job.",
+        "audience": "Job seekers with an existing resume and a target job.",
+        "value": "Connect requirements to supplied experience while retaining control of proposed changes.",
+        "mechanism": "Resume plus specific job; separate role/source/tailored artifact with highlighted wording.",
+        "proof": "Explicitly illustrative paired artifact makes the proposed transformation concrete; no real AI or outcome evidence is implied.",
+        "nextAction": "Tailor my resume; bring resume/job, work in browser, review before export."
+      },
+      "purposeScore": {
+        "product": 25,
+        "audience": 15,
+        "value": 15,
+        "mechanism": 15,
+        "proof": 11,
+        "nextAction": 15,
+        "total": 96
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner selected direction 2 Precision Studio: Let's go with two. After reviewing the finished actual Astro/React preview, the owner replied: approved. Final design acceptance recorded in .fleet-local/premium-20261007/acceptance.md. Footer remains frozen. This records design acceptance only; no publication requested. Live MCP generation remains unqualified."
+  }
+}

@@ -1,22 +1,20 @@
 import type { Metadata } from 'next';
-
+import { redirect } from 'next/navigation';
 import { ProofPacketPreview } from '@/components/proof-packet-preview';
 import { ProofProjectOverview } from '@/components/proof-project-overview';
 import { TrueHireProofPreview } from '@/components/truehire-proof-preview';
 import { listAchievementEvidence } from '@/lib/actions/achievement-evidence-actions';
-
+import { getCurrentUserId } from '@/lib/auth-utils';
 export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Proof Project',
   description:
     'TrueHire-inspired proof and verification surface for RolePatch application packets, evidence, receipts, and recruiter replies.',
   alternates: { canonical: 'https://rolepatch.com/proof' },
 };
-
 export default async function ProofPage() {
+  if (await getCurrentUserId()) redirect('/resume-builder#sources');
   const entries = await listAchievementEvidence();
-
   return (
     <ProofProjectOverview
       proofPreview={

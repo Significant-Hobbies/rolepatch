@@ -8,15 +8,12 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   const resume = await getResume(id);
 
   return (
-    <>
-      <style>{`nav { display: none !important; }`}</style>
-      <div className="h-screen flex overflow-hidden">
-        <ResumeEditor
-          resumeId={id}
-          initialSource={resume?.source ?? null}
-          resumeName={resume?.name ?? null}
-        />
-      </div>
-    </>
+    <div className="flex h-[calc(100svh-5rem)] overflow-hidden">
+      <ResumeEditor
+        resumeId={id}
+        initialSource={resume?.source ?? null}
+        resumeName={resume?.name ?? null}
+      />
+    </div>
   );
 }

@@ -1,0 +1,292 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "Resume-first landing and paired tailor workspace",
+  "surfaceMode": "persuade",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "https://rolepatch.com/ \u2014 landing-astro/src/pages/index.astro",
+      "app": "https://rolepatch.com/dashboard and /tailor/[jobId] \u2014 src/app",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/resume-first/studio-landing.jpg",
+      "app": ".fleet-local/resume-first/studio-app.jpg"
+    },
+    "source": "comparison",
+    "references": [
+      "https://www.resumatic.ai \u2014 inspected 2026-10-07: resume-first proof, clear action and spacious hierarchy; do not copy branding or outcome claims"
+    ],
+    "probes": [
+      {
+        "id": "studio",
+        "thesis": "A light, approachable resume studio where the document leads and the evidence sits alongside.",
+        "layout": "Split landing hero with paper foreground; compact app navigation and a document/review pane.",
+        "typography": "Shared Arial/system sans for controls and hierarchy; Georgia only inside the actual resume specimen.",
+        "path": ".fleet-local/resume-first/studio.html",
+        "surfaces": {
+          "landing": ".fleet-local/resume-first/studio-landing.jpg",
+          "app": ".fleet-local/resume-first/studio-app.jpg"
+        }
+      },
+      {
+        "id": "folio",
+        "thesis": "An editorial career folio with a personal, slower reading rhythm.",
+        "layout": "Centered title over a wide document-and-margin composition; horizontal app navigation.",
+        "typography": "Georgia editorial headlines, quiet sans utility text and readable resume specimen.",
+        "path": ".fleet-local/resume-first/folio.html",
+        "surfaces": {
+          "landing": ".fleet-local/resume-first/folio-landing.jpg",
+          "app": ".fleet-local/resume-first/folio-app.jpg"
+        }
+      },
+      {
+        "id": "desk",
+        "thesis": "A dark technical patch workbench with facts and redlines as the defining signature.",
+        "layout": "Horizontal headline/action band over a wide paper-and-proof workbench; dense app review sidebar.",
+        "typography": "Compact sans hierarchy, strong evidence figures and paper typography.",
+        "path": ".fleet-local/resume-first/desk.html",
+        "surfaces": {
+          "landing": ".fleet-local/resume-first/desk-landing.jpg",
+          "app": ".fleet-local/resume-first/desk-app.jpg"
+        }
+      }
+    ],
+    "selected": "studio",
+    "approval": "approved",
+    "ownerEvidence": {
+      "path": ".fleet-local/resume-first/selection.md",
+      "quote": "1 \u2014 Resume Studio (recommended)"
+    },
+    "supplied": "",
+    "before": ".fleet-local/resume-first/before-landing.jpg",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/landing-astro/src/components/SiteHeader.astro",
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/site-nav.tsx",
+        "https://preline.co/docs/components/sidebar.html"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Existing components already own navigation, imports, job entry, review and export; adapt their presentation."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by matching the job description to supplied experience and showing a reviewable patch.",
+      "purposeSource": "PRODUCT.md; PROJECT_STATUS.md; site-health/apps/backend/config/projects.json systems product purposeContract.rolepatch",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to a specific job while keeping claims grounded in supplied evidence.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers with an existing resume and a specific role to apply for.",
+      "job": "Understand the resume-tailoring promise, enter the workspace, bring a base resume and job, review and export the revised draft.",
+      "thesis": "Resume Studio: light, spacious and document-led; show the actual resume and its supported patch before secondary campaign features.",
+      "system": "Typography: Arial/system sans throughout landing and app; Georgia only for resume specimens. Color: cool-white background #f8fafc, navy text #1b2940, cobalt action #345cf0, slate secondary #5b687c, pale-blue stage #e8eef9, green supported evidence and readable red errors. Spacing: 8px rhythm, 24/48px gutters. Layout: 1180px content measure, split document hero, compact navigation and paired working panes. Geometry: 8px controls, 16px document stage, fine borders and restrained paper shadows. Reduced-motion respected.",
+      "signature": "A white resume sheet with source-preserved facts highlighted, accompanied by a patch explanation that links the wording to the role and original evidence.",
+      "risk": "The restrained composition is quieter than Resumatic; the document and concrete change explanation must provide visual interest rather than decorative effects.",
+      "qualityBar": "Meet the owner\u2019s Resumatic reference through clear hierarchy, generous space, a legible resume artifact, and a simple first-use path. Landing and app must feel continuous. Avoid the incumbent grid-paper/brutalist styling, marketing-as-audit prose, fake ATS/interview numbers, ambiguous controls, low-contrast text and campaign-first onboarding."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex direct browser review",
+      "report": ".fleet-local/resume-first/continuity.md",
+      "surfaces": {
+        "landing": ".fleet-local/resume-first/landing-1440.jpg",
+        "app": ".fleet-local/resume-first/app-1440.jpg"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Both captures share navy Arial utility type, cobalt action, cool-white surfaces and white serif paper; app density serves its working task."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Same RolePatch arrow and name, resume artifact and reviewed patch vocabulary; footer colors aligned while shared structure is preserved."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Resume, job, draft, changes, review and export agree. Keyword badge explains its heuristic after click."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Illustrative landing proof, browser-local guest data and review-before-use. No invented hiring metric, public MCP deployment or successful local AI generation is claimed."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Built Astro CTA reaches /dashboard on localhost:4340, restores synthetic guest resume/job, opens source preview beside pasted job, and survives reload. Mocked generation tests pass; configured live AI remains a release gate."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "directions",
+          "direction": "studio",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4327/studio.html http://127.0.0.1:4327/studio-app.html --json",
+          "report": ".fleet-local/resume-first/slop-studio-v2.json",
+          "findingsReview": "Landing flags uppercase labels, numbered method steps and tight headline spacing. Uppercase resume headings and a three-step resume workflow are intentional; keep readable tracking in production. App had no triggered patterns. Fixed headline overflow by shortening the title to Your story. A sharper fit.; tightened document/review spacing and corrected brand layout after rendered review."
+        },
+        {
+          "stage": "directions",
+          "direction": "folio",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4327/folio.html http://127.0.0.1:4327/folio-app.html --json",
+          "report": ".fleet-local/resume-first/slop-folio-v2.json",
+          "findingsReview": "Cream background, tight editorial headline spacing, uppercase resume headings and numbered method labels are deliberate. Scan flagged low contrast on landing secondary text: retain as a correction before any Folio implementation; not the selected direction. The vertically stacked editorial composition replaces the earlier split probe."
+        },
+        {
+          "stage": "directions",
+          "direction": "desk",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4327/desk.html http://127.0.0.1:4327/desk-app.html --json",
+          "report": ".fleet-local/resume-first/slop-desk.json",
+          "findingsReview": "Dark-only theme, uppercase labels, numbered steps and tight tracking are deliberate technical-system choices. No gradient, card-grid or generic badge wall; subject-native proof occupies the workbench. Dark-only is a tradeoff, not the selected direction."
+        },
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://127.0.0.1:4330 --json; node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4340/dashboard --json",
+          "report": ".fleet-local/resume-first/slop-iteration-paired.json",
+          "findingsReview": "Landing 8: uppercase resume labels, numbered method and native FAQ are intentional. Empty guest dashboard 14: native secondary cards/icon groups and discovery sparkle; moved job entry above discovery, corrected paper padding, heavy borders, mobile overlap and unclear labels after direct rendered review."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs http://localhost:4340/ http://localhost:4340/dashboard --json",
+          "report": ".fleet-local/resume-first/slop-final.json",
+          "findingsReview": "Same pin and empty-dashboard state: landing 8, dashboard 14. Uppercase resume labels, three-step process and FAQ retained. Secondary dashboard cards, icon groups and discovery sparkle remain functional native UI. Final paired renders independently reviewed; numeric fingerprints do not establish generated quality or owner acceptance."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex direct rendered review",
+      "direction": "studio",
+      "report": ".fleet-local/resume-first/review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Document-led split hero and resume-first workspace; discovery and campaigns sit below resume/job entry. Secondary preparation remains available."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Shared Arial interface and serif resume; screen-only paper margins corrected flush-edge text; bounded small specimen captions remain."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Spacious split landing, real resume paper and explanation pane; mobile context now expands separately without overlapping panes. Shared footer remains lengthy."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "Arrow mark, cobalt action, light surfaces and resume/patch signature match selected Studio on both rendered surfaces."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "CTA, guest creation/save/reload, pasted job, keyword explanation, keyboard mobile menu and job disclosure inspected. AI error is visible and source preserved; generated preview/diff tests use mocked AI."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "390/768/1440 paired captures. DOM width checks show no document overflow; mobile keeps generation above source preview and expands preparation on demand."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet-local/resume-first/landing-390.jpg"
+      },
+      {
+        "width": 768,
+        "path": ".fleet-local/resume-first/landing-768.jpg"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet-local/resume-first/landing-1440.jpg"
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm cf:build; pnpm typecheck; pnpm docs:check; pnpm test src/__tests__/resume-assistant.test.ts src/__tests__/resume-mcp-route.test.ts src/__tests__/resume-extraction.test.ts src/__tests__/token-balance-consistency.test.tsx src/__tests__/new-job-button.test.tsx",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 7,
+        "identity": 7,
+        "interaction": 3,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 16,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 2,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Uppercase document labels, method numbering and FAQ retained intentionally.",
+        "Native secondary dashboard card groups and discovery sparkle remain."
+      ]
+    },
+    "comprehension": {
+      "status": "pass",
+      "reviewer": "Codex independent fresh-visitor reviewer /root/fresh_visitor_review",
+      "report": ".fleet-local/resume-first/comprehension.md",
+      "answers": {
+        "product": "AI resume tailoring: adapts an existing resume to a target job.",
+        "audience": "Job seekers with an existing resume and a role they want.",
+        "value": "Focused application with visible changes, claim review and a portable result.",
+        "mechanism": "Tailored artifact and source-fact annotations; before/after appears below the first viewport.",
+        "proof": "Clearly illustrative resume demonstrates intended output, not verified generation quality or customer outcomes.",
+        "nextAction": "Tailor my resume; start in browser, review, export and use."
+      },
+      "purposeScore": {
+        "product": 25,
+        "audience": 15,
+        "value": 15,
+        "mechanism": 11,
+        "proof": 9,
+        "nextAction": 15,
+        "total": 90
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "keep",
+    "note": "Owner selected Studio. Local rendered design and scoped checks pass; final owner acceptance and hosted MCP/AI qualification remain separate. No deployment authorized."
+  }
+}

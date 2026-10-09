@@ -1,0 +1,231 @@
+{
+  "$schema": "fleet.design-review.v2",
+  "version": 2,
+  "project": "rolepatch",
+  "target": "OAuth consent state in existing Settings resume connection",
+  "surfaceMode": "operate",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "productSurfaces": {
+      "scope": "paired",
+      "landing": "Actual unchanged public Astro https://rolepatch.com; approved fonts/colors and frozen footer.",
+      "app": "/settings inside the existing account menu; optional resume API connection panel. Primary workspaces remain Resume Builder and Jobs.",
+      "reason": ""
+    },
+    "pairedPreview": {
+      "landing": ".fleet-local/remaining-20261008/landing.png",
+      "app": ".fleet-local/remaining-20261008/settings-1440.png"
+    },
+    "source": "existing",
+    "references": [],
+    "probes": [],
+    "selected": "precision-studio-outline",
+    "approval": "not-required",
+    "ownerEvidence": {
+      "path": "",
+      "quote": ""
+    },
+    "supplied": "",
+    "before": ".fleet-local/remaining-20261008/before-settings.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "project-native",
+      "sources": [
+        "https://github.com/Significant-Hobbies/rolepatch/blob/main/src/components/settings-form.tsx"
+      ],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": "Reuse the existing project-native Settings disclosure and buttons. Server-only official Better Auth MCP provider; no new UI dependency."
+      }
+    },
+    "contract": {
+      "purpose": "RolePatch helps job seekers prepare a resume for a specific role by connecting the job requirements to supplied experience and showing a reviewable patch.",
+      "purposeSource": "DESIGN.md approved purpose; current PROJECT_STATUS.md resume API/history/onboarding implementation; owner current consolidation brief. Public catalog lookup returned no applicable purposeContract.",
+      "canonicalPurpose": "RolePatch tailors a resume and supporting application material to the evidence and language of a specific job.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "Job seekers organizing supplied experience and preparing a specific application.",
+      "job": "Connect an assistant through standard OAuth with explicit account consent in existing optional Settings controls.",
+      "thesis": "Extend the approved Settings connection panel with its login/consent states; no new page, workspace, typography, color or composition.",
+      "system": "Current Geist and Space Grotesk, graphite actions, neutral surfaces and document typography; existing project-native forms/disclosures and account menu. Landing/footer fixed.",
+      "signature": "A saved factual master produces an exact per-job version; API access is scoped to that task and never applies to jobs.",
+      "risk": "Untrusted registered clients can provide names; show the registered callback host and requested access explicitly. Only deliberate consent authorizes.",
+      "qualityBar": "Readable consent names the client and callback host, owned master access, credits, History, expiry and session disconnect. Native labelled controls, pending/error/deny states, no automatic approval, phone wrapping."
+    }
+  },
+  "evidence": {
+    "platform": "web",
+    "productContinuity": {
+      "status": "pass",
+      "reason": "",
+      "reviewer": "Codex actual rendered review",
+      "report": ".fleet-local/oauth-20261008/product-continuity.md",
+      "surfaces": {
+        "landing": ".fleet-local/oauth-20261008/ordinary-landing.png",
+        "app": ".fleet-local/oauth-20261008/final-consent-allow-1440.png"
+      },
+      "checks": {
+        "designSystem": {
+          "status": "pass",
+          "observation": "Approved type, graphite actions and document surfaces retained; phone instructions wrap without overflow."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "RolePatch landing and account Settings retain their existing identity and frozen footer."
+        },
+        "vocabulary": {
+          "status": "pass",
+          "observation": "Master resume, per-job draft and History remain consistent."
+        },
+        "productTruth": {
+          "status": "pass",
+          "observation": "Explicit resume access, credits, opt-in MCP History, renewable duration and session disconnect; no automatic application submission or qualified external ChatGPT claim."
+        },
+        "handoff": {
+          "status": "pass",
+          "observation": "Ordinary public CTA reaches Jobs; built desktop/mobile onboarding/Builder/Jobs/History tests and actual local JD-only OAuth History pass. Production Google sign-in is not inferred."
+        }
+      }
+    },
+    "slopScale": {
+      "platform": "web",
+      "posture": "advisory",
+      "reason": "",
+      "checkpoints": [
+        {
+          "stage": "iteration",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs <local signed Settings request> --json",
+          "report": ".fleet-local/oauth-20261008/slop-iteration.json",
+          "findingsReview": "Fresh guest-session consent scan. Approved fonts, existing uppercase metadata and nested Settings cards retained intentionally; phone overflow and actual signed-in controls reviewed separately at three widths. No detector-driven redesign."
+        },
+        {
+          "stage": "final",
+          "status": "scanned",
+          "command": "node /Users/sarthak/Desktop/fleet/saas-maker/tooling/scripts/slop-score.mjs <local signed Settings request> --json",
+          "report": ".fleet-local/oauth-20261008/slop-final.json",
+          "findingsReview": "Fresh guest-session consent scan. Approved fonts, existing uppercase metadata and nested Settings cards retained intentionally; phone overflow and actual signed-in controls reviewed separately at three widths. No detector-driven redesign."
+        }
+      ]
+    },
+    "visualReview": {
+      "status": "pass",
+      "reviewer": "Codex actual rendered review",
+      "direction": "precision-studio-outline",
+      "report": ".fleet-local/oauth-20261008/rendered-review.md",
+      "checks": {
+        "hierarchy": {
+          "status": "pass",
+          "observation": "Client and callback origin precede permissions, renewal, Allow/Cancel; optional existing Settings controls follow."
+        },
+        "typography": {
+          "status": "pass",
+          "observation": "Existing approved fonts and clear heading/body hierarchy retained; long callback origins wrap mid-word on phone without clipping."
+        },
+        "composition": {
+          "status": "pass",
+          "observation": "Single existing Settings section retains spacing and graphite controls; long optional Settings remains a bounded tradeoff."
+        },
+        "identity": {
+          "status": "pass",
+          "observation": "RolePatch owner master, per-job resume and Jobs History retain selected Outline vocabulary and two primary workspaces."
+        },
+        "interaction": {
+          "status": "pass",
+          "observation": "Actual Worker consent allow/cancel, refresh, JD-only owned tools, exact History and disconnect revocation pass; focused render tests cover guest/error."
+        },
+        "responsive": {
+          "status": "pass",
+          "observation": "Actual 390/768/1440 allow/deny captures and no-overflow assertions pass; phone buttons stack."
+        }
+      }
+    },
+    "screenshots": [
+      {
+        "path": ".fleet-local/oauth-20261008/final-consent-allow-390.png",
+        "width": 390,
+        "height": 1000
+      },
+      {
+        "path": ".fleet-local/oauth-20261008/final-consent-allow-768.png",
+        "width": 768,
+        "height": 1000
+      },
+      {
+        "path": ".fleet-local/oauth-20261008/final-consent-allow-1440.png",
+        "width": 1440,
+        "height": 1000
+      }
+    ],
+    "projectCheck": {
+      "command": "pnpm release:verify; pnpm docs:check; actual isolated Worker OAuth/SQL/consent/History/refresh/disconnect checks",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 36,
+      "maximum": 40,
+      "dimensions": {
+        "hierarchy": 7,
+        "typography": 7,
+        "composition": 7,
+        "identity": 7,
+        "interaction": 4,
+        "responsive": 4
+      }
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20,
+      "dimensions": {
+        "purpose": 4,
+        "accessibility": 5,
+        "behavior": 4,
+        "responsive": 3,
+        "performance": 2
+      }
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": [
+        "Approved fonts and existing metadata/containers intentionally retained; unchanged landing patterns preserved. Scanner advisory, not craft or owner acceptance."
+      ]
+    },
+    "comprehension": {
+      "status": "not-applicable",
+      "reviewer": "",
+      "answers": {
+        "product": "",
+        "audience": "",
+        "value": "",
+        "mechanism": "",
+        "proof": "",
+        "nextAction": ""
+      },
+      "purposeScore": {
+        "product": 0,
+        "audience": 0,
+        "value": 0,
+        "mechanism": 0,
+        "proof": 0,
+        "nextAction": 0,
+        "total": 0
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "not-required",
+    "note": "Preserve the already selected Precision Studio/Outline with a bounded consent state in the existing Settings connection disclosure. Backend OAuth separately authorized. No redesign."
+  }
+}

@@ -3,6 +3,12 @@
 import { headers } from 'next/headers';
 
 import { detectAtsBoard, slugToCompanyName } from '@/lib/ats-boards';
+import {
+  assertJobPage,
+  jobPageContent,
+  jobRoleFromTitle,
+  UnreadableJobPageError,
+} from '@/lib/job-page-content';
 
 interface ScrapeResult {
   title: string;
@@ -174,18 +180,19 @@ export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
       signal: AbortSignal.timeout(15000),
     });
     if (res.ok) {
-      const text = await res.text();
-      const title = text.split('\n')[0]?.replace(/^#+\s*/, '') ?? '';
+      const { title, text } = jobPageContent(await res.text());
+      const company = extractCompany(url, title);
       return {
         title,
         text,
         html: '',
-        company: extractCompany(url, title),
-        role: title,
+        company,
+        role: jobRoleFromTitle(title, company),
       };
     }
-  } catch {
-    // fallback below
+  } catch (error) {
+    if (error instanceof UnreadableJobPageError) throw error;
+    // Transport failures can still use the bundled HTML parser below.
   }
 
   // Fallback: direct fetch + linkedom + Readability (also retried).
@@ -216,13 +223,15 @@ export async function scrapeJobUrl(url: string): Promise<ScrapeResult> {
   const article = reader.parse();
 
   if (!article) throw new Error('Failed to parse job page content');
+  assertJobPage(article.title ?? '', article.textContent ?? '');
+  const company = extractCompany(url, article.title ?? '');
 
   return {
     title: article.title ?? '',
     text: article.textContent ?? '',
     html: article.content ?? '',
-    company: extractCompany(url, article.title ?? ''),
-    role: article.title ?? '',
+    company,
+    role: jobRoleFromTitle(article.title ?? '', company),
   };
 }
 

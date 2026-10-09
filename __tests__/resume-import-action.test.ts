@@ -22,9 +22,14 @@ const source =
   '# Synthetic Candidate\n\n## Experience\nEngineer at Example, 2022–2025. Reduced latency from 240ms to 160ms.';
 const config = { endpointUrl: '', apiKey: '', model: '' };
 
-function input(text = source) {
+function input(text = source, extension = 'md') {
   const form = new FormData();
-  form.set('file', new File([text], 'synthetic.md', { type: 'text/markdown' }));
+  form.set(
+    'file',
+    new File([text], `synthetic.${extension}`, {
+      type: extension === 'md' ? 'text/markdown' : 'text/plain',
+    })
+  );
   form.set('name', 'Synthetic import');
   return form;
 }
@@ -43,6 +48,22 @@ describe('resume file import action', () => {
     form.set('file', new File([source], 'synthetic.md'));
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
     expect(await importResumeFromFile(form, config)).toEqual({ success: true, id: '', source });
+    expect(mocks.generateText).not.toHaveBeenCalled();
+  });
+
+  it('preserves exact Markdown bytes even when the provider is unavailable and MIME is plain text', async () => {
+    const exact = `\r\n${source.replaceAll('\n', '\r\n')}\r\n\r\n- Reconciled 712 of 715 ledger entries.\r\nhttps://example.com/contact\r\n`;
+    mocks.generateText.mockRejectedValue(new Error('Provider unavailable'));
+    const form = input();
+    form.set('file', new File([exact], 'master.md', { type: 'text/plain' }));
+    const { importResumeFromFile } = await import('@/lib/actions/import-action');
+    expect(await importResumeFromFile(form, config)).toEqual({
+      success: true,
+      id: '',
+      source: exact,
+    });
+    expect(mocks.generateText).not.toHaveBeenCalled();
+    expect(mocks.execute).not.toHaveBeenCalled();
   });
 
   it('explains legacy Word conversion before calling AI', async () => {
@@ -89,7 +110,7 @@ describe('resume file import action', () => {
     vi.unstubAllGlobals();
     const result = await importResumeFromFile(form, config);
     expect(result).toEqual({ success: true, id: '', source });
-    expect(mocks.generateText.mock.calls[0]?.[0].prompt).toContain(source);
+    expect(mocks.generateText).not.toHaveBeenCalled();
     expect(mocks.execute).not.toHaveBeenCalled();
   });
 
@@ -109,7 +130,7 @@ describe('resume file import action', () => {
   it('does not save an import when AI generation fails', async () => {
     mocks.generateText.mockRejectedValue(new Error('Provider unavailable'));
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
-    await expect(importResumeFromFile(input(), config)).resolves.toEqual({
+    await expect(importResumeFromFile(input(source, 'txt'), config)).resolves.toEqual({
       success: false,
       error: 'Generation unavailable',
     });
@@ -129,7 +150,7 @@ describe('resume file import action', () => {
   it('does not save an empty model result', async () => {
     mocks.generateText.mockResolvedValue({ text: '   ' });
     const { importResumeFromFile } = await import('@/lib/actions/import-action');
-    expect(await importResumeFromFile(input(), config)).toEqual({
+    expect(await importResumeFromFile(input(source, 'txt'), config)).toEqual({
       success: false,
       error: 'The AI service returned an empty resume. Please try again.',
     });

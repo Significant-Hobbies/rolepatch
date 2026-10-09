@@ -21,6 +21,15 @@ describe('detectAtsBoard', () => {
   });
 
   describe('Greenhouse', () => {
+    it('extracts the company path on the current job-boards host', () => {
+      expect(detectAtsBoard('https://job-boards.greenhouse.io/twilio/jobs/8026207')).toMatchObject({
+        board: 'greenhouse',
+        company: 'twilio',
+      });
+    });
+    it('does not classify a lookalike Greenhouse hostname', () => {
+      expect(detectAtsBoard('https://greenhouse.io.example.com/twilio/jobs/1')).toBeNull();
+    });
     it('extracts company from boards.greenhouse.io/<company>', () => {
       const info = detectAtsBoard('https://boards.greenhouse.io/acme/jobs/12345');
       expect(info).not.toBeNull();
