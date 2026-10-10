@@ -1,12 +1,6 @@
 export const PRODUCT_DESCRIPTION =
   'Tailor a resume to one job using claims supported by your experience, then review every proposed change before it becomes part of the application.';
 
-export const TOKEN_PACKS = [
-  { tokens: 10, price: '$5' },
-  { tokens: 30, price: '$12' },
-  { tokens: 100, price: '$30' },
-] as const;
-
 export const PRODUCT_FAQS = [
   {
     q: 'What is RolePatch?',

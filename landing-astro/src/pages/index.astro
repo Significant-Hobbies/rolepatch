@@ -1,176 +1,138 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import SiteFooter from '@/components/SiteFooter.astro';
-import SiteHeader from '@/components/SiteHeader.astro';
-import { PRODUCT_FAQS, TOKEN_PACKS } from '@/lib/product';
-import '@/styles/precision.css';
-const faqJsonLd = {
-  '@context': 'https://schema.org', '@type': 'FAQPage',
-  mainEntity: PRODUCT_FAQS.slice(0, 4).map(faq => ({ '@type': 'Question', name: faq.q,
-    acceptedAnswer: { '@type': 'Answer', text: faq.a } })),
-};
----
-<Layout title="RolePatch — Your resume, tailored to the role" description="Tailor your existing resume to a specific job. Review every change, preserve your facts, and export a resume you can use anywhere." redirectAuthenticated>
-  <div class="rolepatch-page">
-    <div class="precision-surface precision">
-      <SiteHeader active="home" precision />
-      <main>
-<div class="shell"><section
- class="hero"><p class="eyebrow">RolePatch / AI resume tailoring</p>
-<h1>A better resume.<br><em>For this job.</em></h1>
-<p class="lede">Bring your resume and a specific job. RolePatch connects the requirements to your experience, then puts every change in your hands.</p>
-<div class="actions"><a class="btn" href="/dashboard" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a><a class="text-link" href="#proof">See the patch <span aria-hidden="true">↓</span></a></div>
-<p class="access-note">Start in your browser · Review before export</p>
-</section>
-<div class="proof-stage"><div class="stage-cap"><span>Platform resume → Platform Reliability Engineer</span><span>Illustrative draft</span></div>
-<div class="workbench"><div><aside
- class="role-card"><div class="eyebrow">The role</div>
-<h3>Platform Reliability<br>Engineer</h3>
-<p>Northstar Cloud · London<br>Illustrative job description</p>
-<div class="requirement"><span>What the job asks for</span>TypeScript services<br>Platform migrations<br>Production reliability<br>Kubernetes</div>
-</aside>
-<div class="role-card source-note"><strong>Keep the original.</strong><p>Keep your approved points. Review their order and the new summary.</p>
-</div>
-</div>
-<div class="paper-wrap base"><div class="doc-label"><span>Base resume</span><span>Original</span></div>
-<article
- class="paper" aria-label="Illustrative original resume"><h3 class="person">Alex Morgan</h3>
-<div class="contact">Platform Engineer · London, UK<br>alex@example.com · github.com/alexmorgan</div>
-<h4>Profile</h4>
-<p>Platform engineer building reliable services with TypeScript. Experience leading migrations and improving production reliability.</p>
-<h4>Experience</h4>
-<div class="job"><strong>Platform Engineer · Northstar</strong><span>2022 — Present</span></div>
-<ul><li>Led migration of 11 services to TypeScript. Incident rate fell 34%.</li>
-<li>Built service health dashboards and coordinated incident reviews with engineering teams.</li>
-</ul>
-<h4>Skills</h4>
-<p>TypeScript · Service migrations · Reliability<br>Service health dashboards · Incident review</p>
-<h4>Education</h4>
-<p>BSc Computer Science</p>
-<div class="page-num"><span>Alex Morgan · Platform resume</span><span>01</span></div>
-</article>
-</div>
-<div class="paper-wrap"><div class="doc-label"><span>Tailored resume</span><span>Review draft</span></div>
-<article
- class="paper" aria-label="Illustrative tailored resume"><h3 class="person">Alex Morgan</h3>
-<div class="contact">Platform Engineer · London, UK<br>alex@example.com · github.com/alexmorgan</div>
-<h4>Profile</h4>
-<p>Platform engineer with <mark>TypeScript migration</mark> and <mark>production reliability</mark> experience. Led an 11-service migration with a 34% drop in incidents, and built service health dashboards.</p>
-<h4>Experience</h4>
-<div class="job"><strong>Platform Engineer · Northstar</strong><span>2022 — Present</span></div>
-<ul><li>Led migration of 11 services to TypeScript. Incident rate fell 34%.<span class="num">01</span></li>
-<li>Built service health dashboards and coordinated incident reviews with engineering teams.</li>
-</ul>
-<h4>Skills</h4>
-<p>TypeScript · Service migrations · Reliability<br>Service health dashboards · Incident review</p>
-<h4>Education</h4>
-<p>BSc Computer Science</p>
-<div class="page-num"><span>Alex Morgan · Platform resume</span><span>01</span></div>
-</article>
-</div>
-</div>
-</div>
-</div>
-<div class="shell bridge"><span><strong>Your experience</strong> is the starting point.</span><span><strong>The job</strong> gives it focus.</span><span><strong>You</strong> review the final draft.</span></div>
-<section
- id="proof" class="proof-section"><div class="shell section"><div class="section-head"><div><p class="eyebrow">The difference is in the patch</p>
-<h2>Sharper emphasis.<br><em>The same experience.</em></h2>
-</div>
-<p>A relevant resume makes the connection clear. Keep your approved achievements, rank them for the role, and review a new summary.</p>
-</div>
-<div class="proof-detail"><div class="annotation-copy"><h3>Say what matters.<br>Show where it came from.</h3>
-<p>The role asks for platform reliability. The source already contains a TypeScript migration and a measurable reduction in incidents. RolePatch changes emphasis through ranking and a fresh summary; the achievement wording stays fixed.</p>
-<div class="fact-line"><span>11 services<br>Original scope</span><span>34% fewer incidents<br>Original result</span></div>
-</div>
-<div class="patch"><div class="patch-top"><span>A fresh summary. The same achievements.</span><span>Illustrative patch</span></div>
-<div class="old"><span class="mini-label">From the original</span><blockquote>Platform engineer building reliable services with TypeScript. Experience leading migrations and improving production reliability.</blockquote></div>
-<div class="new"><span class="mini-label">For this role</span><blockquote>Platform engineer with <ins>TypeScript migration</ins> and <ins>production reliability</ins> experience. Led an 11-service migration with a 34% drop in incidents, and built service health dashboards.</blockquote></div>
-<p class="explain">The work, scope and result already exist in the source. Only the summary is generated. Achievement wording, complete projects and education stay preserved.</p>
-</div>
-</div>
-<div class="proof-foot"><p>Kubernetes is requested by the job but absent from this resume. It is left out of this illustrative draft.</p>
-<a class="text-link" href="/dashboard" data-app-health-event="workspace_opened">Review your own resume <span aria-hidden="true">→</span></a></div>
-</div>
-</section>
-<section
- id="method" class="method"><div class="shell section"><div class="section-head"><div><p class="eyebrow">A focused application</p>
-<h2>From your experience<br>to this opportunity.</h2>
-</div>
-<p>One base resume. One specific role. A draft you can inspect and edit before you use it.</p>
-</div>
-<div class="process"><article
-><span class="step-no">01</span><h3>Bring your resume.</h3>
-<p>Import the document you already have, or paste your experience into the workspace.</p>
-<div class="format">PDF · DOCX · Markdown</div>
-</article>
-<article
-><span class="step-no">02</span><h3>Bring the job.</h3>
-<p>Add a public job URL or paste the description. Choose your base resume and mark points to always include.</p>
-<div class="format">Job URL · Pasted description</div>
-</article>
-<article
-><span class="step-no">03</span><h3>Make it yours.</h3>
-<p>Inspect the patch, check each claim and edit the wording. Export the version you want to send.</p>
-<div class="format">Review · Edit · Export</div>
-</article>
-</div>
-</div>
-</section>
-<section
- class="export-section"><div class="shell section exports"><div><p class="eyebrow">Your resume, beyond RolePatch</p>
-<h2>A finished draft.<br><em>Wherever you work.</em></h2>
-<p class="body">Bring the result to your application, your document editor, or ChatGPT. Your next step belongs to you.</p>
-<a class="text-link" href="/dashboard" data-app-health-event="workspace_opened">Open the workspace <span aria-hidden="true">↗</span></a></div>
-<div><div class="file-list"><div class="file"><span class="ext">.md</span><div><h3>Markdown</h3>
-<p>Copy into an assistant or keep as plain text.</p>
-</div>
-<span class="arrow">↗</span></div>
-<div class="file"><span class="ext">.html</span><div><h3>A formatted document</h3>
-<p>Open in a browser. Print or save a PDF.</p>
-</div>
-<span class="arrow">↗</span></div>
-<div class="file"><span class="ext">.doc</span><div><h3>Word-compatible</h3>
-<p>Continue editing in your document app.</p>
-</div>
-<span class="arrow">↗</span></div>
-</div>
-<p class="export-meta">Your original stays preserved. The updated draft remains yours to review and edit.</p>
-</div>
-</div>
-</section>
-<section
- id="pricing" class="pricing-section"><div class="shell section pricing"><div><p class="eyebrow">Start with one application</p>
-<h2>A workspace first.<br><em>An account when<br>you need it.</em></h2>
-<p class="description">Start in your browser. Google sign-in adds account storage and three starting tokens. Signed-in AI operations use tokens.</p>
-<p class="pricing-note">No subscription. Guest data stays in this browser.<br>Clearing browser storage removes guest records.</p>
-</div>
-<div class="pricing-ledger"><div class="access-row"><div><strong>Guest workspace</strong><p>Bring a resume and a job. Review and export in this browser.</p>
-</div>
-<span class="sub">No sign-in</span></div>
-<div class="access-row"><div><strong>Free browser tools</strong><p>Keyword checker, bullet tools, diff and word count.</p>
-</div>
-<span class="sub">No tokens</span></div>
-{TOKEN_PACKS.map(pack => <a href="/pricing" class="price-row"><span>{pack.tokens} tokens</span><b>{pack.price}</b><small>One-time pack ↗</small></a>)}<p class="pricing-note">Tailoring and supporting AI drafts use account tokens.<br><a class="text-link" href="/pricing">See access and pricing <span aria-hidden="true">→</span></a></p>
-</div>
-</div>
-</section>
-<section
- class="faq-section"><div class="shell section faq"><div><p class="eyebrow">Before you start</p>
-<h2>A little clarity.</h2>
-<a class="text-link" href="/faq">Read every answer <span aria-hidden="true">→</span></a></div>
-<div class="answers">{PRODUCT_FAQS.slice(0, 4).map(faq => <details><summary>{faq.q}</summary><p>{faq.a}</p>
-</details>)}</div>
-</div>
-</section>
-<section
- class="closing"><p class="eyebrow">For the role you want</p>
-<h2>Bring your experience.<br><em>Make the connection.</em></h2>
-<a class="btn" href="/dashboard" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a><p class="access-note">Your resume. One job. A draft you can review.</p>
-</section>
+import Base from '@saas-maker/templates/Base.astro';
+import { WorkbenchPage } from '@saas-maker/templates/workbench-page';
+import { baseProps } from '@saas-maker/templates/page';
+import { workbenchContent } from '@saas-maker/templates/schema';
+import { PRODUCT_DESCRIPTION, PRODUCT_FAQS } from '@/lib/product';
+import home from '../content/home.json';
 
-      </main>
-    </div>
-    <SiteFooter />
-  </div>
-  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
-</Layout>
+const content = workbenchContent.parse(home);
+const faqs = PRODUCT_FAQS.slice(0, 4);
+for (const section of content.sections) {
+  for (const block of section.blocks) {
+    if (block.type === 'faq') block.items = faqs.map(faq => ({ ...faq }));
+  }
+}
+const SITE_URL = 'https://rolepatch.com';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      name: 'RolePatch',
+      alternateName: ['Role Patch', 'rolepatch.com'],
+      url: SITE_URL,
+      description: PRODUCT_DESCRIPTION,
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'RolePatch',
+      alternateName: ['Role Patch', 'rolepatch.com'],
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      url: SITE_URL,
+      description: PRODUCT_DESCRIPTION,
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Job seekers preparing a serious application for a specific role',
+      },
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Browser-local resume tools',
+          price: '0',
+          priceCurrency: 'USD',
+          description: 'ATS, keyword, bullet, diff, snippets, and word-count tools without sign-up.',
+        },
+        { '@type': 'Offer', name: '10 AI tokens', price: '5', priceCurrency: 'USD' },
+        { '@type': 'Offer', name: '30 AI tokens', price: '12', priceCurrency: 'USD' },
+        { '@type': 'Offer', name: '100 AI tokens', price: '30', priceCurrency: 'USD' },
+      ],
+      featureList: [
+        'Evidence-bound resume tailoring',
+        'Word-level change review',
+        'Job fit analysis',
+        'Cover letters and interview stories',
+        'Review-first application packets and receipts',
+      ],
+    },
+  ],
+};
+content.page.jsonLd = [jsonLd, {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(faq => ({
+    '@type': 'Question', name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+}];
+---
+
+<Base {...baseProps(content)}>
+  <Fragment slot="head">
+    <meta name="application-name" content="RolePatch" />
+    <meta name="author" content="RolePatch" />
+    <meta name="creator" content="RolePatch" />
+    <meta name="keywords" content="resume tailor, AI resume, ATS score, resume diff, job application, cover letter generator, resume keywords, resume optimizer, job fit score, interview prep, STAR stories" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:creator" content="@sarthakcodes" />
+    <link rel="alternate" type="text/markdown" href="/index.md" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" />
+    <link rel="describedby" type="application/json" href="/api/ai" />
+    <script
+      is:inline
+      defer
+      src="https://health.sassmaker.com/tracker.js"
+      data-key="ahk_pub_da27e32228b9bb96637405112579aadb17f0bdeaf1fa953c2d7572c26a07d6f8"
+      data-project="app-import-5055bea54acfed7be5d386e53bc59d75c2b4566fd7b7404c470c7bc6c5b7c747"
+      data-identity="session"
+      data-endpoint="https://ingest.sassmaker.com/v1/browser"
+    ></script>
+    <script is:inline>
+      document.addEventListener('click', function (event) {
+        var target = event.target;
+        var control = target && target.closest ? target.closest('[data-app-health-event]') : null;
+        var name = control && control.getAttribute('data-app-health-event');
+        if (name && window.appHealth && typeof window.appHealth.track === 'function') {
+          window.appHealth.track(name);
+        }
+      });
+    </script>
+    <script is:inline>
+          (function () {
+            var c = document.cookie;
+            if (
+              c.indexOf('better-auth.session_token') !== -1 ||
+              c.indexOf('__Secure-better-auth.session_token') !== -1
+            ) {
+              location.replace('/dashboard');
+            }
+          })();
+    </script>
+    <style is:inline>
+      :root {
+        --font-geist-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --font-geist-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      }
+      body { margin: 0; }
+    </style>
+    <!-- Template links have no attribute passthrough; retain destination events. -->
+    <script is:inline>
+      document.addEventListener('click', function (event) {
+        var target = event.target;
+        var control = target && target.closest ? target.closest('a[href]') : null;
+        if (!control || control.hasAttribute('data-app-health-event')) return;
+        var events = {
+          '/dashboard': 'workspace_opened',
+          '/pricing': 'pricing_opened',
+          '/tools': 'free_tools_opened'
+        };
+        var name = events[control.getAttribute('href')];
+        if (name && window.appHealth && typeof window.appHealth.track === 'function') {
+          window.appHealth.track(name);
+        }
+      });
+    </script>
+  </Fragment>
+  <WorkbenchPage content={content} />
+</Base>
