@@ -54,6 +54,16 @@ content.page.jsonLd = [jsonLd, {
     <script is:inline set:html={APP_HEALTH_CLICK_SCRIPT}></script>
     <script is:inline set:html={REDIRECT_AUTHENTICATED_SCRIPT}></script>
     <style is:inline>
+      /* Match Arial to the shipped Geist face at the hero's 450 weight.
+         Size uses the headline's advance widths; vertical metrics use hhea. */
+      @font-face {
+        font-family: 'Geist Display Fallback';
+        src: local('Arial');
+        size-adjust: 106.2875%;
+        ascent-override: 94.5549%;
+        descent-override: 27.7549%;
+        line-gap-override: 0%;
+      }
       :root {
         --font-geist-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         --font-geist-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
