@@ -35,3 +35,72 @@ export const PRODUCT_FAQS = [
     a: 'RolePatch is a live, maintained web product. Its maker is not currently job hunting, so owner-led validation against new real applications is paused. The app and token-pack checkout code are implemented, but this landing audit does not claim an independently completed live purchase or broad outcome study.',
   },
 ] as const;
+
+export const productJsonLd = (siteUrl: string) => ({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      name: 'RolePatch',
+      alternateName: ['Role Patch', 'rolepatch.com'],
+      url: siteUrl,
+      description: PRODUCT_DESCRIPTION,
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'RolePatch',
+      alternateName: ['Role Patch', 'rolepatch.com'],
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      url: siteUrl,
+      description: PRODUCT_DESCRIPTION,
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Job seekers preparing a serious application for a specific role',
+      },
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Browser-local resume tools',
+          price: '0',
+          priceCurrency: 'USD',
+          description: 'ATS, keyword, bullet, diff, snippets, and word-count tools without sign-up.',
+        },
+        { '@type': 'Offer', name: '10 AI tokens', price: '5', priceCurrency: 'USD' },
+        { '@type': 'Offer', name: '30 AI tokens', price: '12', priceCurrency: 'USD' },
+        { '@type': 'Offer', name: '100 AI tokens', price: '30', priceCurrency: 'USD' },
+      ],
+      featureList: [
+        'Evidence-bound resume tailoring',
+        'Word-level change review',
+        'Job fit analysis',
+        'Cover letters and interview stories',
+        'Review-first application packets and receipts',
+      ],
+    },
+  ],
+});
+
+// Inline scripts shared by the Astro layout and the UI-library home page.
+export const APP_HEALTH_CLICK_SCRIPT = `
+document.addEventListener('click', function (event) {
+  var target = event.target;
+  var control = target && target.closest ? target.closest('[data-app-health-event]') : null;
+  var name = control && control.getAttribute('data-app-health-event');
+  if (name && window.appHealth && typeof window.appHealth.track === 'function') {
+    window.appHealth.track(name);
+  }
+});
+`;
+
+export const REDIRECT_AUTHENTICATED_SCRIPT = `
+(function () {
+  var c = document.cookie;
+  if (
+    c.indexOf('better-auth.session_token') !== -1 ||
+    c.indexOf('__Secure-better-auth.session_token') !== -1
+  ) {
+    location.replace('/dashboard');
+  }
+})();
+`;

@@ -1,6 +1,6 @@
 ---
 import '@/styles/global.css';
-import { PRODUCT_DESCRIPTION } from '@/lib/product';
+import { APP_HEALTH_CLICK_SCRIPT, productJsonLd, REDIRECT_AUTHENTICATED_SCRIPT } from '@/lib/product';
 
 interface Props {
   title: string;
@@ -16,50 +16,8 @@ const canonicalUrl = new URL(canonicalPath, SITE_URL).toString();
 // render SVG Open Graph images.
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      name: 'RolePatch',
-      alternateName: ['Role Patch', 'rolepatch.com'],
-      url: SITE_URL,
-      description: PRODUCT_DESCRIPTION,
-    },
-    {
-      '@type': 'SoftwareApplication',
-      name: 'RolePatch',
-      alternateName: ['Role Patch', 'rolepatch.com'],
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'Web',
-      url: SITE_URL,
-      description: PRODUCT_DESCRIPTION,
-      audience: {
-        '@type': 'Audience',
-        audienceType: 'Job seekers preparing a serious application for a specific role',
-      },
-      offers: [
-        {
-          '@type': 'Offer',
-          name: 'Browser-local resume tools',
-          price: '0',
-          priceCurrency: 'USD',
-          description: 'ATS, keyword, bullet, diff, snippets, and word-count tools without sign-up.',
-        },
-        { '@type': 'Offer', name: '10 AI tokens', price: '5', priceCurrency: 'USD' },
-        { '@type': 'Offer', name: '30 AI tokens', price: '12', priceCurrency: 'USD' },
-        { '@type': 'Offer', name: '100 AI tokens', price: '30', priceCurrency: 'USD' },
-      ],
-      featureList: [
-        'Evidence-bound resume tailoring',
-        'Word-level change review',
-        'Job fit analysis',
-        'Cover letters and interview stories',
-        'Review-first application packets and receipts',
-      ],
-    },
-  ],
-};
+const jsonLd = productJsonLd(SITE_URL);
+
 ---
 
 <!doctype html>
@@ -122,31 +80,12 @@ const jsonLd = {
       data-identity="session"
       data-endpoint="https://ingest.sassmaker.com/v1/browser"
     ></script>
-    <script is:inline>
-      document.addEventListener('click', function (event) {
-        var target = event.target;
-        var control = target && target.closest ? target.closest('[data-app-health-event]') : null;
-        var name = control && control.getAttribute('data-app-health-event');
-        if (name && window.appHealth && typeof window.appHealth.track === 'function') {
-          window.appHealth.track(name);
-        }
-      });
-    </script>
+    <script is:inline set:html={APP_HEALTH_CLICK_SCRIPT}></script>
   </head>
   <body class="antialiased">
     {
       redirectAuthenticated && (
-        <script is:inline>
-          (function () {
-            var c = document.cookie;
-            if (
-              c.indexOf('better-auth.session_token') !== -1 ||
-              c.indexOf('__Secure-better-auth.session_token') !== -1
-            ) {
-              location.replace('/dashboard');
-            }
-          })();
-        </script>
+        <script is:inline set:html={REDIRECT_AUTHENTICATED_SCRIPT}></script>
       )
     }
     <slot />

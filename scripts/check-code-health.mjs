@@ -40,7 +40,7 @@ const baselines = {
   duplication: {
     clones: 43,
     duplicatedLines: 667,
-    percentage: 1.5119916579770596,
+    percentage: 1.4892049387126305,
   },
   unused: {
     files: 0,
