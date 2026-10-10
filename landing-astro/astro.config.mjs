@@ -1,13 +1,13 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 
 // Mirrors fleet/sarthakagrawal/astro.config.mjs, the reference 360 ms-LCP
 // Astro setup. Pure static output (no SSR adapter) — the rolepatch.com
-// landing is fully static markup. CSS is inlined into the HTML
-// (`build.inlineStylesheets: 'always'`) so the LCP path is one round-
-// trip: HTML → fonts → paint.
+// landing is fully static markup. Astro uses its default auto stylesheet
+// strategy; the overlay copies cacheable /_astro assets alongside the HTML.
 //
 // Tailwind v4 via the official Vite plugin (fleet web stack standard,
 // VoidZero ecosystem). Lightning CSS replaces the default PostCSS
@@ -21,9 +21,8 @@ export default defineConfig({
   // on every link. Same as sarthakagrawal.pages.dev.
   build: {
     format: 'file',
-    inlineStylesheets: 'always',
   },
-  integrations: [sitemap()],
+  integrations: [sitemap(), react()],
   vite: {
     plugins: [tailwindcss()],
     css: { transformer: 'lightningcss' },

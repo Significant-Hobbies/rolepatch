@@ -38,7 +38,7 @@
     "landing-astro": {
       "entry": ["src/pages/**/*.astro", "astro.config.mjs"],
       "project": ["src/**/*.{astro,ts}", "astro.config.mjs"],
-      "ignoreDependencies": ["lightningcss", "tailwindcss"]
+      "ignoreDependencies": ["lightningcss", "tailwindcss", "lucide-react", "motion", "radix-ui"]
     }
   }
 }

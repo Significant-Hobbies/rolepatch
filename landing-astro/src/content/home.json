@@ -1,0 +1,267 @@
+{
+  "template": "workbench",
+  "page": {
+    "title": "RolePatch — Your resume, tailored to the role",
+    "description": "Tailor your existing resume to a specific job. Review every change, preserve your facts, and export a resume you can use anywhere.",
+    "theme": "base",
+    "canonical": "https://rolepatch.com/",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "og": {
+      "image": "https://rolepatch.com/og-image.png",
+      "imageAlt": "RolePatch — See every change in your resume",
+      "imageWidth": 1200,
+      "imageHeight": 630,
+      "siteName": "RolePatch",
+      "twitterSite": "@sarthakcodes"
+    },
+    "assetBase": "/images/",
+    "tokens": {
+      "--brand": "#20252d",
+      "--brand-foreground": "#fff",
+      "--brand-soft": "#f2f3f2",
+      "--brand-ink": "#20252d",
+      "--background": "#fcfcfb",
+      "--foreground": "#191c20",
+      "--muted-foreground": "#686c74",
+      "--surface": "#f2f3f2",
+      "--border": "#dfe1e3",
+      "--font-display": "\"Geist Variable\", system-ui, sans-serif",
+      "--display-weight": "450",
+      "--chart-2": "#686c74",
+      "--radius": "0.3125rem"
+    }
+  },
+  "product": "RolePatch",
+  "url": "https://rolepatch.com",
+  "mark": "/favicon.svg",
+  "nav": [
+    {
+      "label": "how it works",
+      "href": "#method"
+    },
+    {
+      "label": "see the patch",
+      "href": "#proof"
+    },
+    {
+      "label": "pricing",
+      "href": "/pricing"
+    }
+  ],
+  "header": {
+    "primary": {
+      "label": "tailor my resume",
+      "href": "/dashboard"
+    }
+  },
+  "hero": {
+    "eyebrow": "rolepatch / ai resume tailoring",
+    "title": "a better resume. *for this job.*",
+    "lede": "Bring your resume and a specific job. RolePatch connects the requirements to your experience, then puts every change in your hands.",
+    "primary": {
+      "label": "tailor my resume",
+      "href": "/dashboard"
+    },
+    "secondary": {
+      "label": "see the patch",
+      "href": "#proof"
+    },
+    "note": "Start in your browser · Review before export",
+    "window": {
+      "title": "Illustrative draft",
+      "src": "patch-stage.webp",
+      "alt": "Illustrative draft: role card with a base resume and tailored resume for Platform Reliability Engineer.",
+      "width": 1400,
+      "height": 778,
+      "chrome": "none"
+    },
+    "caption": "Illustrative draft · Platform resume → Platform Reliability Engineer"
+  },
+  "sections": [
+    {
+      "id": "proof",
+      "blocks": [
+        {
+          "type": "cta",
+          "title": "sharper emphasis. *the same experience.*",
+          "lede": "The work, scope and result already exist in the source. Only the summary is generated. Achievement wording, complete projects and education stay preserved.",
+          "primary": {
+            "label": "review your own resume",
+            "href": "/dashboard"
+          },
+          "note": "Kubernetes is requested by the job but absent from this resume. It is left out of this illustrative draft."
+        }
+      ]
+    },
+    {
+      "id": "method",
+      "header": {
+        "eyebrow": "a focused application",
+        "title": "from your experience *to this opportunity.*",
+        "lede": "One base resume. One specific role. A draft you can inspect and edit before you use it."
+      },
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            {
+              "title": "bring your resume.",
+              "body": "Import the document you already have, or paste your experience into the workspace.",
+              "code": "PDF · DOCX · Markdown"
+            },
+            {
+              "title": "bring the job.",
+              "body": "Add a public job URL or paste the description. Choose your base resume and mark points to always include."
+            },
+            {
+              "title": "make it yours.",
+              "body": "Inspect the patch, check each claim and edit the wording. Export the version you want to send. Your original stays preserved. The updated draft remains yours to review and edit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pricing",
+      "blocks": [
+        {
+          "type": "statement",
+          "eyebrow": "start with one application",
+          "title": "a workspace first. *an account when you need it.*",
+          "lede": "Start in your browser. Google sign-in adds account storage and three starting tokens. Signed-in AI operations use tokens.",
+          "points": [
+            {
+              "title": "guest workspace",
+              "body": "Bring a resume and a job. Review and export in this browser. Guest data stays in this browser. Clearing browser storage removes guest records."
+            },
+            {
+              "title": "free browser tools",
+              "body": "Keyword checker, bullet tools, diff and word count."
+            },
+            {
+              "title": "no subscription.",
+              "body": "Tailoring and supporting AI drafts use account tokens."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "faq",
+      "surface": "muted",
+      "blocks": [
+        {
+          "type": "faq",
+          "title": "a little *clarity.*",
+          "items": []
+        }
+      ]
+    },
+    {
+      "compact": true,
+      "blocks": [
+        {
+          "type": "cta",
+          "title": "bring your experience. *make the connection.*",
+          "primary": {
+            "label": "tailor my resume",
+            "href": "/dashboard"
+          },
+          "note": "Your resume. One job. A draft you can review."
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "catalogId": "rolepatch",
+    "capture": "newsletter",
+    "privacyUrl": "https://rolepatch.com/privacy",
+    "summary": "Tailor one resume to one job description, keep every claim grounded in supplied evidence, and review the patch before it leaves your hands. Token packs are implemented, while the maker's own new-application validation is paused because he is not currently job hunting.",
+    "legal": "© 2026 Sarthak Agrawal · No unattended bulk apply · No CAPTCHA bypass",
+    "groups": [
+      {
+        "title": "product",
+        "links": [
+          {
+            "label": "dashboard",
+            "href": "/dashboard"
+          },
+          {
+            "label": "browse jobs",
+            "href": "/jobs"
+          },
+          {
+            "label": "evidence bank",
+            "href": "/evidence"
+          },
+          {
+            "label": "proof packets",
+            "href": "/proof"
+          },
+          {
+            "label": "pricing",
+            "href": "/pricing"
+          }
+        ]
+      },
+      {
+        "title": "understand",
+        "links": [
+          {
+            "label": "free tools",
+            "href": "/tools"
+          },
+          {
+            "label": "faq",
+            "href": "/faq"
+          },
+          {
+            "label": "changelog",
+            "href": "/changelog"
+          },
+          {
+            "label": "llm index",
+            "href": "/llms.txt"
+          },
+          {
+            "label": "developer docs",
+            "href": "/docs"
+          },
+          {
+            "label": "openapi schema",
+            "href": "/openapi.json"
+          },
+          {
+            "label": "product brief",
+            "href": "/index.md"
+          }
+        ]
+      },
+      {
+        "title": "trust",
+        "links": [
+          {
+            "label": "privacy",
+            "href": "/privacy"
+          },
+          {
+            "label": "terms",
+            "href": "/terms"
+          },
+          {
+            "label": "github repository",
+            "href": "https://github.com/Significant-Hobbies/rolepatch"
+          },
+          {
+            "label": "roadmap",
+            "href": "https://github.com/Significant-Hobbies/rolepatch/issues"
+          },
+          {
+            "label": "maker",
+            "href": "https://sarthakagrawal.dev"
+          }
+        ]
+      }
+    ]
+  }
+}
