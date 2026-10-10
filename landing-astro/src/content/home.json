@@ -4,6 +4,7 @@
     "title": "RolePatch — Your resume, tailored to the role",
     "description": "Tailor your existing resume to a specific job. Review every change, preserve your facts, and export a resume you can use anywhere.",
     "theme": "base",
+    "fonts": { "display": "geist" },
     "canonical": "https://rolepatch.com/",
     "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
     "og": {
@@ -25,7 +26,7 @@
       "--muted-foreground": "#686c74",
       "--surface": "#f2f3f2",
       "--border": "#dfe1e3",
-      "--font-display": "\"Geist Variable\", system-ui, sans-serif",
+      "--font-display": "\"Geist Variable\", \"Geist Display Fallback\", system-ui, sans-serif",
       "--display-weight": "450",
       "--chart-2": "#686c74",
       "--radius": "0.3125rem"
