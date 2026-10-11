@@ -7,7 +7,7 @@ title: Resume MCP setup and verification
 Return a tailored draft from an assistant using a base resume plus a job URL,
 qualified ID or pasted description. The result includes complete Markdown and
 change explanations; request `format: "html"` for an additional portable HTML
-document. MCP drafts are unsaved by default; request save_to_history explicitly to save a signed-in version. No application is submitted.
+document. Request `format: "pdf"` for a PDF attachment. MCP drafts are unsaved by default; request save_to_history explicitly to save a signed-in version. No application is submitted.
 
 Architecture and limits: [ADR-0007](../../architecture/decisions/0007-portable-resume-mcp.md).
 Fixed-wording tailoring: [ADR-0008](../../architecture/decisions/0008-fixed-wording-resume-ranking.md).
@@ -123,7 +123,8 @@ above and one owner-approved tool call. Actual ChatGPT connection and signed-in 
 
 - `rolepatch_resume_profiles`: list owned cloud profile IDs/names when signed in.
 - `rolepatch_resolve_job`: normalize a URL or board-qualified ID without fetching it.
-- `rolepatch_tailor_resume`: prepare a reviewed, unsaved draft.
+- `rolepatch_tailor_resume`: prepare a reviewed, unsaved draft; request `format: "pdf"` when the user asks for a file.
+- `rolepatch_render_resume_pdf`: render supplied draft Markdown without generation credits or persistence.
 
 Example tool arguments (synthetic data):
 
@@ -285,3 +286,15 @@ A charged AI credit is refunded; shared budget denials remain errors. Text
 matching can miss synonyms or implicit requirements, and the summary can be
 less fluent. Sparse evidence can still fail rather than inventing claims.
 See [ADR-0014](../../architecture/decisions/0014-source-preserving-provider-fallback.md).
+
+## PDF delivery and export retries
+
+After account/master setup, request `{ "job_url": "https://example.com/jobs/engineer", "format": "pdf" }`; select `resume_id` if multiple masters exist. Guests supply `resume_markdown` each time. Markdown defaults and HTML remain unchanged.
+
+The JSON API includes `pdf: { filename, mime_type, data_base64 }`: decode the base64 bytes and save the named file. MCP returns an embedded `resource` with `mimeType: "application/pdf"` and `blob` (base64), plus review/change metadata in text and structured content. The opaque URI identifies an inline attachment, not a stored/fetchable download. PDFs are bounded to 2 MiB and private/no-store.
+
+Review every draft (`requires_review: true`). Rendering precedes optional History saving. Export failure returns `ok: false`, `code: "pdf_render_failed"` (plain API HTTP 502), recoverable `markdown`/`changes`, draft/review metadata and `persisted: false`; no History is saved. Successful AI generation still uses its existing one credit; source fallback already refunds. Do not repeat tailoring just to obtain the PDF.
+
+Retry `rolepatch_render_resume_pdf` with the returned Markdown as `resume_markdown`, or POST `{ "operation": "render_pdf", "resume_markdown": "<returned draft Markdown>" }` to `/api/resume`.
+
+Rendering uses no AI credits, profile lookup or persistence. Supply text, not a saved draft ID; up to 40,000 characters accommodates summaries and saved material. Extra job/resume-ID/save fields are rejected. Existing credentials still pass scope/revocation checks; MCP-audience tokens remain MCP-only.

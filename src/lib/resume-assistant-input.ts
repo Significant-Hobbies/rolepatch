@@ -16,7 +16,7 @@ export const resumeAssistantSchema = z
     company_name: z.string().trim().max(200).optional(),
     role_title: z.string().trim().max(200).optional(),
     save_to_history: z.boolean().optional(),
-    format: z.enum(['markdown', 'html']).default('markdown'),
+    format: z.enum(['markdown', 'html', 'pdf']).default('markdown'),
   })
   .strict();
 export type ResumeAssistantInput = z.infer<typeof resumeAssistantSchema>;

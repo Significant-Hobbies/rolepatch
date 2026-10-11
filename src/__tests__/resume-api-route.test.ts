@@ -1,7 +1,9 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tailorResumeFromReference } from '@/lib/actions/resume-assistant-actions';
+import { renderResumePdfDraft } from '@/lib/resume-pdf-draft';
 vi.mock('@/lib/actions/resume-assistant-actions', () => ({ tailorResumeFromReference: vi.fn() }));
+vi.mock('@/lib/resume-pdf-draft', () => ({ renderResumePdfDraft: vi.fn() }));
 const request = (value: unknown, headers?: Record<string, string>) =>
   new Request('https://rolepatch.com/api/resume', {
     method: 'POST',
@@ -40,6 +42,7 @@ describe('plain JSON resume API', () => {
     ['sign_in_required', 401],
     ['not_found', 404],
     ['generation_failed', 502],
+    ['pdf_render_failed', 502],
     ['invalid_input', 400],
   ])('returns HTTP status for %s', async (code, status) => {
     vi.mocked(tailorResumeFromReference).mockResolvedValue({
@@ -49,6 +52,30 @@ describe('plain JSON resume API', () => {
     });
     const { POST } = await import('@/app/api/resume/route');
     expect((await POST(request({}))).status).toBe(status);
+  });
+  it('returns render-only PDF JSON with private no-store metadata without generation', async () => {
+    const result = {
+      ok: true,
+      draft_id: 'draft',
+      requires_review: true,
+      persisted: false,
+      markdown: '# Ada Example resume text',
+      pdf: {
+        filename: 'tailored-resume.pdf',
+        mime_type: 'application/pdf',
+        data_base64: 'JVBERi0xLjcK',
+      },
+    };
+    vi.mocked(renderResumePdfDraft).mockResolvedValue(
+      result as Awaited<ReturnType<typeof renderResumePdfDraft>>
+    );
+    const { POST } = await import('@/app/api/resume/route');
+    const input = { operation: 'render_pdf', resume_markdown: result.markdown };
+    const response = await POST(request(input));
+    expect(await response.json()).toEqual(result);
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(renderResumePdfDraft).toHaveBeenCalledWith({ resume_markdown: result.markdown });
+    expect(tailorResumeFromReference).not.toHaveBeenCalled();
   });
   it('rejects cross-origin browser mutations before generation', async () => {
     const { POST } = await import('@/app/api/resume/route');

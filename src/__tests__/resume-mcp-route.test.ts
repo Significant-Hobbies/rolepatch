@@ -3,7 +3,10 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { POST, GET } from '@/app/api/mcp/route';
 import { callResumeMcpTool } from '@/lib/resume-mcp';
 vi.mock('@/lib/resume-mcp', () => ({
-  RESUME_MCP_TOOLS: [{ name: 'rolepatch_tailor_resume', inputSchema: { type: 'object' } }],
+  RESUME_MCP_TOOLS: [
+    { name: 'rolepatch_tailor_resume', inputSchema: { type: 'object' } },
+    { name: 'rolepatch_render_resume_pdf', inputSchema: { type: 'object' } },
+  ],
   callResumeMcpTool: vi.fn(),
 }));
 const request = (body: unknown, headers: Record<string, string> = {}) =>
@@ -35,7 +38,11 @@ it('negotiates the protocol and lists tools', async () => {
   });
   expect(
     await (await POST(request({ jsonrpc: '2.0', id: 2, method: 'tools/list' }))).json()
-  ).toMatchObject({ result: { tools: [{ name: 'rolepatch_tailor_resume' }] } });
+  ).toMatchObject({
+    result: {
+      tools: [{ name: 'rolepatch_tailor_resume' }, { name: 'rolepatch_render_resume_pdf' }],
+    },
+  });
   expect(GET().status).toBe(405);
 });
 it('does not generate on a notification', async () => {
@@ -98,6 +105,52 @@ it('returns structured portable drafts and tool errors', async () => {
   expect(await (await POST(request(body))).json()).toMatchObject({
     result: { isError: true, structuredContent: { ok: false, error: 'Paste jd_text' } },
   });
+});
+it('delivers a PDF as an embedded resource without duplicating its blob in metadata or text', async () => {
+  vi.mocked(callResumeMcpTool).mockResolvedValue({
+    ok: true,
+    draft_id: 'opaque-draft',
+    requires_review: true,
+    persisted: false,
+    markdown: '# Ada Example resume',
+    pdf: {
+      filename: 'tailored-resume.pdf',
+      mime_type: 'application/pdf',
+      data_base64: 'JVBERi0xLjcK',
+    },
+  } as Awaited<ReturnType<typeof callResumeMcpTool>>);
+  const body = await (
+    await POST(
+      request(
+        {
+          jsonrpc: '2.0',
+          id: 'pdf',
+          method: 'tools/call',
+          params: {
+            name: 'rolepatch_render_resume_pdf',
+            arguments: { resume_markdown: '# Ada Example resume' },
+          },
+        },
+        { 'cf-connecting-ip': 'pdf-resource' }
+      )
+    )
+  ).json();
+  expect(body.result.content[1]).toEqual({
+    type: 'resource',
+    resource: {
+      uri: 'rolepatch://drafts/opaque-draft/resume.pdf',
+      mimeType: 'application/pdf',
+      blob: 'JVBERi0xLjcK',
+    },
+  });
+  expect(body.result.structuredContent.pdf).toEqual({
+    filename: 'tailored-resume.pdf',
+    mime_type: 'application/pdf',
+    uri: 'rolepatch://drafts/opaque-draft/resume.pdf',
+  });
+  expect(JSON.parse(body.result.content[0].text)).toEqual(body.result.structuredContent);
+  expect(body.result.content[0].text).not.toContain('JVBER');
+  expect(body.result.isError).toBe(false);
 });
 it('rejects unknown tools and limits repeated generation', async () => {
   expect(

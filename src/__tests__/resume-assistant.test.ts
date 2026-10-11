@@ -12,6 +12,7 @@ import { tailorResumeForClient } from '@/lib/actions/tailor-action';
 import { recordResumeHistory } from '@/lib/actions/resume-history-actions';
 import { extractPublicJob } from '@/lib/public-job-extraction';
 import { tailorResumeFromReference } from '@/lib/actions/resume-assistant-actions';
+import { renderPdf } from '@/lib/pdf';
 
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: vi.fn() }));
 vi.mock('@/lib/actions/job-actions', () => ({ getJobApplication: vi.fn() }));
@@ -19,6 +20,7 @@ vi.mock('@/lib/actions/resume-actions', () => ({ getResume: vi.fn(), listResumes
 vi.mock('@/lib/actions/tailor-action', () => ({ tailorResumeForClient: vi.fn() }));
 vi.mock('@/lib/actions/resume-history-actions', () => ({ recordResumeHistory: vi.fn() }));
 vi.mock('@/lib/public-job-extraction', () => ({ extractPublicJob: vi.fn() }));
+vi.mock('@/lib/pdf', () => ({ renderPdf: vi.fn() }));
 const resume =
   '# Alex Morgan\n\n## Experience\nBuilt TypeScript services and reduced incidents 34%.\n';
 const jd =
@@ -73,6 +75,76 @@ describe('portable resume actions', () => {
       data: { tailored: resume, changes: [] },
     });
     vi.mocked(extractPublicJob).mockResolvedValue(jd);
+    vi.mocked(renderPdf).mockResolvedValue(
+      new TextEncoder().encode('%PDF-1.7\nfixture resume\n%%EOF')
+    );
+  });
+  it('turns a job link and single owned master into a reviewed PDF without modifying or saving the master', async () => {
+    vi.mocked(getCurrentUserId).mockResolvedValue('owner');
+    vi.mocked(listResumes).mockResolvedValue([
+      { id: 'master', name: 'Master', source: resume },
+    ] as Awaited<ReturnType<typeof listResumes>>);
+    const output = await tailorResumeFromReference({
+      job_url: 'https://example.com/jobs/engineer',
+      format: 'pdf',
+    });
+    expect(output).toMatchObject({
+      ok: true,
+      markdown: resume,
+      requires_review: true,
+      persisted: false,
+      pdf: { mime_type: 'application/pdf' },
+    });
+    expect(extractPublicJob).toHaveBeenCalledWith('https://example.com/jobs/engineer');
+    expect(tailorResumeForClient).toHaveBeenCalledTimes(1);
+    expect(recordResumeHistory).not.toHaveBeenCalled();
+    expect(renderPdf).toHaveBeenCalledWith(expect.stringContaining('Alex Morgan'));
+  });
+  it('exports guest PDF statelessly and retains original tailoring arguments', async () => {
+    expect(
+      await tailorResumeFromReference({ resume_markdown: resume, jd_text: jd, format: 'pdf' }, true)
+    ).toMatchObject({
+      ok: true,
+      persisted: false,
+      requires_review: true,
+      pdf: { mime_type: 'application/pdf' },
+    });
+    expect(listResumes).not.toHaveBeenCalled();
+    expect(getResume).not.toHaveBeenCalled();
+    expect(recordResumeHistory).not.toHaveBeenCalled();
+    expect(tailorResumeForClient).toHaveBeenCalledWith(
+      resume.trim(),
+      jd.trim(),
+      expect.any(Object),
+      ''
+    );
+  });
+  it('preserves generated Markdown and skips history when PDF rendering fails', async () => {
+    vi.mocked(getCurrentUserId).mockResolvedValue('owner');
+    vi.mocked(getResume).mockResolvedValue({
+      id: 'master',
+      name: 'Master',
+      source: resume,
+    } as Awaited<ReturnType<typeof getResume>>);
+    vi.mocked(renderPdf).mockRejectedValue(new Error('internal renderer failure'));
+    const output = await tailorResumeFromReference({
+      resume_id: 'master',
+      jd_text: jd,
+      format: 'pdf',
+      save_to_history: true,
+    });
+    expect(output).toMatchObject({
+      ok: false,
+      code: 'pdf_render_failed',
+      markdown: resume,
+      changes: [],
+      persisted: false,
+      history: { saved: false },
+      generation_method: 'ai',
+    });
+    expect(output).toMatchObject({ error: expect.stringContaining('do not repeat tailoring') });
+    expect(recordResumeHistory).not.toHaveBeenCalled();
+    expect(tailorResumeForClient).toHaveBeenCalledTimes(1);
   });
   it('returns an unsaved guest draft without reading cloud profiles', async () => {
     const output = await tailorResumeFromReference({
@@ -231,6 +303,27 @@ describe('optional persisted API/MCP history', () => {
         company: 'Example Co',
         role: 'Engineer',
       })
+    );
+  });
+  it('saves optional owned history only after successful PDF rendering', async () => {
+    vi.mocked(renderPdf).mockResolvedValue(
+      new TextEncoder().encode('%PDF-1.7\nfixture resume\n%%EOF')
+    );
+    const output = await tailorResumeFromReference(
+      { resume_id: 'master', jd_text: jd, format: 'pdf' },
+      true
+    );
+    expect(output).toMatchObject({
+      ok: true,
+      persisted: true,
+      draft_id: 'version',
+      pdf: { mime_type: 'application/pdf' },
+    });
+    expect(vi.mocked(renderPdf).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(recordResumeHistory).mock.invocationCallOrder[0]
+    );
+    expect(recordResumeHistory).toHaveBeenCalledWith(
+      expect.objectContaining({ source: resume, resume_id: 'master' })
     );
   });
   it('keeps default MCP drafts unsaved and respects explicit opt-out', async () => {

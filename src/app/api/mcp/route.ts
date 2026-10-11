@@ -118,6 +118,25 @@ export async function POST(req: Request) {
       req,
       async () => {
         const output = await callResumeMcpTool(name!, message.params?.arguments ?? {});
+        if (output.ok && 'pdf' in output && output.pdf) {
+          const { data_base64, ...artifact } = output.pdf;
+          // This URI identifies the inline attachment, not a fetchable stored draft.
+          const uri = `rolepatch://drafts/${output.draft_id}/resume.pdf`;
+          const metadata = { ...output, pdf: { ...artifact, uri } };
+          return rpc(id, {
+            result: {
+              isError: false,
+              content: [
+                { type: 'text', text: JSON.stringify(metadata) },
+                {
+                  type: 'resource',
+                  resource: { uri, mimeType: artifact.mime_type, blob: data_base64 },
+                },
+              ],
+              structuredContent: metadata,
+            },
+          });
+        }
         return rpc(id, {
           result: {
             isError: !output.ok,
