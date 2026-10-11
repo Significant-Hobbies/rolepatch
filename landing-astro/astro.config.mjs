@@ -7,8 +7,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 // Mirrors fleet/sarthakagrawal/astro.config.mjs, the reference 360 ms-LCP
 // Astro setup. Pure static output (no SSR adapter) — the rolepatch.com
-// landing is fully static markup. Inline styles to avoid a render-blocking
-// request after the document; the overlay copies /_astro assets alongside it.
+// landing is fully static markup. The postbuild critical-CSS pass splits the
+// inlined home styles; the overlay copies /_astro assets alongside it.
 //
 // Tailwind v4 via the official Vite plugin (fleet web stack standard,
 // VoidZero ecosystem). Lightning CSS replaces the default PostCSS
