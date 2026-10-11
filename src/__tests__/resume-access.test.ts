@@ -12,6 +12,10 @@ import { db } from '@/lib/db';
 import { getResumeApiUserId, issueResumeAccess, withResumeAccess } from '@/lib/resume-access';
 import { tailorResumeFromReference } from '@/lib/actions/resume-assistant-actions';
 import { listResumeHistory } from '@/lib/actions/resume-history-actions';
+import { renderPdf } from '@/lib/pdf';
+import { renderResumePdfDraft } from '@/lib/resume-pdf-draft';
+import { POST as resumePost } from '@/app/api/resume/route';
+import { POST as mcpPost } from '@/app/api/mcp/route';
 
 interface TestDatabase {
   exec(sql: string): void;
@@ -37,6 +41,7 @@ vi.mock('@/lib/db', () => ({ db: { execute: vi.fn(), batch: vi.fn() } }));
 vi.mock('@/lib/ping', () => ({ ping: vi.fn().mockResolvedValue(false) }));
 vi.mock('@/lib/analytics', () => ({ trackActivated: vi.fn(), trackCoreAction: vi.fn() }));
 vi.mock('ai', () => ({ generateObject: state.generate }));
+vi.mock('@/lib/pdf', () => ({ renderPdf: vi.fn() }));
 vi.mock('@/lib/ai-cloudflare', () => ({
   getAIModel: () => ({}),
   getAIModelRetryOptions: () => ({}),
@@ -114,6 +119,9 @@ beforeEach(() => {
   state.generate.mockRejectedValue(
     Object.assign(new Error('synthetic unavailable provider'), { statusCode: 502 })
   );
+  vi.mocked(renderPdf).mockResolvedValue(
+    new TextEncoder().encode('%PDF-1.7\nsynthetic fixture\n%%EOF')
+  );
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 afterEach(() => {
@@ -180,10 +188,13 @@ it('rejects foreign master before generation, billing or saving', async () => {
   if (!access.ok) throw new Error('Expected local session');
   state.requestHeaders = new Headers();
   const response = await withResumeAccess(request(access.token), async () =>
-    Response.json(await tailorResumeFromReference({ resume_id: 'foreign', jd_text: jd }, true))
+    Response.json(
+      await tailorResumeFromReference({ resume_id: 'foreign', jd_text: jd, format: 'pdf' }, true)
+    )
   );
   expect(await response.json()).toMatchObject({ ok: false, code: 'not_found' });
   expect(state.generate).not.toHaveBeenCalled();
+  expect(renderPdf).not.toHaveBeenCalled();
   expect(sql.prepare('SELECT COUNT(*) AS n FROM tailored_resumes').get()?.n).toBe(0);
 });
 
@@ -248,4 +259,158 @@ it('omits fallback_reason on an AI-generated API response', async () => {
   const output = await tailorResumeFromReference({ resume_id: 'master', jd_text: jd });
   expect(output).toMatchObject({ ok: true, generation_method: 'ai' });
   expect(output).not.toHaveProperty('fallback_reason');
+});
+
+it('keeps a successful AI charge after export failure and renders the recoverable draft without a second charge', async () => {
+  state.generate.mockImplementation(async ({ prompt }: { prompt: string }) => {
+    const input = JSON.parse(prompt);
+    return {
+      object: {
+        summary: {
+          text: 'Built React screens and tested keyboard navigation. Built scheduling APIs with Node.js request validation.',
+          evidence_ids: ['f1', 'f2'],
+        },
+        ...input.response_template,
+      },
+    };
+  });
+  const access = await createResumeApiAccess();
+  if (!access.ok) throw new Error('Expected local session');
+  state.requestHeaders = new Headers();
+  vi.mocked(renderPdf).mockRejectedValueOnce(new Error('synthetic PDF unavailable'));
+  const response = await withResumeAccess(request(access.token), async () =>
+    Response.json(
+      await tailorResumeFromReference({
+        resume_id: 'master',
+        jd_text: jd,
+        format: 'pdf',
+        save_to_history: true,
+      })
+    )
+  );
+  const failed = await response.json();
+  expect(failed).toMatchObject({
+    ok: false,
+    code: 'pdf_render_failed',
+    generation_method: 'ai',
+    persisted: false,
+    requires_review: true,
+  });
+  expect(failed.markdown).toContain('- Built React screens and tested keyboard navigation.');
+  expect(sql.prepare('SELECT source FROM resumes WHERE id=?').get('master')?.source).toBe(master);
+  expect(sql.prepare('SELECT COUNT(*) AS n FROM tailored_resumes').get()?.n).toBe(0);
+  expect(
+    sql.prepare('SELECT balance FROM token_balances WHERE user_id=?').get('owner')?.balance
+  ).toBe(2);
+  expect(
+    sql.prepare('SELECT COUNT(*) AS n FROM token_transactions WHERE user_id=?').get('owner')?.n
+  ).toBe(1);
+  const retry = await withResumeAccess(request(access.token), async () =>
+    Response.json(await renderResumePdfDraft({ resume_markdown: failed.markdown }))
+  );
+  expect(await retry.json()).toMatchObject({
+    ok: true,
+    persisted: false,
+    pdf: { mime_type: 'application/pdf' },
+  });
+  expect(state.generate).toHaveBeenCalledTimes(1);
+  expect(
+    sql.prepare('SELECT COUNT(*) AS n FROM token_transactions WHERE user_id=?').get('owner')?.n
+  ).toBe(1);
+});
+
+it('exports source fallback PDF with exactly one refund and no stored guest or implicit MCP history', async () => {
+  const access = await createResumeApiAccess();
+  if (!access.ok) throw new Error('Expected local session');
+  state.requestHeaders = new Headers();
+  const response = await withResumeAccess(request(access.token, '/api/mcp'), async () =>
+    Response.json(
+      await tailorResumeFromReference({ resume_id: 'master', jd_text: jd, format: 'pdf' })
+    )
+  );
+  expect(await response.json()).toMatchObject({
+    ok: true,
+    generation_method: 'source_fallback',
+    fallback_reason: expect.any(String),
+    persisted: false,
+    pdf: { mime_type: 'application/pdf' },
+  });
+  expect(
+    sql.prepare('SELECT balance FROM token_balances WHERE user_id=?').get('owner')?.balance
+  ).toBe(3);
+  expect(
+    sql.prepare('SELECT COUNT(*) AS n FROM token_transactions WHERE user_id=?').get('owner')?.n
+  ).toBe(2);
+  expect(sql.prepare('SELECT COUNT(*) AS n FROM tailored_resumes').get()?.n).toBe(0);
+});
+
+it('retains fallback diagnostics and the already refunded draft after PDF failure', async () => {
+  const access = await createResumeApiAccess();
+  if (!access.ok) throw new Error('Expected local session');
+  state.requestHeaders = new Headers();
+  vi.mocked(renderPdf).mockRejectedValueOnce(new Error('synthetic PDF unavailable'));
+  const response = await withResumeAccess(request(access.token), async () =>
+    Response.json(
+      await tailorResumeFromReference({ resume_id: 'master', jd_text: jd, format: 'pdf' }, true)
+    )
+  );
+  expect(await response.json()).toMatchObject({
+    ok: false,
+    code: 'pdf_render_failed',
+    generation_method: 'source_fallback',
+    fallback_reason: expect.any(String),
+    persisted: false,
+    markdown: expect.stringContaining('Ada Example'),
+  });
+  expect(
+    sql.prepare('SELECT balance FROM token_balances WHERE user_id=?').get('owner')?.balance
+  ).toBe(3);
+  expect(
+    sql.prepare('SELECT COUNT(*) AS n FROM token_transactions WHERE user_id=?').get('owner')?.n
+  ).toBe(2);
+  expect(sql.prepare('SELECT COUNT(*) AS n FROM tailored_resumes').get()?.n).toBe(0);
+});
+
+it('rejects revoked PDF retries at both HTTP facades before rendering or touching profiles', async () => {
+  const access = await createResumeApiAccess();
+  if (!access.ok) throw new Error('Expected local session');
+  await disconnectResumeApiAccess();
+  state.requestHeaders = new Headers();
+  vi.mocked(db.execute).mockClear();
+  const headers = {
+    authorization: `Bearer ${access.token}`,
+    'content-type': 'application/json',
+    accept: 'application/json, text/event-stream',
+    'cf-connecting-ip': 'revoked-pdf',
+  };
+  const rest = await resumePost(
+    new Request('https://rolepatch.com/api/resume', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ operation: 'render_pdf', resume_markdown: master }),
+    })
+  );
+  const mcp = await mcpPost(
+    new Request('https://rolepatch.com/api/mcp', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'retry',
+        method: 'tools/call',
+        params: { name: 'rolepatch_render_resume_pdf', arguments: { resume_markdown: master } },
+      }),
+    })
+  );
+  expect(rest.status).toBe(401);
+  expect(mcp.status).toBe(401);
+  expect(renderPdf).not.toHaveBeenCalled();
+  expect(state.generate).not.toHaveBeenCalled();
+  expect(
+    vi
+      .mocked(db.execute)
+      .mock.calls.every(([input]) =>
+        (typeof input === 'string' ? input : input.sql).includes('FROM "session"')
+      )
+  ).toBe(true);
 });

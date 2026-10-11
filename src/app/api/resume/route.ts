@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { tailorResumeFromReference } from '@/lib/actions/resume-assistant-actions';
 import { withResumeAccess } from '@/lib/resume-access';
+import { renderResumePdfDraft } from '@/lib/resume-pdf-draft';
 
 export const dynamic = 'force-dynamic';
 const limits = new Map<string, { count: number; reset: number }>();
@@ -55,14 +56,24 @@ export async function POST(req: Request) {
   limits.set(key, state);
   try {
     return await withResumeAccess(req, async () => {
-      const result = await tailorResumeFromReference(input, true);
+      const result =
+        input &&
+        typeof input === 'object' &&
+        'operation' in input &&
+        input.operation === 'render_pdf'
+          ? await renderResumePdfDraft(
+              Object.fromEntries(Object.entries(input).filter(([key]) => key !== 'operation'))
+            )
+          : await tailorResumeFromReference(input, true);
       const status = result.ok
         ? 200
         : result.code === 'sign_in_required'
           ? 401
           : result.code === 'not_found'
             ? 404
-            : result.code === 'generation_failed' || result.code === 'extraction_failed'
+            : result.code === 'generation_failed' ||
+                result.code === 'extraction_failed' ||
+                result.code === 'pdf_render_failed'
               ? 502
               : 400;
       return NextResponse.json(result, { status, headers });

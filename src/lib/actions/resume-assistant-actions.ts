@@ -1,5 +1,3 @@
-'use server';
-
 import { getJobApplication } from '@/lib/actions/job-actions';
 import { getResume, listResumes } from '@/lib/actions/resume-actions';
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
@@ -12,6 +10,7 @@ import {
   resumeAssistantSchema,
 } from '@/lib/resume-assistant-input';
 import { markdownToHtml } from '@/lib/resume-html';
+import { renderResumePdfDraft } from '@/lib/resume-pdf-draft';
 
 export async function listResumeAssistantProfiles() {
   if (!(await getCurrentUserId()))
@@ -180,6 +179,25 @@ export async function tailorResumeFromReference(raw: unknown, historyByDefault =
         retryable: result.retryable,
       };
     const draftId = crypto.randomUUID();
+    let pdf: Awaited<ReturnType<typeof renderResumePdfDraft>> | undefined;
+    if (input.format === 'pdf') {
+      pdf = await renderResumePdfDraft({ resume_markdown: result.data.tailored });
+      if (!pdf.ok)
+        return {
+          ...pdf,
+          draft_id: draftId,
+          requires_review: true,
+          persisted: false,
+          history: { saved: false },
+          markdown: result.data.tailored,
+          changes: result.data.changes,
+          generation_method: result.data.generation_method ?? 'ai',
+          ...(result.data.generation_method === 'source_fallback'
+            ? { fallback_reason: result.data.fallback_reason }
+            : {}),
+          job_url: ref.url ?? job?.url ?? null,
+        };
+    }
     const history = saveHistory
       ? await saveDraftHistory({
           resume_id: historyResumeId,
@@ -206,6 +224,7 @@ export async function tailorResumeFromReference(raw: unknown, historyByDefault =
       ...(result.data.generation_method === 'source_fallback'
         ? { fallback_reason: result.data.fallback_reason }
         : {}),
+      ...(pdf?.ok ? { pdf: pdf.pdf } : {}),
       ...(input.format === 'html'
         ? { html: markdownToHtml(result.data.tailored, 'Tailored resume') }
         : {}),
