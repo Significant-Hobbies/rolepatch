@@ -74,8 +74,9 @@ function trackEvent(
       // Browser context. Load the browser client lazily so the
       // React-dependent `posthog-js` entry is never evaluated
       // during SSR / `next build`.
-      void import('posthog-js')
-        .then(({ default: posthog }) => {
+      void import('./foundry-monitoring')
+        .then(({ getPostHog }) => getPostHog())
+        .then((posthog) => {
           posthog.capture(event, payload);
         })
         .catch(() => {

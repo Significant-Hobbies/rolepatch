@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
+import { preload } from 'react-dom';
 
 const tools = [
   {
@@ -49,8 +50,9 @@ const tools = [
 ];
 
 export default function ToolsPage() {
+  preload('/fonts/space-grotesk.woff2', { as: 'font', type: 'font/woff2', crossOrigin: '' });
   return (
-    <main className="max-w-4xl mx-auto px-6 py-16">
+    <main className="performance-page max-w-4xl mx-auto px-6 py-16">
       <div className="text-center mb-16">
         <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
           Free Resume Tools
