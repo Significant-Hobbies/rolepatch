@@ -5,7 +5,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 export type WorkspaceTheme = 'light' | 'dark' | 'system';
 const storageKey = 'rolepatch-workspace-theme';
 function preference(value: string | null): WorkspaceTheme {
-  return value === 'light' || value === 'dark' ? value : 'system';
+  if (value === 'light' || value === 'dark' || value === 'system') return value;
+  return 'dark';
 }
 const ThemeContext = createContext<{
   theme: WorkspaceTheme;
@@ -18,7 +19,7 @@ export function useWorkspaceTheme() {
 }
 
 export function WorkspaceThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setPreference] = useState<WorkspaceTheme>('system');
+  const [theme, setPreference] = useState<WorkspaceTheme>('dark');
   const [systemDark, setSystemDark] = useState(false);
   useEffect(() => {
     try {
