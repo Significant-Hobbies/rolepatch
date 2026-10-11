@@ -1,5 +1,13 @@
 # RolePatch design system
 
+## Dark everywhere - 11 October
+
+The app default theme is now **Dark** (was System). The landing uses the app's
+Zinc dark tokens and Geist, with 0.625rem button/card corners. Resume paper stays
+white `#fff` by design; patch-green is reserved for ins/mark highlights. Footer
+styles stay isolated from landing tokens. This owner decision supersedes the
+earlier “landing unchanged” note and historical light landing palette below.
+
 ## Current app direction — 9 October
 
 The owner selected **Official shadcn Inset workspace**, option 1: “One is fine.”
