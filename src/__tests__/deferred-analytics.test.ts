@@ -62,7 +62,7 @@ describe('Clarity on the Astro home', () => {
   });
 });
 
-it('queues analytics and crashes until load/idle and initializes PostHog once', async () => {
+it('queues analytics and crashes through startup, then initializes PostHog once at idle', async () => {
   vi.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
   let idle: (() => void) | undefined;
   const requestIdleCallback = vi.fn((callback: () => void) => {
@@ -79,6 +79,10 @@ it('queues analytics and crashes until load/idle and initializes PostHog once', 
   expect(posthog.init).not.toHaveBeenCalled();
   expect(posthog.capture).not.toHaveBeenCalled();
   window.dispatchEvent(new Event('load'));
+  vi.advanceTimersByTime(4999);
+  expect(requestIdleCallback).not.toHaveBeenCalled();
+  expect(posthog.init).not.toHaveBeenCalled();
+  vi.advanceTimersByTime(1);
   expect(requestIdleCallback).toHaveBeenCalledTimes(1);
   expect(posthog.init).not.toHaveBeenCalled();
   idle?.();

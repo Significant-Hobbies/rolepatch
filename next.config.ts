@@ -30,6 +30,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Include styles in dynamic responses too: the post-build inliner only
+  // reaches prerendered HTML, so /pricing otherwise waits on external CSS.
+  experimental: { inlineCss: true },
   // This repository lives below Fleet's root lockfile. Keep standalone output
   // rooted here so OpenNext finds `.next/standalone/.next` consistently.
   outputFileTracingRoot: process.cwd(),

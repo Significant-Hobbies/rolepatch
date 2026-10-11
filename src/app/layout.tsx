@@ -12,6 +12,7 @@ import { VitalsReporter } from '@/components/VitalsReporter';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'optional',
 });
 
 const geistMono = Geist_Mono({

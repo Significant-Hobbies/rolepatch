@@ -8,14 +8,17 @@ const POSTHOG_HOST = 'https://us.i.posthog.com';
 
 let client: Promise<typeof import('posthog-js').default> | undefined;
 
-// Share initialization with analytics.ts. A dynamic import alone still competes
-// with first paint if page_view triggers it during hydration.
+// Share initialization with analytics.ts. Load/idle alone can run before text
+// paints while CSS/fonts are pending. Keep the SDK and its remote extensions
+// out of startup, then use idle time for initialization.
 export function getPostHog() {
   client ??= new Promise<void>((resolve) => {
     const afterLoad = () => {
-      if ('requestIdleCallback' in window)
-        window.requestIdleCallback(() => resolve(), { timeout: 1000 });
-      else setTimeout(resolve, 0);
+      setTimeout(() => {
+        if ('requestIdleCallback' in window)
+          window.requestIdleCallback(() => resolve(), { timeout: 1000 });
+        else resolve();
+      }, 5000);
     };
     if (document.readyState === 'complete') afterLoad();
     else window.addEventListener('load', afterLoad, { once: true });

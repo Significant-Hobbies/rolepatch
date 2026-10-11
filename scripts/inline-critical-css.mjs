@@ -70,6 +70,9 @@ export async function runInlineCss(opts = {}) {
   let saved = 0;
   for (const file of htmls) {
     const before = await readFile(file, 'utf8');
+    // Next's inlineCss already includes the complete stylesheet (including
+    // fonts and interactive states). Don't prune it as static critical CSS.
+    if (!/<link rel="stylesheet"/.test(before)) continue;
     let after;
     try {
       after = await beasties.process(before);

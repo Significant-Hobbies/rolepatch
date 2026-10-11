@@ -5,3 +5,17 @@
   max-width: 100%;
   flex-shrink: 0;
 }
+
+.trigger {
+  min-height: 44px;
+  min-width: 168px;
+  padding: 12px 20px;
+  border-radius: 50px;
+  background: #1464ff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px #0003;
+}
