@@ -262,7 +262,7 @@ html:has(main#main), html:has(main#main) body {
   background: #09090b;
   color: #fafafa;
 }
-body > header, main#main, body > a[href="#main"] {
+body > header, main#main, body > a[href="#main"], footer[data-fleet-footer="studio"] {
   --background: #09090b;
   --foreground: #fafafa;
   --surface: #18181b;
@@ -306,25 +306,6 @@ main#main :is(mark, ins) { background: #b5daca; color: #18181b; }
    landing tokens, without modifying shared CSS or footer markup. */
 footer[data-fleet-footer="studio"] {
   color-scheme: dark;
-  --background: #09090b;
-  --foreground: #fafafa;
-  --surface: #18181b;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #9f9fa9;
-  --border: rgba(255,255,255,.10);
-  --input: var(--border);
-  --brand: #e4e4e7;
-  --brand-foreground: #18181b;
-  --brand-soft: #27272a;
-  --brand-ink: #e4e4e7;
-  --primary: #e4e4e7;
-  --primary-foreground: #18181b;
   --accent: #27272a;
   --accent-foreground: #fafafa;
-  --ring: #e4e4e7;
-  color: var(--foreground);
 }

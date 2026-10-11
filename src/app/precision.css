@@ -1,20 +1,20 @@
 /* Precision Studio is scoped to application content; existing footer tokens stay intact. */
-.precision-app, .precision-app-nav {
-  --background: #fcfcfb;
-  --foreground: #191c20;
-  --card: #ffffff;
-  --card-foreground: #191c20;
-  --primary: #20252d;
-  --primary-foreground: #ffffff;
-  --accent: #20252d;
-  --accent-foreground: #ffffff;
-  --secondary: #eef0ee;
-  --secondary-foreground: #191c20;
-  --muted: #f2f3f2;
-  --muted-foreground: #686c74;
-  --border: #dfe1e3;
-  --input: #dfe1e3;
-  --ring: #20252d;
+.precision-app, .precision-app-nav, :is(.precision-app-nav ~ main, .product-editor-toolbar) {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --primary: #e4e4e7;
+  --primary-foreground: #18181b;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #9f9fa9;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #e4e4e7;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -35,7 +35,7 @@
   background: var(--background);
   font-family: var(--font-sans);
 }
-.precision-app-nav { background: #fcfcfb; }
+.precision-app-nav { background: #09090b; }
 .precision-app-nav > div:first-child { max-width: 1280px; height: 72px; }
 .precision-app-nav a { white-space: nowrap; }
 .precision-workspace { width: min(1232px, calc(100% - 96px)); margin: auto; padding: 32px 0 48px; min-height: calc(100dvh - 72px); }

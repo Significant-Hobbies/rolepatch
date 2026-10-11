@@ -8,33 +8,6 @@
 }
 
 :is(.precision-app-nav ~ main, .product-editor-toolbar) {
-  --foreground: #202724;
-  --card-foreground: #202724;
-  --primary: #20252d;
-  --primary-foreground: #ffffff;
-  --accent: #20252d;
-  --accent-foreground: #ffffff;
-  --secondary: #edf1ef;
-  --secondary-foreground: #202724;
-  --muted: #edf1ef;
-  --muted-foreground: #4e5b57;
-  --border: #cbd4d0;
-  --input: #b6c3bc;
-  --ring: #265d49;
-  --color-foreground: var(--foreground);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   color: var(--foreground);
   font-family: var(--font-sans);
   font-weight: 450;
@@ -52,11 +25,11 @@
 :is(.precision-app-nav ~ main, .product-editor-toolbar) .text-sm { font-size: 0.9375rem; line-height: 1.65; }
 :is(.precision-app-nav ~ main, .product-editor-toolbar) .text-xs { font-size: 0.8125rem; line-height: 1.7; }
 :is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-gray-400, .text-gray-500) { color: var(--muted-foreground); }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-red-400 { color: #a52d31; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-emerald-400 { color: #196044; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-amber-400 { color: #865308; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-sky-400 { color: #155d82; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(input, textarea, select)::placeholder { color: #60716a; opacity: 1; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-red-400 { color: #ff6467; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-emerald-400 { color: #6ee7b7; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-amber-400 { color: #fbbf24; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) .text-sky-400 { color: #7dd3fc; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(input, textarea, select)::placeholder { color: #9f9fa9; opacity: 1; }
 :is(.precision-app-nav ~ main, .product-editor-toolbar) label { letter-spacing: 0.025em; }
 :is(.precision-app-nav ~ main, .product-editor-toolbar) .input-base { line-height: 1.65; }
 :is(.precision-app-nav ~ main, .product-editor-toolbar) .product-primary-action {
@@ -64,17 +37,17 @@
   color: var(--primary-foreground);
   border-color: var(--primary);
 }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) .product-primary-action:hover:not(:disabled) { background: #343e39; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) .product-primary-action:hover:not(:disabled) { background: #d4d4d8; }
 
 @media(max-width:700px) {
   :is(.precision-app-nav ~ main, .product-editor-toolbar) :is(input, textarea, select).input-base { font-size: 1rem; }
 }
 
-/* Legacy light-tone badges and micro-labels must remain readable on white. */
-:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-emerald-300, .text-emerald-200, .text-emerald-100) { color: #196044; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-sky-300, .text-sky-200, .text-sky-100) { color: #155d82; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-amber-300, .text-amber-200, .text-amber-100, [class~="text-amber-200/80"]) { color: #865308; }
-:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-red-300, .text-red-200, .text-red-100) { color: #a52d31; }
+/* Legacy light-tone badges and micro-labels must remain readable on dark. */
+:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-emerald-300, .text-emerald-200, .text-emerald-100) { color: #6ee7b7; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-sky-300, .text-sky-200, .text-sky-100) { color: #7dd3fc; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-amber-300, .text-amber-200, .text-amber-100, [class~="text-amber-200/80"]) { color: #fbbf24; }
+:is(.precision-app-nav ~ main, .product-editor-toolbar) :is(.text-red-300, .text-red-200, .text-red-100) { color: #ff6467; }
 :is(.precision-app-nav ~ main, .product-editor-toolbar) :is([class~="text-[10px]"], [class~="text-[11px]"]) { font-size: 0.75rem; line-height: 1.6; }
 .product-editor-toolbar :is(.text-gray-200, .text-gray-400, .text-gray-500) { color: var(--muted-foreground); }
 /* Selected Outline layout: the existing Precision Studio system, with section indexing. */
