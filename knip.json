@@ -4,7 +4,6 @@
     "src/app/**/*.{ts,tsx}",
     "src/**/*.test.{ts,tsx}",
     "src/**/__tests__/**/*.{ts,tsx}",
-    "src/__tests__/fixtures/render-pdf.mjs",
     "__tests__/**/*.{ts,tsx}",
     "agent-edge.mjs",
     "worker.mjs",
@@ -32,6 +31,7 @@
     "puppeteer-core"
   ],
   "workspaces": {
+    ".": { "entry": ["src/__tests__/fixtures/render-pdf.mjs"] },
     "extension": {
       "entry": ["src/background.ts", "src/content.ts", "src/popup.ts", "scripts/*.mjs"],
       "project": ["src/**/*.ts", "scripts/*.mjs"]
