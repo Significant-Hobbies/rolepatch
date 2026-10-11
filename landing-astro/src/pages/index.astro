@@ -5,6 +5,7 @@ import { baseProps } from '@saas-maker/templates/page';
 import { workbenchContent } from '@saas-maker/templates/schema';
 import { APP_HEALTH_CLICK_SCRIPT, PRODUCT_FAQS, productJsonLd, REDIRECT_AUTHENTICATED_SCRIPT } from '@/lib/product';
 import home from '../content/home.json';
+import DeferredScripts from '../components/DeferredScripts.astro';
 
 const content = workbenchContent.parse(home);
 const faqs = PRODUCT_FAQS.slice(0, 4);
@@ -48,7 +49,7 @@ content.page.jsonLd = [jsonLd, {
       data-vitals-routes="changelog,docs,faq"
     ></script>
     <script is:inline>
-      (function(c,l,a,r,i){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};var done=0,ev=["pointerdown","keydown","touchstart","scroll"];function go(){if(done)return;done=1;ev.forEach(function(e){removeEventListener(e,go)});var t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;var y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)}ev.forEach(function(e){addEventListener(e,go,{passive:true,once:true})});setTimeout(go,90000)})(window,document,"clarity","script","y6buz6rkot");
+      (function(c,l,a,r,i){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};var done=0,ev=["pointerdown","keydown","touchstart","scroll"];function go(){if(done)return;done=1;ev.forEach(function(e){removeEventListener(e,go)});var t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;var y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)}ev.forEach(function(e){addEventListener(e,go,{passive:true,once:true})})})(window,document,"clarity","script","y6buz6rkot");
       window.clarity("set","project_id","rolepatch");
     </script>
     <script is:inline set:html={APP_HEALTH_CLICK_SCRIPT}></script>
@@ -89,4 +90,5 @@ content.page.jsonLd = [jsonLd, {
     </script>
   </Fragment>
   <WorkbenchPage content={content} />
+  <DeferredScripts />
 </Base>

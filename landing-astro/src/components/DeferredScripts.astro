@@ -1,0 +1,60 @@
+<script is:inline>
+  (() => {
+    // Keep early CTA events while the tracker waits for load/idle. Do not stub
+    // appHealth: the tracker treats an existing object as already initialized.
+    const events = [];
+    document.addEventListener('click', (event) => {
+      if (window.appHealth) return;
+      const link = event.target.closest?.('[data-app-health-event],a[href]');
+      const name = link?.getAttribute('data-app-health-event') || {
+        '/dashboard': 'workspace_opened',
+        '/pricing': 'pricing_opened',
+        '/tools': 'free_tools_opened',
+      }[link?.getAttribute('href')];
+      if (name) events.push(name);
+    });
+    const activate = () => {
+      document.querySelectorAll('script[data-after-load]').forEach((placeholder) => {
+        const script = document.createElement('script');
+        for (const attribute of placeholder.attributes) {
+          if (!['type', 'data-after-load', 'data-script-type'].includes(attribute.name)) {
+            script.setAttribute(attribute.name, attribute.value);
+          }
+        }
+        if (placeholder.dataset.scriptType) script.type = placeholder.dataset.scriptType;
+        script.async = false;
+        if (script.src.includes('health.sassmaker.com/tracker.js')) {
+          script.addEventListener('load', () => {
+            events.splice(0).forEach((name) => window.appHealth?.track(name));
+          }, { once: true });
+        }
+        placeholder.replaceWith(script);
+      });
+    };
+    const afterLoad = () => {
+      if ('requestIdleCallback' in window) requestIdleCallback(activate, { timeout: 1000 });
+      else setTimeout(activate, 0);
+    };
+    if (document.readyState === 'complete') afterLoad();
+    else addEventListener('load', afterLoad, { once: true });
+
+    const start = () => {
+      const stylesheet = document.querySelector('link[data-home-rest-css]');
+      const hero = document.querySelector('img[fetchpriority="high"][srcset]');
+      if (!stylesheet) return;
+      const reveal = () => document.documentElement.setAttribute('data-home-css-ready', '');
+      stylesheet.addEventListener('load', reveal, { once: true });
+      stylesheet.addEventListener('error', reveal, { once: true });
+      const loadCss = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+        stylesheet.rel = 'stylesheet';
+        stylesheet.href = stylesheet.dataset.href;
+      }));
+      // Decode the real responsive img; never guess a different preload candidate.
+      if (hero) hero.decode().catch(() => {}).then(loadCss);
+      else loadCss();
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else start();
+  })();
+</script>

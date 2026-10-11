@@ -6,7 +6,7 @@
   "description": "Static Astro port of the rolepatch.com landing page. Deploys to Cloudflare Pages and (post-cutover) serves the `/` route in front of the Next.js Worker.",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node ../scripts/run-inline-critical-css.mjs --astro",
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "wrangler pages deploy dist/ --project-name resume-tailor-landing --commit-dirty=true"
