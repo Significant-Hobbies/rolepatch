@@ -15,7 +15,7 @@ describe('deploy workflow', () => {
       /versions upload --env="" --tag \$\{\{ github\.sha \}\}\n\s+versions deploy --env="" --version-tag \$\{\{ github\.sha \}\}@100% --yes/
     );
     expect(deployWorkflow).not.toMatch(
-      /^\s+(?:command: )?(?:wrangler )?(?:deploy|triggers deploy)\b/m
+      /^[ \t]+(?:command: )?(?:wrangler )?(?:deploy|triggers deploy)(?:[ \t]|$)/m
     );
     expect(deployWorkflow).toContain('run: pnpm smoke:prod');
   });
