@@ -23,7 +23,10 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --tag ${{ github.sha }}
+          # Code releases preserve existing routes; route changes use a separately authorized credential.
+          command: |
+            versions upload --env="" --tag ${{ github.sha }}
+            versions deploy --env="" --version-tag ${{ github.sha }}@100% --yes
       - name: Smoke check production
         run: pnpm smoke:prod
 
