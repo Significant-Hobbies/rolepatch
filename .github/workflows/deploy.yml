@@ -19,14 +19,25 @@ jobs:
         with: { node-version: '22.19', cache: pnpm }
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm cf:build
-      - uses: cloudflare/wrangler-action@v3
+      - name: Upload Worker version
+        id: upload
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # Code releases preserve existing routes; route changes use a separately authorized credential.
-          command: |
-            versions upload --env="" --tag ${{ github.sha }}
-            versions deploy --env="" --version-tag ${{ github.sha }}@100% --yes
+          command: versions upload --env="" --tag ${{ github.sha }}
+      - name: Resolve this upload's version ID
+        id: uploaded-version
+        run: node scripts/uploaded-worker-version.mjs
+        env:
+          WORKER_UPLOAD_OUTPUT: ${{ steps.upload.outputs.command-output }}
+      - name: Deploy the uploaded version
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: versions deploy --env="" ${{ steps.uploaded-version.outputs.version-id }}@100% --yes
       - name: Smoke check production
         run: pnpm smoke:prod
 
