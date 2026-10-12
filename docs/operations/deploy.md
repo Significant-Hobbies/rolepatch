@@ -35,12 +35,17 @@ for the historical context):
 
 `.github/workflows/deploy.yml`:
 
-- **Production** (`workflow_dispatch`): `cf:build` →
-  `wrangler deploy --tag ${{ github.sha }}` (via
-  `cloudflare/wrangler-action@v3` with
-  `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets) →
-  `pnpm smoke:prod`.
+- **Production** (`workflow_dispatch`): `cf:build` → SHA-tagged
+  `wrangler versions upload` → activate that exact tag at 100% with
+  `wrangler versions deploy --version-tag` → `pnpm smoke:prod`.
+  Both commands explicitly select the top-level production environment and use
+  the existing `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets.
 - **Preview** (`pull_request`): `cf:build` only.
+
+Code releases preserve existing routes and cron triggers. An authorized route
+or cron change requires a separate `wrangler triggers deploy` using a credential
+with the required zone permissions; it is not part of routine code publication.
+This avoids a routes-permission failure after code has already been activated.
 
 Do not change secrets or production routing as part of a deploy unless
 the user explicitly asks.

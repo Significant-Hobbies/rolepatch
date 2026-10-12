@@ -31,7 +31,8 @@ catches missing parity-critical routes before deploy.
 ## Deploy workflow (`deploy.yml`)
 
 - **Production:** `workflow_dispatch` only. Runs `cf:build` →
-  `wrangler deploy --tag ${{ github.sha }}` → `pnpm smoke:prod`.
+  upload the SHA-tagged version → activate that exact tag at 100% →
+  `pnpm smoke:prod`. Existing routes and cron triggers are preserved.
 - **Preview:** on PR. Runs `cf:build` only (no deploy, no smoke).
 
 See [deploy](deploy.md) for the full publish path.

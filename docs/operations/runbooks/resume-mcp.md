@@ -143,6 +143,11 @@ large pages, supply `jd_text` (100–15,000 characters) instead. Resume text is
 limited to 20,000 characters. Do not send both `resume_id` and `resume_markdown`,
 or both `job_id` and `job_url`.
 
+Greenhouse posting URLs on `boards.greenhouse.io` and `job-boards.greenhouse.io`
+read the exact published job through Greenhouse's public GET API. The job ID
+must match; unavailable jobs fail without treating the board directory as a JD.
+Other public hosts use the bounded reader path. No authenticated pages are read.
+
 Review `requires_review`, `persisted`, `markdown` and `changes` in the response.
 Tailoring ranks original bullets within their employer/project lists; it does
 not rewrite their wording or certify the original claims as true. Polish the
