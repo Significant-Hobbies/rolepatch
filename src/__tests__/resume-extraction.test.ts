@@ -9,7 +9,7 @@ it('uses a fixed reader origin and bounds the posting text', async () => {
   expect((await extractPublicJob('https://jobs.example.com/123')).length).toBe(15_000);
   expect(fetcher).toHaveBeenCalledWith(
     'https://r.jina.ai/https://jobs.example.com/123',
-    expect.objectContaining({ redirect: 'error' })
+    expect.objectContaining({ redirect: 'manual' })
   );
 });
 it('rejects access challenges and oversized reader responses', async () => {
@@ -102,7 +102,7 @@ it.each(['boards.greenhouse.io', 'job-boards.greenhouse.io'])(
       expect.objectContaining({
         headers: expect.objectContaining({ Accept: 'application/json' }),
         cache: 'no-store',
-        redirect: 'error',
+        redirect: 'manual',
       })
     );
     expect(text).toContain('Software Engineer\n\nResponsibilities\n');
@@ -121,6 +121,20 @@ it('does not confuse a lookalike hostname with the Greenhouse API', async () => 
     expect.any(Object)
   );
 });
+
+it.each(['https://jobs.example.com/123', 'https://boards.greenhouse.io/acme/jobs/123'])(
+  'rejects an upstream redirect without requesting its destination for %s',
+  async (url) => {
+    const fetcher = vi.fn().mockResolvedValue(Response.redirect('http://127.0.0.1/private', 302));
+    vi.stubGlobal('fetch', fetcher);
+    await expect(extractPublicJob(url)).rejects.toThrow('Could not read the posting');
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ redirect: 'manual' })
+    );
+  }
+);
 
 it('fails a missing Greenhouse posting without falling back to a directory', async () => {
   const fetcher = vi.fn().mockResolvedValue(new Response('Not found', { status: 404 }));
