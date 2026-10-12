@@ -24,7 +24,8 @@ async function readPosting(url: string, accept: string): Promise<string> {
   const response = await fetch(url, {
     headers: { Accept: accept, 'X-No-Cache': 'true' },
     cache: 'no-store',
-    redirect: 'error',
+    // Workers requires manual handling; non-2xx responses fail below.
+    redirect: 'manual',
     signal: AbortSignal.timeout(20_000),
   });
   if (!response.ok) throw new Error('Could not read the posting. Paste jd_text to continue.');
