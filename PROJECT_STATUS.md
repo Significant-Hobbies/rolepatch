@@ -1,6 +1,30 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-10-06
+Last updated: 2026-10-12
+
+## Resume API job-link/PDF release — 12 October
+
+[PR #35](https://github.com/Significant-Hobbies/rolepatch/pull/35) adds exact-job
+Greenhouse extraction and separates code upload/activation from routing changes.
+[PR #36](https://github.com/Significant-Hobbies/rolepatch/pull/36) fixes the
+unsupported Workers redirect mode while continuing to reject upstream redirects.
+Code source `50d33e3b2b9798ae01f96032127c36dee17aea93` passed
+[exact-main CI](https://github.com/Significant-Hobbies/rolepatch/actions/runs/38205158882)
+(747 tests passed, one opt-in test skipped), Docs and the six deploy gates.
+The [production workflow](https://github.com/Significant-Hobbies/rolepatch/actions/runs/38205482921)
+passed publication and public smoke 7/7. Provider readback confirmed version
+`a3e4f9f8-cc19-4638-b871-f1adcc546516` with that full source tag at 100% traffic.
+
+Live REST and MCP calls supplied a public Greenhouse job link plus a synthetic
+master, without pasted JD text, and returned PDF files. Render-only retry,
+invalid render-field rejection and missing-account access checks also passed.
+The one-page PDFs retained contact, employer, project, education and supplied
+metric facts. Calls were stateless and saved no History; authenticated production
+and actual assistant-client connections were not exercised. Other job hosts keep
+the bounded reader path; blocked or expired pages still require pasted JD text.
+See [Resume MCP](docs/operations/runbooks/resume-mcp.md) and
+[deploy](docs/operations/deploy.md). This status-only update does not change
+the qualified application code.
 
 ## Root CSP release — 6 October
 
