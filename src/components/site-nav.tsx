@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X } from 'lucide-react';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -39,7 +39,7 @@ export function SiteNav() {
           className="font-semibold text-foreground mr-auto sm:mr-6 flex items-center gap-2"
         >
           <span className="w-6 h-6 rounded-md bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
-            ↗
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </span>
           RolePatch
         </Link>
