@@ -9,7 +9,8 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-const mockUseAuth = vi.fn(() => ({ isGuest: false }));
+const mockUseAuth = vi.fn(() => ({ isGuest: false, isPending: false }));
+const mockLocalListResumes = vi.fn(() => [] as { id: string; name: string; source: string }[]);
 vi.mock('@/components/auth-provider', () => ({
   useAuth: () => mockUseAuth(),
 }));
@@ -25,18 +26,35 @@ vi.mock('@/lib/actions/scrape-action', () => ({
 }));
 
 vi.mock('@/lib/local-storage', () => ({
-  localListResumes: () => [],
+  localListResumes: () => mockLocalListResumes(),
   localSaveJob: vi.fn(),
 }));
 
 beforeEach(() => {
   mockPush.mockReset();
-  mockUseAuth.mockReturnValue({ isGuest: false });
+  mockUseAuth.mockReturnValue({ isGuest: false, isPending: false });
+  mockLocalListResumes.mockReset().mockReturnValue([]);
   mockCreateJobApplication.mockReset();
   mockScrapeJobUrlSafe.mockReset();
 });
 
 describe('NewJobButton', () => {
+  it('blocks empty and incomplete guest resumes until readiness', () => {
+    mockUseAuth.mockReturnValue({ isGuest: true, isPending: false });
+    mockLocalListResumes.mockReturnValue([
+      { id: 'draft', name: 'Draft', source: '# Ada\n\n## Experience\n- Built screens.' },
+    ]);
+    render(<NewJobButton resumes={[]} />);
+    expect(screen.getByRole('button', { name: '+ Add Job' })).toBeDisabled();
+    expect(mockCreateJobApplication).not.toHaveBeenCalled();
+    expect(mockScrapeJobUrlSafe).not.toHaveBeenCalled();
+  });
+  it('blocks Add Job while authentication is unresolved', () => {
+    mockUseAuth.mockReturnValue({ isGuest: false, isPending: true });
+    render(<NewJobButton resumes={[{ id: 'ready', name: 'Master' }]} />);
+    expect(screen.getByRole('button', { name: '+ Add Job' })).toBeDisabled();
+  });
+
   it('accepts a pasted description directly without fetching a URL', async () => {
     const user = userEvent.setup();
     mockCreateJobApplication.mockResolvedValueOnce('pasted-job');

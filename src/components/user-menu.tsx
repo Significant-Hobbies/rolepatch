@@ -1,20 +1,15 @@
 'use client';
 
-import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
-import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { authClient } from '@/lib/auth-client';
 import { captureAuthFailure } from '@/lib/foundry-monitoring';
+
+// Guest navigation does not need the authenticated dropdown or sidebar primitives.
+const SignedInUserMenu = dynamic(() =>
+  import('./signed-in-user-menu').then((module) => module.SignedInUserMenu)
+);
 
 export function UserMenu({ sidebar = false }: { sidebar?: boolean }) {
   const { data: session, isPending } = authClient.useSession();
@@ -48,63 +43,27 @@ export function UserMenu({ sidebar = false }: { sidebar?: boolean }) {
       </Button>
     );
   }
-  const { name, email, image } = session.user;
-  const avatar = (
-    <Avatar className="h-8 w-8 rounded-lg">
-      <AvatarImage src={image ?? undefined} alt="" />
-      <AvatarFallback className="rounded-lg">
-        {(name ?? '?')
-          .split(/\s+/)
-          .map((part) => part[0])
-          .slice(0, 2)
-          .join('')}
-      </AvatarFallback>
-    </Avatar>
-  );
-  const menu = (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {sidebar ? (
-          <SidebarMenuButton size="lg" aria-label="Account menu">
-            {avatar}
-            <span className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{name}</span>
-              <span className="truncate text-xs">Personal account</span>
-            </span>
-            <ChevronsUpDown className="ml-auto size-4" />
-          </SidebarMenuButton>
-        ) : (
-          <Button variant="ghost" size="icon" aria-label="Account menu">
-            {avatar}
-          </Button>
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" side={sidebar ? 'top' : 'bottom'}>
-        <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/settings" prefetch={false}>
-            <Settings />
-            Account settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onSelect={() => {
-            authClient.signOut();
-          }}
+  return (
+    <Suspense
+      fallback={
+        <Button
+          variant="ghost"
+          size={sidebar ? 'default' : 'icon'}
+          className={sidebar ? 'h-12 w-full' : undefined}
+          disabled
+          aria-label="Loading account menu"
         >
-          <LogOut />
-          Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-  return sidebar ? (
-    <SidebarMenu>
-      <SidebarMenuItem>{menu}</SidebarMenuItem>
-    </SidebarMenu>
-  ) : (
-    menu
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+            {(session.user.name ?? '?')
+              .split(/\s+/)
+              .map((part) => part[0])
+              .slice(0, 2)
+              .join('')}
+          </span>
+        </Button>
+      }
+    >
+      <SignedInUserMenu user={session.user} sidebar={sidebar} />
+    </Suspense>
   );
 }

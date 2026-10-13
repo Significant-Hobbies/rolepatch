@@ -1,0 +1,7 @@
+/* Complete utilities for every other route and the authenticated account UI. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "./application-theme.css";
+@layer utilities {
+  @tailwind utilities;
+}
+@source "../";

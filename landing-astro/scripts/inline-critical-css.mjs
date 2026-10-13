@@ -19,7 +19,6 @@ export async function runAstroInlineCss() {
       [...source.matchAll(styles)]
         .map((match) => match[1])
         .join('\n')
-        .replaceAll('font-display:swap', 'font-display:optional')
     ),
   }).code.toString();
   // Restrict first paint to the header and complete hero at every breakpoint.
@@ -178,8 +177,8 @@ export async function runAstroInlineCss() {
   if (!hasMobileCtaRule) throw new Error('Critical CSS is missing the mobile CTA stacking rule');
 
   // Register initial fonts only once. Repeating @font-face in a late stylesheet
-  // creates new FontFace objects with fresh display timelines: even `optional`
-  // can then select an already-cached Geist and rewrap the painted hero.
+  // creates new FontFace objects with fresh display timelines and can rewrap
+  // the painted hero. Keep swap and the metric fallback in the initial sheet.
   const deferred = transform({
     filename: 'home.css',
     code: Buffer.from(css),

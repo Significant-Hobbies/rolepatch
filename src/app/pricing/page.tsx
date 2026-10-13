@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { preload } from 'react-dom';
 
 import { PricingCards } from '@/components/pricing-cards';
 import { getTokenBalance } from '@/lib/actions/token-actions';
@@ -40,10 +41,15 @@ async function hasRecentPayment(): Promise<boolean> {
 }
 
 export default async function PricingPage() {
+  preload('/fonts/space-grotesk-public-700.woff2', {
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: '',
+  });
   const [balance, paymentVerified] = await Promise.all([getTokenBalance(), hasRecentPayment()]);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-16">
+    <main className="performance-page max-w-4xl mx-auto px-6 py-16">
       <div className="text-center mb-12">
         <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground">Get Tokens</h1>
         <p className="text-[var(--muted-foreground)] mt-3">

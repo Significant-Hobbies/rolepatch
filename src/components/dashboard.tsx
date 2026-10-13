@@ -23,6 +23,9 @@ import { JobDetailsModal, type JobDetailsModalInitialValues } from '@/components
 import { JobDiscovery, type DiscoveryQueueContext } from '@/components/job-discovery';
 import { JobSearchTips } from '@/components/job-search-tips';
 import { MigrationBanner } from '@/components/migration-banner';
+import { CreateResumeButton } from '@/components/create-resume-button';
+import { ResumeImportButton } from '@/components/resume-import-button';
+import { masterResumeReadiness } from '@/lib/master-resume';
 import { NewJobButton } from '@/components/new-job-button';
 import { RecruiterReplyRoutingCard } from '@/components/recruiter-reply-routing-card';
 import {
@@ -694,7 +697,11 @@ export function Dashboard({
               : 'Add a job, review your tailored resume, and track your application.'}
           </p>
         </div>
-        <NewJobButton resumes={resumes.map((r) => ({ id: r.id, name: r.name }))} />
+        <NewJobButton
+          resumes={resumes
+            .filter((r) => masterResumeReadiness(r.source).ready)
+            .map((r) => ({ id: r.id, name: r.name }))}
+        />
       </div>
 
       {/* Alerts — interviews this week, overdue follow-ups */}
@@ -721,14 +728,20 @@ export function Dashboard({
         </div>
       )}
 
-      {resumes.length === 0 && (
-        <p className="mb-8 rounded-lg border border-[var(--border)] p-4">
-          Start by{' '}
-          <Link href="/resume-builder" className="font-semibold underline">
-            building your master resume
-          </Link>
-          , then add your first job.
-        </p>
+      {!resumes.some((r) => masterResumeReadiness(r.source).ready) && (
+        <div className="mb-8 space-y-4 rounded-lg border border-[var(--border)] p-4">
+          <p>
+            Start by{' '}
+            <Link href="/resume-builder" className="font-semibold underline">
+              completing your master resume
+            </Link>
+            , then add your first job.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <ResumeImportButton />
+            <CreateResumeButton destination="builder" />
+          </div>
+        </div>
       )}
 
       {/* Job Applications section */}

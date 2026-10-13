@@ -50,7 +50,7 @@ content.page.jsonLd = [jsonLd, {
       data-vitals-routes="changelog,docs,faq"
     ></script>
     <script is:inline>
-      (function(c,l,a,r,i){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};var done=0,ev=["pointerdown","keydown","touchstart","scroll"];function go(){if(done)return;done=1;ev.forEach(function(e){removeEventListener(e,go)});var t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;var y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)}ev.forEach(function(e){addEventListener(e,go,{passive:true,once:true})})})(window,document,"clarity","script","y6buz6rkot");
+      (function(c,l,a,r,i){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};var done=0,ev=["pointerdown","keydown","touchstart","scroll"];function go(){if(done)return;done=1;ev.forEach(function(e){removeEventListener(e,go)});var t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;var y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)}ev.forEach(function(e){addEventListener(e,go,{passive:true,once:true})});setTimeout(go,90000)})(window,document,"clarity","script","y6buz6rkot");
       window.clarity("set","project_id","rolepatch");
     </script>
     <script is:inline set:html={APP_HEALTH_CLICK_SCRIPT}></script>
@@ -71,6 +71,8 @@ content.page.jsonLd = [jsonLd, {
         --font-geist-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
       }
       body { margin: 0; }
+      /* Paint the complete hero immediately instead of animating blur/position. */
+      main .hero-in { animation: none; }
     </style>
     <!-- Template links have no attribute passthrough; retain destination events. -->
     <script is:inline>
@@ -79,7 +81,7 @@ content.page.jsonLd = [jsonLd, {
         var control = target && target.closest ? target.closest('a[href]') : null;
         if (!control || control.hasAttribute('data-app-health-event')) return;
         var events = {
-          '/dashboard': 'workspace_opened',
+          '/resume-builder': 'workspace_opened',
           '/pricing': 'pricing_opened',
           '/tools': 'free_tools_opened'
         };

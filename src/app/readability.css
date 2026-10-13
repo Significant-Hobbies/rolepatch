@@ -1,11 +1,24 @@
 /* App-only polish within Precision Studio. Astro, documents and footer stay separate. */
 @font-face {
   font-family: "RolePatch Display";
-  src: url("/fonts/space-grotesk.ttf") format("truetype");
+  src: url("/fonts/space-grotesk.woff2") format("woff2");
   font-style: normal;
   font-weight: 300 700;
-  font-display: swap;
+  font-display: optional;
 }
+
+/* Metrics from the shipped face, using Next's Arial fallback calculation. */
+@font-face {
+  font-family: "RolePatch Display Fallback";
+  src: local("Arial");
+  size-adjust: 110.84%;
+  ascent-override: 88.78%;
+  descent-override: 26.34%;
+  line-gap-override: 0%;
+}
+
+/* Public entry pages should paint immediately, without a transparent first frame. */
+.performance-page { animation: none; }
 
 :is(.precision-app-nav ~ main, .product-editor-toolbar) {
   color: var(--foreground);
@@ -15,7 +28,7 @@
 }
 
 :is(.precision-app-nav ~ main, .product-editor-toolbar) :is(h1, h2) {
-  font-family: "RolePatch Display", var(--font-sans);
+  font-family: "RolePatch Display", "RolePatch Display Fallback", var(--font-sans);
   font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.25;
@@ -72,3 +85,15 @@
   .job-row > :nth-child(7) { grid-column: 2; grid-row: 3; }
 }
 @media (max-width: 1023px) { .outline-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; } .outline-index { position: static; } }
+
+/* Same 700-weight outlines; the complete face handles all other characters. */
+@font-face {
+  font-family: "RolePatch Public Display";
+  src: url("/fonts/space-grotesk-public-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: optional;
+}
+.precision-app-nav ~ .performance-page :is(h1, h2) {
+  font-family: "RolePatch Public Display", "RolePatch Display", "RolePatch Display Fallback", var(--font-sans);
+}

@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-13",
+  "repository": "Significant-Hobbies/rolepatch",
+  "issues": [
+    32,
+    39
+  ],
+  "pull_request": 34,
+  "verified_remote_main": "eb355d08d5df1a9bec92ef8f77511cb216b10912",
+  "unchanged_remote_pr_head": "ecb8c423aba3722c71a6c63855df6099ddc1bdeb",
+  "measured_code_sha": "edb6fce51e51190f40e58f8573ad4f55f7d153ed",
+  "history": "Current main merged into retained PR34 branch; both original author commits remain ancestors. No rebases or force pushes.",
+  "runtime": "wrangler dev --local --env cache; full cf:build; anonymous public routes only",
+  "workload": "Lighthouse 12.8.2 mobile defaults; simulated throttling; cold browser storage each run; sequential 3 runs per route; external HTTPS blocked to prevent outbound provider/analytics traffic",
+  "baseline_note": "Retained production build at verified main; source branch changed during baseline but built Worker artifacts remained main.",
+  "main": {
+    "/": {
+      "median_lcp_ms": 1600.5108,
+      "median_performance": 100,
+      "best_practices": [
+        100,
+        100,
+        100
+      ]
+    },
+    "/pricing": {
+      "median_lcp_ms": 3637.28025,
+      "median_performance": 89.0,
+      "best_practices": [
+        100,
+        100,
+        100
+      ]
+    },
+    "/tools": {
+      "median_lcp_ms": 4421.040149999999,
+      "median_performance": 83.0,
+      "best_practices": [
+        100,
+        100,
+        100
+      ]
+    }
+  },
+  "candidate": {
+    "/": {
+      "median_lcp_ms": 1740.6149,
+      "median_performance": 100,
+      "best_practices": [
+        100,
+        100,
+        100
+      ]
+    },
+    "/pricing": {
+      "median_lcp_ms": 2662.948400000001,
+      "median_performance": 95.0,
+      "best_practices": [
+        100,
+        100,
+        100
+      ]
+    },
+    "/tools": {
+      "median_lcp_ms": 2920.2155999999995,
+      "median_performance": 95.0,
+      "best_practices": [
+        100,
+        100,
+        100
+      ]
+    }
+  },
+  "checks": {
+    "quality": "passed: Biome, types, coverage, docs, extension types, unused, complexity, duplication, cycles, dependencies, suppressions, hygiene",
+    "unit_passed": 762,
+    "unit_skipped": 1,
+    "focused_browser_passed": 24,
+    "responsive_widths": [
+      390,
+      768,
+      1440
+    ],
+    "responsive_routes": [
+      "/",
+      "/pricing",
+      "/tools",
+      "/resume-builder",
+      "/jobs"
+    ],
+    "production_build": "complete cf:build passed"
+  },
+  "lcp_gate_ms": 2500,
+  "lcp_gate_met": false,
+  "best_practices_preserved": true,
+  "publication": {
+    "status": "blocked",
+    "git_push": "HTTP 403: Permission denied to configured account",
+    "github_connector": "HTTP 403: Resource not accessible by integration creating a tree",
+    "remote_ci": "No new run possible because code could not be pushed; old PR checks still fail. Local required checks pass.",
+    "pr_metadata": "HTTP 403: Resource not accessible by integration updating PR body; PR metadata remains unchanged."
+  },
+  "open_gates": [
+    "Any unmet local LCP medians",
+    "GitHub write access, actual branch push, and fresh remote CI",
+    "Human/editorial/taste acceptance",
+    "Real-device acceptance",
+    "Production acceptance, including reported Cloudflare 401 noise",
+    "PDF/DOCX import end-to-end AI structuring and real OAuth #12 were excluded"
+  ],
+  "boundaries": "Local synthetic guest checks only. No credentials inspected or changed; no owner resumes/research/prepurge read; no live providers, paid services, deploys, releases, merges, production configuration or remote migrations. No skipped or synthetic checks claimed as live acceptance."
+}

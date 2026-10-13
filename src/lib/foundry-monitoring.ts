@@ -1,12 +1,43 @@
 'use client';
 
-import posthog from 'posthog-js';
+import { waitForMonitoringIdle } from '@/lib/monitoring-idle';
 
 type AuthFailureStage = 'signin' | 'signup' | 'callback' | 'session' | 'unknown';
 const PROJECT_SLUG = 'resume-tailor';
 const POSTHOG_KEY =
   process.env.NEXT_PUBLIC_POSTHOG_KEY ?? 'phc_qgiAarw4Co4pw9fz3Fxj4UJaHmqzFetqs4JrXhGc35Nd';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
+
+let client: Promise<typeof import('posthog-js').default> | undefined;
+
+// Share initialization with analytics.ts. Load/idle alone can run before text
+// paints while CSS/fonts are pending. Keep the SDK and its remote extensions
+// out of startup, then use idle time for initialization.
+
+async function initializePostHog() {
+  await waitForMonitoringIdle();
+  const { default: posthog } = await import('posthog-js');
+  posthog.init(POSTHOG_KEY, {
+    api_host: POSTHOG_HOST,
+    person_profiles: 'always',
+    capture_pageview: false,
+    autocapture: false,
+  });
+  return posthog;
+}
+
+export function getPostHog() {
+  client ??= initializePostHog();
+  return client;
+}
+
+function capture(event: string, properties: Record<string, unknown>) {
+  void getPostHog()
+    .then((posthog) => posthog.capture(event, properties))
+    .catch(() => {
+      // Monitoring must never break a user flow, including a failed SDK load.
+    });
+}
 
 function route() {
   if (typeof window === 'undefined') return undefined;
@@ -26,7 +57,7 @@ export function captureAuthFailure(options: {
   source?: string;
   projectSlug?: string;
 }) {
-  posthog.capture('foundry_auth_failure', {
+  capture('foundry_auth_failure', {
     project_id: options.projectSlug ?? PROJECT_SLUG,
     route: route(),
     provider: options.provider,
@@ -56,7 +87,7 @@ export function captureError(
   options: { scope?: ErrorBoundaryScope; digest?: string; source?: string } = {}
 ) {
   try {
-    posthog.capture('error_captured', {
+    capture('error_captured', {
       project_id: PROJECT_SLUG,
       route: route(),
       scope: options.scope ?? 'unknown',
@@ -71,7 +102,7 @@ export function captureError(
 }
 
 function capturePageCrash(error: unknown, source: 'window_error' | 'unhandled_rejection') {
-  posthog.capture('foundry_page_crash', {
+  capture('foundry_page_crash', {
     project_id: PROJECT_SLUG,
     route: route(),
     source,
@@ -82,12 +113,7 @@ function capturePageCrash(error: unknown, source: 'window_error' | 'unhandled_re
 
 export function installBrowserMonitoring() {
   if (typeof window === 'undefined') return () => {};
-  posthog.init(POSTHOG_KEY, {
-    api_host: POSTHOG_HOST,
-    person_profiles: 'always',
-    capture_pageview: false,
-    autocapture: false,
-  });
+  void getPostHog().catch(() => {});
 
   const onError = (event: ErrorEvent) => {
     capturePageCrash(event.error ?? event.message, 'window_error');

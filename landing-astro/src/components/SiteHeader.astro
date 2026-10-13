@@ -25,6 +25,6 @@ const { active = 'home', precision = false } = Astro.props;
       <a href="/pricing" data-app-health-event="pricing_opened">Pricing</a>
       {!precision && <a href="/faq" aria-current={active === 'faq' ? 'page' : undefined}>FAQ</a>}
     </nav>
-    <a href="/dashboard" class="header-cta" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a>
+    <a href="/resume-builder" class="header-cta" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a>
   </div>
 </header>

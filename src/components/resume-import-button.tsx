@@ -68,10 +68,10 @@ export function ResumeImportButton() {
       <Button
         onClick={onClick}
         disabled={isPending || authPending}
-        variant="outline"
+        variant="default"
         title="Import resume from PDF, DOCX, or Markdown"
       >
-        {isPending ? 'Importing…' : '↑ Import Resume'}
+        {isPending ? 'Importing…' : 'Import Resume'}
       </Button>
       {error && (
         <span className="text-xs text-red-500 ml-2" role="alert">
