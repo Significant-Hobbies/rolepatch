@@ -1,6 +1,21 @@
-@import "tailwindcss" source("../");
+@import "tailwindcss" source(none);
+@import "./application-theme.css";
 @import "./precision.css";
 @import "./readability.css";
+@source "./layout.tsx";
+@source "./error.tsx";
+@source "./global-error.tsx";
+@source "./not-found.tsx";
+@source "./pricing/page.tsx";
+@source "./tools/page.tsx";
+@source "../components/site-nav.tsx";
+@source "../components/rolepatch-mark.tsx";
+@source "../components/token-balance.tsx";
+@source "../components/user-menu.tsx";
+@source "../components/pricing-cards.tsx";
+@source "../components/saasmaker-feedback.tsx";
+@source "../components/saasmaker-feedback-widget.tsx";
+@source "../components/ui/button.tsx";
 
 :root {
   color-scheme: dark;
@@ -26,30 +41,7 @@
   --ring: #e4e4e7;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --font-sans: Arial, system-ui, sans-serif;
-  --font-serif: "Ibarra Real Nova", serif;
-  --font-mono: var(--font-geist-mono);
-}
+
 
 body {
   background: var(--background);

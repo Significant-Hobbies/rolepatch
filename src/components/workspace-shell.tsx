@@ -9,18 +9,27 @@ import { SiteNav } from '@/components/site-nav';
 const WorkspaceInterior = dynamic(() =>
   import('./workspace-interior').then((module) => module.WorkspaceInterior)
 );
+const ApplicationStyles = dynamic(() =>
+  import('./application-styles').then((module) => module.ApplicationStyles)
+);
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
   const builder = pathname === '/resume-builder' || pathname.startsWith('/editor/');
   const workspace =
     builder || pathname === '/jobs' || pathname === '/dashboard' || pathname.startsWith('/tailor/');
-  return workspace ? (
-    <WorkspaceInterior builder={builder}>{children}</WorkspaceInterior>
-  ) : (
+  const catalog = pathname === '/pricing' || pathname === '/tools';
+  return (
     <>
-      <SiteNav />
-      {children}
+      {!catalog && <ApplicationStyles />}
+      {workspace ? (
+        <WorkspaceInterior builder={builder}>{children}</WorkspaceInterior>
+      ) : (
+        <>
+          <SiteNav />
+          {children}
+        </>
+      )}
     </>
   );
 }

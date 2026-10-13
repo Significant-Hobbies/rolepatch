@@ -21,7 +21,9 @@ These costs compete with the public text rendering path tracked in
 Use Next's documented external-stylesheet mode. Keep the complete stylesheets
 render-blocking, and retain the existing critical-CSS build step for
 prerendered files. Import workspace-only styles from the already lazy workspace
-interior. Their scoped rules and the public content remain unchanged.
+interior. Generate eager utilities from catalog and shared navigation sources;
+the complete application utility set loads on other routes and with the
+authenticated menu. Their rules and the public content remain unchanged.
 
 Load the signed-in menu through `next/dynamic` after a session supplies a user.
 Keep the existing guest sign-in path and all authenticated menu actions. A

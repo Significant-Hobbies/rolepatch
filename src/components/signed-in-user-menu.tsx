@@ -1,5 +1,7 @@
 'use client';
 
+import '@/app/application-utilities.css';
+
 import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
