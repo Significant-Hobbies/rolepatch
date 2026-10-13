@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/components/auth-provider';
 import { createJobApplication } from '@/lib/actions/job-actions';
 import { scrapeJobUrlSafe } from '@/lib/actions/scrape-action';
+import { masterResumeReadiness } from '@/lib/master-resume';
 import { localListResumes, localSaveJob } from '@/lib/local-storage';
 
 interface NewJobButtonProps {
@@ -25,7 +26,7 @@ interface NewJobButtonProps {
 
 export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
   const router = useRouter();
-  const { isGuest } = useAuth();
+  const { isGuest, isPending: authPending } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
   const [open, setOpen] = useState(false);
   const [resumeId, setResumeId] = useState('');
@@ -42,7 +43,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
   // For guests, supplement with localStorage resumes
   useEffect(() => {
     if (isGuest) {
-      const localResumes = localListResumes().map((r) => ({ id: r.id, name: r.name }));
+      const localResumes = localListResumes()
+        .filter((r) => masterResumeReadiness(r.source).ready)
+        .map((r) => ({ id: r.id, name: r.name }));
       setResumes(localResumes);
     }
   }, [isGuest]);
@@ -169,7 +172,14 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
       }}
     >
       <SheetTrigger asChild>
-        <Button>+ Add Job</Button>
+        <Button
+          disabled={authPending || resumes.length === 0}
+          title={
+            resumes.length === 0 ? 'Complete your master resume before adding a job' : undefined
+          }
+        >
+          + Add Job
+        </Button>
       </SheetTrigger>
 
       {toast && (

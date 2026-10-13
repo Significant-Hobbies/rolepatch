@@ -100,7 +100,7 @@ export const REDIRECT_AUTHENTICATED_SCRIPT = `
     c.indexOf('better-auth.session_token') !== -1 ||
     c.indexOf('__Secure-better-auth.session_token') !== -1
   ) {
-    location.replace('/dashboard');
+    location.replace('/resume-builder');
   }
 })();
 `;

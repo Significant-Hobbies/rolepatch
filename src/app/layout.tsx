@@ -137,9 +137,6 @@ export default function RootLayout({
               <SaaSMakerFeedback />
               <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
                 <span>RolePatch</span>
-                <a href="/proof" className="transition-colors hover:text-foreground">
-                  TrueHire proof
-                </a>
               </div>
             </footer>
           </AuthProvider>

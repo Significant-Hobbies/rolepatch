@@ -52,7 +52,7 @@
   "header": {
     "primary": {
       "label": "tailor my resume",
-      "href": "/dashboard"
+      "href": "/resume-builder"
     }
   },
   "hero": {
@@ -61,7 +61,7 @@
     "lede": "Bring your resume and a specific job. RolePatch connects the requirements to your experience, then puts every change in your hands.",
     "primary": {
       "label": "tailor my resume",
-      "href": "/dashboard"
+      "href": "/resume-builder"
     },
     "secondary": {
       "label": "see the patch",
@@ -88,7 +88,7 @@
           "lede": "The work, scope and result already exist in the source. Only the summary is generated. Achievement wording, complete projects and education stay preserved.",
           "primary": {
             "label": "review your own resume",
-            "href": "/dashboard"
+            "href": "/resume-builder"
           },
           "note": "Kubernetes is requested by the job but absent from this resume. It is left out of this illustrative draft."
         }
@@ -166,7 +166,7 @@
           "title": "bring your experience. *make the connection.*",
           "primary": {
             "label": "tailor my resume",
-            "href": "/dashboard"
+            "href": "/resume-builder"
           },
           "note": "Your resume. One job. A draft you can review."
         }
@@ -185,7 +185,7 @@
         "links": [
           {
             "label": "dashboard",
-            "href": "/dashboard"
+            "href": "/resume-builder"
           },
           {
             "label": "browse jobs",

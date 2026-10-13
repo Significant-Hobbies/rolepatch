@@ -7,7 +7,7 @@
       if (window.appHealth) return;
       const link = event.target.closest?.('[data-app-health-event],a[href]');
       const name = link?.getAttribute('data-app-health-event') || {
-        '/dashboard': 'workspace_opened',
+        '/resume-builder': 'workspace_opened',
         '/pricing': 'pricing_opened',
         '/tools': 'free_tools_opened',
       }[link?.getAttribute('href')];

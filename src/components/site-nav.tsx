@@ -38,7 +38,7 @@ export function SiteNav() {
           prefetch={false}
           className="font-semibold text-foreground mr-auto sm:mr-6 flex items-center gap-2"
         >
-          <span className="w-6 h-6 rounded-md bg-[var(--accent)] flex items-center justify-center text-[10px] font-bold text-white">
+          <span className="w-6 h-6 rounded-md bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
             ↗
           </span>
           RolePatch

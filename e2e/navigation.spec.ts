@@ -4,11 +4,19 @@ test.describe('public pages load', () => {
   test('landing page renders', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/RolePatch|Resume/i);
+    await page
+      .getByRole('link', { name: /Tailor my resume/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/resume-builder/);
+    await expect(page.getByRole('button', { name: 'Import Resume', exact: true })).toBeEnabled();
   });
 
   test('dashboard is reachable in guest mode', async ({ page }) => {
     await page.goto('/dashboard');
     await expect(page.getByRole('button', { name: /create|new resume/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Import Resume', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: '+ Add Job', exact: true })).toBeDisabled();
   });
 
   test('pricing page renders', async ({ page }) => {
