@@ -21,6 +21,7 @@ test.describe('public pages load', () => {
 
   test('pricing page renders', async ({ page }) => {
     await page.goto('/pricing');
+    expect(await page.evaluate(() => document.compatMode)).toBe('CSS1Compat');
     await expect(page.getByText(/Starter|Pro|Bulk/i).first()).toBeVisible();
   });
 
@@ -33,6 +34,7 @@ test.describe('public pages load', () => {
 
   test('tools index links to diff and keywords', async ({ page }) => {
     await page.goto('/tools');
+    expect(await page.evaluate(() => document.compatMode)).toBe('CSS1Compat');
     await expect(page.getByRole('link', { name: /diff/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /keyword/i })).toBeVisible();
   });
