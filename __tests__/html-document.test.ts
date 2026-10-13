@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { deferPublicDocumentScripts, ensureLeadingHtmlDoctype } from '../html-document.mjs';
+import { ensureLeadingHtmlDoctype } from '../html-document.mjs';
 
 const encoder = new TextEncoder();
 const decode = (body: Uint8Array) => new TextDecoder().decode(body);
@@ -21,31 +21,6 @@ describe('anonymous cached HTML standards mode', () => {
     ]) {
       const original = encoder.encode(html);
       expect(ensureLeadingHtmlDoctype(original)).toBe(original);
-    }
-  });
-});
-
-describe('public document hydration scheduling', () => {
-  it('defers only async Next chunks and preserves inline Flight, content and other scripts', () => {
-    const html =
-      '<!DOCTYPE html><p>Résumé</p>' +
-      '<script src="/_next/static/chunks/runtime.js" async=""></script>' +
-      '<script src="/_next/static/chunks/client.js" async></script>' +
-      '<script>self.__next_f.push([1,"content"])</script>' +
-      '<script src="/other.js" async=""></script>' +
-      '<script src="/_next/static/chunks/polyfills.js" noModule=""></script>';
-    for (const route of ['/pricing', '/tools']) {
-      expect(decode(deferPublicDocumentScripts(encoder.encode(html), route))).toBe(
-        html
-          .replace('runtime.js" async=""', 'runtime.js" defer')
-          .replace('client.js" async', 'client.js" defer')
-      );
-    }
-  });
-  it('leaves every other route byte-identical', () => {
-    const body = encoder.encode('<script src="/_next/static/chunks/client.js" async></script>');
-    for (const route of ['/', '/jobs', '/resume-builder', '/tools/keywords', '/pricing/other']) {
-      expect(deferPublicDocumentScripts(body, route)).toBe(body);
     }
   });
 });

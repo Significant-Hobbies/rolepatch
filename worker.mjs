@@ -12,7 +12,7 @@
 // All non-GET, non-`/` requests pass straight through to OpenNext.
 
 import openNext from './.open-next/worker.js';
-import { deferPublicDocumentScripts, ensureLeadingHtmlDoctype } from './html-document.mjs';
+import { ensureLeadingHtmlDoctype } from './html-document.mjs';
 import { withTiming } from './timing.mjs';
 import { CONTENT_SECURITY_POLICY } from './security-policy.mjs';
 import { handleAgentEdge } from './agent-edge.mjs';
@@ -286,10 +286,7 @@ export default {
       // silently dropping the inlined critical-CSS chunk somewhere in the
       // stream-fork; reading once and constructing both responses from
       // the same Uint8Array sidesteps the streaming edge case entirely.
-      const body = deferPublicDocumentScripts(
-        ensureLeadingHtmlDoctype(await response.arrayBuffer()),
-        url.pathname
-      );
+      const body = ensureLeadingHtmlDoctype(await response.arrayBuffer());
       const headers = new Headers(response.headers);
       headers.set('Cache-Control', DOCUMENT_EDGE_CACHE_CONTROL);
 

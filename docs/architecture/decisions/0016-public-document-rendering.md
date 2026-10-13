@@ -28,10 +28,8 @@ Keep the existing guest sign-in path and all authenticated menu actions. A
 disabled account placeholder reserves space while the account module loads;
 it exposes neither settings nor sign-out until those actions are ready.
 
-For anonymous `/pricing` and `/tools` documents only, use native `defer` for
-Next's async chunk scripts. URLs, inline Flight data and script order remain
-intact. Auth-bearing requests, RSC responses and other routes retain their
-existing Worker path. There are no timers or interaction-based hydration gates.
+Retain Next's native async script scheduling, inline Flight data and Worker
+cache/auth boundaries. There are no timers or interaction-based hydration gates.
 
 ## Consequences
 
@@ -47,5 +45,5 @@ Responsive geometry and workspace theme portals must remain consistent.
   the full stylesheet inline preserves the measured document overhead.
 - Deferring every route or removing hydration: rejected because workspace,
   account and mutation flows need the existing Next runtime.
-- Native `defer` alone: did not meet the pricing gate; dependency and stylesheet
-  reductions are necessary alongside scheduling.
+- Native `defer`: did not consistently meet the gate and makes hydration wait
+  for stylesheets; keep the framework's original scheduling.

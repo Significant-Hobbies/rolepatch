@@ -17,15 +17,3 @@ export function ensureLeadingHtmlDoctype(body) {
   return result;
 }
 
-/** Let SSR text paint before document-order Next hydration on public catalog pages. */
-export function deferPublicDocumentScripts(body, pathname) {
-  if (pathname !== '/pricing' && pathname !== '/tools') return body;
-  const html = new TextDecoder().decode(body);
-  return new TextEncoder().encode(
-    html.replace(/<script\b[^>]*>/gi, (tag) => {
-      if (!/\bsrc="\/_next\/static\/chunks\/[^"<>]+\.js"/.test(tag)) return tag;
-      if (!/\sasync(?:="")?(?=\s|>)/.test(tag)) return tag;
-      return tag.replace(/\sasync(?:="")?(?=\s|>)/, ' defer');
-    })
-  );
-}
