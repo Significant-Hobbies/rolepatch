@@ -1,5 +1,7 @@
 'use client';
 
+import '@/app/workspace.css';
+
 import { BriefcaseBusiness, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';

@@ -17,7 +17,7 @@ it('places settings inside the signed-in account menu without a purchase link', 
   const user = userEvent.setup();
   render(<UserMenu />);
   expect(screen.queryByRole('link', { name: 'Account settings' })).not.toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Account menu' }));
+  await user.click(await screen.findByRole('button', { name: 'Account menu' }));
   expect(screen.getByRole('menuitem', { name: 'Account settings' })).toHaveAttribute(
     'href',
     '/settings'

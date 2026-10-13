@@ -1,7 +1,6 @@
 @import "tailwindcss" source("../");
 @import "./precision.css";
 @import "./readability.css";
-@import "./workspace.css";
 
 :root {
   color-scheme: dark;
