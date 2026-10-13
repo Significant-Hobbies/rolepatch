@@ -16,4 +16,3 @@ export function ensureLeadingHtmlDoctype(body) {
   result.set(bytes.subarray(offset + declaration.length), offset + declaration.length);
   return result;
 }
-
