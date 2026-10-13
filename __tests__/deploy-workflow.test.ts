@@ -11,8 +11,17 @@ describe('deploy workflow', () => {
     expect(deployWorkflow).toContain('workflow_dispatch:');
     expect(deployWorkflow).toContain("if: github.event_name == 'workflow_dispatch'");
     expect(deployWorkflow).toContain('pnpm cf:build');
-    // biome-ignore lint/suspicious/noTemplateCurlyInString: GitHub Actions expressions use this literal syntax.
-    expect(deployWorkflow).toContain('command: deploy --tag ${{ github.sha }}');
+    expect(deployWorkflow).toMatch(/versions upload --env="" --tag \$\{\{ github\.sha \}\}/);
+    expect(deployWorkflow).toMatch(
+      /WORKER_UPLOAD_OUTPUT: \$\{\{ steps\.upload\.outputs\.command-output \}\}/
+    );
+    expect(deployWorkflow).toMatch(
+      /versions deploy --env="" \$\{\{ steps\.uploaded-version\.outputs\.version-id \}\}@100% --yes/
+    );
+    expect(deployWorkflow).not.toContain('--version-tag');
+    expect(deployWorkflow).not.toMatch(
+      /^[ \t]+(?:command: )?(?:wrangler )?(?:deploy|triggers deploy)(?:[ \t]|$)/m
+    );
     expect(deployWorkflow).toContain('run: pnpm smoke:prod');
   });
 });

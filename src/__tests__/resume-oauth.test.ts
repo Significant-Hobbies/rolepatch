@@ -185,7 +185,13 @@ it('qualifies registration, consent, PKCE, replay resistance, owner identity, re
   expect(valid.status).toBe(200);
   expect(await valid.json()).toEqual({ user: 'oauth-owner' });
   expect((await invoke(tokens.access_token, '/api/resume')).status).toBe(401);
-  expect((await invoke(`${tokens.access_token.slice(0, -2)}XX`)).status).toBe(401);
+  // Base64url's unused trailing bits can make an XX suffix decode to the same
+  // signature. Change the first signature character so the bytes always differ.
+  const parts = tokens.access_token.split('.');
+  const signature = parts[2];
+  parts[2] = `${signature[0] === 'A' ? 'B' : 'A'}${signature.slice(1)}`;
+  expect(Buffer.from(parts[2], 'base64url')).not.toEqual(Buffer.from(signature, 'base64url'));
+  expect((await invoke(parts.join('.'))).status).toBe(401);
   expect((await token({ ...grant, code: freshCode })).status).toBeGreaterThanOrEqual(400);
   const refreshed = await token({
     grant_type: 'refresh_token',
