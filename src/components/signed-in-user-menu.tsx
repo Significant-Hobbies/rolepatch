@@ -1,6 +1,7 @@
 'use client';
 
 import '@/app/application-utilities.css';
+import '@/app/workspace.css';
 
 import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';

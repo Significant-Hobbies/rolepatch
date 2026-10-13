@@ -3,6 +3,10 @@ import { expect, test } from '@playwright/test';
 test('account menu becomes usable after a synthetic session loads its account-only code', async ({
   page,
 }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.addInitScript(() => {
+    localStorage.setItem('rolepatch-workspace-theme', 'light');
+  });
   const synthetic = {
     user: {
       id: 'public-performance-fixture',
@@ -27,9 +31,16 @@ test('account menu becomes usable after a synthetic session loads its account-on
     if (path === '/resume-builder' && (page.viewportSize()?.width ?? 0) < 768) {
       await page.getByRole('button', { name: 'Toggle Sidebar', exact: true }).click();
     }
+    if (path === '/resume-builder') {
+      await expect(page.locator('[data-sidebar="sidebar"]')).toHaveCSS(
+        'background-color',
+        'oklch(0.985 0 0)'
+      );
+    }
     const account = page.getByRole('button', { name: 'Account menu', exact: true });
     await expect(account).toBeEnabled();
     await account.click();
+    await expect(page.getByRole('menu')).toHaveCSS('background-color', 'oklch(1 0 0)');
     await expect(page.getByRole('menuitem', { name: 'Account settings' })).toHaveAttribute(
       'href',
       '/settings'
