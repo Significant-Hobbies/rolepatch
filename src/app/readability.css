@@ -85,3 +85,15 @@
   .job-row > :nth-child(7) { grid-column: 2; grid-row: 3; }
 }
 @media (max-width: 1023px) { .outline-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; } .outline-index { position: static; } }
+
+/* Same 700-weight outlines; the complete face handles all other characters. */
+@font-face {
+  font-family: "RolePatch Public Display";
+  src: url("/fonts/space-grotesk-public-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: optional;
+}
+.precision-app-nav ~ .performance-page :is(h1, h2) {
+  font-family: "RolePatch Public Display", "RolePatch Display", "RolePatch Display Fallback", var(--font-sans);
+}

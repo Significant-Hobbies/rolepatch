@@ -41,7 +41,11 @@ async function hasRecentPayment(): Promise<boolean> {
 }
 
 export default async function PricingPage() {
-  preload('/fonts/space-grotesk.woff2', { as: 'font', type: 'font/woff2', crossOrigin: '' });
+  preload('/fonts/space-grotesk-public-700.woff2', {
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: '',
+  });
   const [balance, paymentVerified] = await Promise.all([getTokenBalance(), hasRecentPayment()]);
 
   return (
