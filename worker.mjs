@@ -13,6 +13,7 @@
 
 import openNext from './.open-next/worker.js';
 import { ensureLeadingHtmlDoctype } from './html-document.mjs';
+import { encodePublicHtmlResponse } from './html-encoding.mjs';
 import { withTiming } from './timing.mjs';
 import { CONTENT_SECURITY_POLICY } from './security-policy.mjs';
 import { handleAgentEdge } from './agent-edge.mjs';
@@ -265,7 +266,7 @@ export default {
         const hit = new Response(cached.body, cached);
         hit.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
         hit.headers.set('x-edge-cache', 'HIT');
-        return hit;
+        return encodePublicHtmlResponse(hit, request);
       }
 
       const response = await openNext.fetch(request, env, ctx);
@@ -304,7 +305,7 @@ export default {
       });
       clientResponse.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
       clientResponse.headers.set('x-edge-cache', 'MISS');
-      return clientResponse;
+      return encodePublicHtmlResponse(clientResponse, request);
     } catch (err) {
       console.error(
         `[error] ${request.method} ${new URL(request.url).pathname}:`,
