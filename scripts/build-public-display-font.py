@@ -19,7 +19,7 @@ options.layout_features = ['*']
 options.glyph_names = True
 options.notdef_outline = True
 subsetter = subset.Subsetter(options=options)
-subsetter.populate(unicodes=subset.parse_unicodes('U+0000-024F,U+0300-036F,U+2000-206F,U+20A0-20CF,U+2190-21FF,U+2212,U+2215,U+FEFF,U+FFFD'))
+subsetter.populate(unicodes=subset.parse_unicodes('U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD'))
 subsetter.subset(public)
 public.recalcTimestamp = False
 public.flavor = 'woff2'
@@ -33,7 +33,8 @@ original.recalcTimestamp = False
 original.save(reference)
 original = TTFont(BytesIO(reference.getvalue()), recalcTimestamp=False)
 assert encoded.getBestCmap().items() <= original.getBestCmap().items()
-assert len(encoded.getBestCmap()) >= 250
+assert len(encoded.getBestCmap()) >= 180
+assert all(code in encoded.getBestCmap() for code in range(0x20, 0x7F))
 for name in encoded.getGlyphOrder():
     before, after = RecordingPen(), RecordingPen()
     original.getGlyphSet()[name].draw(before)
