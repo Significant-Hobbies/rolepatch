@@ -11,8 +11,8 @@ let client: Promise<typeof import('posthog-js').default> | undefined;
 // Share initialization with analytics.ts. Load/idle alone can run before text
 // paints while CSS/fonts are pending. Keep the SDK and its remote extensions
 // out of startup, then use idle time for initialization.
-function waitForMonitoringIdle(): Promise<void> {
-  return new Promise((resolve) => {
+function waitForMonitoringIdle() {
+  const pending: Promise<void> = new Promise((resolve) => {
     const afterLoad = () => {
       setTimeout(() => {
         if ('requestIdleCallback' in window)
@@ -23,6 +23,7 @@ function waitForMonitoringIdle(): Promise<void> {
     if (document.readyState === 'complete') afterLoad();
     else window.addEventListener('load', afterLoad, { once: true });
   });
+  return pending;
 }
 
 async function initializePostHog() {

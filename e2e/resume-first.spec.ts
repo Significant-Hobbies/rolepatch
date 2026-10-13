@@ -37,7 +37,7 @@ test('public and workspace routes fit established responsive layouts', async ({
         .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
         .toBe(true);
       await page.screenshot({
-        path: `/codex/browser/projectless/0015-this-is-the-separately-authorized-coding-task-af/output/rendering/${testInfo.project.name}-${route.slice(1) || 'home'}-${width}.png`,
+        path: testInfo.outputPath(`${route.slice(1) || 'home'}-${width}.png`),
         fullPage: true,
       });
     }
