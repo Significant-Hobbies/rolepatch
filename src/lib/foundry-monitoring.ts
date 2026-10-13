@@ -1,5 +1,7 @@
 'use client';
 
+import { waitForMonitoringIdle } from '@/lib/monitoring-idle';
+
 type AuthFailureStage = 'signin' | 'signup' | 'callback' | 'session' | 'unknown';
 const PROJECT_SLUG = 'resume-tailor';
 const POSTHOG_KEY =
@@ -11,20 +13,6 @@ let client: Promise<typeof import('posthog-js').default> | undefined;
 // Share initialization with analytics.ts. Load/idle alone can run before text
 // paints while CSS/fonts are pending. Keep the SDK and its remote extensions
 // out of startup, then use idle time for initialization.
-function waitForMonitoringIdle() {
-  const pending: Promise<void> = new Promise((resolve) => {
-    const afterLoad = () => {
-      setTimeout(() => {
-        if ('requestIdleCallback' in window)
-          window.requestIdleCallback(() => resolve(), { timeout: 1000 });
-        else resolve();
-      }, 5000);
-    };
-    if (document.readyState === 'complete') afterLoad();
-    else window.addEventListener('load', afterLoad, { once: true });
-  });
-  return pending;
-}
 
 async function initializePostHog() {
   await waitForMonitoringIdle();
