@@ -1,8 +1,9 @@
 'use client';
 
-import { ArrowUpRight, BriefcaseBusiness, FileText } from 'lucide-react';
+import { BriefcaseBusiness, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
+import { RolePatchMark } from '@/components/rolepatch-mark';
 import { TokenBalance } from '@/components/token-balance';
 import { UserMenu } from '@/components/user-menu';
 import { WorkspaceThemeProvider } from '@/components/workspace-theme';
@@ -53,9 +54,7 @@ function WorkspaceSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/resume-builder" prefetch={false} onClick={() => setOpenMobile(false)}>
-                <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <ArrowUpRight className="size-4" />
-                </span>
+                <RolePatchMark className="size-8 rounded-lg" />
                 <span className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">RolePatch</span>
                   <span className="truncate text-xs">Your workspace</span>

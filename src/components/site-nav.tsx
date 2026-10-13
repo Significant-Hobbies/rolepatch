@@ -1,10 +1,11 @@
 'use client';
 
-import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { RolePatchMark } from '@/components/rolepatch-mark';
 import { TokenBalance } from '@/components/token-balance';
 import { UserMenu } from '@/components/user-menu';
 
@@ -38,9 +39,7 @@ export function SiteNav() {
           prefetch={false}
           className="font-semibold text-foreground mr-auto sm:mr-6 flex items-center gap-2"
         >
-          <span className="w-6 h-6 rounded-md bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
-            <ArrowUpRight className="size-4" aria-hidden="true" />
-          </span>
+          <RolePatchMark />
           RolePatch
         </Link>
 
