@@ -10,10 +10,10 @@ import { captureError } from '@/lib/foundry-monitoring';
  */
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -44,7 +44,7 @@ export default function GlobalError({
             few minutes.
           </p>
           <button
-            onClick={reset}
+            onClick={retry}
             style={{
               padding: '0.5rem 1rem',
               borderRadius: 6,

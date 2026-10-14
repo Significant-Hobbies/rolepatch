@@ -6,10 +6,10 @@ import { captureError } from '@/lib/foundry-monitoring';
 
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     // Full detail goes to the console + PostHog — never to the user.
@@ -26,7 +26,7 @@ export default function Error({
           happening, come back in a few minutes.
         </p>
         <div className="flex gap-3 justify-center">
-          <button onClick={reset} className="px-4 py-2 rounded border hover:opacity-80">
+          <button onClick={retry} className="px-4 py-2 rounded border hover:opacity-80">
             Try again
           </button>
           <button
