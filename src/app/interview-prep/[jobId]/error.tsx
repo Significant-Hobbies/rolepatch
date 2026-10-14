@@ -7,10 +7,10 @@ import { captureError } from '@/lib/foundry-monitoring';
 
 export default function InterviewPrepError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -25,7 +25,7 @@ export default function InterviewPrepError({
           Something went wrong while preparing this page. Your saved stories are safe — try again.
         </p>
         <div className="flex gap-3 justify-center">
-          <button onClick={reset} className="px-4 py-2 rounded border hover:opacity-80">
+          <button onClick={retry} className="px-4 py-2 rounded border hover:opacity-80">
             Try again
           </button>
           <Link href="/dashboard" className="px-4 py-2 rounded border hover:opacity-80">

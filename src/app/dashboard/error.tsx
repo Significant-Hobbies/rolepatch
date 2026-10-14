@@ -6,10 +6,10 @@ import { captureError } from '@/lib/foundry-monitoring';
 
 export default function DashboardError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -23,7 +23,7 @@ export default function DashboardError({
         <p className="text-sm opacity-70 mb-6">
           Something went wrong while loading your resumes and jobs. Your data is safe — try again.
         </p>
-        <button onClick={reset} className="px-4 py-2 rounded border hover:opacity-80">
+        <button onClick={retry} className="px-4 py-2 rounded border hover:opacity-80">
           Try again
         </button>
         {error.digest ? <p className="mt-6 text-xs opacity-40">Reference: {error.digest}</p> : null}
