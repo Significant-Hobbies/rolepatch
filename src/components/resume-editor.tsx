@@ -416,7 +416,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   return (
     <div className="flex flex-col md:flex-row w-full h-full overflow-y-auto md:overflow-hidden">
       {/* Editor pane */}
-      <div className="w-full md:w-1/2 min-h-[50vh] md:min-h-0 flex flex-col overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 print-hide">
+      <div className="@container/editor min-w-0 w-full md:w-1/2 min-h-[50vh] md:min-h-0 flex flex-col overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 print-hide">
         {/* Toolbar */}
         <div className="product-editor-toolbar flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 border-b border-gray-200 bg-white">
           <Link
@@ -479,7 +479,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
 
           <span className="text-xs text-gray-400">{saving ? 'Saving...' : ''}</span>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
             <div className="relative" ref={configRef}>
               <button
                 onClick={() => setShowConfig((v) => !v)}
@@ -496,7 +496,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               </button>
 
               {showConfig && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64">
+                <div className="absolute left-0 md:left-auto md:right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64 max-w-[calc(100cqw-2rem)]">
                   <div className="space-y-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">
