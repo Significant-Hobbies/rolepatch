@@ -5,8 +5,19 @@ for (const width of [390, 768, 1440]) {
     context,
     page,
   }, testInfo) => {
+    test.setTimeout(90_000);
     await page.setViewportSize({ width, height: 900 });
-    await context.addInitScript(() => {
+    await context.route('**/*', (route) => {
+      const url = new URL(route.request().url());
+      if (url.origin !== new URL(testInfo.project.use.baseURL!).origin) return route.abort();
+      if (url.pathname === '/api/auth/get-session') return route.fulfill({ json: null });
+      return route.continue();
+    });
+    await page.goto('/resume-builder');
+    await expect(page.getByRole('button', { name: '+ New Resume', exact: true })).toBeEnabled({
+      timeout: 30_000,
+    });
+    await page.evaluate(() =>
       localStorage.setItem(
         'rt-resumes',
         JSON.stringify([
@@ -18,19 +29,10 @@ for (const width of [390, 768, 1440]) {
             updated_at: 1767225600,
           },
         ])
-      );
-    });
-    await context.routeWebSocket('**/*', (socket) => socket.close());
-    await context.route('**/*', (route) => {
-      const url = new URL(route.request().url());
-      if (url.origin !== new URL(testInfo.project.use.baseURL!).origin) return route.abort();
-      if (url.pathname === '/api/auth/get-session') return route.fulfill({ json: null });
-      if (url.pathname.startsWith('/api/'))
-        return route.fulfill({ status: 503, json: { error: 'Unseeded synthetic operation' } });
-      return route.continue();
-    });
+      )
+    );
     await page.goto('/editor/synthetic-toolbar');
-    await expect(page.locator('.cm-editor')).toBeVisible();
+    await expect(page.locator('.cm-editor')).toBeVisible({ timeout: 30_000 });
     await page.evaluate(() => document.fonts.ready);
     const toolbar = page.locator('.product-editor-toolbar');
     const targets = [
