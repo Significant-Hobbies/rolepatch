@@ -78,7 +78,7 @@ for (const width of [390, 768, 1440]) {
               window as unknown as Window & { historyLayoutShifts: number[] }
             ).historyLayoutShifts.reduce((sum, value) => sum + value, 0)
           )
-        ).toBeLessThanOrEqual(0.1);
+        ).toBeLessThanOrEqual(0.05);
       } finally {
         releaseSession();
       }

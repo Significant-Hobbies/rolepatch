@@ -74,7 +74,6 @@ import {
 } from '@/lib/local-storage';
 import { jobDetailsOrNull } from '@/lib/job-details';
 import { normalizeJobUrl } from '@/lib/job-discovery-alerts';
-import { cn } from '@/lib/utils';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 import type {
   AchievementEvidence,
@@ -210,6 +209,43 @@ function timeAgo(unixSeconds: number): string {
     month: 'short',
     day: 'numeric',
   });
+}
+
+function DashboardHeader({ isGuest, resumes }: { isGuest: boolean; resumes: Resume[] }) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
+        <p className="mt-2 text-muted-foreground">
+          {isGuest
+            ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
+            : 'Add a job, review your tailored resume, and track your application.'}
+        </p>
+      </div>
+      <NewJobButton
+        resumes={resumes
+          .filter((r) => masterResumeReadiness(r.source).ready)
+          .map((r) => ({ id: r.id, name: r.name }))}
+      />
+    </div>
+  );
+}
+
+function DashboardLoading() {
+  return (
+    <section aria-label="History" aria-busy="true" className="min-h-128 space-y-4">
+      <h2 className="text-base font-semibold">History</h2>
+      <div role="status" aria-label="Loading job history" className="space-y-4">
+        <span className="sr-only">Loading job history</span>
+        <Skeleton className="h-20 w-full" />
+        <div className="space-y-3 rounded-md border p-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export function Dashboard({
@@ -688,26 +724,21 @@ export function Dashboard({
     };
   }, [activeDetailsJob]);
 
+  if (dataPending) {
+    return (
+      <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
+        <MigrationBanner />
+        <DashboardHeader isGuest={isGuest} resumes={resumes} />
+        <DashboardLoading />
+      </main>
+    );
+  }
+
   return (
     <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
       <MigrationBanner />
 
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
-          <p className="mt-2 text-muted-foreground">
-            {isGuest
-              ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
-              : 'Add a job, review your tailored resume, and track your application.'}
-          </p>
-        </div>
-        <NewJobButton
-          resumes={resumes
-            .filter((r) => masterResumeReadiness(r.source).ready)
-            .map((r) => ({ id: r.id, name: r.name }))}
-        />
-      </div>
+      <DashboardHeader isGuest={isGuest} resumes={resumes} />
 
       {/* Alerts — interviews this week, overdue follow-ups */}
       {(alerts.interviewsThisWeek > 0 || alerts.overdueFollowUps > 0) && (
@@ -733,9 +764,7 @@ export function Dashboard({
         </div>
       )}
 
-      {dataPending ? (
-        <Skeleton className="mb-8 h-20" aria-hidden="true" />
-      ) : !resumes.some((r) => masterResumeReadiness(r.source).ready) ? (
+      {!resumes.some((r) => masterResumeReadiness(r.source).ready) && (
         <div className="mb-8 space-y-4 rounded-lg border border-[var(--border)] p-4">
           <p>
             Start by{' '}
@@ -749,24 +778,21 @@ export function Dashboard({
             <CreateResumeButton destination="builder" />
           </div>
         </div>
-      ) : null}
+      )}
 
       {/* Job Applications section */}
-      <section id="history" aria-labelledby="history-heading" aria-busy={dataPending}>
+      <section id="history" aria-labelledby="history-heading">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="history-heading" className="text-base font-semibold">
               History
             </h2>
-            {!dataPending && (
-              <Badge variant="secondary">
-                {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
-              </Badge>
-            )}
+            <Badge variant="secondary">
+              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
+            </Badge>
           </div>
           <Input
             aria-label="Search jobs"
-            disabled={dataPending}
             placeholder="Search jobs…"
             className="w-full sm:w-64"
             value={query}
@@ -776,13 +802,7 @@ export function Dashboard({
         <p className="mb-4 text-sm text-muted-foreground">
           Every job and its saved tailored resumes. Generating a draft does not apply for a job.
         </p>
-        <div
-          className={cn('mb-4 flex flex-wrap gap-2', dataPending && 'invisible')}
-          role="group"
-          aria-label="Filter history"
-          aria-hidden={dataPending || undefined}
-          inert={dataPending}
-        >
+        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
           {(
             [
               { id: 'all', label: `All jobs (${jobs.length})` },
@@ -804,18 +824,7 @@ export function Dashboard({
             </Button>
           ))}
         </div>
-        {dataPending ? (
-          <div
-            role="status"
-            aria-label="Loading job history"
-            className="space-y-3 rounded-md border p-4"
-          >
-            <span className="sr-only">Loading job history</span>
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        ) : visibleJobs.length === 0 ? (
+        {visibleJobs.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-md bg-muted">
               <Globe className="w-8 h-8 text-[var(--muted-foreground)]/30" />
