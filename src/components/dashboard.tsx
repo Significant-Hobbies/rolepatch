@@ -6,6 +6,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -73,6 +74,7 @@ import {
 } from '@/lib/local-storage';
 import { jobDetailsOrNull } from '@/lib/job-details';
 import { normalizeJobUrl } from '@/lib/job-discovery-alerts';
+import { cn } from '@/lib/utils';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 import type {
   AchievementEvidence,
@@ -225,6 +227,8 @@ export function Dashboard({
   serverHistory = [],
 }: DashboardProps) {
   const { isGuest, isPending: authPending } = useAuth();
+  const [localDataReady, setLocalDataReady] = useState(false);
+  const dataPending = authPending || (isGuest && !localDataReady);
   const [resumes, setResumes] = useState(serverResumes);
   const [jobs, setJobs] = useState<DashboardJob[]>(serverJobs.map(toDashboardJob));
   const [history, setHistory] = useState(serverHistory);
@@ -275,6 +279,7 @@ export function Dashboard({
       setApplicationPackets(localListApplicationPackets());
       setProfileAnswers(localListProfileAnswers());
       setJobDiscoveryAlerts(localListJobDiscoveryAlerts());
+      setLocalDataReady(true);
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [authPending, isGuest]);
@@ -728,7 +733,9 @@ export function Dashboard({
         </div>
       )}
 
-      {!resumes.some((r) => masterResumeReadiness(r.source).ready) && (
+      {dataPending ? (
+        <Skeleton className="mb-8 h-20" aria-hidden="true" />
+      ) : !resumes.some((r) => masterResumeReadiness(r.source).ready) ? (
         <div className="mb-8 space-y-4 rounded-lg border border-[var(--border)] p-4">
           <p>
             Start by{' '}
@@ -742,21 +749,24 @@ export function Dashboard({
             <CreateResumeButton destination="builder" />
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Job Applications section */}
-      <section id="history" aria-labelledby="history-heading">
+      <section id="history" aria-labelledby="history-heading" aria-busy={dataPending}>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="history-heading" className="text-base font-semibold">
               History
             </h2>
-            <Badge variant="secondary">
-              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
-            </Badge>
+            {!dataPending && (
+              <Badge variant="secondary">
+                {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
+              </Badge>
+            )}
           </div>
           <Input
             aria-label="Search jobs"
+            disabled={dataPending}
             placeholder="Search jobs…"
             className="w-full sm:w-64"
             value={query}
@@ -766,7 +776,13 @@ export function Dashboard({
         <p className="mb-4 text-sm text-muted-foreground">
           Every job and its saved tailored resumes. Generating a draft does not apply for a job.
         </p>
-        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
+        <div
+          className={cn('mb-4 flex flex-wrap gap-2', dataPending && 'invisible')}
+          role="group"
+          aria-label="Filter history"
+          aria-hidden={dataPending || undefined}
+          inert={dataPending}
+        >
           {(
             [
               { id: 'all', label: `All jobs (${jobs.length})` },
@@ -788,7 +804,18 @@ export function Dashboard({
             </Button>
           ))}
         </div>
-        {visibleJobs.length === 0 ? (
+        {dataPending ? (
+          <div
+            role="status"
+            aria-label="Loading job history"
+            className="space-y-3 rounded-md border p-4"
+          >
+            <span className="sr-only">Loading job history</span>
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        ) : visibleJobs.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-md bg-muted">
               <Globe className="w-8 h-8 text-[var(--muted-foreground)]/30" />
