@@ -6,6 +6,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -210,6 +211,43 @@ function timeAgo(unixSeconds: number): string {
   });
 }
 
+function DashboardHeader({ isGuest, resumes }: { isGuest: boolean; resumes: Resume[] }) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
+        <p className="mt-2 text-muted-foreground">
+          {isGuest
+            ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
+            : 'Add a job, review your tailored resume, and track your application.'}
+        </p>
+      </div>
+      <NewJobButton
+        resumes={resumes
+          .filter((r) => masterResumeReadiness(r.source).ready)
+          .map((r) => ({ id: r.id, name: r.name }))}
+      />
+    </div>
+  );
+}
+
+function DashboardLoading() {
+  return (
+    <section aria-label="History" aria-busy="true" className="min-h-128 space-y-4">
+      <h2 className="text-base font-semibold">History</h2>
+      <div role="status" aria-label="Loading job history" className="space-y-4">
+        <span className="sr-only">Loading job history</span>
+        <Skeleton className="h-20 w-full" />
+        <div className="space-y-3 rounded-md border p-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Dashboard({
   serverResumes,
   serverJobs,
@@ -225,6 +263,8 @@ export function Dashboard({
   serverHistory = [],
 }: DashboardProps) {
   const { isGuest, isPending: authPending } = useAuth();
+  const [localDataReady, setLocalDataReady] = useState(false);
+  const dataPending = authPending || (isGuest && !localDataReady);
   const [resumes, setResumes] = useState(serverResumes);
   const [jobs, setJobs] = useState<DashboardJob[]>(serverJobs.map(toDashboardJob));
   const [history, setHistory] = useState(serverHistory);
@@ -275,6 +315,7 @@ export function Dashboard({
       setApplicationPackets(localListApplicationPackets());
       setProfileAnswers(localListProfileAnswers());
       setJobDiscoveryAlerts(localListJobDiscoveryAlerts());
+      setLocalDataReady(true);
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [authPending, isGuest]);
@@ -683,26 +724,21 @@ export function Dashboard({
     };
   }, [activeDetailsJob]);
 
+  if (dataPending) {
+    return (
+      <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
+        <MigrationBanner />
+        <DashboardHeader isGuest={isGuest} resumes={resumes} />
+        <DashboardLoading />
+      </main>
+    );
+  }
+
   return (
     <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
       <MigrationBanner />
 
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
-          <p className="mt-2 text-muted-foreground">
-            {isGuest
-              ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
-              : 'Add a job, review your tailored resume, and track your application.'}
-          </p>
-        </div>
-        <NewJobButton
-          resumes={resumes
-            .filter((r) => masterResumeReadiness(r.source).ready)
-            .map((r) => ({ id: r.id, name: r.name }))}
-        />
-      </div>
+      <DashboardHeader isGuest={isGuest} resumes={resumes} />
 
       {/* Alerts — interviews this week, overdue follow-ups */}
       {(alerts.interviewsThisWeek > 0 || alerts.overdueFollowUps > 0) && (
