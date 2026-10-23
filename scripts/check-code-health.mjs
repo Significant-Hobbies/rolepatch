@@ -52,15 +52,12 @@ const baselines = {
     unresolved: 0,
   },
   suppressions: 13,
-  dependencies: { critical: 0, highIds: 1, highFindings: 1 },
+  dependencies: { critical: 0, highIds: 0, highFindings: 0 },
 };
 const acceptedUnusedDependencies = new Set([
   'landing-astro/package.json:@fontsource-variable/geist',
 ]);
-const acceptedHighAdvisories = new Set([
-  // http-cache-semantics <=4.2.0 via dev tooling; no patched version exists upstream. Re-review when a fix is released.
-  'GHSA-ch52-4w7c-c8xp',
-]);
+const acceptedHighAdvisories = new Set();
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
