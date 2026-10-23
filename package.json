@@ -20,11 +20,17 @@
       "@puppeteer/browsers@>=2.0.0 <3.0.0": "3.2.2",
       "source-map-js@>=1.2.0 <1.2.2": "1.2.2",
       "proxy-addr@>=2.0.0 <2.0.8": "2.0.8",
-      "dompurify@<3.4.16": "3.4.16",
       "qs@<6.16.0": "6.16.0",
       "@ai-sdk/provider-utils@>=4.0.0 <4.0.33": "4.0.33",
       "smol-toml@<1.9.0": "1.9.0",
-      "astro@7.2.8>vite": "8.2.4"
+      "astro@7.2.8>vite": "8.2.4",
+      "dompurify@<3.4.17": "3.4.17",
+      "http-cache-semantics": "4.3.0",
+      "glob@>=10.2.0 <10.5.0": "10.5.0"
+    },
+    "patchedDependencies": {
+      "@saas-maker/templates@0.1.18": "patches/saas-maker-templates-footer-retry-0.1.18.patch",
+      "http-cache-semantics@4.3.0": "patches/http-cache-semantics@4.3.0.patch"
     }
   },
   "scripts": {
@@ -59,8 +65,9 @@
     "quality:dependencies": "node scripts/check-code-health.mjs dependencies",
     "quality:suppressions": "node scripts/check-code-health.mjs suppressions",
     "quality:hygiene": "node scripts/check-code-health.mjs hygiene",
-    "quality": "pnpm check && pnpm typecheck && pnpm test:coverage && pnpm docs:check && pnpm --filter @rolepatch/extension typecheck && pnpm quality:unused && pnpm quality:complexity && pnpm quality:duplication && pnpm quality:cycles && pnpm quality:dependencies && pnpm quality:suppressions && pnpm quality:hygiene",
-    "resume:mcp": "node scripts/resume-mcp.mjs"
+    "quality": "pnpm quality:cache-security && pnpm check && pnpm typecheck && pnpm test:coverage && pnpm docs:check && pnpm --filter @rolepatch/extension typecheck && pnpm quality:unused && pnpm quality:complexity && pnpm quality:duplication && pnpm quality:cycles && pnpm quality:dependencies && pnpm quality:suppressions && pnpm quality:hygiene",
+    "resume:mcp": "node scripts/resume-mcp.mjs",
+    "quality:cache-security": "node scripts/check-http-cache-security.mjs && node --test scripts/http-cache-security.test.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "2.0.41",
@@ -93,7 +100,7 @@
     "lucide-react": "^1.27.0",
     "mammoth": "^1.12.2",
     "marked": "^18.0.7",
-    "next": "16.3.8",
+    "next": "16.4.1",
     "pdf-parse": "^2.4.5",
     "posthog-js": "^1.407.3",
     "puppeteer-core": "^24.42.0",
@@ -110,7 +117,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5",
-    "@opennextjs/cloudflare": "^1.20.2",
+    "@opennextjs/cloudflare": "1.20.12",
     "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/jest-dom": "^6.9.1",
@@ -131,6 +138,6 @@
     "typescript": "^5",
     "ultracite": "7.10.2",
     "vitest": "^4.1.11",
-    "wrangler": "^4.114.0"
+    "wrangler": "4.149.0"
   }
 }
