@@ -88,15 +88,16 @@ export async function generateFitScore(
           detail,
         }))
       : [];
+    if (!dimensions.length) throw new Error('Invalid response: missing fit-score dimensions');
     const requirementMatches = normalizeRequirementMatches(
       parsed.requirement_matches,
       resumeSource,
       jdText
     );
     const skillsDimension = dimensions.find((dimension) => dimension.name === 'Skills Match');
+    (skillsDimension ?? dimensions[0]).requirement_source = resumeSource;
     if (skillsDimension && requirementMatches.length) {
       skillsDimension.requirement_matches = requirementMatches;
-      skillsDimension.requirement_source = resumeSource;
     }
     try {
       const semanticDimension = await getKnowledgebaseSimilarityDimension(

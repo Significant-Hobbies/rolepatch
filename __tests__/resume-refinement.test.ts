@@ -11,6 +11,19 @@ const current = master.replace(
 );
 
 describe('scoped resume refinement', () => {
+  it.each(['Profile Summary', 'Summary of Qualifications', 'Personal Profile'])(
+    'excludes existing summary claims under the %s heading',
+    (heading) => {
+      const contaminated = master.replace(
+        '## Experience',
+        `## ${heading}\nCertified Kubernetes architect.\n\n## Experience`
+      );
+      const evidence = prepareRefinement(contaminated, current, { kind: 'summary' })
+        .summary_evidence!;
+      expect(evidence.some((fact) => fact.text.includes('Kubernetes'))).toBe(false);
+    }
+  );
+
   it('moves only selected original bullets and rejects missing, duplicate or foreign IDs', () => {
     expect(
       assembleRefinement(

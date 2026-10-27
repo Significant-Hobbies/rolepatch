@@ -17,7 +17,10 @@ import type { AIProviderConfig, TailorChange } from '@/lib/types';
 const inputSchema = z.object({
   masterSource: z.string().min(1).max(20_000),
   currentSource: z.string().min(1).max(30_000),
-  jdText: z.string().min(1).max(15_000),
+  jdText: z
+    .string()
+    .min(1)
+    .transform((text) => text.slice(0, 15_000)),
   instruction: z.string().trim().min(3).max(1000),
   target: refinementTargetSchema,
   aiConfig: z.object({ endpointUrl: z.string(), apiKey: z.string(), model: z.string() }),

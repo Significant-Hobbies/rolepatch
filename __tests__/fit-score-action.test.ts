@@ -68,6 +68,53 @@ beforeEach(() => {
 });
 
 describe('generateFitScore', () => {
+  it('refunds an empty report instead of saving a score without source binding', async () => {
+    mocks.getCurrentUserId.mockResolvedValue('user-1');
+    mocks.generateText.mockResolvedValue({
+      text: JSON.stringify({ ...fitScoreJson, dimensions: [] }),
+    });
+    const { generateFitScore } = await import('@/lib/actions/fit-score-action');
+    await expect(
+      generateFitScore('Resume', 'Job description', 'job-1', {
+        endpointUrl: 'https://ai.example/v1',
+        apiKey: 'key',
+        model: 'model',
+      })
+    ).rejects.toThrow('unexpected response');
+    expect(mocks.creditTokens).toHaveBeenCalledExactlyOnceWith('user-1', 1, 'refund', 'ai_failure');
+    expect(mocks.dbExecute).not.toHaveBeenCalled();
+  });
+
+  it.each(['Skills Match', 'Core Skills'])(
+    'binds zero-match reports to their source with a %s dimension',
+    async (name) => {
+      mocks.getCurrentUserId.mockResolvedValue(null);
+      mocks.generateText.mockResolvedValue({
+        text: JSON.stringify({
+          ...fitScoreJson,
+          dimensions: fitScoreJson.dimensions.map((dimension, index) =>
+            index === 1 ? { ...dimension, name } : dimension
+          ),
+          requirement_matches: [],
+        }),
+      });
+      const { generateFitScore } = await import('@/lib/actions/fit-score-action');
+      const { fitScoreForResume } = await import('@/lib/requirement-evidence');
+      const source = 'Original resume source';
+      const result = await generateFitScore(source, 'Job description', 'job-1', {
+        endpointUrl: 'https://ai.example/v1',
+        apiKey: 'key',
+        model: 'model',
+      });
+      expect(result.dimensions.some((dimension) => dimension.requirement_source === source)).toBe(
+        true
+      );
+      expect(fitScoreForResume(result, source)).toBe(result);
+      expect(fitScoreForResume(result, 'Another resume')).toBeNull();
+      expect(mocks.dbExecute).not.toHaveBeenCalled();
+    }
+  );
+
   it('stores only source-checked requirement evidence and strips embedded generated matches', async () => {
     mocks.getCurrentUserId.mockResolvedValue('user-1');
     mocks.dbExecute.mockResolvedValue({ rows: [] });

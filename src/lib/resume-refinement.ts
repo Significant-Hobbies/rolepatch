@@ -41,10 +41,7 @@ export function prepareRefinement(master: string, source: string, target: Refine
   prepareResumePolicy(source);
   if (target.kind === 'summary') {
     const evidence = prepareResumePolicy(master).evidence.filter(
-      (fact) =>
-        !/^(?:(?:professional|career|executive)\s+)?(?:summary|profile|objective)(?:\s*\/|$)/i.test(
-          fact.context
-        )
+      (fact) => !/\b(summary|profile|objective)\b/i.test(fact.context.split(' / ')[0])
     );
     if (!evidence.length) throw new Error('Add original resume facts before refining the summary.');
     return { summary_evidence: evidence };

@@ -40,6 +40,15 @@ beforeEach(() => {
   mocks.generate.mockResolvedValue({ object: { ordered_ids: ['g1b2', 'g1b1'] } });
 });
 describe('refinement action boundary', () => {
+  it('uses the same bounded job context as tailoring for long descriptions', async () => {
+    const jdText = 'A'.repeat(15_001);
+    const result = await refineResumeSectionForClient({ ...input, jdText });
+    expect(result.success).toBe(true);
+    const request = mocks.generate.mock.calls[0][0];
+    expect(JSON.parse(request.prompt).job_description).toBe(jdText.slice(0, 15_000));
+    expect(mocks.debit).not.toHaveBeenCalled();
+  });
+
   it('returns a source-preserving guest proposal without cloud writes or billing', async () => {
     const result = await refineResumeSectionForClient(input);
     expect(result).toMatchObject({
