@@ -20,7 +20,7 @@
     "agent-edge.mjs",
     "worker.mjs"
   ],
-  "ignore": ["open-next.config.ts"],
+  "ignore": ["open-next.config.ts", "src/lib/agent-surfaces/**"],
   "ignoreIssues": { "src/components/ui/**": ["exports", "types"] },
   "ignoreDependencies": [
     "@mozilla/readability",

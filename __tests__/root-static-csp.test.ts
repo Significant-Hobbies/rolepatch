@@ -37,6 +37,7 @@ function loadWorker() {
     console,
     openNext: { fetch: openNextFetch },
     withTiming: (handler: RootWorker['fetch']) => handler,
+    withPublicReadability: (handler: RootWorker['fetch']) => handler,
     handleAgentEdge: () => null,
     handleRolePatchAgentRoutes: () => null,
     isDocumentRequest: () => true,

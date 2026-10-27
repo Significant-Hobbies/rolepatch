@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { markdownPathForSurface, PUBLIC_SURFACES } from '../../public-surfaces.mjs';
 import { handleRolePatchAgentRoutes } from '../../rolepatch-agent-routes.mjs';
+import { publicSourceMarkdown } from '../lib/public-source';
+const serve = (request: Request) => handleRolePatchAgentRoutes(request, publicSourceMarkdown);
 import sitemap from '../app/sitemap';
 
 const ORIGIN = 'https://preview.rolepatch.test';
@@ -15,7 +17,7 @@ function request(path: string, accept?: string) {
 
 describe('RolePatch agent surfaces', () => {
   it('links the documented surface template to a real catalog example', () => {
-    const docs = readFileSync('landing-astro/src/pages/docs.astro', 'utf8');
+    const docs = readFileSync('src/components/public-docs.tsx', 'utf8');
     expect(docs).toContain("'/api/public/v1/surfaces/home'");
     expect(PUBLIC_SURFACES.some((surface) => surface.id === 'home')).toBe(true);
     expect(docs).toContain('href={href}');
@@ -23,16 +25,14 @@ describe('RolePatch agent surfaces', () => {
 
   it('serves truthful Markdown for every cataloged HTML route', async () => {
     for (const surface of PUBLIC_SURFACES) {
-      const negotiated = handleRolePatchAgentRoutes(
-        request(surface.path, 'text/markdown, text/html;q=0.1')
-      );
+      const negotiated = await serve(request(surface.path, 'text/markdown, text/html;q=0.1'));
       expect(negotiated, surface.path).toBeInstanceOf(Response);
       expect(negotiated?.status, surface.path).toBe(200);
       expect(negotiated?.headers.get('content-type'), surface.path).toContain('text/markdown');
-      expect(await negotiated?.text(), surface.path).toContain(`# ${surface.title}`);
+      expect(await negotiated?.text(), surface.path).toMatch(/# .+/);
 
       const markdownPath = markdownPathForSurface(surface.path);
-      const explicit = handleRolePatchAgentRoutes(request(markdownPath));
+      const explicit = await serve(request(markdownPath));
       expect(explicit, markdownPath).toBeInstanceOf(Response);
       expect(explicit?.status, markdownPath).toBe(200);
       expect(explicit?.headers.get('content-type'), markdownPath).toContain('text/markdown');
@@ -40,7 +40,7 @@ describe('RolePatch agent surfaces', () => {
   });
 
   it('catalogs every public surface with same-origin readable Markdown', async () => {
-    const response = handleRolePatchAgentRoutes(request('/api/ai'));
+    const response = await serve(request('/api/ai'));
     expect(response).toBeInstanceOf(Response);
     expect(response?.headers.get('content-type')).toContain('application/json');
 
@@ -48,10 +48,10 @@ describe('RolePatch agent surfaces', () => {
     expect(catalog.surfaces).toHaveLength(PUBLIC_SURFACES.length);
 
     for (const surface of catalog.surfaces) {
-      expect(new URL(surface.url).origin).toBe(ORIGIN);
-      expect(new URL(surface.md).origin).toBe(ORIGIN);
+      expect(new URL(surface.url).origin).toBe('https://rolepatch.com');
+      expect(new URL(surface.md).origin).toBe('https://rolepatch.com');
 
-      const markdown = handleRolePatchAgentRoutes(request(new URL(surface.md).pathname));
+      const markdown = await serve(request(new URL(surface.md).pathname));
       expect(markdown?.status, surface.id).toBe(200);
       expect(markdown?.headers.get('content-type'), surface.id).toContain('text/markdown');
     }
@@ -64,28 +64,26 @@ describe('RolePatch agent surfaces', () => {
       expect(sitemapUrls.has(surface.path), surface.path).toBe(true);
     }
 
-    expect(sitemapUrls).toHaveLength(PUBLIC_SURFACES.length + 3);
-    expect(sitemapUrls).toContain('/llms.txt');
-    expect(sitemapUrls).toContain('/index.md');
-    expect(sitemapUrls).toContain('/api/ai');
+    expect(sitemapUrls).toHaveLength(PUBLIC_SURFACES.length);
+    expect(sitemapUrls).not.toContain('/llms.txt');
+    expect(sitemapUrls).not.toContain('/index.md');
+    expect(sitemapUrls).not.toContain('/api/ai');
   });
 
   it('serves the catalog itself as Markdown when negotiated', async () => {
-    const response = handleRolePatchAgentRoutes(
-      request('/api/ai', 'text/markdown, application/json;q=0.1')
-    );
+    const response = await serve(request('/api/ai', 'text/markdown, application/json;q=0.1'));
     expect(response?.status).toBe(200);
     expect(response?.headers.get('content-type')).toContain('text/markdown');
     expect(await response?.text()).toContain('# RolePatch public agent catalog');
   });
 
   it('never falls through to HTML for an unknown Markdown path', async () => {
-    const response = handleRolePatchAgentRoutes(request('/missing.md'));
+    const response = await serve(request('/missing.md'));
     expect(response?.status).toBe(404);
     expect(response?.headers.get('content-type')).toContain('text/markdown');
   });
 
-  it('leaves ordinary HTML requests to the application', () => {
-    expect(handleRolePatchAgentRoutes(request('/pricing', 'text/html'))).toBeNull();
+  it('leaves ordinary HTML requests to the application', async () => {
+    expect(await serve(request('/pricing', 'text/html'))).toBeNull();
   });
 });

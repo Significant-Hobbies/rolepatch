@@ -16,6 +16,7 @@ import { ensureLeadingHtmlDoctype } from './html-document.mjs';
 import { withTiming } from './timing.mjs';
 import { CONTENT_SECURITY_POLICY } from './security-policy.mjs';
 import { handleAgentEdge } from './agent-edge.mjs';
+import { withPublicReadability } from './public-readability-policy.mjs';
 import { handleRolePatchAgentRoutes } from './rolepatch-agent-routes.mjs';
 import {
   documentCacheRequest,
@@ -146,175 +147,190 @@ export default {
     }
   },
 
-  fetch: withTiming(async function fetch(request, env, ctx) {
-    // Curated Markdown for every public RolePatch page. This precedes the
-    // generated Fleet handler because it also owns the complete /api/ai catalog.
-    {
-      const rolePatchAgentRoute = handleRolePatchAgentRoutes(request);
-      if (rolePatchAgentRoute) return rolePatchAgentRoute;
-    }
-    // Agent / LLM indexing surfaces (fleet GEO standard)
-    {
-      const agent = handleAgentEdge(request);
-      if (agent) return agent;
-    }
-    try {
-      const url = new URL(request.url);
-      if (url.pathname.startsWith(INTERNAL_PATH_PREFIX) && !isInternalWorkerRequest(request)) {
-        return new Response('Not found', { status: 404 });
+  fetch: withTiming(
+    withPublicReadability(async function fetch(request, env, ctx) {
+      // Curated Markdown for every public RolePatch page. This precedes the
+      // generated Fleet handler because it also owns the complete /api/ai catalog.
+      {
+        const rolePatchAgentRoute = await handleRolePatchAgentRoutes(request, async (path) => {
+          const url = new URL('/api/ai/source', request.url);
+          url.searchParams.set('path', path);
+          const response = await openNext.fetch(
+            new Request(url, { headers: { Accept: 'text/markdown' } }),
+            env,
+            ctx
+          );
+          return response.ok ? response.text() : null;
+        });
+        if (rolePatchAgentRoute) return rolePatchAgentRoute;
       }
-      if (request.method !== 'GET') {
-        return openNext.fetch(request, env, ctx);
+      // Agent / LLM indexing surfaces (fleet GEO standard)
+      {
+        const legacyHeaders = new Headers(request.headers);
+        legacyHeaders.set('Accept', 'text/html');
+        const agent = ['GET', 'HEAD'].includes(request.method)
+          ? handleAgentEdge(new Request(request, { headers: legacyHeaders }))
+          : null;
+        if (agent) return agent;
       }
-      if (!isCacheableDocumentPath(url.pathname)) {
-        return openNext.fetch(request, env, ctx);
-      }
-      // Auth-bearing requests pass straight through; the user is likely
-      // going to be redirected by middleware to /library or /dashboard.
-      if (hasAuthCookie(request) || !isDocumentRequest(request)) {
-        return openNext.fetch(request, env, ctx);
-      }
-
-      // Short-circuit: the Astro landing is overlaid into
-      // `.open-next/assets/index.html` by `scripts/overlay-astro-landing.mjs`.
-      // For anon GET /, serve straight from the assets binding instead of
-      // booting the full OpenNext stack (next-server, middleware handler,
-      // Beasties pipeline, etc.). Cuts TTFB from ~250ms to ~30ms.
-      // Marketing subpages fall through to caches.default + OpenNext below.
-      //
-      // The Workers Static Assets binding does NOT auto-compress its
-      // responses (Lighthouse flagged ~80 KB wasted on uncompressed HTML
-      // even with CF Edge cache HIT). Compress with gzip here so the
-      // response — and the downstream CF Edge cache entry — is small.
-      // Only Astro overlay at `/` is static; marketing pages use edge HTML cache.
-      if (env.ASSETS && url.pathname === '/') {
-        // Fetch an identity representation from the binding. Compression is
-        // negotiated below for the caller; forwarding its Accept-Encoding can
-        // otherwise make local and edge runtimes hand us encoded bytes without
-        // a stable Content-Encoding contract, which risks double compression.
-        const assetHeaders = new Headers(request.headers);
-        assetHeaders.set('accept-encoding', 'identity');
-        const assetResp = await env.ASSETS.fetch(new Request(request, { headers: assetHeaders }));
-        // The assets binding answers If-None-Match revalidations with 304.
-        // Pass those through — falling through would serve the wrong page.
-        if (assetResp.status === 304) {
-          const headers = new Headers(assetResp.headers);
-          headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
-          headers.set('Cache-Control', CACHE_CONTROL);
-          headers.set('x-edge-cache', 'ASSET');
-          return new Response(null, { status: 304, headers });
+      try {
+        const url = new URL(request.url);
+        if (url.pathname.startsWith(INTERNAL_PATH_PREFIX) && !isInternalWorkerRequest(request)) {
+          return new Response('Not found', { status: 404 });
         }
-        if (assetResp.ok && assetResp.body) {
-          const acceptEnc = request.headers.get('accept-encoding') ?? '';
-          const wantsGzip = acceptEnc.includes('gzip');
-          const headers = new Headers(assetResp.headers);
-          headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
-          headers.set('Cache-Control', CACHE_CONTROL);
-          headers.set('x-edge-cache', 'ASSET');
-
-          // Static Assets can expose already-compressed bytes through a Worker
-          // without a matching Content-Encoding header (notably in local
-          // qualification). Normalize the small HTML asset before negotiating
-          // the caller's representation so neither identity nor gzip can be
-          // served with an incorrect number of encoding layers.
-          let payload = new Uint8Array(await assetResp.arrayBuffer());
-          let encodingLayers = 0;
-          while (payload[0] === 0x1f && payload[1] === 0x8b && encodingLayers < 4) {
-            const decoded = new Blob([payload])
-              .stream()
-              .pipeThrough(new DecompressionStream('gzip'));
-            payload = new Uint8Array(await new Response(decoded).arrayBuffer());
-            encodingLayers += 1;
-          }
-          headers.delete('content-encoding');
-          headers.delete('content-length');
-
-          if (wantsGzip) {
-            headers.set('content-encoding', 'gzip');
-            // `Vary: Accept-Encoding` so a future no-encoding client
-            // gets a separately negotiated entry.
-            const vary = headers.get('vary');
-            headers.set('vary', vary ? `${vary}, Accept-Encoding` : 'Accept-Encoding');
-            return new Response(
-              new Blob([payload]).stream().pipeThrough(new CompressionStream('gzip')),
-              {
-                status: assetResp.status,
-                statusText: assetResp.statusText,
-                headers,
-                encodeBody: 'manual',
-              }
-            );
-          }
-
-          return new Response(payload, {
-            status: assetResp.status,
-            statusText: assetResp.statusText,
-            headers,
-            encodeBody: 'manual',
-          });
+        if (request.method !== 'GET') {
+          return openNext.fetch(request, env, ctx);
         }
+        if (!isCacheableDocumentPath(url.pathname)) {
+          return openNext.fetch(request, env, ctx);
+        }
+        // Auth-bearing requests pass straight through; the user is likely
+        // going to be redirected by middleware to /library or /dashboard.
+        if (hasAuthCookie(request) || !isDocumentRequest(request)) {
+          return openNext.fetch(request, env, ctx);
+        }
+
+        // Short-circuit: the Astro landing is overlaid into
+        // `.open-next/assets/index.html` by `scripts/overlay-astro-landing.mjs`.
+        // For anon GET /, serve straight from the assets binding instead of
+        // booting the full OpenNext stack (next-server, middleware handler,
+        // Beasties pipeline, etc.). Cuts TTFB from ~250ms to ~30ms.
+        // Marketing subpages fall through to caches.default + OpenNext below.
+        //
+        // The Workers Static Assets binding does NOT auto-compress its
+        // responses (Lighthouse flagged ~80 KB wasted on uncompressed HTML
+        // even with CF Edge cache HIT). Compress with gzip here so the
+        // response — and the downstream CF Edge cache entry — is small.
+        // Only Astro overlay at `/` is static; marketing pages use edge HTML cache.
+        if (env.ASSETS && url.pathname === '/') {
+          // Fetch an identity representation from the binding. Compression is
+          // negotiated below for the caller; forwarding its Accept-Encoding can
+          // otherwise make local and edge runtimes hand us encoded bytes without
+          // a stable Content-Encoding contract, which risks double compression.
+          const assetHeaders = new Headers(request.headers);
+          assetHeaders.set('accept-encoding', 'identity');
+          const assetResp = await env.ASSETS.fetch(new Request(request, { headers: assetHeaders }));
+          // The assets binding answers If-None-Match revalidations with 304.
+          // Pass those through — falling through would serve the wrong page.
+          if (assetResp.status === 304) {
+            const headers = new Headers(assetResp.headers);
+            headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+            headers.set('Cache-Control', CACHE_CONTROL);
+            headers.set('x-edge-cache', 'ASSET');
+            return new Response(null, { status: 304, headers });
+          }
+          if (assetResp.ok && assetResp.body) {
+            const acceptEnc = request.headers.get('accept-encoding') ?? '';
+            const wantsGzip = acceptEnc.includes('gzip');
+            const headers = new Headers(assetResp.headers);
+            headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+            headers.set('Cache-Control', CACHE_CONTROL);
+            headers.set('x-edge-cache', 'ASSET');
+
+            // Static Assets can expose already-compressed bytes through a Worker
+            // without a matching Content-Encoding header (notably in local
+            // qualification). Normalize the small HTML asset before negotiating
+            // the caller's representation so neither identity nor gzip can be
+            // served with an incorrect number of encoding layers.
+            let payload = new Uint8Array(await assetResp.arrayBuffer());
+            let encodingLayers = 0;
+            while (payload[0] === 0x1f && payload[1] === 0x8b && encodingLayers < 4) {
+              const decoded = new Blob([payload])
+                .stream()
+                .pipeThrough(new DecompressionStream('gzip'));
+              payload = new Uint8Array(await new Response(decoded).arrayBuffer());
+              encodingLayers += 1;
+            }
+            headers.delete('content-encoding');
+            headers.delete('content-length');
+
+            if (wantsGzip) {
+              headers.set('content-encoding', 'gzip');
+              // `Vary: Accept-Encoding` so a future no-encoding client
+              // gets a separately negotiated entry.
+              const vary = headers.get('vary');
+              headers.set('vary', vary ? `${vary}, Accept-Encoding` : 'Accept-Encoding');
+              return new Response(
+                new Blob([payload]).stream().pipeThrough(new CompressionStream('gzip')),
+                {
+                  status: assetResp.status,
+                  statusText: assetResp.statusText,
+                  headers,
+                  encodeBody: 'manual',
+                }
+              );
+            }
+
+            return new Response(payload, {
+              status: assetResp.status,
+              statusText: assetResp.statusText,
+              headers,
+              encodeBody: 'manual',
+            });
+          }
+        }
+
+        // A deploy replaces hashed JS chunks. Never pair new assets with HTML
+        // left in a URL-only cache by an earlier build.
+        const cacheRequest = await documentCacheRequest(request, env.ASSETS);
+        if (!cacheRequest) return openNext.fetch(request, env, ctx);
+        const cache = caches.default;
+        const cached = await cache.match(cacheRequest);
+        if (cached) {
+          const hit = new Response(cached.body, cached);
+          hit.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
+          hit.headers.set('x-edge-cache', 'HIT');
+          return hit;
+        }
+
+        const response = await openNext.fetch(request, env, ctx);
+
+        // Only cache 2xx HTML responses — never error pages or redirects.
+        const contentType = response.headers.get('content-type') ?? '';
+        if (
+          response.status !== 200 ||
+          !contentType.includes('text/html') ||
+          response.headers.has('set-cookie')
+        ) {
+          return response;
+        }
+
+        // Read the body into memory once so we can hand the same bytes to
+        // both the client response and the cache.put. The earlier pattern
+        // (`new Response(response.body, response)` then `.clone()`) was
+        // silently dropping the inlined critical-CSS chunk somewhere in the
+        // stream-fork; reading once and constructing both responses from
+        // the same Uint8Array sidesteps the streaming edge case entirely.
+        const body = ensureLeadingHtmlDoctype(await response.arrayBuffer());
+        const headers = new Headers(response.headers);
+        headers.set('Cache-Control', DOCUMENT_EDGE_CACHE_CONTROL);
+
+        const cacheable = new Response(body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+        ctx.waitUntil(cache.put(cacheRequest, cacheable.clone()));
+
+        const clientResponse = new Response(body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+        clientResponse.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
+        clientResponse.headers.set('x-edge-cache', 'MISS');
+        return clientResponse;
+      } catch (err) {
+        console.error(
+          `[error] ${request.method} ${new URL(request.url).pathname}:`,
+          err.message,
+          err.stack
+        );
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
-
-      // A deploy replaces hashed JS chunks. Never pair new assets with HTML
-      // left in a URL-only cache by an earlier build.
-      const cacheRequest = await documentCacheRequest(request, env.ASSETS);
-      if (!cacheRequest) return openNext.fetch(request, env, ctx);
-      const cache = caches.default;
-      const cached = await cache.match(cacheRequest);
-      if (cached) {
-        const hit = new Response(cached.body, cached);
-        hit.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
-        hit.headers.set('x-edge-cache', 'HIT');
-        return hit;
-      }
-
-      const response = await openNext.fetch(request, env, ctx);
-
-      // Only cache 2xx HTML responses — never error pages or redirects.
-      const contentType = response.headers.get('content-type') ?? '';
-      if (
-        response.status !== 200 ||
-        !contentType.includes('text/html') ||
-        response.headers.has('set-cookie')
-      ) {
-        return response;
-      }
-
-      // Read the body into memory once so we can hand the same bytes to
-      // both the client response and the cache.put. The earlier pattern
-      // (`new Response(response.body, response)` then `.clone()`) was
-      // silently dropping the inlined critical-CSS chunk somewhere in the
-      // stream-fork; reading once and constructing both responses from
-      // the same Uint8Array sidesteps the streaming edge case entirely.
-      const body = ensureLeadingHtmlDoctype(await response.arrayBuffer());
-      const headers = new Headers(response.headers);
-      headers.set('Cache-Control', DOCUMENT_EDGE_CACHE_CONTROL);
-
-      const cacheable = new Response(body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers,
-      });
-      ctx.waitUntil(cache.put(cacheRequest, cacheable.clone()));
-
-      const clientResponse = new Response(body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers,
-      });
-      clientResponse.headers.set('Cache-Control', DOCUMENT_CLIENT_CACHE_CONTROL);
-      clientResponse.headers.set('x-edge-cache', 'MISS');
-      return clientResponse;
-    } catch (err) {
-      console.error(
-        `[error] ${request.method} ${new URL(request.url).pathname}:`,
-        err.message,
-        err.stack
-      );
-      return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-  }),
+    })
+  ),
 };

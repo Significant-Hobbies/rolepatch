@@ -1,3 +1,4 @@
+import { publicIdentity } from '../../../src/lib/public-identity';
 const PRODUCT_DESCRIPTION =
   'Tailor a resume to one job using claims supported by your experience, then review every proposed change before it becomes part of the application.';
 
@@ -39,8 +40,11 @@ export const PRODUCT_FAQS = [
 export const productJsonLd = (siteUrl: string) => ({
   '@context': 'https://schema.org',
   '@graph': [
+    publicIdentity['@graph'][0],
     {
       '@type': 'WebSite',
+      '@id': `${siteUrl}/#app`,
+      publisher: { '@id': 'https://sarthakagrawal.dev/#person' },
       name: 'RolePatch',
       alternateName: ['Role Patch', 'rolepatch.com'],
       url: siteUrl,

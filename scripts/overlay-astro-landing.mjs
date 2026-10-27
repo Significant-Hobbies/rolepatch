@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, readFile, writeFile, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
@@ -54,6 +54,11 @@ export async function runOverlay(opts = {}) {
     return;
   }
 
+  // These legacy summaries must not shadow the source-backed Worker routes.
+  for (const name of ['index.md', 'llms.txt', 'llms-full.txt']) {
+    const file = join(target, name);
+    if (existsSync(file)) await unlink(file);
+  }
   const files = await walk(astroDist);
   let copied = 0;
   let skipped = 0;

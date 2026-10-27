@@ -1,4 +1,5 @@
 ---
+import { PublicFaq } from '../../../src/components/public-faq';
 import Layout from '@/layouts/Layout.astro';
 import SiteFooter from '@/components/SiteFooter.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
@@ -22,38 +23,7 @@ const faqJsonLd = {
 <Layout title={TITLE} description={DESCRIPTION} canonicalPath="/faq">
   <div class="rolepatch-page">
     <SiteHeader active="faq" />
-    <main>
-      <section class="page-hero paper-grid">
-        <div class="site-shell">
-          <p class="section-label">RolePatch FAQ</p>
-          <h1>Straight answers before you trust it with a real application.</h1>
-          <p>
-            What RolePatch may change, what it must leave alone, where your records live, what
-            costs money, and where application assistance stops.
-          </p>
-        </div>
-      </section>
-
-      <section class="page-section">
-        <div class="site-shell">
-          <div class="faq-page-list">
-            {PRODUCT_FAQS.map((faq) => (
-              <article>
-                <h2>{faq.q}</h2>
-                <p>{faq.a}</p>
-              </article>
-            ))}
-          </div>
-          <div class="page-cta">
-            <div>
-              <h2>Bring the job. Keep the claims yours.</h2>
-              <p>Start with a guest workspace, then decide whether account-backed persistence belongs in your search.</p>
-            </div>
-            <a href="/resume-builder" class="primary-action">Open RolePatch <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      </section>
-    </main>
+    <PublicFaq />
     <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
     <SiteFooter />
   </div>

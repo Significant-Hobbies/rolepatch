@@ -6,13 +6,13 @@
 @source "./error.tsx";
 @source "./global-error.tsx";
 @source "./not-found.tsx";
-@source "./pricing/page.tsx";
+@source "../components/public-pricing-view.tsx";
 @source "./tools/page.tsx";
 @source "../components/site-nav.tsx";
 @source "../components/rolepatch-mark.tsx";
 @source "../components/token-balance.tsx";
 @source "../components/user-menu.tsx";
-@source "../components/pricing-cards.tsx";
+@source "../components/pricing-cards-view.tsx";
 @source "../components/saasmaker-feedback.tsx";
 @source "../components/saasmaker-feedback-widget.tsx";
 @source "../components/ui/button.tsx";
