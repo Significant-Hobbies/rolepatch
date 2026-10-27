@@ -17,6 +17,9 @@ describe('scoped resume refinement', () => {
     'Professional Profile & Experience',
     'Experience Summary',
     'Objective-C Projects',
+    'Certifications Summary',
+    'Qualifications Summary',
+    'Leadership Profile',
   ])('retains original facts under the %s heading', (heading) => {
     const source = master.replace(
       '## Experience',
@@ -26,26 +29,36 @@ describe('scoped resume refinement', () => {
     expect(evidence.some((fact) => fact.text.includes('Swift'))).toBe(true);
   });
 
-  it.each([
-    'Profile Summary',
-    'Summary of Qualifications',
-    'Personal Profile',
-    'Profile Summary of Qualifications',
-    'Summary:',
-    'Professional Summary:',
-    'SUMMARY –',
-    'Summary (2024)',
-    'Summary & Highlights',
-    'Career Profile/Objective',
-    'Summary of Skills',
-    'Summary of Achievements',
-  ])('excludes existing summary claims under the %s heading', (heading) => {
-    const contaminated = master.replace(
+  it('keeps reviewed original-master summary evidence like the existing tailoring policy', () => {
+    const original = master.replace(
       '## Experience',
-      `## ${heading}\nCertified Kubernetes architect.\n\n## Experience`
+      '## Summary\nBuilt Swift interfaces.\n\n## Experience'
     );
-    const evidence = prepareRefinement(contaminated, current, { kind: 'summary' })
-      .summary_evidence!;
+    const evidence = prepareRefinement(original, current, { kind: 'summary' }).summary_evidence!;
+    expect(evidence).toContainEqual(
+      expect.objectContaining({ context: 'Summary', text: 'Built Swift interfaces.' })
+    );
+  });
+
+  it.each(['Summary', 'Profile Summary', 'Summary:', 'Profile-Summary', 'Summary-of-Skills'])(
+    'never grounds facts in the generated draft under %s',
+    (heading) => {
+      const contaminated = current.replace(
+        '## Summary\nSoftware engineer building APIs and React interfaces for users.',
+        `## ${heading}\nCertified Kubernetes architect.`
+      );
+      const evidence = prepareRefinement(master, contaminated, { kind: 'summary' })
+        .summary_evidence!;
+      expect(evidence.some((fact) => fact.text.includes('Kubernetes'))).toBe(false);
+    }
+  );
+
+  it('ignores additional generated facts absent from the original master', () => {
+    const contaminated = current.replace(
+      '## Experience',
+      '## Skills\nKubernetes certification.\n\n## Experience'
+    );
+    const evidence = prepareRefinement(master, contaminated, { kind: 'summary' }).summary_evidence!;
     expect(evidence.some((fact) => fact.text.includes('Kubernetes'))).toBe(false);
   });
 
@@ -99,12 +112,12 @@ describe('scoped resume refinement', () => {
         .replace('Software engineer building APIs and React interfaces for users.', text)
         .replace('## Summary\n', '## Summary\n\n')
     );
-    const contaminated = master.replace(
-      '## Experience',
-      '## Summary\nCertified Kubernetes architect.\n\n## Experience'
+    const contaminated = current.replace(
+      'Software engineer building APIs and React interfaces for users.',
+      'Certified Kubernetes architect.'
     );
     expect(
-      prepareRefinement(contaminated, current, { kind: 'summary' }).summary_evidence
+      prepareRefinement(master, contaminated, { kind: 'summary' }).summary_evidence
     ).not.toEqual(
       expect.arrayContaining([
         expect.objectContaining({ text: expect.stringContaining('Kubernetes') }),
@@ -112,8 +125,8 @@ describe('scoped resume refinement', () => {
     );
     expect(() =>
       assembleRefinement(
+        master,
         contaminated,
-        current,
         { kind: 'summary' },
         {
           summary: {

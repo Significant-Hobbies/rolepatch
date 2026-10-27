@@ -21,23 +21,6 @@ export const refinementTargetSchema = z.discriminatedUnion('kind', [
 export type RefinementTarget = z.infer<typeof refinementTargetSchema>;
 export type ResumeDraft = { source: string; changes: TailorChange[] };
 
-const FACT_SECTION_WORDS = new Set(
-  'skill skills technical technology technologies experience employment work history project projects product products achievement achievements accomplishment accomplishments education academic'.split(
-    ' '
-  )
-);
-
-function isSummarySection(context: string): boolean {
-  const heading = context.split(' / ')[0].normalize('NFKC').toLowerCase();
-  const words = heading.match(/[\p{L}]+(?:-[\p{L}]+)*/gu) ?? [];
-  const summaryIndex = words.indexOf('summary');
-  const factIndex = words.findIndex((word) => FACT_SECTION_WORDS.has(word));
-  return (
-    words.some((word) => ['summary', 'profile', 'objective'].includes(word)) &&
-    (factIndex < 0 || (summaryIndex >= 0 && summaryIndex < factIndex))
-  );
-}
-
 export function listRefinementTargets(source: string) {
   return [
     { value: 'summary', label: 'Summary', target: { kind: 'summary' } as RefinementTarget },
@@ -57,9 +40,7 @@ export function listRefinementTargets(source: string) {
 export function prepareRefinement(master: string, source: string, target: RefinementTarget) {
   prepareResumePolicy(source);
   if (target.kind === 'summary') {
-    const evidence = prepareResumePolicy(master).evidence.filter(
-      (fact) => !isSummarySection(fact.context)
-    );
+    const { evidence } = prepareResumePolicy(master);
     if (!evidence.length) throw new Error('Add original resume facts before refining the summary.');
     return { summary_evidence: evidence };
   }
