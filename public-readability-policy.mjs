@@ -51,6 +51,14 @@ export function withPublicReadability(next) {
     );
     headers.delete('Content-Length');
     if (request.method === 'HEAD') return new Response(null, { status: response.status, headers });
+    // The homepage can already be compressed by the inner worker. Its built
+    // HTML includes discovery metadata; never parse encoded bytes as HTML.
+    if (headers.has('Content-Encoding'))
+      return new Response(response.body, {
+        status: response.status,
+        headers,
+        encodeBody: 'manual',
+      });
     return new globalThis.HTMLRewriter()
       .on('link[rel="alternate"][type="text/markdown"]', {
         element(element) {
