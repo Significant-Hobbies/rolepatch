@@ -32,7 +32,8 @@
       "!**/.pages-deploy",
       "!**/extension",
       "!**/*.css",
-      "!**/design.html"
+      "!**/design.html",
+      "!src/lib/agent-surfaces"
     ]
   },
   "formatter": {

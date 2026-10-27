@@ -10,7 +10,9 @@
   "openapi": "https://rolepatch.com/openapi.json",
   "markdown": {
     "suffix": ".md",
-    "negotiation": true
+    "negotiation": true,
+    "direct": "https://rolepatch.com/api/md/{path}",
+    "catalog": "https://rolepatch.com/api/md/_catalog"
   },
   "surfaces": [
     {
@@ -18,32 +20,137 @@
       "url": "https://rolepatch.com/",
       "md": "https://rolepatch.com/index.md",
       "kind": "static",
-      "description": "Product purpose, evidence rule, access model, and review-first boundaries"
+      "description": "Evidence-bound resume tailoring for one specific job, followed by review-first supporting materials, application assistance, and receipts."
     },
     {
       "id": "pricing",
       "url": "https://rolepatch.com/pricing",
       "md": "https://rolepatch.com/pricing.md",
       "kind": "static",
-      "description": "Free tools, guest use, account persistence, and exact token packs"
+      "description": "Compare free browser tools, guest-local use, account persistence, and the implemented token packs for signed-in AI work."
+    },
+    {
+      "id": "proof",
+      "url": "https://rolepatch.com/proof",
+      "md": "https://rolepatch.com/proof.md",
+      "kind": "static",
+      "description": "Build a user-controlled proof packet from quantified achievements and source-backed work for a specific application."
     },
     {
       "id": "tools",
       "url": "https://rolepatch.com/tools",
       "md": "https://rolepatch.com/tools.md",
       "kind": "static",
-      "description": "Public browser-local resume tools"
+      "description": "Use RolePatch resume utilities for keyword matching, text comparison, ATS formatting, bullet quality, word counts, and reusable snippets."
+    },
+    {
+      "id": "resume-diff",
+      "url": "https://rolepatch.com/tools/diff",
+      "md": "https://rolepatch.com/tools/diff.md",
+      "kind": "static",
+      "description": "Compare two resume drafts word by word in split or inline views without uploading the text."
+    },
+    {
+      "id": "keyword-checker",
+      "url": "https://rolepatch.com/tools/keywords",
+      "md": "https://rolepatch.com/tools/keywords.md",
+      "kind": "static",
+      "description": "Compare a resume with a job description to see a keyword match score, matched terms, and missing terms."
+    },
+    {
+      "id": "ats-checker",
+      "url": "https://rolepatch.com/tools/ats-check",
+      "md": "https://rolepatch.com/tools/ats-check.md",
+      "kind": "static",
+      "description": "Check seven resume structure and formatting signals for free in your browser with no sign-up, upload, or network request."
+    },
+    {
+      "id": "bullet-checker",
+      "url": "https://rolepatch.com/tools/bullet-check",
+      "md": "https://rolepatch.com/tools/bullet-check.md",
+      "kind": "static",
+      "description": "Grade resume bullets for action verbs, quantified outcomes, readable length, tense, and first-person wording."
+    },
+    {
+      "id": "word-count",
+      "url": "https://rolepatch.com/tools/word-count",
+      "md": "https://rolepatch.com/tools/word-count.md",
+      "kind": "static",
+      "description": "Count words, characters, lines, sentences, paragraphs, and bullets, then estimate recruiter skim time."
+    },
+    {
+      "id": "snippets",
+      "url": "https://rolepatch.com/tools/snippets",
+      "md": "https://rolepatch.com/tools/snippets.md",
+      "kind": "static",
+      "description": "Save reusable accomplishment bullets and cover-letter paragraphs in the current browser."
+    },
+    {
+      "id": "blog",
+      "url": "https://rolepatch.com/blog",
+      "md": "https://rolepatch.com/blog.md",
+      "kind": "static",
+      "description": "Read RolePatch guides about resume tailoring, ATS scores, resume keywords, and job-search preparation."
+    },
+    {
+      "id": "tailored-resumes-article",
+      "url": "https://rolepatch.com/blog/why-tailoring-resume-matters",
+      "md": "https://rolepatch.com/blog/why-tailoring-resume-matters.md",
+      "kind": "static",
+      "description": "A practical guide to keyword alignment, resume prioritization, bullet tuning, and reviewing AI-assisted changes."
+    },
+    {
+      "id": "ats-score-article",
+      "url": "https://rolepatch.com/blog/ats-score-explained",
+      "md": "https://rolepatch.com/blog/ats-score-explained.md",
+      "kind": "static",
+      "description": "A practical guide to resume match scores, parsing and coverage metrics, and the limits of universal ATS thresholds."
+    },
+    {
+      "id": "resume-keywords-article",
+      "url": "https://rolepatch.com/blog/resume-keywords-guide",
+      "md": "https://rolepatch.com/blog/resume-keywords-guide.md",
+      "kind": "static",
+      "description": "A guide to hard skills, action verbs, filler language, and finding relevant terms in a job description."
     },
     {
       "id": "faq",
       "url": "https://rolepatch.com/faq",
       "md": "https://rolepatch.com/faq.md",
       "kind": "static",
-      "description": "Evidence, storage, pricing, extension, safety, and current-state answers"
+      "description": "Answers about evidence-bound tailoring, storage, exact token pricing, the Chrome extension, product state, and review-first application safety."
+    },
+    {
+      "id": "docs",
+      "url": "https://rolepatch.com/docs",
+      "md": "https://rolepatch.com/docs.md",
+      "kind": "static",
+      "description": "Read the supported machine-readable discovery routes, content negotiation behavior, error model, version policy, and explicit non-goals."
+    },
+    {
+      "id": "changelog",
+      "url": "https://rolepatch.com/changelog",
+      "md": "https://rolepatch.com/changelog.md",
+      "kind": "static",
+      "description": "Read verified RolePatch product updates and follow planned work through the public GitHub issue tracker."
+    },
+    {
+      "id": "privacy",
+      "url": "https://rolepatch.com/privacy",
+      "md": "https://rolepatch.com/privacy.md",
+      "kind": "static",
+      "description": "Read how RolePatch handles account data, resume content, job descriptions, payments, guest storage, and deletion requests."
+    },
+    {
+      "id": "terms",
+      "url": "https://rolepatch.com/terms",
+      "md": "https://rolepatch.com/terms.md",
+      "kind": "static",
+      "description": "Read the service, payment, content ownership, AI-output, acceptable-use, availability, and contact terms for RolePatch."
     }
   ],
   "auth": {
     "public": true,
-    "notes": "Only cataloged pages are public agent surfaces. User-specific app and API routes are excluded."
+    "notes": "Only the cataloged pages are public agent surfaces. User-specific app and API routes are excluded."
   }
 }

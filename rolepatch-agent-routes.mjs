@@ -1,13 +1,7 @@
-import {
-  markdownPathForSurface,
-  PUBLIC_SURFACES,
-  renderSurfaceMarkdown,
-} from './public-surfaces.mjs';
-
-const surfaceByPath = new Map(PUBLIC_SURFACES.map((surface) => [surface.path, surface]));
-const surfaceByMarkdownPath = new Map(
-  PUBLIC_SURFACES.map((surface) => [markdownPathForSurface(surface.path), surface])
-);
+import { createAgentSurfaceHandler } from './src/lib/agent-surfaces/handler.mjs';
+import { markdownResponse, wantsMarkdown } from './src/lib/agent-surfaces/http.mjs';
+import { publicRobots } from './public-readability-policy.mjs';
+import { markdownPathForSurface, PUBLIC_SURFACES } from './public-surfaces.mjs';
 
 function buildCatalog(origin) {
   return {
@@ -24,6 +18,8 @@ function buildCatalog(origin) {
     markdown: {
       suffix: '.md',
       negotiation: true,
+      direct: `${origin}/api/md/{path}`,
+      catalog: `${origin}/api/md/_catalog`,
     },
     surfaces: PUBLIC_SURFACES.map((surface) => ({
       id: surface.id,
@@ -64,91 +60,71 @@ ${rows}
 `;
 }
 
-/**
- * RolePatch-specific public route coverage that runs before the generated
- * Fleet discovery handler. Keeping this separate means registry refreshes can
- * safely regenerate agent-edge.mjs without deleting curated route Markdown.
- *
- * @param {Request} request
- * @returns {Response | null}
- */
-export function handleRolePatchAgentRoutes(request) {
-  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
-  const url = new URL(request.url);
-  const path = normalizePath(url.pathname);
-
-  if (path === '/api/ai') {
-    if (wantsMarkdown(request)) {
-      return markdown(renderCatalogMarkdown(url.origin), '/api/ai.md');
-    }
-    return json(buildCatalog(url.origin));
-  }
-  if (path === '/api/ai.md') {
-    return markdown(renderCatalogMarkdown(url.origin), '/api/ai.md');
-  }
-
-  const explicitSurface = surfaceByMarkdownPath.get(path);
-  if (explicitSurface) {
-    return markdown(renderSurfaceMarkdown(explicitSurface, url.origin), path);
-  }
-  if (path.endsWith('.md')) {
-    return text(
-      `# Not found\n\nNo public RolePatch Markdown surface exists at ${path}.\n`,
-      'text/markdown; charset=utf-8',
-      { status: 404 }
+export async function handleRolePatchAgentRoutes(request, loadMarkdown) {
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return null;
+  const manifest = {
+    name: 'RolePatch',
+    origin: 'https://rolepatch.com',
+    summary: PUBLIC_SURFACES[0].description,
+    openapi: 'https://rolepatch.com/openapi.json',
+    pages: {},
+    catalog: buildCatalog('https://rolepatch.com'),
+    negotiation: true,
+    trainingAllowed: true,
+    excludedPaths: [
+      '/api',
+      '/dashboard',
+      '/jobs',
+      '/evidence',
+      '/resume-builder',
+      '/editor',
+      '/tailor',
+      '/cover-letter',
+      '/library',
+      '/login',
+      '/settings',
+    ],
+  };
+  const path = new URL(request.url).pathname;
+  if (path === '/robots.txt' && ['GET', 'HEAD'].includes(request.method))
+    return new Response(request.method === 'HEAD' ? null : publicRobots(), {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  if (path === '/api/ai.md' || (path === '/api/ai' && wantsMarkdown(request)))
+    return markdownResponse(renderCatalogMarkdown(manifest.origin), request, {
+      'Content-Location': `${manifest.origin}/api/ai`,
+    });
+  const handle = createAgentSurfaceHandler({
+    manifest,
+    listMarkdownRoutes: () => PUBLIC_SURFACES.map((surface) => ({ ...surface, kind: 'static' })),
+    loadMarkdown,
+  });
+  let response;
+  try {
+    response = await handle(request);
+  } catch (error) {
+    console.error(
+      'Public Markdown rendering failed',
+      error instanceof Error ? error.message : 'Unknown error'
     );
+    const unavailable = markdownResponse('# Markdown temporarily unavailable\n', request, {
+      'Cache-Control': 'no-store',
+    });
+    return new Response(unavailable.body, { status: 503, headers: unavailable.headers });
   }
-
-  if (wantsMarkdown(request)) {
-    const surface = surfaceByPath.get(path);
-    if (surface) {
-      return markdown(
-        renderSurfaceMarkdown(surface, url.origin),
-        markdownPathForSurface(surface.path)
-      );
-    }
-  }
-
+  if (response) return response;
+  if (!path.startsWith('/api/') && wantsMarkdown(request) && !/\.[a-z0-9]+$/i.test(path))
+    return new Response(
+      request.method === 'HEAD' ? null : '# Not found\n\nNo public document exists at this path.\n',
+      {
+        status: 404,
+        headers: {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'X-Robots-Tag': 'noindex, follow',
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
+    );
   return null;
-}
-
-function normalizePath(pathname) {
-  if (!pathname || pathname === '/') return '/';
-  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-}
-
-function wantsMarkdown(request) {
-  const accept = (request.headers.get('accept') || '').toLowerCase();
-  if (!accept.includes('text/markdown')) return false;
-  if (!accept.includes('text/html')) return true;
-  return accept.indexOf('text/markdown') < accept.indexOf('text/html');
-}
-
-function markdown(body, alternatePath) {
-  return text(body, 'text/markdown; charset=utf-8', {
-    Link: `<${alternatePath}>; rel="alternate"; type="text/markdown"`,
-    Vary: 'Accept',
-  });
-}
-
-function text(body, type, extra = {}) {
-  const { status = 200, ...headers } = extra;
-  return new Response(body, {
-    status,
-    headers: {
-      'Content-Type': type,
-      'Cache-Control': 'public, max-age=300',
-      ...headers,
-    },
-  });
-}
-
-function json(data) {
-  return new Response(`${JSON.stringify(data, null, 2)}\n`, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=300',
-    },
-  });
 }

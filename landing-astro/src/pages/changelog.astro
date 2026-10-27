@@ -1,4 +1,5 @@
 ---
+import { PublicChangelog } from '../../../src/components/public-changelog';
 import Layout from '@/layouts/Layout.astro';
 import SiteFooter from '@/components/SiteFooter.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
@@ -6,74 +7,13 @@ import SiteHeader from '@/components/SiteHeader.astro';
 const TITLE = 'RolePatch changelog — Verified product updates';
 const DESCRIPTION =
   'Verified RolePatch updates to guest workflows, job discovery, review-first application assistance, receipts, proof, and release checks.';
-const sourceUrl = 'https://github.com/Significant-Hobbies/rolepatch';
-const roadmapUrl = `${sourceUrl}/issues`;
 
-const entries = [
-  {
-    date: 'July 11, 2026',
-    title: 'Guest workflows became more predictable',
-    body: 'The test environment now resets browser-local state between runs. That protects the same boundary unsigned users rely on when they keep resumes, searches, and application drafts on one device.',
-  },
-  {
-    date: 'July 4, 2026',
-    title: 'Job discovery moved into the product',
-    body: 'A LinkedIn-focused job browser added quick searches, posting signals, resume-aware ranking, visible match evidence, and reviewed batch queueing. Guests can search and prepare locally without being forced to sign in.',
-  },
-  {
-    date: 'July 4, 2026',
-    title: 'Application assistance became receipt-first',
-    body: 'The reviewed queue added Chrome-assisted ATS fill, guarded submit attempts, provider-aware blockers, field-level details, retry timelines, and copyable audit summaries. Unattended bulk apply remains out of scope.',
-  },
-  {
-    date: 'July 4, 2026',
-    title: 'Proof and public release checks shipped',
-    body: 'RolePatch added a source-backed Proof surface and a release preflight covering type safety, formatting, tests, the extension build, the Cloudflare build, public routes, and responsive browser journeys.',
-  },
-];
 ---
 
 <Layout title={TITLE} description={DESCRIPTION} canonicalPath="/changelog">
   <div class="rolepatch-page">
     <SiteHeader active="changelog" />
-    <main>
-      <section class="page-hero paper-grid">
-        <div class="site-shell">
-          <p class="section-label">Verified product history</p>
-          <h1>What changed, and why it matters.</h1>
-          <p>
-            Shipped changes live here. Planned work stays in the public issue tracker, where it
-            cannot be mistaken for a finished feature.
-          </p>
-        </div>
-      </section>
-
-      <section class="page-section" aria-label="RolePatch releases">
-        <div class="site-shell">
-          <div class="release-list">
-            {entries.map((entry) => (
-              <article class="release-item">
-                <time class="release-date">{entry.date}</time>
-                <div>
-                  <h2>{entry.title}</h2>
-                  <p>{entry.body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-          <div class="page-cta">
-            <div>
-              <h2>Inspect the work behind the claims.</h2>
-              <p>The canonical repository and its issue tracker are public.</p>
-            </div>
-            <div class="hero-actions">
-              <a href={sourceUrl} class="primary-action">View source <span aria-hidden="true">↗</span></a>
-              <a href={roadmapUrl} class="secondary-action">Open roadmap <span aria-hidden="true">→</span></a>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+    <PublicChangelog />
     <SiteFooter />
   </div>
 </Layout>

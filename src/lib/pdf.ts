@@ -61,10 +61,12 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 
   const chromium = chromiumMod.default ?? chromiumMod;
   const puppeteer = puppeteerMod.default ?? puppeteerMod;
-  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || (await chromium.executablePath());
+  const customExecutablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  const executablePath = customExecutablePath || (await chromium.executablePath());
 
   const browser = await puppeteer.launch({
-    args: chromium.args,
+    // Sparticuz flags target its bundled Linux binary, not a caller-supplied browser.
+    args: customExecutablePath ? [] : chromium.args,
     executablePath,
     headless: true,
   });

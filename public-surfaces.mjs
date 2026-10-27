@@ -19,20 +19,6 @@ export const PUBLIC_SURFACES = [
     priority: 1,
   },
   {
-    id: 'jobs',
-    path: '/jobs',
-    title: 'Browse jobs',
-    description:
-      'Browse observed job openings, search for live roles, save promising matches, and queue jobs for reviewed application preparation.',
-    details: [
-      'The public feed shows recently observed roles and their source links.',
-      'Guest users can search, shortlist, and queue jobs using browser storage.',
-      'Queueing prepares a job for review; it does not submit an application.',
-    ],
-    changeFrequency: 'hourly',
-    priority: 0.95,
-  },
-  {
     id: 'pricing',
     path: '/pricing',
     title: 'RolePatch pricing',
@@ -59,20 +45,6 @@ export const PUBLIC_SURFACES = [
     ],
     changeFrequency: 'monthly',
     priority: 0.9,
-  },
-  {
-    id: 'evidence',
-    path: '/evidence',
-    title: 'Achievement evidence bank',
-    description:
-      'Store reusable, quantified achievement evidence for resumes, cover letters, interview stories, and recruiter replies.',
-    details: [
-      'Evidence records capture a situation, action, result, metric, scope, and relevant skills.',
-      'Guest records stay in the browser; signed-in records use the user account.',
-      'Readiness checks distinguish reusable claims from proof that still needs support.',
-    ],
-    changeFrequency: 'monthly',
-    priority: 0.85,
   },
   {
     id: 'tools',
@@ -302,21 +274,4 @@ export const PUBLIC_SURFACES = [
 
 export function markdownPathForSurface(path) {
   return path === '/' ? '/index.md' : `${path}.md`;
-}
-
-export function renderSurfaceMarkdown(surface, origin = 'https://rolepatch.com') {
-  const pageUrl = new URL(surface.path, origin).toString();
-  const details = surface.details.map((detail) => `- ${detail}`).join('\n');
-  return `# ${surface.title}
-
-${surface.description}
-
-## What this page provides
-
-${details}
-
-## Public page
-
-- ${pageUrl}
-`;
 }

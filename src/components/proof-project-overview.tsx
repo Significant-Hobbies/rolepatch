@@ -304,3 +304,5 @@ function ProofRow({ label, value, detail }: { label: string; value: string; deta
     </div>
   );
 }
+
+export { ProofMetric as OverviewProofMetric, ProofRow };

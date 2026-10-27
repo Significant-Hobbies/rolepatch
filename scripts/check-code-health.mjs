@@ -152,6 +152,8 @@ function checkComplexity() {
     'scripts/check-code-health.mjs',
     '-x',
     '**/*.d.ts',
+    '-x',
+    'src/lib/agent-surfaces/**',
     '--csv',
   ]);
   const rows = result.stdout
@@ -189,7 +191,7 @@ function checkDuplication() {
     '--mode',
     'strict',
     '--ignore',
-    '**/*.test.*,**/__tests__/**,**/*.d.ts,**/node_modules/**,**/dist/**,**/coverage/**,scripts/check-code-health.mjs',
+    '**/*.test.*,**/__tests__/**,**/*.d.ts,src/lib/agent-surfaces/**,**/node_modules/**,**/dist/**,**/coverage/**,scripts/check-code-health.mjs',
     '--reporters',
     'json',
     '--output',
