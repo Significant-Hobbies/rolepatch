@@ -99,7 +99,19 @@ export async function handleRolePatchAgentRoutes(request, loadMarkdown) {
     listMarkdownRoutes: () => PUBLIC_SURFACES.map((surface) => ({ ...surface, kind: 'static' })),
     loadMarkdown,
   });
-  const response = await handle(request);
+  let response;
+  try {
+    response = await handle(request);
+  } catch (error) {
+    console.error(
+      'Public Markdown rendering failed',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+    const unavailable = markdownResponse('# Markdown temporarily unavailable\n', request, {
+      'Cache-Control': 'no-store',
+    });
+    return new Response(unavailable.body, { status: 503, headers: unavailable.headers });
+  }
   if (response) return response;
   if (!path.startsWith('/api/') && wantsMarkdown(request) && !/\.[a-z0-9]+$/i.test(path))
     return new Response(

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PUBLIC_SURFACES } from '../../public-surfaces.mjs';
 import { handleRolePatchAgentRoutes } from '../../rolepatch-agent-routes.mjs';
 import { publicRobots, publicCrawlers } from '../../public-readability-policy.mjs';
@@ -58,4 +58,29 @@ describe('source-backed public readability', () => {
       expect(publicRobots()).toContain(`User-agent: ${crawler}\nAllow: /`);
     expect(publicRobots()).toContain('Disallow: /resume-builder');
   });
+});
+
+it('returns uncached service errors when a registered source loader fails', async () => {
+  const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+  try {
+    for (const path of ['/index.md', '/llms-full.txt']) {
+      for (const method of ['GET', 'HEAD']) {
+        const response = await handleRolePatchAgentRoutes(
+          new Request(origin + path, { method }),
+          async () => {
+            throw new Error('fixture source failure');
+          }
+        );
+        expect(response?.status).toBe(503);
+        expect(response?.headers.get('cache-control')).toBe('no-store');
+        expect(response?.headers.get('content-type')).toContain('text/markdown');
+        expect(await response?.text()).toBe(
+          method === 'HEAD' ? '' : '# Markdown temporarily unavailable\n'
+        );
+      }
+    }
+    expect(log).toHaveBeenCalledTimes(4);
+  } finally {
+    log.mockRestore();
+  }
 });

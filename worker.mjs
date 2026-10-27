@@ -160,7 +160,9 @@ export default {
             env,
             ctx
           );
-          return response.ok ? response.text() : null;
+          if (response.status === 404) return null;
+          if (!response.ok) throw new Error(`Public Markdown source failed: ${response.status}`);
+          return response.text();
         });
         if (rolePatchAgentRoute) return rolePatchAgentRoute;
       }
