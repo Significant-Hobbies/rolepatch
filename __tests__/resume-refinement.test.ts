@@ -31,6 +31,14 @@ describe('scoped resume refinement', () => {
     'Summary of Qualifications',
     'Personal Profile',
     'Profile Summary of Qualifications',
+    'Summary:',
+    'Professional Summary:',
+    'SUMMARY –',
+    'Summary (2024)',
+    'Summary & Highlights',
+    'Career Profile/Objective',
+    'Summary of Skills',
+    'Summary of Achievements',
   ])('excludes existing summary claims under the %s heading', (heading) => {
     const contaminated = master.replace(
       '## Experience',
