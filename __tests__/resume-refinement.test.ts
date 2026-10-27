@@ -11,18 +11,35 @@ const current = master.replace(
 );
 
 describe('scoped resume refinement', () => {
-  it.each(['Profile Summary', 'Summary of Qualifications', 'Personal Profile'])(
-    'excludes existing summary claims under the %s heading',
-    (heading) => {
-      const contaminated = master.replace(
-        '## Experience',
-        `## ${heading}\nCertified Kubernetes architect.\n\n## Experience`
-      );
-      const evidence = prepareRefinement(contaminated, current, { kind: 'summary' })
-        .summary_evidence!;
-      expect(evidence.some((fact) => fact.text.includes('Kubernetes'))).toBe(false);
-    }
-  );
+  it.each([
+    'Skills Profile',
+    'Technical Profile',
+    'Professional Profile & Experience',
+    'Experience Summary',
+    'Objective-C Projects',
+  ])('retains original facts under the %s heading', (heading) => {
+    const source = master.replace(
+      '## Experience',
+      `## ${heading}\nBuilt Swift interfaces.\n\n## Experience`
+    );
+    const evidence = prepareRefinement(source, current, { kind: 'summary' }).summary_evidence!;
+    expect(evidence.some((fact) => fact.text.includes('Swift'))).toBe(true);
+  });
+
+  it.each([
+    'Profile Summary',
+    'Summary of Qualifications',
+    'Personal Profile',
+    'Profile Summary of Qualifications',
+  ])('excludes existing summary claims under the %s heading', (heading) => {
+    const contaminated = master.replace(
+      '## Experience',
+      `## ${heading}\nCertified Kubernetes architect.\n\n## Experience`
+    );
+    const evidence = prepareRefinement(contaminated, current, { kind: 'summary' })
+      .summary_evidence!;
+    expect(evidence.some((fact) => fact.text.includes('Kubernetes'))).toBe(false);
+  });
 
   it('moves only selected original bullets and rejects missing, duplicate or foreign IDs', () => {
     expect(
