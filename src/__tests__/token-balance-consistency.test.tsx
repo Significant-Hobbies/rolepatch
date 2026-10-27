@@ -23,6 +23,7 @@ vi.mock('@/lib/auth-client', () => ({
 vi.mock('@/lib/analytics', () => ({ trackSignup: vi.fn() }));
 vi.mock('@/lib/actions/token-actions', () => ({ getTokenBalance: vi.fn() }));
 vi.mock('@/lib/actions/tailor-action', () => ({ tailorResumeForClient: vi.fn() }));
+vi.mock('@/lib/actions/refine-resume-action', () => ({ refineResumeSectionForClient: vi.fn() }));
 vi.mock('@/lib/actions/fit-score-action', () => ({ generateFitScoreForClient: vi.fn() }));
 vi.mock('@/lib/actions/job-actions', () => ({ saveTailoredResume: vi.fn() }));
 vi.mock('@/components/resume-diff', () => ({ ResumeDiff: () => <div>Generated diff</div> }));

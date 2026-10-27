@@ -68,6 +68,61 @@ beforeEach(() => {
 });
 
 describe('generateFitScore', () => {
+  it('stores only source-checked requirement evidence and strips embedded generated matches', async () => {
+    mocks.getCurrentUserId.mockResolvedValue('user-1');
+    mocks.dbExecute.mockResolvedValue({ rows: [] });
+    mocks.generateText.mockResolvedValue({
+      text: JSON.stringify({
+        ...fitScoreJson,
+        dimensions: fitScoreJson.dimensions.map((dimension) => ({
+          ...dimension,
+          requirement_matches: [
+            {
+              requirement: 'Invented',
+              status: 'evidence_found',
+              evidence: [{ excerpt: 'Fabricated' }],
+            },
+          ],
+          requirement_source: 'Injected source',
+        })),
+        requirement_matches: [
+          {
+            requirement: 'Build React interfaces.',
+            status: 'evidence_found',
+            evidence: [{ excerpt: 'Built React interfaces.' }],
+          },
+          {
+            requirement: 'Operate Kubernetes clusters.',
+            status: 'evidence_found',
+            evidence: [{ excerpt: 'Operate Kubernetes clusters.' }],
+          },
+        ],
+      }),
+    });
+    const { generateFitScore } = await import('@/lib/actions/fit-score-action');
+    const source = '# Alex\n## Experience\n### Studio\nBuilt React interfaces.';
+    const result = await generateFitScore(
+      source,
+      'Build React interfaces. Operate Kubernetes clusters.',
+      'job-1',
+      { endpointUrl: 'https://ai.example/v1', apiKey: 'key', model: 'model' }
+    );
+    const skills = result.dimensions.find((dimension) => dimension.name === 'Skills Match')!;
+    expect(skills.requirement_source).toBe(source);
+    expect(skills.requirement_matches).toEqual([
+      {
+        requirement: 'Build React interfaces.',
+        status: 'evidence_found',
+        evidence: [{ excerpt: 'Built React interfaces.', context: 'Alex / Experience / Studio' }],
+      },
+      { requirement: 'Operate Kubernetes clusters.', status: 'not_evidenced', evidence: [] },
+    ]);
+    expect(result.dimensions[0].requirement_matches).toBeUndefined();
+    expect(JSON.stringify(result)).not.toContain('Fabricated');
+    const insertCall = mocks.dbExecute.mock.calls.at(-1)?.[0] as { args: unknown[] };
+    expect(JSON.parse(insertCall.args[4] as string)).toEqual(result.dimensions);
+  });
+
   it('adds Knowledgebase semantic similarity as visible fit-score evidence', async () => {
     mocks.getCurrentUserId.mockResolvedValue('user-1');
     mocks.dbExecute

@@ -23,6 +23,42 @@ const mockFitScore: FitScore = {
 };
 
 describe('FitScoreCard', () => {
+  it('shows requirement status and original excerpts with an explicit inference limit', async () => {
+    render(
+      <FitScoreCard
+        fitScore={{
+          ...mockFitScore,
+          dimensions: [
+            {
+              ...mockFitScore.dimensions[1],
+              requirement_matches: [
+                {
+                  requirement: 'Build React interfaces.',
+                  status: 'evidence_found',
+                  evidence: [
+                    { context: 'Experience / Studio', excerpt: 'Built React interfaces.' },
+                  ],
+                },
+                {
+                  requirement: 'Operate Kubernetes clusters.',
+                  status: 'not_evidenced',
+                  evidence: [],
+                },
+              ],
+            },
+          ],
+        }}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /Job Fit Score/ }));
+    expect(screen.getByRole('region', { name: 'Requirement evidence' })).toHaveTextContent(
+      'Built React interfaces.'
+    );
+    expect(screen.getByText('Evidence found')).toBeInTheDocument();
+    expect(screen.getByText('Not evidenced in resume')).toBeInTheDocument();
+    expect(screen.getByText(/not a lack of ability/)).toBeInTheDocument();
+  });
+
   it('renders overall score and grade', () => {
     render(<FitScoreCard fitScore={mockFitScore} />);
     expect(screen.getByText('78')).toBeDefined();

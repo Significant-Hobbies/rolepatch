@@ -6,6 +6,7 @@ import {
   type SetStateAction,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from 'react';
@@ -15,6 +16,7 @@ import { useAuth } from '@/components/auth-provider';
 import { FitScoreCard } from '@/components/fit-score-card';
 import { LocalResumeExport } from '@/components/local-resume-export';
 import { ResumeDiff } from '@/components/resume-diff';
+import { ResumeRefinement } from '@/components/resume-refinement';
 import { ResumeStudioPreview } from '@/components/resume-studio-preview';
 import { ShareScoreButton } from '@/components/share-score-button';
 import { SkillsRoadmapPanel } from '@/components/skills-roadmap';
@@ -28,6 +30,7 @@ import { generateFitScoreForClient } from '@/lib/actions/fit-score-action';
 import { saveTailoredResume } from '@/lib/actions/job-actions';
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
 import { type ATSResult, calculateATSScore } from '@/lib/ats-score';
+import { fitScoreForResume } from '@/lib/requirement-evidence';
 import {
   localGetFitScore,
   localGetJob,
@@ -89,6 +92,7 @@ export function TailorFlow(props: TailorFlowProps) {
   const [selectedVersionId, setSelectedVersionId] = useState(initialVersionId ?? '');
   const [historySaveError, setHistorySaveError] = useState('');
   const [savedNotice, setSavedNotice] = useState('');
+  const [refinementEpoch, setRefinementEpoch] = useState(0);
   const [stashEntries, setStashEntries] = useState(serverStashEntries);
   const [evidenceEntries, setEvidenceEntries] = useState(serverEvidence);
   const [tailoredList, setTailoredList] = useState(existingTailored);
@@ -96,6 +100,17 @@ export function TailorFlow(props: TailorFlowProps) {
   const [fitScore, setFitScore] = useState<FitScore | null>(existingFitScore ?? null);
   const [fitScoreLoading, setFitScoreLoading] = useState(false);
   const [fitScoreError, setFitScoreError] = useState<string | null>(null);
+  const fitRequest = useRef(0);
+  const fitContext = useRef({ jobId, resumeId: selectedResumeId });
+  const currentFitScore = fitScoreForResume(fitScore, resume?.source);
+
+  useEffect(() => {
+    if (fitContext.current.jobId === jobId && fitContext.current.resumeId === selectedResumeId)
+      return;
+    fitContext.current = { jobId, resumeId: selectedResumeId };
+    fitRequest.current += 1;
+    setFitScoreLoading(false);
+  }, [selectedResumeId, jobId]);
 
   // Intentional: hydrate from localStorage for guest users after auth context resolves
   useEffect(() => {
@@ -241,6 +256,7 @@ export function TailorFlow(props: TailorFlowProps) {
     }
 
     setError(null);
+    setRefinementEpoch((epoch) => epoch + 1);
     setHistorySaveError('');
     setSavedNotice('');
     startTransition(async () => {
@@ -336,11 +352,13 @@ export function TailorFlow(props: TailorFlowProps) {
 
   function handleFitScore() {
     if (!resume || !activeJob) return;
+    const request = ++fitRequest.current;
     setFitScoreLoading(true);
     setFitScoreError(null);
     const aiConfig = readAiConfig();
     generateFitScoreForClient(resume.source, activeJob.jd_text, jobId, aiConfig)
       .then((result) => {
+        if (request !== fitRequest.current) return;
         if (!result.success) {
           setFitScoreError(result.error);
           return;
@@ -348,12 +366,16 @@ export function TailorFlow(props: TailorFlowProps) {
         setFitScore(result.data);
         if (isGuest) {
           localSaveFitScore(result.data);
-        } else {
-          void refreshBalance();
         }
       })
-      .catch(() => setFitScoreError('Could not analyze job fit. Please try again.'))
-      .finally(() => setFitScoreLoading(false));
+      .catch(() => {
+        if (request === fitRequest.current)
+          setFitScoreError('Could not analyze job fit. Please try again.');
+      })
+      .finally(() => {
+        if (!isGuest) void refreshBalance();
+        if (request === fitRequest.current) setFitScoreLoading(false);
+      });
   }
 
   return (
@@ -363,6 +385,7 @@ export function TailorFlow(props: TailorFlowProps) {
           versions={tailoredList}
           value={selectedVersionId || latestTailored?.id || ''}
           onSelect={(version) => {
+            setRefinementEpoch((epoch) => epoch + 1);
             setSelectedVersionId(version.id);
             setSelectedResumeId(version.resume_id);
             setSavedNotice('');
@@ -433,8 +456,18 @@ export function TailorFlow(props: TailorFlowProps) {
 
               {/* Fit Score + Interview Prep section */}
               <div className="border-t border-[var(--border)] pt-4 space-y-3">
-                {fitScore ? (
-                  <FitScoreCard fitScore={fitScore} />
+                {currentFitScore ? (
+                  <>
+                    <FitScoreCard fitScore={currentFitScore} />
+                    <button
+                      type="button"
+                      onClick={handleFitScore}
+                      disabled={fitScoreLoading || authPending}
+                      className="min-h-11 w-full rounded-md border border-input px-3 text-sm text-muted-foreground disabled:opacity-40"
+                    >
+                      {fitScoreLoading ? 'Analyzing fit...' : 'Reanalyze job fit'}
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={handleFitScore}
@@ -478,6 +511,8 @@ export function TailorFlow(props: TailorFlowProps) {
                     aria-label="Base resume"
                     value={selectedResumeId}
                     onChange={(event) => {
+                      setRefinementEpoch((epoch) => epoch + 1);
+                      fitRequest.current += 1;
                       setSelectedResumeId(event.target.value);
                       setFitScore(null);
                     }}
@@ -513,13 +548,39 @@ export function TailorFlow(props: TailorFlowProps) {
 
           <TailorErrorBanner error={error} />
 
+          {tailoredSource && (
+            <ResumeRefinement
+              key={`${jobId}:${selectedResumeId}:${selectedVersionId}:${refinementEpoch}`}
+              masterSource={resume.source}
+              draft={{ source: tailoredSource, changes }}
+              jdText={activeJob.jd_text}
+              isGuest={isGuest}
+              disabled={isPending || authPending}
+              hasCredits={isGuest || tokenBalance === null || tokenBalance > 0}
+              aiConfig={readAiConfig}
+              onChange={(draft) => {
+                setTailoredSource(draft.source);
+                setChanges(draft.changes);
+                setSavedNotice('');
+                setHistorySaveError('');
+              }}
+              onConsumed={() => {
+                if (!isGuest) void refreshBalance();
+              }}
+            />
+          )}
+
           <ResumeView
             original={resume.source}
             tailoredSource={tailoredSource}
             changes={changes}
             showDiff={showDiff}
             onShowDiffChange={setShowDiff}
-            onTailoredChange={setTailoredSource}
+            onTailoredChange={(source) => {
+              setRefinementEpoch((epoch) => epoch + 1);
+              setTailoredSource(source);
+              setSavedNotice('');
+            }}
           />
         </div>
       </div>
