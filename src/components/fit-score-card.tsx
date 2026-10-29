@@ -45,11 +45,15 @@ export function FitScoreCard({ fitScore }: FitScoreCardProps) {
   const [expanded, setExpanded] = useState(false);
   const color = scoreColor(fitScore.overall_score);
   const grade = gradeLabel(fitScore.overall_score);
+  const requirementMatches = fitScore.dimensions.flatMap(
+    (dimension) => dimension.requirement_matches ?? []
+  );
 
   return (
     <div className={`rounded-xl border ${color.border} ${color.bg} overflow-hidden`}>
       {/* Header */}
       <button
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
         className="w-full px-4 py-3 flex items-center justify-between hover:brightness-110 transition-all"
       >
@@ -115,6 +119,44 @@ export function FitScoreCard({ fitScore }: FitScoreCardProps) {
           </div>
 
           {/* Strengths & Gaps */}
+          {requirementMatches.length > 0 && (
+            <section
+              aria-label="Requirement evidence"
+              className="space-y-3 border-t border-border pt-3"
+            >
+              <h3 className="text-sm font-semibold">Requirements and your evidence</h3>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                AI-assisted matches. Review the original excerpts. Not evidenced means absent from
+                this resume, not a lack of ability.
+              </p>
+              <ul className="space-y-3">
+                {requirementMatches.map((match) => (
+                  <li
+                    key={match.requirement}
+                    className="space-y-2 rounded-md border border-border bg-background/50 p-3 text-sm break-words"
+                  >
+                    <p className="font-medium">{match.requirement}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {match.status === 'evidence_found'
+                        ? 'Evidence found'
+                        : match.status === 'partial'
+                          ? 'Partial evidence'
+                          : 'Not evidenced in resume'}
+                    </p>
+                    {match.evidence.map((evidence) => (
+                      <blockquote
+                        key={evidence.excerpt}
+                        className="border-l-2 border-border pl-3 text-xs leading-relaxed"
+                      >
+                        <p>{evidence.excerpt}</p>
+                        <p className="mt-1 text-muted-foreground">{evidence.context}</p>
+                      </blockquote>
+                    ))}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <div className="grid grid-cols-2 gap-3">
             {fitScore.strengths.length > 0 && (
               <div>

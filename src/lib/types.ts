@@ -88,6 +88,14 @@ export interface FitScoreDimension {
   score: number;
   weight: number;
   detail: string;
+  requirement_matches?: RequirementMatch[];
+  requirement_source?: string;
+}
+
+export interface RequirementMatch {
+  requirement: string;
+  status: 'evidence_found' | 'partial' | 'not_evidenced';
+  evidence: Array<{ context: string; excerpt: string }>;
 }
 
 export interface FitScore {
