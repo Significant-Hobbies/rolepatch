@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { Resume } from '@/lib/types';
+import { EMPTY_MASTER_TEMPLATE } from '@/lib/master-resume';
 
 export async function listResumes(): Promise<Resume[]> {
   const userId = await getCurrentUserId();
@@ -28,36 +29,9 @@ export async function getResume(id: string): Promise<Resume | null> {
   return row ? (JSON.parse(JSON.stringify(row)) as Resume) : null;
 }
 
-const DEFAULT_MARKDOWN_TEMPLATE = `# Your Name
-
-your.email@example.com | (555) 123-4567 | City, ST
-[LinkedIn](https://linkedin.com/in/yourprofile) | [GitHub](https://github.com/yourprofile)
-
----
-
-## Experience
-
-**Job Title** — _Company Name_ | Start – End
-
-- Accomplishment or responsibility
-- Another accomplishment with measurable impact
-
-## Education
-
-**Degree, Major** — _University Name_ | Graduation Year
-
-Relevant coursework or honors
-
-## Skills
-
-**Languages:** JavaScript, TypeScript, Python
-**Frameworks:** React, Next.js, Node.js
-**Tools:** Git, Docker, AWS
-`;
-
 export async function createResume(
   name: string,
-  source: string = DEFAULT_MARKDOWN_TEMPLATE
+  source: string = EMPTY_MASTER_TEMPLATE
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to create resumes');

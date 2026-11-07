@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import { generateInterviewStoriesForClient } from '@/lib/actions/interview-prep-action';
 import { InterviewPrep } from '@/components/interview-prep';
 import type { InterviewStory, JobApplication, Resume } from '@/lib/types';
 
@@ -12,7 +13,7 @@ vi.mock('@/components/auth-provider', () => ({
 
 // Mock server action
 vi.mock('@/lib/actions/interview-prep-action', () => ({
-  generateInterviewStories: vi.fn(),
+  generateInterviewStoriesForClient: vi.fn(),
 }));
 
 const mockJob: JobApplication = {
@@ -78,6 +79,19 @@ describe('InterviewPrep', () => {
     render(<InterviewPrep job={mockJob} resume={mockResume} existingStories={[]} />);
     expect(screen.getByText('No interview stories yet')).toBeDefined();
     expect(screen.getByText('Generate Stories')).toBeDefined();
+  });
+
+  it('shows a friendly failure and allows retry without saving a story', async () => {
+    vi.mocked(generateInterviewStoriesForClient).mockResolvedValue({
+      success: false,
+      error: 'The AI request took too long. Please try again.',
+      retryable: true,
+    });
+    render(<InterviewPrep job={mockJob} resume={mockResume} existingStories={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Generate Stories' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The AI request took too long');
+    expect(screen.getByRole('button', { name: 'Generate Stories' })).toBeEnabled();
+    expect(screen.getByText('No interview stories yet')).toBeInTheDocument();
   });
 
   it('renders stories when provided', () => {

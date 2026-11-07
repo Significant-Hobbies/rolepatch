@@ -37,6 +37,28 @@ beforeEach(() => {
 });
 
 describe('NewJobButton', () => {
+  it('accepts a pasted description directly without fetching a URL', async () => {
+    const user = userEvent.setup();
+    mockCreateJobApplication.mockResolvedValueOnce('pasted-job');
+    render(<NewJobButton resumes={[{ id: 'resume-1', name: 'Base Resume' }]} />);
+    await user.click(screen.getByText('+ Add Job'));
+    await user.click(screen.getByText('Paste the description instead'));
+    await user.type(
+      screen.getByLabelText('Job description'),
+      'Seeking a TypeScript platform engineer to improve service reliability and coordinate incident reviews.'
+    );
+    await user.click(screen.getByText('Save pasted JD'));
+    expect(mockScrapeJobUrlSafe).not.toHaveBeenCalled();
+    expect(mockCreateJobApplication).toHaveBeenCalledWith(
+      'resume-1',
+      '',
+      'Unknown Company',
+      'Untitled Role',
+      expect.any(String),
+      expect.any(String)
+    );
+    expect(mockPush).toHaveBeenCalledWith('/tailor/pasted-job');
+  });
   it('falls back to pasted job description when scraping cannot read the posting', async () => {
     const user = userEvent.setup();
     mockScrapeJobUrlSafe.mockResolvedValueOnce({

@@ -3,7 +3,7 @@
 // Local vendored AI settings component (formerly @saas-maker/ai's AISettings).
 // Renders endpoint URL / API key / model fields with a "Fetch Models" combobox.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import type { AIConfig } from '@/lib/ai-vendor';
 import { useModelDiscovery } from '@/lib/ai-vendor-hooks';
@@ -62,6 +62,7 @@ export function AISettings({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const comboboxRef = useRef<HTMLDivElement>(null);
+  const fieldId = useId();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -86,10 +87,11 @@ export function AISettings({
   return (
     <div className={cn.container} data-smw-ai-settings>
       <div className={cn.field} data-smw-ai-field>
-        <label className={cn.label} data-smw-ai-label>
+        <label htmlFor={`${fieldId}-endpoint`} className={cn.label} data-smw-ai-label>
           {labels.endpointUrl ?? 'Endpoint URL'}
         </label>
         <input
+          id={`${fieldId}-endpoint`}
           type="text"
           value={config.endpointUrl}
           onChange={(e) => onChange({ ...config, endpointUrl: e.target.value })}
@@ -100,10 +102,11 @@ export function AISettings({
       </div>
 
       <div className={cn.field} data-smw-ai-field>
-        <label className={cn.label} data-smw-ai-label>
+        <label htmlFor={`${fieldId}-key`} className={cn.label} data-smw-ai-label>
           {labels.apiKey ?? 'API Key'}
         </label>
         <input
+          id={`${fieldId}-key`}
           type="password"
           value={config.apiKey}
           onChange={(e) => onChange({ ...config, apiKey: e.target.value })}
@@ -114,12 +117,13 @@ export function AISettings({
       </div>
 
       <div className={cn.field} data-smw-ai-field>
-        <label className={cn.label} data-smw-ai-label>
+        <label htmlFor={`${fieldId}-model`} className={cn.label} data-smw-ai-label>
           {labels.model ?? 'Model'}
         </label>
         <div style={{ position: 'relative' }} ref={comboboxRef}>
           <div className={cn.modelRow} style={{ display: 'flex', gap: '0.5rem' }}>
             <input
+              id={`${fieldId}-model`}
               type="text"
               value={config.model}
               onChange={(e) => {

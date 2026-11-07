@@ -3,6 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useAuth } from '@/components/auth-provider';
 import { createJobApplication } from '@/lib/actions/job-actions';
 import { scrapeJobUrlSafe } from '@/lib/actions/scrape-action';
@@ -73,7 +84,7 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmedUrl = url.trim();
-    if (!trimmedUrl || !resumeId) return;
+    if (!resumeId || (!manualMode && !trimmedUrl)) return;
 
     setLoading(true);
     setError('');
@@ -150,13 +161,16 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
   }
 
   return (
-    <>
-      <button
-        onClick={handleOpen}
-        className="px-4 py-2 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] hover:border-[var(--muted-foreground)] transition-colors"
-      >
-        + Add Job
-      </button>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (next) handleOpen();
+        else close();
+      }}
+    >
+      <SheetTrigger asChild>
+        <Button>+ Add Job</Button>
+      </SheetTrigger>
 
       {toast && (
         <div className="fixed bottom-4 right-4 z-50 bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-2 rounded-lg shadow-lg">
@@ -164,134 +178,136 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
         </div>
       )}
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 modal-backdrop" onClick={close} />
-          <div className="relative bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 modal-content">
-            <h2 className="text-lg font-semibold mb-5">Add Job Application</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {resumes.length > 0 && (
-                <div>
-                  <label
-                    htmlFor="new-job-resume"
-                    className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
-                  >
-                    Base Profile
-                  </label>
-                  <select
-                    id="new-job-resume"
-                    value={resumeId}
-                    onChange={(e) => setResumeId(e.target.value)}
-                    className="input-base"
-                    disabled={resumes.length === 1}
-                  >
-                    {resumes.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
+      <SheetContent
+        className="overflow-y-auto"
+        onEscapeKeyDown={(event) => {
+          if (loading) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (loading) event.preventDefault();
+        }}
+      >
+        <SheetHeader>
+          <SheetTitle>Add Job Application</SheetTitle>
+          <SheetDescription>Paste a job description or read a posting URL.</SheetDescription>
+        </SheetHeader>
+        <div className="mt-6">
+          {' '}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {resumes.length > 0 && (
               <div>
-                <label
-                  htmlFor="new-job-url"
-                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
-                >
-                  Job URL
+                <label htmlFor="new-job-resume" className="mb-2 block text-sm font-medium">
+                  Master resume
                 </label>
-                <input
-                  id="new-job-url"
-                  ref={inputRef}
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://boards.greenhouse.io/..."
-                  className="input-base"
-                />
+                <select
+                  id="new-job-resume"
+                  value={resumeId}
+                  onChange={(e) => setResumeId(e.target.value)}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs disabled:opacity-50"
+                  disabled={resumes.length === 1}
+                >
+                  {resumes.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+            )}
 
-              {manualMode && (
-                <div className="space-y-3 rounded-lg border border-[var(--border)] bg-muted/20 p-3">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="new-job-company"
-                        className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]"
-                      >
-                        Company
-                      </label>
-                      <input
-                        id="new-job-company"
-                        value={manualCompany}
-                        onChange={(event) => setManualCompany(event.target.value)}
-                        placeholder="Company name"
-                        className="input-base"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="new-job-role"
-                        className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]"
-                      >
-                        Role
-                      </label>
-                      <input
-                        id="new-job-role"
-                        value={manualRole}
-                        onChange={(event) => setManualRole(event.target.value)}
-                        placeholder="Role title"
-                        className="input-base"
-                      />
-                    </div>
+            <div>
+              <label htmlFor="new-job-url" className="mb-2 block text-sm font-medium">
+                {manualMode ? 'Job URL (optional)' : 'Job URL'}
+              </label>
+              <Input
+                id="new-job-url"
+                ref={inputRef}
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://boards.greenhouse.io/..."
+                className="w-full"
+              />
+            </div>
+
+            <Button
+              type="button"
+              onClick={() => {
+                setManualMode(!manualMode);
+                setError('');
+              }}
+              variant="link"
+              className="px-0"
+            >
+              {manualMode ? 'Read a posting URL instead' : 'Paste the description instead'}
+            </Button>
+
+            {manualMode && (
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="new-job-company" className="mb-2 block text-sm font-medium">
+                      Company
+                    </label>
+                    <Input
+                      id="new-job-company"
+                      value={manualCompany}
+                      onChange={(event) => setManualCompany(event.target.value)}
+                      placeholder="Company name"
+                      className="w-full"
+                    />
                   </div>
                   <div>
-                    <label
-                      htmlFor="new-job-jd"
-                      className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]"
-                    >
-                      Job description
+                    <label htmlFor="new-job-role" className="mb-2 block text-sm font-medium">
+                      Role
                     </label>
-                    <textarea
-                      id="new-job-jd"
-                      value={manualJd}
-                      onChange={(event) => setManualJd(event.target.value)}
-                      placeholder="Paste the job description here"
-                      className="input-base min-h-32"
+                    <Input
+                      id="new-job-role"
+                      value={manualRole}
+                      onChange={(event) => setManualRole(event.target.value)}
+                      placeholder="Role title"
+                      className="w-full"
                     />
                   </div>
                 </div>
-              )}
-
-              {error && (
-                <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                  {error}
+                <div>
+                  <label htmlFor="new-job-jd" className="mb-2 block text-sm font-medium">
+                    Job description
+                  </label>
+                  <Textarea
+                    id="new-job-jd"
+                    value={manualJd}
+                    onChange={(event) => setManualJd(event.target.value)}
+                    placeholder="Paste the job description here"
+                    className="min-h-32"
+                  />
                 </div>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={close}
-                  disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-[var(--muted-foreground)] hover:text-foreground transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !url.trim()}
-                  className="px-4 py-2 bg-white text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors"
-                >
-                  {loading ? 'Saving...' : manualMode ? 'Save pasted JD' : 'Add Job'}
-                </button>
               </div>
-            </form>
-          </div>
+            )}
+
+            {error && (
+              <div
+                role="alert"
+                className="text-sm text-red-700 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+              >
+                {error}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button type="button" onClick={close} disabled={loading} variant="outline">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading || (manualMode ? manualJd.trim().length < 50 : !url.trim())}
+              >
+                {loading ? 'Saving...' : manualMode ? 'Save pasted JD' : 'Add Job'}
+              </Button>
+            </div>
+          </form>
         </div>
-      )}
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

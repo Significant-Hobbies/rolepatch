@@ -1,0 +1,253 @@
+@font-face{font-family:Geist;src:url('/fonts/geist-latin.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+.precision-surface * { box-sizing:border-box }
+.precision-surface { scroll-behavior:smooth }
+.precision-surface { margin:0;font:15px/1.6 Geist,system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased }
+.precision-surface a { color:inherit;text-decoration:none }
+.precision-surface button { font:inherit;color:inherit;cursor:pointer }
+.precision-surface h1, .precision-surface h2, .precision-surface h3, .precision-surface h4, .precision-surface p { margin:0 }
+.precision-surface h1, .precision-surface h2 { font-weight:450;letter-spacing:-.04em;line-height:1.08 }
+.precision-surface h1 em, .precision-surface h2 em { font-weight:inherit }
+.precision-surface p { color:var(--muted) }
+.precision-surface strong { font-weight:550 }
+.precision-surface a:focus-visible, .precision-surface button:focus-visible, .precision-surface summary:focus-visible { outline:2px solid var(--accent);outline-offset:5px }
+.precision-surface .shell { width:min(1232px,calc(100% - 96px));margin:auto }
+.precision-surface .nav { height:88px;display:flex;align-items:center;gap:32px;border-bottom:1px solid var(--line) }
+.precision-surface .brand { font-size:21px;letter-spacing:-.055em;font-weight:630;display:flex;align-items:center;gap:12px }
+.precision-surface .brand svg { width:29px;height:27px;flex:none;color:var(--accent) }
+.precision-surface .navlinks { display:flex;gap:28px;margin-left:auto;align-items:center;font-size:13px }
+.precision-surface .nav .signin { margin-left:16px;font-size:13px }
+.precision-surface .btn { display:inline-flex;align-items:center;justify-content:space-between;gap:26px;min-height:48px;padding:12px 22px;background:var(--accent);color:var(--on);border:1px solid transparent;border-radius:5px;font-size:13px;font-weight:550;transition:background .2s,transform .2s }
+.precision-surface .btn:hover { transform:translateY(-1px) }
+.precision-surface .btn.quiet { background:transparent;border-color:var(--line);color:var(--ink) }
+.precision-surface .text-link { display:inline-flex;gap:18px;align-items:center;font-size:13px;min-height:44px;border-bottom:1px solid var(--line) }
+.precision-surface .eyebrow { font-size:11px;letter-spacing:.075em;color:var(--muted);display:flex;align-items:center;gap:12px }
+.precision-surface .eyebrow:before { content:'';height:5px;width:5px;background:var(--accent);display:block }
+.precision-surface .hero { padding:66px 0 54px }
+.precision-surface .hero h1 { font-size:clamp(60px,7.6vw,109px);line-height:1.02 }
+.precision-surface .hero .lede { font-size:16px;line-height:1.8;max-width:430px }
+.precision-surface .hero .actions { display:flex;gap:27px;align-items:center;margin-top:26px }
+.precision-surface .access-note { font-size:11px;margin-top:18px }
+.precision-surface .proof-stage { position:relative }
+.precision-surface .stage-cap { font-size:11px;display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-top:1px solid var(--line);color:var(--muted) }
+.precision-surface .paper { background:#fff;color:#202225;padding:40px 42px;border:1px solid #e2e0dd;box-shadow:0 16px 40px #2222220a;position:relative }
+.precision-surface .paper .person { font:500 32px/1.12 Georgia,serif;letter-spacing:-.025em;color:#23242a }
+.precision-surface .paper .contact { font-size:10px;line-height:1.7;color:#63656a;margin:7px 0 25px }
+.precision-surface .paper h4 { font-size:9px;letter-spacing:.1em;font-weight:600;color:#50525a;margin:20px 0 10px;text-transform:uppercase;border-bottom:1px solid #dedee0;padding-bottom:6px }
+.precision-surface .paper p, .precision-surface .paper li { font-size:11px;line-height:1.85;color:#34363c }
+.precision-surface .paper .job { display:flex;justify-content:space-between;gap:15px;font-size:10px;line-height:1.7 }
+.precision-surface .paper .job strong { font-weight:650 }
+.precision-surface .paper ul { padding-left:14px;margin:10px 0 0 }
+.precision-surface .paper li+li { margin-top:5px }
+.precision-surface .paper mark, .precision-surface .patch ins { color:#215943;background:#e6f0e7;text-decoration:none;padding:1px 2px }
+.precision-surface .paper .num { position:absolute;right:17px;color:var(--accent);font-size:9px }
+.precision-surface .paper .page-num { display:flex;justify-content:space-between;font-size:8px;color:#66666b;margin-top:27px;padding-top:8px;border-top:1px solid #e9e9e9 }
+.precision-surface .note-rail { display:flex;flex-direction:column;justify-content:center;gap:28px }
+.precision-surface .note { border-top:1px solid var(--line);padding-top:15px }
+.precision-surface .note .index { font-size:11px;color:var(--accent);margin-bottom:8px }
+.precision-surface .note h3 { font-size:15px;line-height:1.4;font-weight:520;letter-spacing:-.015em;margin-bottom:6px }
+.precision-surface .note p { font-size:12px;line-height:1.8 }
+.precision-surface .note .source { font-size:10px;margin-top:10px;color:var(--accent) }
+.precision-surface .role-card { padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:3px }
+.precision-surface .role-card h3 { font-size:19px;font-weight:450;line-height:1.35;letter-spacing:-.02em;margin:11px 0 }
+.precision-surface .role-card p { font-size:11px }
+.precision-surface .role-card .requirement { font-size:12px;line-height:1.9;margin-top:20px;padding-top:17px;border-top:1px solid var(--line);color:var(--ink) }
+.precision-surface .role-card .requirement span { display:block;font-size:10px;color:var(--muted);margin-bottom:7px }
+.precision-surface .bridge { padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:24px;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:50px }
+.precision-surface .bridge strong { color:var(--ink);font-weight:500 }
+.precision-surface .section { padding:105px 0 }
+.precision-surface .section-head { display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:42px }
+.precision-surface .section-head h2 { font-size:clamp(36px,4.1vw,57px);margin-top:16px }
+.precision-surface .section-head>p { max-width:480px;font-size:15px;line-height:1.9 }
+.precision-surface .patch { padding:36px;border:1px solid var(--line);background:var(--panel);border-radius:3px }
+.precision-surface .patch .patch-top { display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:25px }
+.precision-surface .patch .old { padding-bottom:25px;border-bottom:1px solid var(--line) }
+.precision-surface .patch .new { padding-top:25px }
+.precision-surface .patch .mini-label { display:block;font-size:10px;color:var(--muted);margin-bottom:10px }
+.precision-surface .patch blockquote { font-size:24px;line-height:1.65;margin:0;font-weight:420;letter-spacing:-.02em }
+.precision-surface .patch .old blockquote { color:var(--muted);font-size:19px }
+.precision-surface .patch .explain { margin-top:24px;padding-top:19px;border-top:1px solid var(--line);font-size:12px;line-height:1.85 }
+.precision-surface .proof-foot { display:flex;justify-content:space-between;gap:25px;margin-top:24px;font-size:12px }
+.precision-surface .proof-foot p { max-width:560px }
+.precision-surface .method .process { display:grid;grid-template-columns:repeat(3,1fr);gap:50px;padding-top:35px;border-top:1px solid var(--line) }
+.precision-surface .process .step-no { font-size:13px;color:var(--accent);display:block;margin-bottom:26px }
+.precision-surface .process h3 { font-size:23px;line-height:1.3;font-weight:450;letter-spacing:-.025em;margin-bottom:14px }
+.precision-surface .process p { font-size:13px;line-height:1.9 }
+.precision-surface .process .format { font-size:10px;letter-spacing:.05em;color:var(--muted);border-top:1px solid var(--line);padding-top:13px;margin-top:30px }
+.precision-surface .export-section { background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line) }
+.precision-surface .exports { display:grid;grid-template-columns:1fr 1fr;gap:110px;align-items:center }
+.precision-surface .exports h2 { font-size:56px;line-height:1.12;margin-top:17px }
+.precision-surface .exports .body { margin:25px 0 26px;font-size:15px;max-width:410px }
+.precision-surface .file-list { border-top:1px solid var(--line) }
+.precision-surface .file { display:grid;grid-template-columns:80px 1fr 30px;gap:25px;align-items:center;padding:23px 0;border-bottom:1px solid var(--line) }
+.precision-surface .file .ext { font:400 23px Georgia,serif;letter-spacing:-.04em;color:var(--accent) }
+.precision-surface .file h3 { font-size:16px;font-weight:500 }
+.precision-surface .file p { font-size:11px;margin-top:3px }
+.precision-surface .file .arrow { font-size:19px;color:var(--muted) }
+.precision-surface .export-meta { font-size:11px;margin-top:22px;max-width:410px }
+.precision-surface .pricing { display:grid;grid-template-columns:1fr 1fr;gap:110px }
+.precision-surface .pricing h2 { font-size:55px;margin:18px 0 24px }
+.precision-surface .pricing .description { font-size:14px;max-width:390px;line-height:1.9 }
+.precision-surface .access-row { padding:22px 0;border-top:1px solid var(--line);display:flex;gap:30px;justify-content:space-between;align-items:start }
+.precision-surface .access-row p { font-size:12px;max-width:320px;margin-top:6px }
+.precision-surface .access-row strong { font-size:16px }
+.precision-surface .access-row .sub { font-size:10px;color:var(--muted) }
+.precision-surface .price-row { display:flex;gap:24px;align-items:baseline;justify-content:space-between;border-top:1px solid var(--line);padding:22px 0 }
+.precision-surface .price-row b { font-size:30px;font-weight:400;letter-spacing:-.035em }
+.precision-surface .price-row>span { font-size:13px }
+.precision-surface .price-row small { font-size:10px;color:var(--muted) }
+.precision-surface .price-row:last-of-type { border-bottom:1px solid var(--line) }
+.precision-surface .pricing-note { font-size:11px;margin-top:22px }
+.precision-surface .faq-section { border-top:1px solid var(--line) }
+.precision-surface .faq { display:grid;grid-template-columns:1fr 1.3fr;gap:100px }
+.precision-surface .faq h2 { font-size:50px;margin:18px 0 25px }
+.precision-surface .faq details { border-top:1px solid var(--line) }
+.precision-surface .faq details:last-child { border-bottom:1px solid var(--line) }
+.precision-surface .faq summary { list-style:none;cursor:pointer;min-height:72px;display:flex;justify-content:space-between;gap:30px;align-items:center;font-size:15px;letter-spacing:-.012em }
+.precision-surface .faq summary::after { content:'+';font-size:23px;color:var(--muted);font-weight:300 }
+.precision-surface .faq details[open] summary:after { content:'−' }
+.precision-surface .faq details p { font-size:13px;line-height:1.9;max-width:510px;padding-bottom:26px }
+.precision-surface .closing { text-align:center;padding:100px 0 108px;border-top:1px solid var(--line) }
+.precision-surface .closing .eyebrow { justify-content:center }
+.precision-surface .closing h2 { font-size:clamp(46px,6vw,80px);margin:22px 0 30px }
+.precision-surface .closing .access-note { margin-top:21px }
+.precision-surface.precision { --bg:#fcfcfb;--ink:#191c20;--muted:#686c74;--accent:#20252d;--on:#fff;--panel:#f2f3f2;--line:#dfe1e3 }
+.precision-surface.precision h1 em { font-style:normal;color:#7b8088 }
+.precision-surface.precision .hero { text-align:center;padding:63px 0 38px }
+.precision-surface.precision .hero .eyebrow { justify-content:center;margin-bottom:22px }
+.precision-surface.precision .hero h1 { font-size:clamp(60px,6vw,86px);font-weight:550;letter-spacing:-.045em }
+.precision-surface.precision .hero .lede { max-width:510px;margin:24px auto 0;font-size:16px }
+.precision-surface.precision .hero .actions { justify-content:center;margin-top:23px }
+.precision-surface.precision .access-note { margin-top:12px }
+.precision-surface.precision .proof-stage { background:#e9eceb;border:1px solid #dadddd;border-radius:11px;overflow:hidden;padding:0;box-shadow:0 30px 65px #172e2610 }
+.precision-surface.precision .stage-cap { background:#f8f9f8;border-top:0;border-bottom:1px solid #dadddd;padding:13px 20px }
+.precision-surface .workbench { display:grid;grid-template-columns:235px 1fr 1fr;gap:1px;background:#d6dbd8 }
+.precision-surface .workbench .role-card { border:0;border-radius:0;background:#f7f8f7;padding:22px }
+.precision-surface .workbench .paper-wrap { background:#e9eceb;padding:22px }
+.precision-surface .workbench .paper { padding:27px 30px;box-shadow:0 12px 20px #22332707 }
+.precision-surface .workbench .paper .person { font-size:26px }
+.precision-surface .workbench .paper .contact { font-size:9px;margin-bottom:19px }
+.precision-surface .workbench .paper h4 { margin-top:17px }
+.precision-surface .workbench .paper p, .precision-surface .workbench .paper li { font-size:10px }
+.precision-surface .workbench .paper-wrap .doc-label { display:flex;justify-content:space-between;font-size:10px;color:#606863;margin-bottom:12px }
+.precision-surface .workbench .paper-wrap.base .paper mark { color:inherit;background:transparent }
+.precision-surface .workbench .paper-wrap.base .paper .num { display:none }
+.precision-surface .workbench .source-note { margin-top:25px;border-top:1px solid var(--line);padding-top:17px }
+.precision-surface .workbench .source-note strong { font-size:12px }
+.precision-surface .workbench .source-note p { font-size:11px;margin-top:7px;line-height:1.8 }
+.precision-surface.precision .bridge { margin-top:30px;padding:22px 0 }
+.precision-surface.precision .proof-section { margin-top:90px;background:#181d22;color:#f3f6f7;--ink:#f3f6f7;--muted:#b0b7bc;--line:#3b4249;--panel:#21272e;--accent:#b5daca;--on:#172b22 }
+.precision-surface.precision .proof-section .section-head { grid-template-columns:1fr 1fr }
+.precision-surface.precision .proof-section h2 { font-weight:450;letter-spacing:-.045em;font-size:51px }
+.precision-surface.precision .proof-detail { display:grid;grid-template-columns:1.3fr 1fr;gap:50px }
+.precision-surface.precision .annotation-copy { grid-column:2;grid-row:1;align-self:center }
+.precision-surface.precision .annotation-copy h3 { font-size:25px;margin-bottom:15px;font-weight:450 }
+.precision-surface.precision .annotation-copy p { font-size:14px }
+.precision-surface.precision .fact-line { display:flex;gap:24px;margin-top:28px;font-size:11px;color:var(--muted) }
+.precision-surface.precision .patch blockquote { font-size:25px }
+.precision-surface.precision .patch .old blockquote { font-size:19px }
+.precision-surface.precision .process { display:block;padding-top:0 }
+.precision-surface.precision .process article { display:grid;grid-template-columns:80px 1fr 1fr 160px;gap:30px;padding:28px 0;border-bottom:1px solid var(--line);align-items:center }
+.precision-surface.precision .process .step-no, .precision-surface.precision .process h3, .precision-surface.precision .process .format { margin:0 }
+.precision-surface.precision .process .format { padding:0;border:0;text-align:right }
+.precision-surface.precision .process h3 { font-size:23px }
+.precision-surface.precision .exports h2, .precision-surface.precision .pricing h2, .precision-surface.precision .faq h2 { font-size:48px }
+.precision-surface.precision .exports { gap:80px }
+.precision-surface.precision .file .ext { font-family:Geist;font-size:19px }
+.precision-surface.precision .closing h2 { font-size:72px;font-weight:500 }
+.precision-surface .review-end { margin-top:30px;border-top:1px solid var(--line);padding-top:16px;font-size:11px;color:var(--muted) }
+@media(max-width:1050px){.precision-surface .shell { width:calc(100% - 56px) }
+.precision-surface .navlinks { gap:20px }
+.precision-surface .nav .signin { display:none }
+.precision-surface .workbench { grid-template-columns:170px 1fr 1fr }
+.precision-surface .workbench .paper-wrap { padding:15px }
+.precision-surface .workbench .paper { padding:24px 20px }
+.precision-surface .workbench .role-card { padding:19px 16px }
+.precision-surface .section-head, .precision-surface .exports, .precision-surface .pricing, .precision-surface .faq { gap:50px }}
+@media(max-width:700px){.precision-surface .shell { width:calc(100% - 40px) }
+.precision-surface .nav { height:73px;gap:18px }
+.precision-surface .brand { font-size:19px;gap:9px }
+.precision-surface .brand svg { width:24px;height:24px }
+.precision-surface .navlinks { display:none }
+.precision-surface .nav>.btn { margin-left:auto;min-height:42px;padding:9px 13px;font-size:11px;gap:14px }
+.precision-surface .hero { padding:39px 0 35px }
+.precision-surface .hero h1, .precision-surface.precision .hero h1 { font-size:55px;letter-spacing:-.052em }
+.precision-surface .hero .lede { font-size:14px;line-height:1.85 }
+.precision-surface .hero .actions { gap:18px;margin-top:22px }
+.precision-surface .hero .eyebrow { font-size:10px }
+.precision-surface .access-note { font-size:10px }
+.precision-surface .note p { font-size:11px }
+.precision-surface .paper .person { font-size:28px }
+.precision-surface .paper .contact { font-size:9px }
+.precision-surface .paper p, .precision-surface .paper li { font-size:10px }
+.precision-surface .paper .job { font-size:9px }
+.precision-surface .bridge { margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:15px;font-size:10px;padding:20px 0 }
+.precision-surface .bridge span:last-child { grid-column:1/-1 }
+.precision-surface .section { padding:64px 0 }
+.precision-surface .section-head { display:block;margin-bottom:28px }
+.precision-surface .section-head h2, .precision-surface .exports h2, .precision-surface .pricing h2, .precision-surface .faq h2, .precision-surface.precision .exports h2, .precision-surface.precision .pricing h2, .precision-surface.precision .faq h2, .precision-surface.precision .proof-section h2 { font-size:39px;line-height:1.15 }
+.precision-surface .section-head>p { margin-top:23px;font-size:13px;line-height:1.85 }
+.precision-surface.precision .proof-detail { display:flex;flex-direction:column;gap:30px }
+.precision-surface.precision .annotation-copy p { font-size:13px }
+.precision-surface .patch { padding:25px }
+.precision-surface .patch blockquote, .precision-surface.precision .patch blockquote { font-size:21px }
+.precision-surface .patch .old blockquote, .precision-surface.precision .patch .old blockquote { font-size:17px }
+.precision-surface .patch .explain { font-size:11px }
+.precision-surface .patch .patch-top { font-size:10px;gap:18px }
+.precision-surface .proof-foot { display:block;font-size:11px }
+.precision-surface .proof-foot .text-link { margin-top:20px }
+.precision-surface .method .process { display:block;padding-top:0 }
+.precision-surface .process article { border-top:1px solid var(--line);padding:24px 0;display:grid;grid-template-columns:35px 1fr;gap:10px 16px }
+.precision-surface .process h3 { font-size:23px }
+.precision-surface .process p, .precision-surface .process .format { grid-column:2 }
+.precision-surface .process .step-no { margin:0;padding-top:4px }
+.precision-surface .process .format { border:0;padding-top:5px;margin-top:3px }
+.precision-surface .exports, .precision-surface .pricing, .precision-surface .faq { display:block }
+.precision-surface .exports .body { font-size:13px;margin-top:21px }
+.precision-surface .file-list { margin-top:40px }
+.precision-surface .file { grid-template-columns:62px 1fr 20px;gap:20px }
+.precision-surface .file .ext { font-size:22px }
+.precision-surface .file h3 { font-size:14px }
+.precision-surface .file p { font-size:10px }
+.precision-surface .pricing .description { font-size:13px }
+.precision-surface .pricing .pricing-ledger { margin-top:34px }
+.precision-surface .price-row b { font-size:29px }
+.precision-surface .faq .answers { margin-top:33px }
+.precision-surface .faq summary { font-size:13px;min-height:67px }
+.precision-surface .faq details p { font-size:12px }
+.precision-surface .closing { padding:64px 20px }
+.precision-surface .closing h2, .precision-surface.precision .closing h2 { font-size:49px;line-height:1.14 }
+.precision-surface.precision .hero { padding-top:41px;text-align:left }
+.precision-surface.precision .hero .eyebrow { justify-content:start;margin-bottom:20px }
+.precision-surface.precision .hero .lede { font-size:14px;margin:23px 0 0 }
+.precision-surface.precision .hero .actions { justify-content:start }
+.precision-surface.precision .proof-stage { border-radius:6px }
+.precision-surface.precision .stage-cap { font-size:9px;padding:12px 14px;gap:15px }
+.precision-surface .workbench { display:flex;flex-direction:column;gap:0 }
+.precision-surface .workbench .role-card { display:none }
+.precision-surface .workbench .paper-wrap { padding:19px }
+.precision-surface .workbench .paper-wrap.base { display:none }
+.precision-surface .workbench .paper { padding:27px 26px }
+.precision-surface .workbench .paper .person { font-size:28px }
+.precision-surface.precision .proof-section { margin-top:60px }
+.precision-surface.precision .process article { display:grid;grid-template-columns:35px 1fr;gap:10px 16px;align-items:start;border-bottom:0 }
+.precision-surface.precision .process h3 { font-size:23px }
+.precision-surface.precision .process .format { text-align:left }}
+@media(prefers-reduced-motion:reduce){.precision-surface { scroll-behavior:auto }
+.precision-surface .btn { transition:none }
+.precision-surface .btn:hover { transform:none }}
+/* Native header adaptation; identity stays consistent with the frozen footer. */
+.precision-surface { background: var(--bg); color: var(--ink); font-family: Geist, system-ui, sans-serif; }
+.precision-surface .site-header { position: static; background: transparent; backdrop-filter: none; border: 0; }
+.precision-surface .header-inner { height: 88px; padding: 0; border-bottom: 1px solid var(--line); gap: 32px; }
+.precision-surface .brand-link { font-size: 21px; font-weight: 630; letter-spacing: -.045em; gap: 12px; }
+.precision-surface .brand-mark { background: var(--accent); color: white; width: 29px; height: 29px; border-radius: 5px; font-size: 18px; box-shadow: none; }
+.precision-surface .desktop-nav { margin-left: auto; gap: 28px; font-size: 13px; }
+.precision-surface .header-cta { background: var(--accent); color: white; border: 0; border-radius: 5px; box-shadow: none; padding: 12px 22px; min-height: 48px; font-size: 13px; }
+.precision-surface a:hover { opacity: .85; }
+.precision-surface section[id] { scroll-margin-top: 24px; }
+.precision-surface .paper h3 { font-family: Georgia, serif; }
+@media(max-width:1050px) { .precision-surface .desktop-nav { gap: 18px; } }
+@media(max-width:700px) { .precision-surface .header-inner { height:73px;gap:18px; } .precision-surface .brand-link {font-size:19px;gap:9px;} .precision-surface .desktop-nav{display:none;} .precision-surface .header-cta{margin-left:auto;padding:9px 13px;font-size:11px;gap:14px;min-height:44px;} .precision-surface .hero h1{letter-spacing:-.045em;} }
+/* Supersede legacy section padding inside the new body, without touching shared CSS. */
+.precision-surface .proof-section, .precision-surface .faq-section { padding-block: 0; border-bottom: 0; }
+@media(max-width:700px) { .precision-surface.precision .hero h1 { letter-spacing: -.045em; } }

@@ -9,8 +9,15 @@ import { getJobApplication, getTailoredResumes } from '@/lib/actions/job-actions
 import { listResumes } from '@/lib/actions/resume-actions';
 import { listStashEntries } from '@/lib/actions/stash-actions';
 
-export default async function TailorPage({ params }: { params: Promise<{ jobId: string }> }) {
+export default async function TailorPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ jobId: string }>;
+  searchParams: Promise<{ version?: string | string[] }>;
+}) {
   const { jobId } = await params;
+  const version = (await searchParams).version;
   const job = await getJobApplication(jobId);
 
   const [resumes, tailored, fitScore, stashEntries, evidenceEntries] = await Promise.all([
@@ -23,15 +30,20 @@ export default async function TailorPage({ params }: { params: Promise<{ jobId: 
   const resume = job ? (resumes.find((item) => item.id === job.resume_id) ?? null) : null;
 
   return (
-    <main className="h-screen flex flex-col">
-      <header className="flex items-center justify-between px-6 py-3 border-b">
+    <main className="precision-app precision-workspace flex flex-col">
+      <header className="precision-workspace-heading">
         <div>
-          <h1 className="font-semibold">{job?.role ?? 'Tailor resume'}</h1>
+          <p className="precision-crumb">Your workspace / Resume tailoring</p>
+          <h1>Your experience, for this role.</h1>
           <p className="text-sm text-[var(--muted-foreground)]">
-            {job?.company ?? 'Choose a saved profile and project proof'}
+            Tailor your base resume to this role, then review every change. Your original stays
+            preserved.
           </p>
         </div>
-        <Link href="/" className="text-sm text-[var(--muted-foreground)] hover:text-gray-700">
+        <Link
+          href="/dashboard"
+          className="text-sm text-[var(--muted-foreground)] hover:text-primary"
+        >
           Back
         </Link>
       </header>
@@ -44,6 +56,7 @@ export default async function TailorPage({ params }: { params: Promise<{ jobId: 
         serverEvidence={evidenceEntries}
         existingTailored={tailored}
         existingFitScore={fitScore}
+        initialVersionId={typeof version === 'string' ? version : undefined}
       />
     </main>
   );

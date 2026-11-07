@@ -1,6 +1,605 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-09-09
+Last updated: 2026-10-09
+
+## Readable master inputs and dark mode — 9 October (current release)
+
+Resume details and achievements are readable content with focused Edit controls.
+Done applies a local edit; Cancel preserves the original and Save persists the
+master. Temporarily empty points cannot disappear while typing. New Resume asks
+for one of five sections at a time, with individual achievements, Back/Next and
+Save draft. Original ranges preserve links, CRLF, pins and untouched source bytes.
+
+The top-right appearance control offers Light, Dark and System. Preferences
+persist in this browser; System follows device changes. Sidebar, cards, native
+inputs, Radix portals and editor controls use scoped official Zinc dark tokens.
+Resume paper, landing bytes and footer stay unchanged. No new dependencies.
+
+Worker `c9ee0967-f593-4fc9-974a-c7712d0a0727` serves 100% traffic, tagged
+`rolepatch-inputs-dark-20261009`. 682 unit tests, 34 built desktop/mobile E2E,
+full production and extension builds, typecheck/lint, 18 route checks, seven
+local smoke checks and seven public production checks pass. Light/dark forms
+were reviewed at phone, tablet and desktop widths; real browser tests qualify
+persistence, System updates, portal colors and exact footer preservation.
+
+Fresh signed-in Chrome confirms the complete owner master with 34 editable points,
+two pins, existing jobs/history and the released dark theme. This review made no
+cloud resume edits, spent no credits and submitted no applications. Own verified
+source was copied back after baseline conflict checks; existing staged work is
+preserved. The owner no-commit/no-push boundary remains in force. This is a
+verified uncommitted artifact based on `d22cd94`, without a main/CI parity claim.
+No migrations, secrets or production configuration changes. External OAuth-client
+and fresh authenticated API-write qualification remain separate in
+[#12](https://github.com/Significant-Hobbies/rolepatch/issues/12).
+
+## Official shadcn Inset workspace — 9 October (previous release)
+
+Owner-selected option 1 (“One is fine.”) is live. Resume Builder and Jobs are
+still the only primary destinations. The app uses official MIT shadcn New York
+components, Zinc tokens and Geist, with accessible Sidebar, Sheet, Tabs, Table,
+Checkbox and form controls. Master editing, Always include, education, projects,
+JD intake, saved versions and application stages retain their existing behavior.
+The Astro landing bytes and footer markup are unchanged.
+
+Worker `7d3080ea-4917-42c0-b24b-54d881780f1f` serves 100% traffic with tag
+`rolepatch-shadcn-20261009`. This is a verified uncommitted artifact based on
+`d22cd94`; no main/CI parity claim. The isolated integration source was copied
+back after checking every changed file against its preserved baseline. Existing
+staged work remains intact. No commit/push, migration, secret or production
+configuration changes were made in this UI release.
+
+677 unit tests, 32 built desktop/mobile E2E, full Worker/Astro and extension
+builds, typecheck/lint, 18 route checks, seven local smoke checks, docs, Wrangler
+dry-run and the design completion gate pass. All seven public production smoke
+checks pass. The release verifier CLI was corrected to execute in paths with
+spaces; a failing-command regression proves it cannot silently skip the gates.
+
+Fresh regular-Chrome landing-to-app navigation uses the signed-in owner session.
+The owned master shows 34 points, two Always include pins and saved state. Jobs
+shows two existing jobs with one and three saved resumes; the existing Glean
+version exposes its exact-version link and Markdown export. These checks were
+read-only: no production resume edits, credit spending or application submission.
+Fresh authenticated API writes and an external ChatGPT OAuth exchange remain
+unqualified in [#12](https://github.com/Significant-Hobbies/rolepatch/issues/12).
+This supersedes earlier browser-access/master-transfer qualification limits.
+
+Design: `.fleet/design-review-shadcn-official-20261008.json`;
+tracking: [#15](https://github.com/Significant-Hobbies/rolepatch/issues/15).
+Dated sections below are historical release checkpoints, not the current Worker.
+
+## Assistant OAuth — 8 October (deployed)
+
+Standard assistant OAuth is deployed at `https://rolepatch.com/api/mcp`, with a
+separate REST audience at `/api/resume`. The owner-approved Better Auth/MCP
+1.7.7 provider supplies registration, PKCE S256, signed consent, refresh and
+revocation. Existing Settings contains explicit allow/cancel consent naming the
+client callback host, owned master access, credits and History. Access JWTs last
+five minutes and renewal is bounded by seven days plus the active session.
+Disconnect invalidates the linked session immediately. Existing scoped bearer,
+inline guest requests and opt-in MCP History remain compatible.
+
+Worker `54bf7f32-2254-4540-a1e5-bf9535e384e0` serves 100% traffic; tag
+`d22cd94-local-2303f21c791f` identifies the verified uncommitted artifact based on
+`d22cd94`. The eight approved additive provider tables were applied and all
+fields read back against the published schema. No existing resume rows were
+modified by the migration. Remote variables, landing bytes and footer are
+preserved; no commit/push, secrets or production configuration changes, and no
+main/CI parity claim.
+
+676 unit tests, 32 built desktop/mobile E2E, full Worker/Astro and extension
+builds, typecheck/lint, 18 route checks, local smoke, docs and the fresh preserve
+receipt pass. Actual isolated Worker/D1/provider checks pass signed consent
+allow/deny, owned masters, JD-only MCP and REST generation, exact Jobs History,
+refresh and disconnect/old-token 401. Negative and concurrent code-replay tests
+use the real provider and SQLite. These synthetic local sessions do not qualify
+actual Google login or an external ChatGPT OAuth client.
+
+Fresh live checks use ordinary public DNS: seven unchanged smoke assertions,
+public resource/issuer metadata and public-only JWKS, disconnected-tool challenge,
+invalid bearer rejection, and the complete landing/CTA/master onboarding/JD path
+at 390/768/1440 pass. Three synthetic live resume outputs preserve every point,
+project, identity and education and include summaries. Frontend uses the disclosed
+source fallback; backend and agent cases use AI. No applications are submitted.
+The ordinary Chrome Builder exposes the prepared owner master and its pins from
+browser-local data. Transfer of that master into account storage and signed-in
+generation/persistence qualification are still being completed.
+
+The dependency audit is not clean: 21 advisories remain. Runtime applicability
+was checked for the critical/high findings; unused Express, Astro cache tooling,
+source-map tooling and native Sharp package markers are absent from the Worker
+handler, and Next image optimization is disabled with no remote patterns. Patch
+work is [#14](https://github.com/Significant-Hobbies/rolepatch/issues/14).
+Shared provider root cause remains [#11](https://github.com/Significant-Hobbies/rolepatch/issues/11).
+External OAuth-client and signed-in production qualification remain
+[#12](https://github.com/Significant-Hobbies/rolepatch/issues/12).
+Setup: [OAuth runbook](docs/operations/runbooks/resume-oauth.md);
+[ADR-0015](docs/architecture/decisions/0015-assistant-resume-oauth.md).
+
+## Resume availability and scoped API access — 8 October (deployed)
+
+RolePatch now returns a source-preserving fallback if model generation or factual
+validation fails. It ranks intact points and complete projects by text relevance
+and composes a summary from complete master achievements, excluding stack/date
+metadata from achievement selection. Every source point, project, pin, date,
+contact and education remains intact. The API discloses source_fallback and a
+failed AI debit is refunded. Shared-budget/auth/input/credit/storage failures
+still fail explicitly; upstream provider reliability is not certified.
+
+Account Settings now has an optional **Connect your resume API** disclosure.
+An explicitly issued bearer capability connects API/stdio clients to owned cloud
+masters and History; with one master, JD-only calls can omit the master ID. It
+is bound to a live Better Auth session, expires within 24 hours and is revoked
+by ending that session. Disconnect signs out only the linked session. Tokens
+are masked and never stored in browser storage. MCP saves remain opt-in.
+ChatGPT OAuth is separate and unimplemented. The two primary workspaces,
+approved fonts/colors and frozen landing/footer remain unchanged.
+
+Fresh qualification: 670 unit tests, 32 built desktop/mobile E2E, full
+Cloudflare/Astro and extension builds, typecheck/lint, 17 route checks, seven
+local smoke checks, docs and final preserve design receipt pass. Real local
+Cloudflare Worker, isolated D1 and Better Auth verify issuance, owner isolation,
+JD-only/default API History, exact stored output, actual stdio bridge, and
+disconnect/old-token 401. Local SQL tests also qualify forgery/expiry/scope,
+concurrent guest isolation and credit/refund. This is synthetic local account
+evidence, not Google OAuth or signed-in production qualification.
+
+Worker `42423168-40da-44d3-82d7-59de945e18e0` serves 100% traffic; tag
+`d22cd94-local-92bd037e7916` identifies the verified uncommitted artifact. Seven
+public smoke assertions using native HTTP, four live guest Builder/History E2E and three live
+synthetic JD resume calls pass. All preserve complete points, education and
+identity; no cloud data or applications were written by live probes. Original
+owner master produced three re-inspected local outage-path samples for frontend,
+backend and agents roles; those are not provider-quality benchmarks.
+
+No commit/push, migration, new production dependency, secret or production-config
+change. Remote vars preserved; no main/CI parity claim. Landing hash is unchanged. Default Node public checks had connection/body timeouts;
+actual Chromium UI and native curl HTTP/1.1 qualification use unchanged assertions
+through a freshly verified public DNS IPv6 address, selected only in test clients.
+The failed transport checkpoints remain recorded, without a global availability claim.
+Fresh post-deploy landing browser navigation still timed out before entry controls;
+that handoff is unqualified. The pre-release public-to-candidate handoff passed.
+Shared AI reliability remains [#11](https://github.com/Significant-Hobbies/rolepatch/issues/11).
+Signed-in production History/API persistence remains unqualified because normal
+browser control is unavailable; accessible isolated sessions are guests. The
+owner's Google authorization remains granted. Track this and external assistant
+qualification in [#12](https://github.com/Significant-Hobbies/rolepatch/issues/12).
+Decisions: [ADR-0013](docs/architecture/decisions/0013-session-bound-resume-api-access.md),
+[ADR-0014](docs/architecture/decisions/0014-source-preserving-provider-fallback.md).
+
+## Two-workspace Outline — 8 October (deployed)
+
+The owner-selected Outline is released: **Resume Builder** holds the complete
+master, projects, education, editable points/pins, sources and extra experience;
+**Jobs** holds intake, status, application preparation and exact-resume History.
+Settings is in the account menu; the credit badge is informational and purchase
+links remain contextual. Existing links, approved fonts/colors and the frozen
+Astro landing/footer are preserved. See [app surfaces](docs/product/surfaces.md)
+and [issue #13](https://github.com/Significant-Hobbies/rolepatch/issues/13).
+
+Fresh qualification passes 655 unit tests, 32 built-server desktop/mobile tests,
+full Cloudflare/Astro and extension builds, typecheck/lint, 17 route checks,
+seven local and seven public smoke checks, docs and the final design receipt.
+Four additional live guest Builder/History tests pass. The actual public CTA,
+complete onboarding, second-master selection, pasted JD handoff and responsive
+navigation pass live; no application was submitted and no cloud data was saved.
+The duplicate discovery form/tips found during verification was removed.
+
+Worker `7a853237-54c9-4b6e-8dfc-13f85600e6d9` serves 100% traffic;
+tag `d22cd94-local-7c7e29250d77` identifies the verified uncommitted artifact.
+Landing SHA256 remains identical to the preceding release. No commit/push,
+migration, new production dependency, secret or production-config change;
+no main/CI parity claim. Shared AI reliability remains [#11](https://github.com/Significant-Hobbies/rolepatch/issues/11);
+authenticated production History/API persistence and account-linked assistant
+integration remain unqualified in [#12](https://github.com/Significant-Hobbies/rolepatch/issues/12).
+
+## Direct resume API and dashboard History — 8 October (deployed; generation limited)
+
+Plain JSON `POST /api/resume` returns a resume for a JD through the existing
+assistant action. Authenticated calls use owned cloud masters and save immutable
+versions to History by default; guests supply source and remain stateless.
+Explicit save_to_history opts authenticated MCP callers in while preserving
+existing unsaved MCP defaults. Authentication remains the existing session;
+API keys and external account-linked OAuth are not implemented.
+
+The existing dashboard Applications section now exposes History filters and all
+saved versions. Exact-version links reload the stored source and allow export.
+UI generation records a version automatically; unchanged Save avoids duplicates,
+and storage failure retains generated output with a retry-save warning. D1 batch
+writes validate both job/master ownership and preserve later application status.
+Original masters are untouched. Existing saved versions appear; past stateless
+unsaved requests are not invented as history or application activity.
+
+The approved design and footer are preserved. Real SQL, action/API and guest
+browser checks cover owner isolation, rollback, status preservation, failed-save
+recovery, old-version reload and filters. The original History release verification passed: 643 unit
+tests, 30 desktop/mobile E2E, full Cloudflare/Astro build, typecheck/lint, extension
+build, route parity, six local smoke checks, docs and the fresh design receipt.
+
+The original History Worker `f467fa78-60c9-4e44-80bb-ea655f11f686` served 100% traffic; tag
+`d22cd94-local-f87d90ef1107` identifies the verified uncommitted snapshot. No
+commit/push, migration, secret or production-config change. Remote vars preserved;
+no main/CI parity claim. Landing hash remains identical. Six public smoke checks
+pass on recheck after an initial timeout, and two live desktop/mobile History
+tests pass using synthetic guest jobs, exact-version reload and Markdown export.
+
+Live REST input/auth guards pass. All three fresh public JD generation probes
+(frontend, fullstack, agents) return truthful 502 generation_failed responses from
+the shared AI service; local Worker generation also failed upstream. A separate
+remote-binding diagnostic reports provider_fatal with two attempts, including a
+malformed mistral/codestral-latest completion. Failed calls
+are retained in `output/history-api-20261008`, not represented as resumes. Prior
+selected successful MCP samples remain historical evidence, not current REST
+reliability. Authenticated production API persistence and external assistant
+connection remain unqualified; real SQLite ownership/rollback and action-level
+persistence tests pass. No account tokens/cookies were used for these live tests.
+Shared gateway reliability remains open in issue #11. Decision and tracking:
+[ADR-0012](docs/architecture/decisions/0012-resume-api-history.md),
+[issue #12](https://github.com/Significant-Hobbies/rolepatch/issues/12).
+
+Owner closeout rechecked the deployed artifact on 8 October at 06:40 UTC:
+208/208 release-manifest files still match. Three fresh synthetic REST calls
+returned two 502 failures and one successful grounded draft retaining all
+12 points, three projects, two pinned points, education and contact identity.
+A read-only production D1 check found no master containing the synthetic marker.
+This selected success does not establish reliable contrasting-JD generation.
+The initial Codex generation was blocked before dispatch by its tool-approval
+policy. After the owner approved one synthetic call, an actual Codex client
+returned a complete frontend resume through MCP. Two additional current REST
+calls for backend and unsupported-role JDs also succeeded. All three preserve
+12 exact points, three projects, two pins, education and contact identity.
+Backend requirements move supported API evidence up; the unsupported role keeps
+the original order and adds no blockchain claims. Earlier failures remain
+recorded; three successes do not establish a service reliability guarantee.
+Codex guest interoperability is qualified, while ChatGPT/account-linked OAuth
+and authenticated production API persistence remain unqualified. Google rejected
+the automated sign-in browser as insecure; no authenticated write was dispatched.
+
+Follow-up at 11:04–11:06 UTC: all three hosted synthetic REST requests failed
+with `generation_failed`. The same frontend contract succeeded through the
+current remote Free AI binding and passed exact-wording/coverage assertions.
+This separates a working gateway-binding sample from the failing hosted path;
+it does not establish a repaired service or the precise upstream failure cause.
+The local real-SQL History suite now passes nine tests, explicitly preserving
+applied, interview, offer and rejected status across multiple immutable versions
+without changing the master. These are local tests, not signed-in production
+persistence. Browser control still exposes no regular Chrome connection after
+refresh. Issues #11 and #12 remain open; no new runtime deployment was made.
+
+At 12:09 UTC, a request-filtered live trace and stateless synthetic REST call
+connected successfully and returned HTTP 200. Manual comparison preserves all
+12 original points, three projects, two pins, education and contact/date identity.
+The generated summary overstates tested error states as implemented error recovery.
+An explicit cited-recovery guard, matching prompt constraint and regression now
+reject this overclaim. The two focused policy/action suites pass 29 tests. Full
+release verification passes 647 unit tests, 30 desktop/mobile E2E, typecheck/lint,
+extension build, Cloudflare/Astro build, route parity, local smoke and docs.
+
+The correction is deployed as Worker `9460f64f-91bb-451e-89c1-28b9fcfda770` at
+100% traffic, superseding the original History release. Tag
+`d22cd94-local-87e03c0338e9` identifies the verified uncommitted artifact; no
+commit/push or main/CI parity claim. The landing overlay hash remains unchanged.
+All six public smoke checks and three contrasting stateless REST cases pass.
+Each preserves 12 original points, three projects, two pins, education and identity;
+manual summary review finds the recovery overclaim corrected. Backend requirements
+move the API project first. The unsupported case adds no unsupported domain claim,
+keeps project order, and moves some existing backend bullets; it is not a full no-op.
+These are bounded checks, not general semantic entailment or a reliability guarantee.
+Prior upstream failures and authenticated History qualification remain open.
+
+The owner now specifies two signed-in pages: Resume Builder for master details,
+projects, education, pinned points and supporting sources; Jobs for tailoring,
+applications, status and exact resume history. Pricing is contextual and account
+settings remain in the account menu. This consolidation is tracked in issue #13;
+three existing rendered builder layouts await explicit selection. Production
+navigation has not changed. Approved fonts/colors and the footer are preserved.
+
+## Complete-master onboarding — 8 October (deployed)
+
+The existing New Resume dialog now collects identity/contact details, repeated
+roles and achievements, repeated projects/products, education and actual skills.
+A deterministic builder stores supplied wording without an AI call or fictitious
+applicant facts. Unfinished drafts are allowed. Imported masters get safe fields
+to append missing name/project/education facts without rebuilding original text.
+The approved Precision Studio system, landing and footer stay unchanged; the
+landing overlay hash remains identical to the preceding production artifact.
+
+Worker version `61867a56-97e3-4e7a-91fd-b6d5bbfe450b` served 100% at this release
+and is superseded by the History/API release above;
+tag `d22cd94-local-068cff9f9a15` identifies a verified **uncommitted local
+snapshot** based on `d22cd94b3b2dd0dc1882ac1d7905394221769079`. No commit,
+push, migration, secret or production configuration change occurred. Remote
+variables were preserved. This is not a main/CI parity claim.
+
+Release verification passes: 623 unit tests, 28 desktop/mobile E2E, typecheck,
+lint, extension, full Cloudflare/Astro build, route parity and six local smoke
+checks. Six production public smoke checks pass; authenticated apply-agent smoke
+is skipped without a session. Two subsequent live desktop/mobile runs each pass
+all four new master creation/import completion/reload/pasted-JD scenarios. The
+initial run had a transient disabled fresh session and imports bypassing the
+auth-pending upload guard; the import test now waits for the visible control.
+No authentication timeout or guest fallback was added.
+
+Guest creation remains browser-local; signed-in creation uses the existing
+owner-scoped action with the same source. Failed creation retains entered data.
+The current public master has 34 approved points, five projects, education and
+two Always include selections. Actual successful post-release API responses
+retain exact achievement wording and coverage. A bounded frontend-summary
+regression now rejects unsupported responsive/browser-rendering claims; broader
+semantic grounding and relevance still require review.
+
+**Generation reliability is not qualified.** Repeated post-release batches failed
+at the shared managed AI gateway, interspersed with successful unchanged inputs.
+Safe gateway logs show provider HTTP 400/403, including a 400 classified as
+non-retriable that stops fallback. No gateway credentials, routing or sibling
+production configuration were changed. Issue #11 remains open for this failure
+and broader semantic quality; actual ChatGPT/OAuth client connection is also
+untested. Successful examples and preserved failed attempts are in
+`output/master-onboarding-20261008/`; local release, deployed version, safe
+provider diagnostics and live browser logs are under
+`.fleet-local/master-onboarding-20261008/`.
+
+## Production release — 8 October
+
+The approved Precision Studio landing/app, MCP resume workflow, fixed-wording
+bullet and whole-project ranking, required education/product coverage, generated
+summaries and Always include controls are deployed at <https://rolepatch.com>.
+Worker version `f880d627-d96b-4f51-8fd6-fd0c4947e791` served 100% at this release
+and is superseded by the History/API release above;
+tag `d22cd94-local-e9ba4a2123e6` identifies a validated **uncommitted local
+snapshot**, based on `d22cd94b3b2dd0dc1882ac1d7905394221769079`. No commit or
+push occurred; this is not a main/CI parity claim. Existing remote variables were
+preserved; no migration, secret or production configuration change occurred.
+
+Release verification passed: 613 unit tests, 24 desktop/mobile browser tests,
+typecheck, lint, extension and full Cloudflare/Astro build, route parity and
+six local public smoke checks. Final illustration changes were copy only and
+passed another full build. All six production smoke checks pass. Public landing
+bytes exactly match the built overlay. Two actual public MCP generations for
+Glean Fullstack and Agents preserve all 32 points, five complete projects, two
+mandatory points and education, with fresh summaries. Missing education fails
+before generation. Signed-in browser import, mandatory-point save/reload,
+pasted-JD generation, draft save and direct reload pass live (one account token
+used). Production review caught escaped pin markers in previews/exports and a
+guest hydration race during session loading; both have reproduced regression
+tests and verified live fixes. Actual signed-in HTML export hides metadata.
+
+Evidence: `.fleet-local/release-20261008-hydration-manifest.json`,
+`.fleet-local/release-20261008-hydration-qualified-final.log`,
+`.fleet-local/release-20261008-hydration-production-smoke.log` and
+`.fleet-local/pinned-points-20261008/production-managed-verification.json`.
+Broader semantic relevance, additional provider qualification, ChatGPT connection
+and authenticated apply-agent smoke remain open in
+[issue #11](https://github.com/Significant-Hobbies/rolepatch/issues/11).
+
+Earlier entries below are historical local qualification checkpoints; their
+unreleased/pending wording describes the state at those checkpoints.
+
+## Complete owner master and frontend wording — 8 October
+
+The owner's reusable source bank now has 34 manually written points, mapping
+all 32 previous points and retaining their numeric claims, five projects and
+unchanged education. Storybook/component consistency, React styling migration,
+RTL, real-time web interaction and web/mobile tooling are stated separately.
+The authenticated base resume is updated; save/reload and a 34-point HTML
+export pass. Both existing mandatory selections are preserved. Saved drafts
+remain snapshots, while new requests use the edited base.
+
+Three live MCP runs with this master retain all exact wording and complete
+projects. The synthetic frontend JD promotes RTL, Storybook and Tailwind;
+published Fullstack and Agents JD snapshots produce different ordering.
+An unsupported responsive-layout/rendering claim in the generated frontend
+summary was manually corrected in the delivered artifacts; these reviewed
+summaries are not untouched automatic outputs. Product summary generation still
+requires user review. Evidence and files: `output/editorial-20261008/README.md`.
+
+## Always-include points — 8 October (released)
+
+The existing resume editor saves mandatory experience/product/project bullets
+with the base resume; future drafts inherit selections. Education stays selected
+and required. Current ranking also retains unmarked points. No schema migration
+or dependency added; existing saved drafts are unchanged. See
+[ADR-0011](docs/architecture/decisions/0011-portable-always-include-points.md).
+Actual local Worker Fullstack/Agents drafts each preserve 32 points, five projects,
+two pins, education and fixed wording, with a new summary. Guest editor save/reload
+and focused policy/export tests pass. Release and public MCP qualification pass
+as recorded above. Selections apply to new drafts from the saved base resume.
+
+## Minimum coverage and generated summaries — 8 October (local, unreleased)
+
+Successful tailored resumes now require supplied product/project achievements
+and education. Missing or empty sections and duplicate summaries fail before
+billing; no profile facts are invented. Products headings and a single project
+point are supported. All achievement wording, project identity and education
+are retained. A new concise summary is required on every successful request,
+including unchanged rankings and resumes without an old summary.
+
+Only summary text is generated, with source evidence references, plain-paragraph
+bounds, numeric/experience-duration checks and injection rejection. Invalid or
+missing generation fails and refunds signed-in charges once. These mechanical
+checks are not semantic proof. App and MCP share the policy; no UI redesign or
+new dependency. Decision: [ADR-0010](docs/architecture/decisions/0010-required-coverage-generated-summary.md).
+
+Six relevant suites (75 tests), typecheck, scoped Biome and full Cloudflare
+build pass. The actual local Worker rejects missing education before generation.
+Final actual Agents and Fullstack Worker drafts each retained all 32 points,
+five complete projects and original education, with fresh summaries. An observed
+unsupported collaboration claim is covered by a new rejection regression.
+Evidence: `output/resume-policy/REPORT.md`. Broader semantic quality is not proved. Hosted/account qualification remains open in
+[issue #11](https://github.com/Significant-Hobbies/rolepatch/issues/11).
+No commit, push or deployment.
+
+## Complete master and reranker comparison — 7 October (local, unreleased)
+
+The owner's three published resume variants are consolidated into 32 polished
+achievement bullets: 23 employer points and 9 points across five projects.
+All 71 source occurrences map to stable point IDs with source references and
+numeric-token checks. The complete master was imported, saved and reloaded in
+an actual local Worker browser guest profile. Markdown imports now retain exact
+source wording without a model call; other document structuring is unchanged.
+
+Local CPU benchmarks compare BM25, TF-IDF, MiniLM embeddings, two MiniLM
+cross-encoders and Mixedbread xsmall with unchanged source order across three
+real JD snapshots and five synthetic roles. TF-IDF leads the full-requirements
+bullet development comparison; BM25 leads the exploratory short-brief version.
+Whole-project comparison finds different strengths: TF-IDF leads development,
+while embeddings perform best on four scorable synthetic cases. Labels are
+agent-authored and the project extension is exploratory. Agents/frontend
+false positives remain; this is no ATS or hiring-quality qualification.
+
+The shared tailoring action now accepts separately validated whole-project
+permutations. Titles, links, technologies, dates and all project content move
+together within the original Projects section, including single-bullet
+projects. Employment order stays fixed. The tested local algorithms are
+comparison artifacts, not new application defaults. Decision:
+[ADR-0009](docs/architecture/decisions/0009-intact-project-ranking.md).
+
+Four focused suites (56 tests), typecheck, scoped Biome, docs check and full
+Cloudflare build pass. Artifacts:
+`output/reranking/`. Managed-provider relevance and hosted/account checks remain
+open in [issue #11](https://github.com/Significant-Hobbies/rolepatch/issues/11).
+No UI change, dependency, commit, push or deployment.
+
+## Fixed-wording tailoring — 7 October (local, unreleased)
+
+Per owner direction, saved resume wording is now preserved and existing
+experience/project bullets are ranked within their original roles. Model
+output contains IDs only; code rejects incomplete, duplicate or foreign
+permutations and reconstructs original blocks. Contacts, dates, summary,
+skills, education and chronology remain fixed. Selected saved material stays
+separately attributed. The existing editor supports polishing once; this pass
+adds no dedicated polishing UI, bullet selection or page budget.
+
+Seven relevant suites (71 tests), scoped Biome and full Cloudflare build pass.
+Five intermediate real managed-runtime drafts preserved every original bullet
+and fixed text; one invalid permutation was rejected. Review found fullstack
+ranking overweighted company AI boilerplate. The final prompt addresses this,
+but final live checks hit HTTP 429/502 and returned no drafts. Final relevance
+qualification remains open in [issue #11](https://github.com/Significant-Hobbies/rolepatch/issues/11).
+Evidence: `.fleet-local/resume-examples-20261007/ranking-report.md`.
+Decision: [ADR-0008](docs/architecture/decisions/0008-fixed-wording-resume-ranking.md).
+No UI change, commit, push or deployment. Hosted/account flows remain unqualified.
+
+## Real personal-resume generation — 7 October (local Worker qualification)
+
+The owner's published AI infrastructure and full-stack resumes were exercised
+against real Glean Agents, Gemini Money and Glean Fullstack descriptions. A
+separate local Worker config connected the existing managed FREE_AI gateway
+without account records or production app bindings. Four of five generation
+attempts returned actual drafts; one upstream HTTP 400 remains unexplained.
+
+Output-quality review found unchanged drafts, a corrupted website URL and
+unsupported ledger/accounting and RAG-evaluation claims. These are unresolved
+product defects tracked in [issue #11](https://github.com/Significant-Hobbies/rolepatch/issues/11), not a ready automatic tailoring flow. Three reviewed,
+source-checked one-page PDF/Markdown resumes were delivered after editorial
+correction and curation; they are not untouched automatic outputs. Local
+qualification evidence: `.fleet-local/resume-examples-20261007/report.md`.
+Hosted deployment, ChatGPT connection and saved-profile account flow remain
+unqualified. No application-code change or deployment.
+
+## Hands-on real-job QA — 7 October (local, unreleased)
+
+Actual built-browser import passed for Twilio engineering (Greenhouse), Skio
+product design (Lever), and Ready data engineering (Ashby). A synthetic
+accountant mismatch, invalid/internal URLs, short pasted descriptions,
+HTML/Word-compatible exports and local MCP requests were exercised.
+
+Observed defects are fixed locally: reader metadata and company/role labels,
+expired job IDs importing entire directories, guest cover-letter authentication
+rejection, minified React errors in cover-letter/interview generation, and
+silently discarded fit-score failures, and cover-letter controls overflowing
+phone widths. Guests never write cover letters to D1;
+signed-in cover-letter ownership is checked before charging.
+
+Fifteen relevant suites (130 tests), typecheck, scoped Biome and the full
+Cloudflare build pass. Actual rebuilt AI actions now display readable failure
+messages and allow retry. The plain Next preview used for this checkpoint lacked the managed Worker AI
+binding; real local Worker generation was subsequently qualified above. Public
+browser navigation was client-blocked; hosted behavior and account flows remain
+unqualified. The approved landing/footer/styles are preserved. Qualification
+limits remain tracked in [issue #10](https://github.com/Significant-Hobbies/rolepatch/issues/10).
+No commit, push or deployment. Detailed local evidence:
+`.fleet-local/qa-jobs-20261007/report.md`.
+
+## App readability and guest interview prep — 7 October (local, unreleased)
+
+The approved Precision Studio layouts are preserved. App headings use Space
+Grotesk, interface text uses Geist, helper/status colors have stronger contrast,
+and primary actions are graphite. Forms and common labels are clearer. Styling
+is scoped to app main content and the editor toolbar; Astro landing and both
+footers are unchanged during this pass.
+
+Actual isolated-browser use covered saving/reloading experience and achievement
+records, creating/editing/reloading a resume, downloading its Markdown, adding
+a pasted job description, and opening tailoring, cover-letter and interview
+preparation routes. Guest interview prep previously queried server records and
+could not open browser-local jobs; it now reads guest browser records while
+signed-in requests retain owner-scoped server lookup. Five regression tests
+cover guest loading, missing job/resume and authenticated isolation.
+
+Six focused suites (70 tests), typecheck, scoped Biome and the full Cloudflare
+build pipeline pass. Rendered review covers 390/768/1440px; narrow evidence-card
+intrinsic overflow and action wrapping are corrected. Qualification receipt:
+`.fleet/design-review-readability-preserve-20261007.json`.
+
+Local managed resume generation reached an honest AI-service error. Turnstile
+and Workers D1/AI-backed paths remain unqualified in this plain Next preview;
+no live AI draft, account flow or hosted MCP connection is claimed. Existing
+full-suite baseline failures remain separate. No commit, push or deployment.
+
+## Precision Studio — 7 October (local, unreleased)
+
+After rejecting Resume Studio as insufficiently premium, the owner selected
+**2 — Precision Studio** from three new paired full-page previews. The actual
+Astro landing body now uses the job/source/draft workbench, dark redline section,
+horizontal method rows and ruled export/access inventory. The primary React
+workspace carries the same Geist, graphite controls and paper treatment. The
+existing landing footer, layout and shared stylesheet remain byte-identical to
+the start of this redesign; app footer tokens remain unchanged.
+
+The local built preview is `/` plus `/dashboard` and `/tailor/[jobId]`, not the
+standalone HTML direction probes. Guest persistence, CTA handoff, job-context
+and menu disclosures, keyboard FAQ and responsive 390/768/1440px layouts were
+checked. Keyword scores show their 100-point scale; the explanation panel stays
+inside the phone viewport. The 47 focused tests, typecheck, source Biome checks,
+Astro build and full Cloudflare pipeline pass. Qualification is recorded in
+`.fleet/design-review-premium-20261007.json`. The owner subsequently approved
+the finished render (“approved”); acceptance is recorded in the receipt.
+No publication was requested or performed.
+
+MCP source/protocol/extraction qualification below remains current. At this design checkpoint, live AI output and a hosted assistant connection
+were unqualified; later local Worker generation is recorded above. No OAuth
+connection is inferred from this design work.
+
+## Resume Studio and portable resume MCP — 7 October (local, unreleased)
+
+The owner initially selected Resume Studio from three rendered landing/workspace pairs;
+its visual direction is superseded by Precision Studio above.
+The Astro landing and primary resume workspace now share that system, with a
+document preview, editable comparison, clearer keyword labels and a direct
+paste-description path. Local guest resume/job persistence and the landing CTA
+handoff were verified. Responsive renders passed at 390, 768 and 1440 pixels;
+the recorded design-workflow completion check passed.
+
+The new `/api/mcp` endpoint and local stdio bridge expose profile listing,
+qualified job-reference resolution and unsaved Markdown/HTML drafting. Guests
+provide the base resume on each call; saved IDs remain ownership-scoped. Public
+URLs and LinkedIn, Greenhouse, Lever and Ashby IDs are supported with the
+required board context. Optional local extraction reuses Fleet slow-serp.
+See [setup and limits](docs/operations/runbooks/resume-mcp.md),
+[ADR-0007](docs/architecture/decisions/0007-portable-resume-mcp.md) and
+[issue #10](https://github.com/Significant-Hobbies/rolepatch/issues/10).
+
+The 47 focused tests, typecheck, changed-file Biome checks, docs validation and
+full Cloudflare build passed. Real local MCP handshake/tool discovery and a
+public Lever extraction passed. Live synthetic generation reached the existing
+AI adapter but failed because the local managed AI service was unavailable;
+generated-output behavior is covered by mocked tests, not a successful live
+draft. The full suite had two unrelated baseline failures: unresolved existing
+app-health package and the existing footer CSP expectation.
+
+No commit, deployment, migration or production configuration change was made.
+Hosted generation, a real remote assistant connection and account/OAuth
+qualification remain open; the endpoint does not implement OAuth discovery.
 
 ## Free AI gateway source update — 2 October
 

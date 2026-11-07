@@ -6,7 +6,11 @@
     "ultracite/biome/next",
     "ultracite/biome/vitest"
   ],
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "ignoreUnknown": true,
     "includes": [
@@ -46,8 +50,16 @@
       "jsxQuoteStyle": "double"
     }
   },
-  "html": { "formatter": { "enabled": false } },
-  "json": { "formatter": { "enabled": false } },
+  "html": {
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": false
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -139,5 +151,23 @@
         "useSortedProperties": "off"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/components/ui/**",
+        "src/hooks/use-mobile.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          },
+          "suspicious": {
+            "noReactForwardRef": "off"
+          }
+        }
+      }
+    }
+  ]
 }

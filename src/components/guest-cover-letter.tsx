@@ -30,8 +30,8 @@ export function GuestCoverLetter({ jobId }: { jobId: string }) {
       <main className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-bold">Job unavailable</h1>
         <p className="mt-3">Open a job saved in this browser to draft its cover letter.</p>
-        <Link href="/dashboard" className="mt-4 inline-block underline">
-          Back to dashboard
+        <Link href="/jobs" className="mt-4 inline-block underline">
+          Back to Jobs
         </Link>
       </main>
     );

@@ -6,7 +6,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/components/auth-provider';
 import { AnalyticsProvider } from '@/components/posthog-provider';
 import { SaaSMakerFeedback } from '@/components/saasmaker-feedback';
-import { SiteNav } from '@/components/site-nav';
+import { WorkspaceShell } from '@/components/workspace-shell';
 import { VitalsReporter } from '@/components/VitalsReporter';
 
 const geistSans = Geist({
@@ -131,8 +131,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AnalyticsProvider>
           <AuthProvider>
-            <SiteNav />
-            {children}
+            <WorkspaceShell>{children}</WorkspaceShell>
             <footer className="border-t border-border/60 px-6 py-6 text-sm text-muted-foreground">
               <SaaSMakerFeedback />
               <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">

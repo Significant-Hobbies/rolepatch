@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
+
 const DEFAULT_BASE_URL = 'https://rolepatch.com';
 const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -18,11 +20,18 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       requiredText: ['RolePatch'],
     },
     {
-      name: 'jobs browser',
+      name: 'jobs workspace',
       method: 'GET',
       path: '/jobs',
       expectStatus: 200,
-      requiredText: ['Find roles'],
+      requiredText: ['Jobs', 'History'],
+    },
+    {
+      name: 'resume builder',
+      method: 'GET',
+      path: '/resume-builder',
+      expectStatus: 200,
+      requiredText: ['Resume Builder', 'Achievements &amp; sources', 'Extra experience'],
     },
     {
       name: 'pricing',
@@ -50,7 +59,7 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       method: 'GET',
       path: '/settings',
       expectStatus: 200,
-      requiredText: ['Operational readiness', 'Chrome extension'],
+      requiredText: ['Feature availability', 'Chrome extension'],
     },
   ];
 
@@ -208,7 +217,7 @@ async function main() {
   if (summary.failed > 0) process.exitCode = 1;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
     console.error(err instanceof Error ? err.message : String(err));
     process.exitCode = 1;

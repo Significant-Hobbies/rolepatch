@@ -40,14 +40,13 @@ interface StashListProps {
 
 export function StashList({ serverEntries }: StashListProps) {
   const router = useRouter();
-  const { isGuest } = useAuth();
+  const { isGuest, isPending } = useAuth();
   const [entries, setEntries] = useState(serverEntries);
 
   useEffect(() => {
-    if (isGuest) {
-      setEntries(localListStashEntries());
-    }
-  }, [isGuest]);
+    if (isPending) return;
+    setEntries(isGuest ? localListStashEntries() : serverEntries);
+  }, [isGuest, isPending, serverEntries]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<StashEntry | null>(null);
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -147,9 +146,9 @@ export function StashList({ serverEntries }: StashListProps) {
       <div className="flex justify-end mb-6">
         <button
           onClick={openNew}
-          className="px-4 py-2 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] hover:border-[var(--muted-foreground)] transition-colors"
+          className="product-primary-action px-4 py-2 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground transition-colors"
         >
-          + Add Entry
+          + Add experience
         </button>
       </div>
 
@@ -172,9 +171,9 @@ export function StashList({ serverEntries }: StashListProps) {
               />
             </svg>
           </div>
-          <p className="text-sm font-medium text-foreground">No stash entries yet</p>
+          <p className="text-sm font-semibold text-foreground">No extra experience saved yet</p>
           <p className="text-xs text-[var(--muted-foreground)] mt-1">
-            Save resume snippets to reuse across applications
+            Add a project or achievement that is missing from your base resume.
           </p>
         </div>
       ) : (
@@ -192,10 +191,11 @@ export function StashList({ serverEntries }: StashListProps) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {items.map((entry) => (
-                  <div
+                  <button
+                    type="button"
                     key={entry.id}
                     onClick={() => openEdit(entry)}
-                    className="group border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)]/50 hover:bg-[var(--card)]/50 transition-all cursor-pointer"
+                    className="group text-left border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)]/50 hover:bg-[var(--card)]/50 transition-all cursor-pointer"
                   >
                     <h3 className="font-medium text-sm text-foreground group-hover:text-[var(--accent)] transition-colors">
                       {entry.label}
@@ -203,7 +203,7 @@ export function StashList({ serverEntries }: StashListProps) {
                     <p className="text-xs text-[var(--muted-foreground)] line-clamp-3 whitespace-pre-line mt-2 leading-relaxed">
                       {stripMarkdown(entry.content)}
                     </p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </section>
@@ -214,17 +214,26 @@ export function StashList({ serverEntries }: StashListProps) {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 modal-backdrop" onClick={close} />
-          <div className="relative bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 modal-content">
-            <h2 className="text-lg font-semibold mb-5">
-              {editing ? 'Edit Entry' : 'New Stash Entry'}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="experience-dialog-title"
+            className="relative bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 modal-content"
+          >
+            <h2 id="experience-dialog-title" className="text-lg font-semibold mb-5">
+              {editing ? 'Edit experience' : 'Add experience'}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
+                <label
+                  htmlFor="experience-category"
+                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
+                >
                   Category
                 </label>
                 <select
+                  id="experience-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="input-base"
@@ -238,27 +247,35 @@ export function StashList({ serverEntries }: StashListProps) {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                  Label
+                <label
+                  htmlFor="experience-title"
+                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
+                >
+                  Title
                 </label>
                 <input
+                  id="experience-title"
                   type="text"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  placeholder="e.g., ML Engineer at Startup X"
+                  placeholder="e.g. Customer onboarding redesign"
                   className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider">
-                  Content
+                <label
+                  htmlFor="experience-content"
+                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
+                >
+                  Your contribution and result
                 </label>
                 <textarea
+                  id="experience-content"
                   rows={6}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Markdown content..."
+                  placeholder="Describe what you did and what changed as a result."
                   className="input-base resize-none"
                 />
               </div>
@@ -289,7 +306,7 @@ export function StashList({ serverEntries }: StashListProps) {
                     type="button"
                     onClick={handleSave}
                     disabled={loading || !label.trim() || !content.trim()}
-                    className="px-4 py-2 bg-white text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors"
+                    className="product-primary-action px-4 py-2 text-sm font-medium rounded-lg disabled:opacity-40 transition-colors"
                   >
                     {loading ? 'Saving...' : 'Save'}
                   </button>

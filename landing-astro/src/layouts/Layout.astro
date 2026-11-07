@@ -18,35 +18,46 @@ const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'RolePatch',
-  alternateName: ['Role Patch', 'rolepatch.com'],
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web',
-  url: SITE_URL,
-  description: PRODUCT_DESCRIPTION,
-  audience: {
-    '@type': 'Audience',
-    audienceType: 'Job seekers preparing a serious application for a specific role',
-  },
-  offers: [
+  '@graph': [
     {
-      '@type': 'Offer',
-      name: 'Browser-local resume tools',
-      price: '0',
-      priceCurrency: 'USD',
-      description: 'ATS, keyword, bullet, diff, snippets, and word-count tools without sign-up.',
+      '@type': 'WebSite',
+      name: 'RolePatch',
+      alternateName: ['Role Patch', 'rolepatch.com'],
+      url: SITE_URL,
+      description: PRODUCT_DESCRIPTION,
     },
-    { '@type': 'Offer', name: '10 AI tokens', price: '5', priceCurrency: 'USD' },
-    { '@type': 'Offer', name: '30 AI tokens', price: '12', priceCurrency: 'USD' },
-    { '@type': 'Offer', name: '100 AI tokens', price: '30', priceCurrency: 'USD' },
-  ],
-  featureList: [
-    'Evidence-bound resume tailoring',
-    'Word-level change review',
-    'Job fit analysis',
-    'Cover letters and interview stories',
-    'Review-first application packets and receipts',
+    {
+      '@type': 'SoftwareApplication',
+      name: 'RolePatch',
+      alternateName: ['Role Patch', 'rolepatch.com'],
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      url: SITE_URL,
+      description: PRODUCT_DESCRIPTION,
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Job seekers preparing a serious application for a specific role',
+      },
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Browser-local resume tools',
+          price: '0',
+          priceCurrency: 'USD',
+          description: 'ATS, keyword, bullet, diff, snippets, and word-count tools without sign-up.',
+        },
+        { '@type': 'Offer', name: '10 AI tokens', price: '5', priceCurrency: 'USD' },
+        { '@type': 'Offer', name: '30 AI tokens', price: '12', priceCurrency: 'USD' },
+        { '@type': 'Offer', name: '100 AI tokens', price: '30', priceCurrency: 'USD' },
+      ],
+      featureList: [
+        'Evidence-bound resume tailoring',
+        'Word-level change review',
+        'Job fit analysis',
+        'Cover letters and interview stories',
+        'Review-first application packets and receipts',
+      ],
+    },
   ],
 };
 ---

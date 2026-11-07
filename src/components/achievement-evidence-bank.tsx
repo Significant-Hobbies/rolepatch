@@ -52,6 +52,7 @@ const EMPTY_FORM = {
 interface Props {
   serverEntries: AchievementEvidence[];
   compact?: boolean;
+  embedded?: boolean;
   roleHint?: string;
 }
 
@@ -83,10 +84,15 @@ function toForm(entry: AchievementEvidence) {
   };
 }
 
-export function AchievementEvidenceBank({ serverEntries, compact = false, roleHint = '' }: Props) {
-  const Heading = compact ? 'h2' : 'h1';
+export function AchievementEvidenceBank({
+  serverEntries,
+  compact = false,
+  embedded = false,
+  roleHint = '',
+}: Props) {
+  const Heading = compact || embedded ? 'h2' : 'h1';
   const router = useRouter();
-  const { isGuest } = useAuth();
+  const { isGuest, isPending } = useAuth();
   const [entries, setEntries] = useState(serverEntries);
   const [editing, setEditing] = useState<AchievementEvidence | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -95,8 +101,9 @@ export function AchievementEvidenceBank({ serverEntries, compact = false, roleHi
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isGuest) setEntries(localListAchievementEvidence());
-  }, [isGuest]);
+    if (isPending) return;
+    setEntries(isGuest ? localListAchievementEvidence() : serverEntries);
+  }, [isGuest, isPending, serverEntries]);
 
   const visibleEntries = useMemo(() => {
     const ranked = roleHint ? rankEvidenceForRole(entries, roleHint) : entries;
@@ -180,25 +187,25 @@ export function AchievementEvidenceBank({ serverEntries, compact = false, roleHi
     <section
       className={compact ? 'rounded-2xl border border-[var(--border)]/60 bg-[var(--card)] p-5' : ''}
     >
-      <div className="mb-5 flex items-center justify-between gap-3">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <Heading className={compact ? 'text-lg font-bold' : 'text-2xl font-bold'}>
-            Achievement Evidence
+            {embedded ? 'Achievements & sources' : 'Achievement Evidence'}
           </Heading>
           {!compact && (
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              Reusable quantified proof for resumes, cover letters, interviews, and recruiter
-              replies.
+              Save what you achieved and the details that support it. Reuse them in resumes, letters
+              and interview answers.
             </p>
           )}
         </div>
         <button
           type="button"
           onClick={openNew}
-          className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--border)] px-3 text-sm font-medium hover:bg-[var(--muted)]"
+          className="product-primary-action inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-[var(--border)] px-3 text-sm font-medium"
         >
           <Plus className="h-4 w-4" />
-          Add
+          Add achievement
         </button>
       </div>
 
@@ -206,12 +213,12 @@ export function AchievementEvidenceBank({ serverEntries, compact = false, roleHi
         <div className="rounded-xl border border-dashed border-[var(--border)] p-8 text-center">
           <p className="text-sm font-semibold text-foreground">No evidence saved yet</p>
           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-            Add proof once, reuse it everywhere.
+            Add an achievement, its result and any supporting details.
           </p>
         </div>
       ) : (
         <>
-          {!compact && (
+          {!compact && !embedded && (
             <div className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -245,7 +252,7 @@ export function AchievementEvidenceBank({ serverEntries, compact = false, roleHi
               return (
                 <article
                   key={entry.id}
-                  className="rounded-xl border border-[var(--border)]/70 bg-background/40 p-4"
+                  className="min-w-0 rounded-xl border border-[var(--border)]/70 bg-background/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -431,7 +438,7 @@ export function AchievementEvidenceBank({ serverEntries, compact = false, roleHi
                   type="button"
                   onClick={save}
                   disabled={saving || !form.title.trim() || !form.result.trim()}
-                  className="h-9 rounded-lg bg-white px-4 text-sm font-medium text-gray-900 hover:bg-gray-200 disabled:opacity-40"
+                  className="product-primary-action h-9 rounded-lg px-4 text-sm font-medium disabled:opacity-40"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>

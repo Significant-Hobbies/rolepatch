@@ -46,8 +46,9 @@ export function ATSScoreBadge({
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="relative">
+    <div className="keyword-score-wrapper relative">
       <button
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
         className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${color.bg} border ${color.border} hover:brightness-110 transition-all`}
         title="RolePatch weighted keyword score; not an employer ATS score. Click for the calculation."
@@ -72,20 +73,20 @@ export function ATSScoreBadge({
           {label && (
             <p className="text-[10px] text-[var(--muted-foreground)] leading-none">{label}</p>
           )}
-          <p className={`text-sm font-bold ${color.text} leading-tight`}>{score}</p>
+          <p className={`text-sm font-bold ${color.text} leading-tight`}>{score}/100</p>
         </div>
       </button>
 
       {/* Expanded keyword panel */}
       {expanded && (
-        <div className="absolute top-full mt-2 right-0 z-50 w-80 max-h-72 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl p-4">
+        <div className="keyword-analysis absolute top-full mt-2 right-0 z-50 w-80 max-h-72 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">
               Weighted keyword analysis
             </h4>
             <button
               onClick={() => setExpanded(false)}
-              className="text-[var(--muted-foreground)] hover:text-foreground text-xs"
+              className="text-[var(--muted-foreground)] hover:text-foreground text-xs min-h-11 px-2"
             >
               Close
             </button>

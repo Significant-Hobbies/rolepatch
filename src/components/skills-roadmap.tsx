@@ -123,7 +123,7 @@ export function SkillsRoadmapPanel({ job, resume }: SkillsRoadmapProps) {
       {/* Header / CTA */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-serif text-xl font-bold">Skills Gap Roadmap</h3>
+          <h3 className="text-base font-semibold">Skills Gap Roadmap</h3>
           <p className="text-xs text-[var(--muted-foreground)] mt-1">
             A prioritized plan of what to learn to close the gap for this role.
           </p>

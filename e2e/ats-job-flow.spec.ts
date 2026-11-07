@@ -1,5 +1,166 @@
 import { expect, test } from '@playwright/test';
 
+test('master onboarding preserves every role, project and education on reload', async ({
+  page,
+}) => {
+  await page.goto('/resume-builder');
+  await page.getByRole('button', { name: '+ New Resume', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Build your master resume' });
+  await dialog.getByLabel('Full name', { exact: true }).fill('Alex Morgan');
+  await dialog.getByRole('button', { name: 'Next: Experience' }).click();
+  await dialog.getByLabel('Role and company 1').fill('Engineer — Acme');
+  let achievements = dialog.getByRole('group', { name: 'Achievements', exact: true }).nth(0);
+  await achievements.getByLabel('Achievement 1', { exact: true }).fill('Built React screens.');
+  await achievements.getByRole('button', { name: 'Add achievement' }).click();
+  await achievements.getByLabel('Achievement 2', { exact: true }).fill('Released customer APIs.');
+  await dialog.getByRole('button', { name: '+ Add another role' }).click();
+  await dialog.getByLabel('Role and company 2').fill('Engineer — Widget');
+  await dialog
+    .getByRole('group', { name: 'Achievements', exact: true })
+    .nth(1)
+    .getByLabel('Achievement 1', { exact: true })
+    .fill('Built the customer dashboard.');
+  await dialog.getByRole('button', { name: 'Next: Projects' }).click();
+  await dialog.getByLabel('Project or product name 1').fill('Reader');
+  achievements = dialog.getByRole('group', { name: 'Achievements', exact: true }).nth(0);
+  await achievements.getByLabel('Achievement 1', { exact: true }).fill('Built a reading queue.');
+  await achievements.getByRole('button', { name: 'Add achievement' }).click();
+  await achievements.getByLabel('Achievement 2', { exact: true }).fill('Added search.');
+  await dialog.getByRole('button', { name: '+ Add another project' }).click();
+  await dialog.getByLabel('Project or product name 2').fill('Toolbox');
+  await dialog
+    .getByRole('group', { name: 'Achievements', exact: true })
+    .nth(1)
+    .getByLabel('Achievement 1', { exact: true })
+    .fill('Released a command-line tool.');
+  await dialog.getByRole('button', { name: 'Next: Education' }).click();
+  await dialog
+    .getByRole('textbox', { name: 'Education', exact: true })
+    .fill('BSc — Example University, 2022\nDiploma — Example School, 2018');
+  await dialog.getByRole('button', { name: 'Next: Skills' }).click();
+  await dialog.getByRole('textbox', { name: 'Skills', exact: true }).fill('React, TypeScript');
+  await dialog.getByRole('button', { name: 'Save master resume' }).click();
+  await page.waitForURL(/\/resume-builder\?resume=.+/);
+  await expect(page.getByText('Master resume · ready for a job', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Master resume · ready for a job', { exact: true })).toBeVisible();
+  const source = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
+  );
+  for (const point of [
+    'Built React screens.',
+    'Released customer APIs.',
+    'Built the customer dashboard.',
+    'Built a reading queue.',
+    'Added search.',
+    'Released a command-line tool.',
+    'Diploma — Example School, 2018',
+  ])
+    expect(source).toContain(point);
+  expect(source).not.toContain('your.email@example.com');
+  await page.getByRole('link', { name: 'Choose a job' }).click();
+  await page.getByRole('button', { name: '+ Add Job', exact: true }).click();
+  await page.getByRole('button', { name: /Paste the description instead/i }).click();
+  await page.getByLabel('Company', { exact: true }).fill('Example Co');
+  await page.getByLabel('Role', { exact: true }).fill('Frontend Engineer');
+  await page
+    .getByLabel('Job description', { exact: true })
+    .fill(
+      'Build customer-facing React and TypeScript interfaces, integrate APIs, improve performance, and ship readable product experiences.'
+    );
+  await page.getByRole('button', { name: 'Save pasted JD' }).click();
+  await page.waitForURL(/\/tailor\/.+/);
+  await expect(page.getByRole('region', { name: 'Target job' })).toBeVisible();
+});
+
+test('imported incomplete master can be completed without changing its original points', async ({
+  page,
+}) => {
+  await page.goto('/resume-builder');
+  await expect(page.getByRole('button', { name: '↑ Import Resume', exact: true })).toBeEnabled();
+  await page.locator('input[type=file]').setInputFiles({
+    name: 'incomplete-master.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from(
+      '# Alex\n\n## Experience\n\n### Acme\n\n- Built React screens.\n- Released APIs.\n'
+    ),
+  });
+  await page.waitForURL(/\/resume-builder\?resume=.+/);
+  await expect(
+    page.getByText('Master resume · add missing details', { exact: true })
+  ).toBeVisible();
+  await page.getByLabel('Project or product name', { exact: true }).fill('Reader');
+  await page
+    .getByLabel('Project achievements — one point per line')
+    .fill('Released Reader.\nAdded search.');
+  await page
+    .getByRole('textbox', { name: 'Education', exact: true })
+    .fill('BSc — Example University, 2022');
+  await page.getByRole('button', { name: 'Add details to master' }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.reload();
+  await expect(page.getByText('Master resume · ready for a job', { exact: true })).toBeVisible();
+  const source = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
+  );
+  expect(source).toContain('- Built React screens.\n- Released APIs.');
+  expect(source).toContain('### Reader');
+  expect(source).toContain('BSc — Example University, 2022');
+});
+
+test('Always include selections persist with the base resume and education stays selected', async ({
+  page,
+}) => {
+  await page.goto('/dashboard');
+  await page.evaluate(() => {
+    const now = Math.floor(Date.now() / 1000);
+    localStorage.setItem(
+      'rt-resumes',
+      JSON.stringify([
+        {
+          id: 'pins-resume',
+          name: 'Pinned base',
+          source:
+            '# Candidate\n\n## Experience\n\n### Acme\n\n- Shipped customer APIs.\n- Improved reliability.\n\n## Projects\n\n### Widget\n\n- Released Widget.\n\n## Education\n\nB.Tech, University.\n',
+          created_at: now,
+          updated_at: now,
+        },
+      ])
+    );
+  });
+  await page.goto('/editor/pins-resume');
+  await page.getByText('Always include · 0 points', { exact: true }).click();
+  const education = page.getByRole('checkbox', { name: 'Education · always included' });
+  await expect(education).toBeChecked();
+  await expect(education).toBeDisabled();
+  await page
+    .getByRole('checkbox', { name: 'Always include: Shipped customer APIs.', exact: true })
+    .check();
+  await page
+    .getByRole('checkbox', { name: 'Always include: Released Widget.', exact: true })
+    .check();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText('Always include · 2 points', { exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByText('Always include · 2 points', { exact: true }).click();
+  await expect(
+    page.getByRole('checkbox', { name: 'Always include: Shipped customer APIs.', exact: true })
+  ).toBeChecked();
+  await expect(
+    page.getByRole('checkbox', { name: 'Always include: Released Widget.', exact: true })
+  ).toBeChecked();
+  await expect(page.locator('#resume-print-target')).not.toContainText('rolepatch:always-include');
+  const saved = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
+  );
+  expect(saved.match(/rolepatch:always-include/g)).toHaveLength(2);
+  await page
+    .getByRole('checkbox', { name: 'Always include: Shipped customer APIs.', exact: true })
+    .uncheck();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText('Always include · 1 point', { exact: true })).toBeVisible();
+});
+
 /**
  * E2E tests for the ATS board job discovery + paste-URL → tailor flow.
  *
@@ -14,6 +175,8 @@ import { expect, test } from '@playwright/test';
 test.describe('Job search tips', () => {
   test('search tips panel is visible and expandable on dashboard', async ({ page }) => {
     await page.goto('/dashboard');
+
+    await page.getByText('Find more jobs', { exact: true }).click();
 
     // The tips panel should be present
     const tipsButton = page.getByRole('button', {
@@ -36,6 +199,7 @@ test.describe('Job search tips', () => {
 
   test('builds a Google query preview and open link', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.getByText('Find more jobs', { exact: true }).click();
 
     const tipsButton = page.getByRole('button', {
       name: /find less-competitive jobs on ats boards/i,
@@ -61,6 +225,7 @@ test.describe('Job search tips', () => {
 
   test('toggling boards updates the query', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.getByText('Find more jobs', { exact: true }).click();
 
     const tipsButton = page.getByRole('button', {
       name: /find less-competitive jobs on ats boards/i,
@@ -151,7 +316,7 @@ test.describe('Add Job modal (guest mode)', () => {
 
     await expect(page.getByLabel('Job description')).toBeVisible({ timeout: 15000 });
     await page.getByLabel('Company').fill('Fallback Co');
-    await page.getByLabel('Role').fill('Platform Engineer');
+    await page.getByLabel('Role', { exact: true }).fill('Platform Engineer');
     await page
       .getByLabel('Job description')
       .fill(
@@ -160,6 +325,9 @@ test.describe('Add Job modal (guest mode)', () => {
     await page.getByRole('button', { name: 'Save pasted JD' }).click();
 
     await page.waitForURL(/\/tailor\/.+/);
+    await expect(page.getByRole('region', { name: 'Target job' })).toBeVisible();
+    const jobToggle = page.getByRole('button', { name: 'View job description and preparation' });
+    if (await jobToggle.isVisible()) await jobToggle.click();
     await expect(page.locator('pre').filter({ hasText: /observability/i })).toBeVisible({
       timeout: 15000,
     });
@@ -229,6 +397,9 @@ test.describe('Tailor page (guest mode with pre-seeded job)', () => {
 
     // Navigate to the tailor page for this job
     await page.goto('/tailor/job-ats-1');
+    await expect(page.getByRole('region', { name: 'Target job' })).toBeVisible();
+    const jobToggle = page.getByRole('button', { name: 'View job description and preparation' });
+    if (await jobToggle.isVisible()) await jobToggle.click();
 
     // The server-rendered header shows the job title (from getJobApplication
     // for signed-in users). For guests, the TailorFlow client component
@@ -279,6 +450,9 @@ test.describe('Tailor page (guest mode with pre-seeded job)', () => {
     });
 
     await page.goto('/tailor/j1');
+    await expect(page.getByRole('region', { name: 'Target job' })).toBeVisible();
+    const jobToggle = page.getByRole('button', { name: 'View job description and preparation' });
+    if (await jobToggle.isVisible()) await jobToggle.click();
     // Wait for client hydration (guest job loads from localStorage)
     // Use the <pre> element that contains the JD text to avoid matching
     // the "Job Description" heading.
@@ -395,6 +569,7 @@ test.describe('Apply-agent queue receipts (guest mode)', () => {
     });
     await page.reload();
 
+    await page.getByText('Application preparation & follow-ups', { exact: true }).click();
     await expect(page.getByText('Application queue', { exact: true })).toBeVisible();
     await expect(page.getByText(/ReceiptCo · Tailored materials/i)).toBeVisible();
     await page.getByRole('button', { name: 'Mark submitted' }).click();
@@ -428,6 +603,7 @@ test.describe('Apply-agent queue receipts (guest mode)', () => {
 test.describe('Dashboard discover section copy', () => {
   test('mentions ATS boards in the discover section', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page.getByText(/Ashby|Greenhouse|Lever/i)).toBeVisible();
+    await page.getByText('Find more jobs', { exact: true }).click();
+    await expect(page.getByText(/Ashby, Greenhouse, Lever/i)).toBeVisible();
   });
 });

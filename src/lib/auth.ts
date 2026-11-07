@@ -4,6 +4,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 import { db } from '@/lib/db';
 import { ping } from '@/lib/ping';
+import { resumeOAuthPlugins } from '@/lib/resume-oauth-config';
 
 // ---------------------------------------------------------------------------
 // Lightweight SQLite adapter backed by the app's Cloudflare D1 wrapper.
@@ -25,12 +26,12 @@ function buildWhere(
     if (parts.length) parts.push(connector);
     switch (op) {
       case 'eq':
-        parts.push(`"${w.field}" = ?`);
-        args.push(val as SqlArg);
+        parts.push(val === null ? `"${w.field}" IS NULL` : `"${w.field}" = ?`);
+        if (val !== null) args.push(val as SqlArg);
         break;
       case 'ne':
-        parts.push(`"${w.field}" != ?`);
-        args.push(val as SqlArg);
+        parts.push(val === null ? `"${w.field}" IS NOT NULL` : `"${w.field}" != ?`);
+        if (val !== null) args.push(val as SqlArg);
         break;
       case 'lt':
         parts.push(`"${w.field}" < ?`);
@@ -87,6 +88,39 @@ const d1Adapter = createAdapter({
     transaction: false,
   },
   adapter: ({ getDefaultModelName }) => ({
+    async consumeOne({ model, where }) {
+      const table = getDefaultModelName(model);
+      const { sql: whereSql, args } = buildWhere(where as any[]);
+      if (!whereSql) throw new Error('Atomic consume requires a condition');
+      const result = await db.execute({
+        sql: `DELETE FROM "${table}" WHERE id = (SELECT id FROM "${table}" WHERE ${whereSql} LIMIT 1) RETURNING *`,
+        args,
+      });
+      return (result.rows[0] ?? null) as any;
+    },
+    async incrementOne({ model, where, increment, set }) {
+      const table = getDefaultModelName(model);
+      const { sql: whereSql, args } = buildWhere(where as any[]);
+      if (!whereSql) throw new Error('Atomic update requires a condition');
+      const assignments: string[] = [];
+      const values: SqlArg[] = [];
+      for (const [field, delta] of Object.entries(increment)) {
+        if (!Number.isFinite(delta)) throw new Error('Invalid increment');
+        assignments.push(`"${field}" = COALESCE("${field}", 0) + ?`);
+        values.push(delta);
+      }
+      for (const [field, value] of Object.entries(set ?? {})) {
+        if (value === undefined) continue;
+        assignments.push(`"${field}" = ?`);
+        values.push(value instanceof Date ? value.toISOString() : (value as SqlArg));
+      }
+      if (!assignments.length) throw new Error('Atomic update requires an assignment');
+      const result = await db.execute({
+        sql: `UPDATE "${table}" SET ${assignments.join(', ')} WHERE id = (SELECT id FROM "${table}" WHERE ${whereSql} LIMIT 1) RETURNING *`,
+        args: [...values, ...args],
+      });
+      return (result.rows[0] ?? null) as any;
+    },
     async create({ model, data, select }) {
       const table = getDefaultModelName(model);
       const id = (data as any).id ?? crypto.randomUUID();
@@ -145,13 +179,9 @@ const d1Adapter = createAdapter({
         v instanceof Date ? v.toISOString() : (v as SqlArg)
       );
       const { sql: whereSql, args: whereArgs } = buildWhere(where as any[]);
-      await db.execute({
-        sql: `UPDATE "${table}" SET ${setCols}${whereSql ? ` WHERE ${whereSql}` : ''}`,
-        args: [...setArgs, ...whereArgs],
-      });
       const result = await db.execute({
-        sql: `SELECT * FROM "${table}"${whereSql ? ` WHERE ${whereSql}` : ''} LIMIT 1`,
-        args: whereArgs,
+        sql: `UPDATE "${table}" SET ${setCols}${whereSql ? ` WHERE ${whereSql}` : ''} RETURNING *`,
+        args: [...setArgs, ...whereArgs],
       });
       return (result.rows[0] ?? null) as any;
     },
@@ -205,6 +235,7 @@ const d1Adapter = createAdapter({
 });
 
 export type AuthRuntimeEnv = {
+  DB?: unknown;
   NODE_ENV?: string;
   npm_lifecycle_event?: string;
   NEXT_PHASE?: string;
@@ -232,9 +263,12 @@ export function buildAuthOptions(env: AuthRuntimeEnv = process.env) {
 
   return {
     secret: authSecret,
-    baseURL: env.BETTER_AUTH_URL?.trim() || undefined,
+    baseURL:
+      env.BETTER_AUTH_URL?.trim() || (canUseLocalAuthSecret ? 'http://localhost:3000' : undefined),
     basePath: '/api/auth',
     database: d1Adapter,
+    // OAuth needs durable state. Preserve ordinary no-D1 guest development.
+    plugins: env.DB ? resumeOAuthPlugins(env.BETTER_AUTH_URL?.trim()) : [],
     socialProviders:
       googleClientId && googleClientSecret
         ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }

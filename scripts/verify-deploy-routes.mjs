@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
+
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -10,7 +12,11 @@ export const REQUIRED_DEPLOY_ROUTES = [
   '/pricing',
   '/settings',
   '/dashboard',
+  '/resume-builder',
   '/api/jobs/search',
+  '/api/mcp',
+  '/api/resume',
+  '/.well-known/[...metadata]',
   '/api/apply-agent/queue',
   '/api/apply-agent/packets',
   '/api/apply-agent/receipts',
@@ -22,7 +28,7 @@ export const REQUIRED_DEPLOY_ROUTES = [
 
 export function manifestKeyForRoute(route) {
   if (route === '/') return '/page';
-  if (route.startsWith('/api/')) return `${route}/route`;
+  if (route.startsWith('/api/') || route.startsWith('/.well-known/')) return `${route}/route`;
   return `${route}/page`;
 }
 
@@ -67,7 +73,7 @@ async function main() {
   if (!verification.ok) process.exitCode = 1;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`Deploy route verification failed: ${message}`);

@@ -29,10 +29,7 @@ describe('guest cover-letter route', () => {
   it('shows recovery for a missing job instead of attempting generation', async () => {
     render(<GuestCoverLetter jobId="missing-job" />);
     expect(await screen.findByText('Job unavailable')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to dashboard' })).toHaveAttribute(
-      'href',
-      '/dashboard'
-    );
+    expect(screen.getByRole('link', { name: 'Back to Jobs' })).toHaveAttribute('href', '/jobs');
     expect(screen.queryByText('Draft editor')).not.toBeInTheDocument();
   });
 

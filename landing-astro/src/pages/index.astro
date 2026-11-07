@@ -2,394 +2,175 @@
 import Layout from '@/layouts/Layout.astro';
 import SiteFooter from '@/components/SiteFooter.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
-import { PRODUCT_DESCRIPTION, PRODUCT_FAQS, PRODUCT_TITLE, TOKEN_PACKS } from '@/lib/product';
-
+import { PRODUCT_FAQS, TOKEN_PACKS } from '@/lib/product';
+import '@/styles/precision.css';
 const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: PRODUCT_FAQS.map((faq) => ({
-    '@type': 'Question',
-    name: faq.q,
-    acceptedAnswer: { '@type': 'Answer', text: faq.a },
-  })),
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: PRODUCT_FAQS.slice(0, 4).map(faq => ({ '@type': 'Question', name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a } })),
 };
-
-const workflow = [
-  {
-    number: '01',
-    title: 'Bring one specific job',
-    body: 'Paste the posting URL. RolePatch extracts the responsibilities, hard skills, language, and visible requirements that this application actually needs to answer.',
-  },
-  {
-    number: '02',
-    title: 'Match against existing proof',
-    body: 'Your base resume, project stash, and achievement evidence are the only claim sources. Relevant proof moves forward; unsupported requirements stay visible as gaps.',
-  },
-  {
-    number: '03',
-    title: 'Inspect the proposed patch',
-    body: 'The revised resume arrives with a word-level diff and a reason for each meaningful edit, tied back to the requirement or keyword that prompted it.',
-  },
-  {
-    number: '04',
-    title: 'Accept, edit, or leave it out',
-    body: 'You keep control of the final wording. The accepted resume can then anchor a cover letter, fit analysis, interview stories, and a reviewed application packet.',
-  },
-] as const;
-
-const packetItems = [
-  ['Tailored resume', 'One saved version per role, with the base resume preserved.'],
-  ['Fit analysis', 'Requirement coverage and visible gaps—not a universal hiring prediction.'],
-  ['Cover letter', 'Role- and company-specific material grounded in the same supplied proof.'],
-  ['STAR+R stories', 'Interview preparation mapped to the job and candidate evidence.'],
-  ['Evidence bank', 'Reusable achievements with situation, action, result, metric, scope, and source context.'],
-  ['Application packet', 'Resume, answers, proof, and receipt history collected for review.'],
-] as const;
-
-const stops = [
-  ['CAPTCHA or human verification', 'Stop. No bypass attempt.'],
-  ['Required answer is missing', 'Stop. Surface the exact answer gap.'],
-  ['A file still needs selection', 'Stop. The user chooses the file explicitly.'],
-  ['Submit state is ambiguous', 'Record a failed receipt for review.'],
-] as const;
 ---
-
-<Layout title={PRODUCT_TITLE} description={PRODUCT_DESCRIPTION} redirectAuthenticated>
+<Layout title="RolePatch — Your resume, tailored to the role" description="Tailor your existing resume to a specific job. Review every change, preserve your facts, and export a resume you can use anywhere." redirectAuthenticated>
   <div class="rolepatch-page">
-    <SiteHeader active="home" />
+    <div class="precision-surface precision">
+      <SiteHeader active="home" precision />
+      <main>
+<div class="shell"><section
+ class="hero"><p class="eyebrow">RolePatch / AI resume tailoring</p>
+<h1>A better resume.<br><em>For this job.</em></h1>
+<p class="lede">Bring your resume and a specific job. RolePatch connects the requirements to your experience, then puts every change in your hands.</p>
+<div class="actions"><a class="btn" href="/dashboard" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a><a class="text-link" href="#proof">See the patch <span aria-hidden="true">↓</span></a></div>
+<p class="access-note">Start in your browser · Review before export</p>
+</section>
+<div class="proof-stage"><div class="stage-cap"><span>Platform resume → Platform Reliability Engineer</span><span>Illustrative draft</span></div>
+<div class="workbench"><div><aside
+ class="role-card"><div class="eyebrow">The role</div>
+<h3>Platform Reliability<br>Engineer</h3>
+<p>Northstar Cloud · London<br>Illustrative job description</p>
+<div class="requirement"><span>What the job asks for</span>TypeScript services<br>Platform migrations<br>Production reliability<br>Kubernetes</div>
+</aside>
+<div class="role-card source-note"><strong>Keep the original.</strong><p>Keep your approved points. Review their order and the new summary.</p>
+</div>
+</div>
+<div class="paper-wrap base"><div class="doc-label"><span>Base resume</span><span>Original</span></div>
+<article
+ class="paper" aria-label="Illustrative original resume"><h3 class="person">Alex Morgan</h3>
+<div class="contact">Platform Engineer · London, UK<br>alex@example.com · github.com/alexmorgan</div>
+<h4>Profile</h4>
+<p>Platform engineer building reliable services with TypeScript. Experience leading migrations and improving production reliability.</p>
+<h4>Experience</h4>
+<div class="job"><strong>Platform Engineer · Northstar</strong><span>2022 — Present</span></div>
+<ul><li>Led migration of 11 services to TypeScript. Incident rate fell 34%.</li>
+<li>Built service health dashboards and coordinated incident reviews with engineering teams.</li>
+</ul>
+<h4>Skills</h4>
+<p>TypeScript · Service migrations · Reliability<br>Service health dashboards · Incident review</p>
+<h4>Education</h4>
+<p>BSc Computer Science</p>
+<div class="page-num"><span>Alex Morgan · Platform resume</span><span>01</span></div>
+</article>
+</div>
+<div class="paper-wrap"><div class="doc-label"><span>Tailored resume</span><span>Review draft</span></div>
+<article
+ class="paper" aria-label="Illustrative tailored resume"><h3 class="person">Alex Morgan</h3>
+<div class="contact">Platform Engineer · London, UK<br>alex@example.com · github.com/alexmorgan</div>
+<h4>Profile</h4>
+<p>Platform engineer with <mark>TypeScript migration</mark> and <mark>production reliability</mark> experience. Led an 11-service migration with a 34% drop in incidents, and built service health dashboards.</p>
+<h4>Experience</h4>
+<div class="job"><strong>Platform Engineer · Northstar</strong><span>2022 — Present</span></div>
+<ul><li>Led migration of 11 services to TypeScript. Incident rate fell 34%.<span class="num">01</span></li>
+<li>Built service health dashboards and coordinated incident reviews with engineering teams.</li>
+</ul>
+<h4>Skills</h4>
+<p>TypeScript · Service migrations · Reliability<br>Service health dashboards · Incident review</p>
+<h4>Education</h4>
+<p>BSc Computer Science</p>
+<div class="page-num"><span>Alex Morgan · Platform resume</span><span>01</span></div>
+</article>
+</div>
+</div>
+</div>
+</div>
+<div class="shell bridge"><span><strong>Your experience</strong> is the starting point.</span><span><strong>The job</strong> gives it focus.</span><span><strong>You</strong> review the final draft.</span></div>
+<section
+ id="proof" class="proof-section"><div class="shell section"><div class="section-head"><div><p class="eyebrow">The difference is in the patch</p>
+<h2>Sharper emphasis.<br><em>The same experience.</em></h2>
+</div>
+<p>A relevant resume makes the connection clear. Keep your approved achievements, rank them for the role, and review a new summary.</p>
+</div>
+<div class="proof-detail"><div class="annotation-copy"><h3>Say what matters.<br>Show where it came from.</h3>
+<p>The role asks for platform reliability. The source already contains a TypeScript migration and a measurable reduction in incidents. RolePatch changes emphasis through ranking and a fresh summary; the achievement wording stays fixed.</p>
+<div class="fact-line"><span>11 services<br>Original scope</span><span>34% fewer incidents<br>Original result</span></div>
+</div>
+<div class="patch"><div class="patch-top"><span>A fresh summary. The same achievements.</span><span>Illustrative patch</span></div>
+<div class="old"><span class="mini-label">From the original</span><blockquote>Platform engineer building reliable services with TypeScript. Experience leading migrations and improving production reliability.</blockquote></div>
+<div class="new"><span class="mini-label">For this role</span><blockquote>Platform engineer with <ins>TypeScript migration</ins> and <ins>production reliability</ins> experience. Led an 11-service migration with a 34% drop in incidents, and built service health dashboards.</blockquote></div>
+<p class="explain">The work, scope and result already exist in the source. Only the summary is generated. Achievement wording, complete projects and education stay preserved.</p>
+</div>
+</div>
+<div class="proof-foot"><p>Kubernetes is requested by the job but absent from this resume. It is left out of this illustrative draft.</p>
+<a class="text-link" href="/dashboard" data-app-health-event="workspace_opened">Review your own resume <span aria-hidden="true">→</span></a></div>
+</div>
+</section>
+<section
+ id="method" class="method"><div class="shell section"><div class="section-head"><div><p class="eyebrow">A focused application</p>
+<h2>From your experience<br>to this opportunity.</h2>
+</div>
+<p>One base resume. One specific role. A draft you can inspect and edit before you use it.</p>
+</div>
+<div class="process"><article
+><span class="step-no">01</span><h3>Bring your resume.</h3>
+<p>Import the document you already have, or paste your experience into the workspace.</p>
+<div class="format">PDF · DOCX · Markdown</div>
+</article>
+<article
+><span class="step-no">02</span><h3>Bring the job.</h3>
+<p>Add a public job URL or paste the description. Choose your base resume and mark points to always include.</p>
+<div class="format">Job URL · Pasted description</div>
+</article>
+<article
+><span class="step-no">03</span><h3>Make it yours.</h3>
+<p>Inspect the patch, check each claim and edit the wording. Export the version you want to send.</p>
+<div class="format">Review · Edit · Export</div>
+</article>
+</div>
+</div>
+</section>
+<section
+ class="export-section"><div class="shell section exports"><div><p class="eyebrow">Your resume, beyond RolePatch</p>
+<h2>A finished draft.<br><em>Wherever you work.</em></h2>
+<p class="body">Bring the result to your application, your document editor, or ChatGPT. Your next step belongs to you.</p>
+<a class="text-link" href="/dashboard" data-app-health-event="workspace_opened">Open the workspace <span aria-hidden="true">↗</span></a></div>
+<div><div class="file-list"><div class="file"><span class="ext">.md</span><div><h3>Markdown</h3>
+<p>Copy into an assistant or keep as plain text.</p>
+</div>
+<span class="arrow">↗</span></div>
+<div class="file"><span class="ext">.html</span><div><h3>A formatted document</h3>
+<p>Open in a browser. Print or save a PDF.</p>
+</div>
+<span class="arrow">↗</span></div>
+<div class="file"><span class="ext">.doc</span><div><h3>Word-compatible</h3>
+<p>Continue editing in your document app.</p>
+</div>
+<span class="arrow">↗</span></div>
+</div>
+<p class="export-meta">Your original stays preserved. The updated draft remains yours to review and edit.</p>
+</div>
+</div>
+</section>
+<section
+ id="pricing" class="pricing-section"><div class="shell section pricing"><div><p class="eyebrow">Start with one application</p>
+<h2>A workspace first.<br><em>An account when<br>you need it.</em></h2>
+<p class="description">Start in your browser. Google sign-in adds account storage and three starting tokens. Signed-in AI operations use tokens.</p>
+<p class="pricing-note">No subscription. Guest data stays in this browser.<br>Clearing browser storage removes guest records.</p>
+</div>
+<div class="pricing-ledger"><div class="access-row"><div><strong>Guest workspace</strong><p>Bring a resume and a job. Review and export in this browser.</p>
+</div>
+<span class="sub">No sign-in</span></div>
+<div class="access-row"><div><strong>Free browser tools</strong><p>Keyword checker, bullet tools, diff and word count.</p>
+</div>
+<span class="sub">No tokens</span></div>
+{TOKEN_PACKS.map(pack => <a href="/pricing" class="price-row"><span>{pack.tokens} tokens</span><b>{pack.price}</b><small>One-time pack ↗</small></a>)}<p class="pricing-note">Tailoring and supporting AI drafts use account tokens.<br><a class="text-link" href="/pricing">See access and pricing <span aria-hidden="true">→</span></a></p>
+</div>
+</div>
+</section>
+<section
+ class="faq-section"><div class="shell section faq"><div><p class="eyebrow">Before you start</p>
+<h2>A little clarity.</h2>
+<a class="text-link" href="/faq">Read every answer <span aria-hidden="true">→</span></a></div>
+<div class="answers">{PRODUCT_FAQS.slice(0, 4).map(faq => <details><summary>{faq.q}</summary><p>{faq.a}</p>
+</details>)}</div>
+</div>
+</section>
+<section
+ class="closing"><p class="eyebrow">For the role you want</p>
+<h2>Bring your experience.<br><em>Make the connection.</em></h2>
+<a class="btn" href="/dashboard" data-app-health-event="workspace_opened">Tailor my resume <span aria-hidden="true">↗</span></a><p class="access-note">Your resume. One job. A draft you can review.</p>
+</section>
 
-    <main>
-      <section class="hero-section paper-grid">
-        <div class="site-shell hero-layout">
-          <div class="hero-copy">
-            <p class="section-label">For one serious application to one specific role</p>
-            <h1>Tailor the resume.<br /><span>Keep the record true.</span></h1>
-            <p class="hero-lede">
-              RolePatch reads the job description, matches it against evidence already in your
-              resume, and proposes a reviewable patch. It can reframe proof. It cannot invent it.
-            </p>
-            <div class="hero-actions">
-              <a href="/dashboard" class="primary-action" data-app-health-event="workspace_opened">Tailor a resume <span aria-hidden="true">↗</span></a>
-              <a href="#proof" class="secondary-action">See the evidence rule <span aria-hidden="true">↓</span></a>
-            </div>
-            <dl class="hero-facts" aria-label="RolePatch access summary">
-              <div><dt>Guest</dt><dd>Browser-local workspace</dd></div>
-              <div><dt>Account</dt><dd>Optional Google sync</dd></div>
-              <div><dt>Control</dt><dd>Review every patch</dd></div>
-            </dl>
-          </div>
-
-          <div class="patch-board" aria-label="Illustrative evidence-bound resume patch">
-            <div class="board-head">
-              <span>Illustrative patch 07</span>
-              <span class="status-dot">Evidence checked</span>
-            </div>
-            <div class="board-sheet requirement-sheet">
-              <p class="board-label">Job requirement</p>
-              <p>Own a TypeScript platform migration and show measurable reliability impact.</p>
-            </div>
-            <div class="board-connector" aria-hidden="true">↓</div>
-            <div class="board-sheet source-sheet">
-              <p class="board-label">Existing resume evidence</p>
-              <p>Led migration of 11 services to TypeScript. Incident rate fell 34%.</p>
-              <span class="source-tag">Supplied by candidate</span>
-            </div>
-            <div class="board-connector" aria-hidden="true">↓</div>
-            <div class="board-sheet patch-sheet">
-              <p class="board-label">Proposed wording</p>
-              <p>
-                Led a <mark>TypeScript migration</mark> across <mark>11 services</mark>, reducing
-                incidents <mark>34%</mark>.
-              </p>
-              <span class="source-tag">Every fact traced to source</span>
-            </div>
-            <div class="gap-note">
-              <span>Unsupported requirement: Kubernetes</span>
-              <strong>Leave it out. Do not invent it.</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="definition-section">
-        <div class="site-shell definition-grid">
-          <div>
-            <p class="section-label">What the product is</p>
-            <h2>A focused preparation desk for a job seeker who cares about this application.</h2>
-          </div>
-          <div class="definition-copy">
-            <p>
-              A generic resume asks an employer to find the relevant evidence. RolePatch starts
-              with the actual role, identifies what must be answered, and helps move supported
-              proof into the foreground.
-            </p>
-            <p>
-              The result is not an automatic application factory. It is a traceable set of
-              materials the candidate can inspect, correct, accept, and carry into a review-first
-              application workflow.
-            </p>
-            <a href="/evidence">Open the achievement evidence bank <span aria-hidden="true">→</span></a>
-          </div>
-        </div>
-      </section>
-
-      <section id="method" class="method-section paper-grid">
-        <div class="site-shell">
-          <div class="section-heading split-heading">
-            <div>
-              <p class="section-label">The method</p>
-              <h2>Job description in.<br />Reviewable patch out.</h2>
-            </div>
-            <p>
-              The mechanism is intentionally simple enough to audit. Secondary features only
-              matter after the candidate understands where each changed claim came from.
-            </p>
-          </div>
-          <ol class="workflow-list">
-            {workflow.map((step) => (
-              <li>
-                <span class="workflow-number">{step.number}</span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section id="proof" class="proof-section">
-        <div class="site-shell">
-          <div class="section-heading split-heading">
-            <div>
-              <p class="section-label">The evidence rule</p>
-              <h2>Better phrasing is allowed.<br />Better fiction is not.</h2>
-            </div>
-            <p>
-              RolePatch's tailoring instruction forbids adding a skill, metric, employer, tool, or
-              accomplishment merely because the job description asks for it.
-            </p>
-          </div>
-
-          <div class="redline-stage">
-            <div class="redline-source">
-              <div class="redline-meta">
-                <span>Base resume · supplied text</span>
-                <span>Requirement: platform reliability</span>
-              </div>
-              <p>
-                Led the migration of 11 services to TypeScript and reduced production incidents
-                by 34%.
-              </p>
-            </div>
-            <div class="redline-arrow" aria-hidden="true">PATCH</div>
-            <div class="redline-output">
-              <div class="redline-meta">
-                <span>Proposed resume · review required</span>
-                <span>0 unsupported facts</span>
-              </div>
-              <p>
-                Led a <ins>TypeScript platform migration</ins> across <ins>11 services</ins>,
-                reducing <ins>production incidents 34%</ins>.
-              </p>
-              <ul>
-                <li>“Platform” mirrors the job's language and remains supported by the 11-service scope.</li>
-                <li>The service count and outcome are preserved exactly from supplied evidence.</li>
-                <li>Kubernetes is omitted because the source does not demonstrate it.</li>
-              </ul>
-            </div>
-          </div>
-          <p class="proof-caption">
-            This example is illustrative. The source line already contains every employer-facing
-            fact shown in the patch.
-          </p>
-        </div>
-      </section>
-
-      <section class="packet-section">
-        <div class="site-shell packet-layout">
-          <div class="packet-intro">
-            <p class="section-label">One application dossier</p>
-            <h2>The resume is the start, not six disconnected AI outputs.</h2>
-            <p>
-              Once the resume patch is accepted, RolePatch can keep the role, evidence, materials,
-              answers, and application history together. Each layer remains reviewable.
-            </p>
-            <a href="/dashboard" class="text-action">Build the role workspace <span aria-hidden="true">→</span></a>
-          </div>
-          <div class="packet-index">
-            {packetItems.map(([title, body], index) => (
-              <article>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <div><h3>{title}</h3><p>{body}</p></div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section class="receipt-section">
-        <div class="site-shell">
-          <div class="receipt-heading">
-            <div>
-              <p class="section-label">Review-first application assistance</p>
-              <h2>The stops are part of the product.</h2>
-            </div>
-            <p>
-              Queueing, packet preparation, reviewed browser checks, Chrome-assisted fill, and
-              guarded single-submit attempts can remove repetition. They do not remove the user.
-            </p>
-          </div>
-          <div class="receipt-console">
-            <div class="console-top">
-              <span>APPLICATION RECEIPT · GREENHOUSE · REVIEW 03</span>
-              <span class="console-status">BLOCKED SAFELY</span>
-            </div>
-            <div class="console-grid">
-              <div>
-                <p class="console-label">Prepared</p>
-                <strong>12 fields</strong>
-                <span>9 answered · 2 skipped · 1 needs review</span>
-              </div>
-              <div>
-                <p class="console-label">Files</p>
-                <strong>0 uploaded</strong>
-                <span>User selection still required</span>
-              </div>
-              <div>
-                <p class="console-label">Submit</p>
-                <strong>Not attempted</strong>
-                <span>Required answer missing</span>
-              </div>
-            </div>
-            <div class="console-log">
-              <span>10:14:07</span><p>Work authorization answer not found in reviewed profile.</p>
-              <span>10:14:07</span><p>Submit guard engaged. No click sent to ATS.</p>
-              <span>10:14:08</span><p>Failed receipt saved with next action: answer and retry.</p>
-            </div>
-          </div>
-          <div class="stop-grid">
-            {stops.map(([title, body]) => (
-              <article><h3>{title}</h3><p>{body}</p></article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section class="access-section paper-grid">
-        <div class="site-shell">
-          <div class="section-heading split-heading">
-            <div>
-              <p class="section-label">Access and pricing</p>
-              <h2>Start in the browser.<br />Pay for signed-in AI work when needed.</h2>
-            </div>
-            <p>
-              RolePatch has a real mixed access model. Free browser tools, guest-local work,
-              account persistence, and token-funded AI operations are different things.
-            </p>
-          </div>
-          <div class="access-grid">
-            <article>
-              <p class="access-number">01</p>
-              <h3>Guest browser</h3>
-              <p>
-                Resumes, jobs, tailored drafts, evidence, and application metadata can stay in the
-                current browser. The current guest tailoring path does not debit account tokens.
-              </p>
-              <small>Clearing browser storage can remove guest data.</small>
-            </article>
-            <article>
-              <p class="access-number">02</p>
-              <h3>Google account</h3>
-              <p>
-                Sign-in adds user-scoped D1 persistence and starts a new account with three tokens.
-                Signed-in AI tailoring, cover letters, fit scoring, interview prep, and outreach
-                consume tokens.
-              </p>
-              <small>The reviewed queue, packet, fill, and receipt workflow does not spend tokens.</small>
-            </article>
-            <article>
-              <p class="access-number">03</p>
-              <h3>Token packs</h3>
-              <ul class="price-list">
-                {TOKEN_PACKS.map((pack) => <li><strong>{pack.tokens}</strong><span>{pack.price}</span></li>)}
-              </ul>
-              <small>
-                No subscription. Purchase requires sign-in and working Dodo provider configuration;
-                this audit did not complete a live transaction.
-              </small>
-            </article>
-          </div>
-          <div class="free-tools-strip">
-            <p><strong>Free, local tools:</strong> ATS structure check · keyword overlap · bullet check · word count · resume diff · snippets</p>
-            <a href="/tools" data-app-health-event="free_tools_opened">Use the free tools <span aria-hidden="true">→</span></a>
-          </div>
-        </div>
-      </section>
-
-      <section class="fit-section">
-        <div class="site-shell fit-grid">
-          <div>
-            <p class="section-label">An honest fit</p>
-            <h2>Use RolePatch when the role matters enough to inspect the details.</h2>
-          </div>
-          <div class="fit-columns">
-            <article>
-              <p class="fit-kicker">A good fit</p>
-              <p>
-                You have real experience to work with, a specific job description, and want the
-                relevant proof stated clearly across the resume and supporting application.
-              </p>
-            </article>
-            <article>
-              <p class="fit-kicker">Not a fit</p>
-              <p>
-                You want invented qualifications, a universal hiring score, CAPTCHA solving,
-                unattended file uploads, or bulk applications submitted without review.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="faq-section">
-        <div class="site-shell faq-layout">
-          <div class="faq-intro">
-            <p class="section-label">Straight answers</p>
-            <h2>What happens to the resume, the data, and the application?</h2>
-            <p>Precise enough for a candidate to decide whether RolePatch belongs in a real job search.</p>
-            <a href="/faq" class="text-action">Read every answer <span aria-hidden="true">→</span></a>
-          </div>
-          <div class="faq-list">
-            {PRODUCT_FAQS.slice(0, 6).map((faq, index) => (
-              <details open={index === 0}>
-                <summary>{faq.q}<span aria-hidden="true">+</span></summary>
-                <p>{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section class="closing-section paper-grid">
-        <div class="site-shell closing-grid">
-          <div>
-            <p class="section-label">The next application</p>
-            <h2>Make the relevant truth easier to see.</h2>
-          </div>
-          <div>
-            <p>
-              Bring the job description and the resume you actually earned. RolePatch will help
-              map one to the other—and show you the patch before you use it.
-            </p>
-            <a href="/dashboard" class="primary-action" data-app-health-event="workspace_opened">Open RolePatch <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
+      </main>
+    </div>
     <SiteFooter />
   </div>
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
 </Layout>

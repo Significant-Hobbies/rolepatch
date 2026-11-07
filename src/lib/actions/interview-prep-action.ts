@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import { creditTokens, debitToken } from '@/lib/actions/token-actions';
 import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
+import { type AIActionResult, aiActionFailure } from '@/lib/ai-action-result';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { AIProviderConfig, InterviewStory } from '@/lib/types';
@@ -90,6 +91,17 @@ export async function generateInterviewStories(
       await creditTokens(userId, 1, 'refund', 'ai_failure');
     }
     throw toUserFacingAIError(err);
+  }
+}
+
+/** Return expected failures as values so production React preserves their message. */
+export async function generateInterviewStoriesForClient(
+  ...args: Parameters<typeof generateInterviewStories>
+): Promise<AIActionResult<InterviewStory[]>> {
+  try {
+    return { success: true, data: await generateInterviewStories(...args) };
+  } catch (error) {
+    return aiActionFailure(error);
   }
 }
 

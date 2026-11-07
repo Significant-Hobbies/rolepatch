@@ -41,6 +41,7 @@ the Markdown here; it is the canonical source of truth.
 - [Company-watchlist sync job](operations/jobs/company-watchlist-sync.md) — hourly cron.
 - [Weekly digest job](operations/jobs/weekly-digest.md) — weekly cron + manual dispatch.
 - [Apply-agent CLI + MCP runbook](operations/runbooks/apply-agent-cli.md) — HTTP API, CLI, MCP server.
+- [Resume MCP runbook](operations/runbooks/resume-mcp.md) — portable job-to-resume drafting for assistants.
 - [Landing-astro overlay runbook](operations/runbooks/landing-astro.md) — Astro overlay during `cf:build`.
 
 ## Knowledge

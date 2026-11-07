@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 
+import { stripResumePins } from '@/lib/resume-pins';
 import type { TailorChange } from '@/lib/types';
 
 interface Props {
@@ -12,31 +13,31 @@ interface Props {
   changes?: TailorChange[];
 }
 
-const darkTheme = {
+const studioTheme = {
   variables: {
-    dark: {
+    light: {
       diffViewerBackground: 'var(--background)',
-      diffViewerColor: '#e5e5e5',
-      addedBackground: '#0d2818',
+      diffViewerColor: 'var(--foreground)',
+      addedBackground: '#e5f2e9',
       addedColor: 'var(--accent)',
-      removedBackground: '#2d1215',
-      removedColor: '#f87171',
-      wordAddedBackground: '#166534',
-      wordRemovedBackground: '#991b1b',
-      addedGutterBackground: '#0d2818',
-      removedGutterBackground: '#2d1215',
-      gutterBackground: '#111111',
-      gutterBackgroundDark: '#0d0d0d',
-      highlightBackground: '#1a1a1a',
-      highlightGutterBackground: '#1a1a1a',
-      codeFoldGutterBackground: '#111111',
-      codeFoldBackground: '#111111',
+      removedBackground: '#fff0ed',
+      removedColor: '#a63838',
+      wordAddedBackground: '#bee1c9',
+      wordRemovedBackground: '#ffd4cb',
+      addedGutterBackground: '#e5f2e9',
+      removedGutterBackground: '#fff0ed',
+      gutterBackground: '#edf1f7',
+      gutterBackgroundDark: '#e8eef9',
+      highlightBackground: '#e8eef9',
+      highlightGutterBackground: '#e8eef9',
+      codeFoldGutterBackground: '#edf1f7',
+      codeFoldBackground: '#edf1f7',
       emptyLineBackground: 'var(--background)',
       gutterColor: '#525252',
       addedGutterColor: 'var(--accent)',
-      removedGutterColor: '#f87171',
+      removedGutterColor: '#a63838',
       codeFoldContentColor: '#737373',
-      diffViewerTitleBackground: '#111111',
+      diffViewerTitleBackground: '#edf1f7',
       diffViewerTitleColor: '#a3a3a3',
       diffViewerTitleBorderColor: '#262626',
     },
@@ -150,9 +151,9 @@ export function ResumeDiff({ original, modified, onModifiedChange, changes = [] 
               oldValue={original}
               newValue={modified}
               splitView={splitView}
-              useDarkTheme={true}
+              useDarkTheme={false}
               compareMethod={DiffMethod.WORDS}
-              styles={darkTheme}
+              styles={studioTheme}
               leftTitle="Original"
               rightTitle="Tailored"
             />
@@ -176,7 +177,7 @@ export function ResumeDiff({ original, modified, onModifiedChange, changes = [] 
                 className="rounded-md border border-[var(--border)]/60 bg-[var(--background)]/60 p-3 text-xs space-y-2"
               >
                 <p className="text-foreground font-mono leading-snug border-l-2 border-[var(--accent)] pl-2">
-                  {c.snippet}
+                  {stripResumePins(c.snippet)}
                 </p>
                 <p className="text-[var(--muted-foreground)] leading-relaxed">{c.reason}</p>
                 {c.jd_match && (

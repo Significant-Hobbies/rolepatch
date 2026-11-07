@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
-import { generateInterviewStories } from '@/lib/actions/interview-prep-action';
+import { generateInterviewStoriesForClient } from '@/lib/actions/interview-prep-action';
 import { localGetInterviewStories, localSaveInterviewStories } from '@/lib/local-storage';
 import type { InterviewStory, JobApplication, Resume } from '@/lib/types';
 
@@ -21,6 +21,7 @@ function StoryCard({ story, index }: { story: InterviewStory; index: number }) {
     <div className="bg-[var(--card)] border border-[var(--border)]/60 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="w-full px-5 py-4 flex items-start gap-4 text-left hover:bg-muted/10 transition-colors"
       >
         <span className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-xs font-black text-[var(--primary)] shrink-0 mt-0.5">
@@ -28,7 +29,7 @@ function StoryCard({ story, index }: { story: InterviewStory; index: number }) {
         </span>
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-foreground text-sm">{story.theme}</h3>
-          <p className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-1 opacity-70">
+          <p className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-1">
             {story.jd_requirement}
           </p>
         </div>
@@ -120,12 +121,20 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
           apiKey: settings.apiKey || '',
           model: settings.model || '',
         };
-        const result = await generateInterviewStories(resume.source, job.jd_text, job.id, aiConfig);
-        setStories(result);
-        if (isGuest) localSaveInterviewStories(result);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to generate stories';
-        setError(message);
+        const result = await generateInterviewStoriesForClient(
+          resume.source,
+          job.jd_text,
+          job.id,
+          aiConfig
+        );
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
+        setStories(result.data);
+        if (isGuest) localSaveInterviewStories(result.data);
+      } catch {
+        setError('Could not generate interview stories. Please try again.');
       }
     });
   }
@@ -133,11 +142,11 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="font-serif text-2xl font-bold">Interview Prep</h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-1">
-            STAR+R stories mapped to the job requirements for{' '}
+            Practice answers using your own experience for{' '}
             <span className="font-medium text-foreground">{job.role}</span> at{' '}
             <span className="font-medium text-foreground">{job.company}</span>
           </p>
@@ -147,12 +156,12 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
             href={`/tailor/${job.id}`}
             className="px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors"
           >
-            Back to Tailor
+            Back to resume
           </Link>
           <button
             onClick={handleGenerate}
             disabled={isPending || !resume}
-            className="px-4 py-1.5 text-sm font-medium rounded-lg bg-white text-gray-900 hover:bg-gray-200 disabled:opacity-40 transition-colors"
+            className="product-primary-action px-4 py-1.5 text-sm font-medium rounded-lg disabled:opacity-40 transition-colors"
           >
             {isPending
               ? 'Generating...'
@@ -165,13 +174,20 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
 
       {/* Token notice */}
       {!isGuest && (
-        <p className="text-xs text-[var(--muted-foreground)] opacity-60">
-          Uses 1 token per generation
+        <p className="text-xs text-[var(--muted-foreground)]">Uses 1 token per generation</p>
+      )}
+
+      {!resume && (
+        <p role="status" className="text-sm text-[var(--muted-foreground)]">
+          The base resume is unavailable. Return to your workspace and choose a saved resume.
         </p>
       )}
 
       {error && (
-        <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 flex items-center justify-between">
+        <div
+          role="alert"
+          className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 flex items-center justify-between"
+        >
           <span>{error}</span>
           {error.includes('No tokens remaining') && (
             <Link
@@ -230,7 +246,7 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
           </div>
           <p className="text-sm font-bold text-foreground">No interview stories yet</p>
           <p className="text-xs text-[var(--muted-foreground)] mt-1">
-            Generate STAR+R stories tailored to this job description
+            Generate examples organized as situation, task, action, result and what you learned.
           </p>
         </div>
       ) : null}

@@ -427,8 +427,13 @@ export function localUpdateJobDetails(id: string, patch: JobDetailsPatch): void 
 
 // --- Tailored Resumes ---
 export function localGetTailoredResumes(jobId: string): TailoredResume[] {
+  return localListResumeHistory().filter((t) => t.job_id === jobId);
+}
+
+export function localListResumeHistory(): TailoredResume[] {
   return getItems<TailoredResume>(KEYS.tailored)
-    .filter((t) => t.job_id === jobId)
+    .reverse()
+    .sort((a, b) => b.created_at - a.created_at)
     .map((t) => ({ ...t, changes: Array.isArray(t.changes) ? t.changes : [] }));
 }
 
@@ -452,6 +457,8 @@ export function localSaveTailoredResume(
     updated_at: now,
   });
   setItems(KEYS.tailored, items);
+  const job = localGetJob(jobId);
+  if (job?.status === 'draft') localUpdateJobStatus(jobId, 'tailored');
   return id;
 }
 

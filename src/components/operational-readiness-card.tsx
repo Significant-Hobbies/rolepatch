@@ -7,9 +7,9 @@ const STATUS_LABELS: Record<OperationalReadinessStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<OperationalReadinessStatus, string> = {
-  ready: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200',
-  needs_setup: 'border-amber-400/30 bg-amber-500/10 text-amber-100',
-  code_ready: 'border-sky-400/30 bg-sky-500/10 text-sky-100',
+  ready: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-800',
+  needs_setup: 'border-amber-400/30 bg-amber-500/10 text-amber-800',
+  code_ready: 'border-sky-400/30 bg-sky-500/10 text-sky-800',
 };
 
 export function OperationalReadinessCard({ readiness }: { readiness: OperationalReadiness }) {
@@ -17,9 +17,9 @@ export function OperationalReadinessCard({ readiness }: { readiness: Operational
     <section className="rounded-xl border border-[var(--border)] bg-[var(--card)]/30 p-5">
       <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Operational readiness</h2>
+          <h2 className="text-lg font-semibold">Feature availability</h2>
           <p className="text-sm text-[var(--muted-foreground)]">
-            Cloudflare-first runtime checks for automation, email, auth, and AI.
+            Check whether AI drafting, account storage, email and browser assistance are available.
           </p>
         </div>
         <span className="text-xs text-[var(--muted-foreground)]">

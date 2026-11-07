@@ -5,20 +5,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider } from '@/components/auth-provider';
 import { TailorFlow } from '@/components/tailor-flow';
 import { TokenBalance } from '@/components/token-balance';
-import { generateFitScore } from '@/lib/actions/fit-score-action';
+import { generateFitScoreForClient } from '@/lib/actions/fit-score-action';
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
 import { getTokenBalance } from '@/lib/actions/token-actions';
 import { localSaveJob } from '@/lib/local-storage';
 import type { FitScore, JobApplication, Resume } from '@/lib/types';
 
-const auth = vi.hoisted(() => ({ userId: 'account-a' as string | null }));
+const auth = vi.hoisted(() => ({ userId: 'account-a' as string | null, isPending: false }));
 vi.mock('@/lib/auth-client', () => ({
-  authClient: { useSession: () => ({ data: auth.userId ? { user: { id: auth.userId } } : null }) },
+  authClient: {
+    useSession: () => ({
+      data: auth.userId ? { user: { id: auth.userId } } : null,
+      isPending: auth.isPending,
+    }),
+  },
 }));
 vi.mock('@/lib/analytics', () => ({ trackSignup: vi.fn() }));
 vi.mock('@/lib/actions/token-actions', () => ({ getTokenBalance: vi.fn() }));
 vi.mock('@/lib/actions/tailor-action', () => ({ tailorResumeForClient: vi.fn() }));
-vi.mock('@/lib/actions/fit-score-action', () => ({ generateFitScore: vi.fn() }));
+vi.mock('@/lib/actions/fit-score-action', () => ({ generateFitScoreForClient: vi.fn() }));
 vi.mock('@/lib/actions/job-actions', () => ({ saveTailoredResume: vi.fn() }));
 vi.mock('@/components/resume-diff', () => ({ ResumeDiff: () => <div>Generated diff</div> }));
 vi.mock('@/components/local-resume-export', () => ({ LocalResumeExport: () => null }));
@@ -96,13 +101,41 @@ function deferred<T>() {
 beforeEach(() => {
   vi.resetAllMocks();
   auth.userId = 'account-a';
+  auth.isPending = false;
   vi.mocked(getTokenBalance).mockResolvedValue(3);
   vi.mocked(tailorResumeForClient).mockResolvedValue(generated);
-  vi.mocked(generateFitScore).mockResolvedValue(score);
+  vi.mocked(generateFitScoreForClient).mockResolvedValue({ success: true, data: score });
 });
 afterEach(cleanup);
 
 describe('shared credit displays', () => {
+  it('preserves server job and resume while a signed-in session resolves after reload', () => {
+    localStorage.clear();
+    auth.userId = null;
+    auth.isPending = true;
+    const view = render(<Displays />);
+    auth.userId = 'account-a';
+    auth.isPending = false;
+    view.rerender(<Displays />);
+    expect(screen.queryByText(/Job not found/)).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Target job' })).toHaveTextContent('Acme');
+    expect(screen.getByTitle('Resume document preview')).toHaveAttribute(
+      'srcdoc',
+      expect.stringContaining('React engineer')
+    );
+  });
+
+  it('hydrates guest storage only after the session resolves as a guest', () => {
+    localStorage.clear();
+    auth.userId = null;
+    auth.isPending = true;
+    const view = render(<Displays />);
+    expect(screen.queryByText(/Job not found/)).not.toBeInTheDocument();
+    auth.isPending = false;
+    view.rerender(<Displays />);
+    expect(screen.getByText(/Job not found/)).toBeInTheDocument();
+  });
+
   it.each(['Generate Tailored Resume', 'Analyze Job Fit'])(
     'refreshes both displays after %s',
     async (action) => {
@@ -121,6 +154,18 @@ describe('shared credit displays', () => {
       expect(getTokenBalance).toHaveBeenCalledTimes(2);
     }
   );
+
+  it('shows a recoverable fit-score failure instead of silently discarding it', async () => {
+    vi.mocked(generateFitScoreForClient).mockResolvedValue({
+      success: false,
+      error: 'The AI service is busy right now. Please wait a moment and try again.',
+      retryable: true,
+    });
+    render(<Displays />);
+    await userEvent.click(screen.getByRole('button', { name: 'Analyze Job Fit' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The AI service is busy');
+    expect(screen.getByRole('button', { name: 'Analyze Job Fit' })).toBeEnabled();
+  });
 
   it.each([true, false])('ignores a late previous-account read (failure: %s)', async (fails) => {
     const old = deferred<number>();
@@ -285,7 +330,14 @@ describe('shared credit displays', () => {
     const stored = localStorage.getItem('rt-resumes');
     render(<Displays />);
     await userEvent.click(screen.getByRole('button', { name: 'Generate Tailored Resume' }));
-    await screen.findByText('Generated diff');
+    await waitFor(() =>
+      expect(screen.getByTitle('Resume document preview')).toHaveAttribute(
+        'srcdoc',
+        expect.stringContaining('Tailored React engineer')
+      )
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Compare and edit changes' }));
+    expect(screen.getByText('Generated diff')).toBeInTheDocument();
     expect(screen.queryByTitle('Token balance')).not.toBeInTheDocument();
     expect(screen.queryByText(/Uses 1 token/)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Buy Tokens' })).not.toBeInTheDocument();

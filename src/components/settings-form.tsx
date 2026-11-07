@@ -27,22 +27,22 @@ export function SettingsForm() {
           dropdownItem:
             'w-full px-3 py-2 text-left text-sm text-foreground hover:bg-[var(--muted)] transition-colors',
           saveButton:
-            'px-5 py-2.5 text-sm font-medium rounded-lg transition-all bg-white text-gray-900 hover:bg-gray-200',
+            'product-primary-action px-5 py-2.5 text-sm font-medium rounded-lg transition-colors',
           error: 'text-xs text-red-400',
           hint: 'text-xs text-[var(--muted-foreground)]',
           modelRow: '',
         }}
         labels={{
-          endpointUrl: 'Endpoint URL',
-          apiKey: 'API Key',
+          endpointUrl: 'AI provider URL',
+          apiKey: 'API key',
           model: 'Model',
-          save: 'Save Settings',
-          fetchModels: 'Fetch Models',
+          save: 'Save settings',
+          fetchModels: 'Load models',
         }}
         placeholders={{
           endpointUrl: 'https://api.openai.com/v1',
           apiKey: 'sk-...',
-          model: 'Enter model name or fetch available models',
+          model: 'Choose a model or enter its name',
         }}
       />
     </div>
