@@ -27,5 +27,25 @@ export async function GET(request: Request) {
     ].includes(path)
   )
     return new Response('Not found', { status: 404 });
-  return getAuth().handler(request);
+  const response = await getAuth().handler(request);
+  if (
+    request.method === 'GET' &&
+    response.ok &&
+    [
+      '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-protected-resource/api/mcp',
+    ].includes(path)
+  ) {
+    const metadata = await response.json();
+    return Response.json(
+      {
+        ...metadata,
+        scopes_supported: metadata.scopes_supported.includes('offline_access')
+          ? metadata.scopes_supported
+          : [...metadata.scopes_supported, 'offline_access'],
+      },
+      response
+    );
+  }
+  return response;
 }

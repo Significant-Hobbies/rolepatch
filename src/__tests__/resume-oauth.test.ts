@@ -141,6 +141,38 @@ it('advertises resource-bound OAuth endpoints through real provider discovery', 
   );
   expect(await resume.json()).toMatchObject({ scopes_supported: ['resume'] });
 });
+it('preserves provider errors and authorization-server metadata without rewriting them', async () => {
+  const handler = vi.spyOn(getAuth(), 'handler');
+  try {
+    for (const status of [302, 400, 500]) {
+      const response = new Response('Provider response', {
+        status,
+        headers: { 'x-provider': 'retained' },
+      });
+      handler.mockResolvedValueOnce(response);
+      expect(
+        await discovery(new Request(`${origin}/.well-known/oauth-protected-resource/api/mcp`))
+      ).toBe(response);
+    }
+    const response = Response.json({ scopes_supported: ['resume', 'offline_access'] });
+    handler.mockResolvedValueOnce(response);
+    expect(
+      await discovery(new Request(`${origin}/.well-known/oauth-authorization-server/api/auth`))
+    ).toBe(response);
+  } finally {
+    handler.mockRestore();
+  }
+});
+it.each(['', '/api/mcp'])('preserves bodyless provider HEAD discovery for %s', async (suffix) => {
+  const request = new Request(`${origin}/.well-known/oauth-protected-resource${suffix}`, {
+    method: 'HEAD',
+  });
+  const provider = await getAuth().handler(request.clone());
+  const response = await discovery(request);
+  expect(response.status).toBe(provider.status);
+  expect([...response.headers]).toEqual([...provider.headers]);
+  expect(await response.text()).toBe('');
+});
 it.each(['discovery', 'challenge'])(
   'renews an expired owner grant using scopes from app %s',
   async (source) => {
@@ -238,7 +270,9 @@ it('qualifies registration, consent, PKCE, replay resistance, owner identity, re
   const denied = await consentResumeOAuth(signedQuery, false);
   expect(denied.ok).toBe(true);
   if (denied.ok) expect(denied.redirect_uri).toContain('access_denied');
-  expect(sql.prepare('SELECT COUNT(*) n FROM oauthConsent').get().n).toBe(0);
+  expect(
+    sql.prepare('SELECT COUNT(*) n FROM oauthConsent WHERE clientId=?').get(client.client_id).n
+  ).toBe(0);
   const accepted = await consentResumeOAuth(signedQuery, true);
   expect(accepted.ok).toBe(true);
   if (!accepted.ok) throw new Error(accepted.error);
