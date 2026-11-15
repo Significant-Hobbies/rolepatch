@@ -61,7 +61,7 @@ export default function KeywordsToolLayout({ children }: { children: React.React
               This checker shares keyword extraction with the tailor flow, but displays an
               unweighted coverage percentage. Here you bring both texts yourself. The workspace can
               prepare a role-specific draft and show a{' '}
-              <a href="/tools/diff" className="text-[var(--accent)] underline underline-offset-2">
+              <a href="/tools/diff" className="text-foreground underline underline-offset-2">
                 word-level diff
               </a>{' '}
               for review. Keep each proposed change grounded in your actual experience. A missing

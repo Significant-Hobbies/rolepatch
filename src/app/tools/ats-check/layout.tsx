@@ -63,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               This checker reviews one resume's structure. The{' '}
               <a
                 href="/tools/keywords"
-                className="text-[var(--accent)] underline underline-offset-2"
+                className="text-foreground underline underline-offset-2"
               >
                 ATS Keyword Checker
               </a>{' '}
