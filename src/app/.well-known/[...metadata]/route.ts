@@ -37,12 +37,13 @@ export async function GET(request: Request) {
     ].includes(path)
   ) {
     const metadata = await response.json();
+    const scopes = metadata.scopes_supported ?? [];
     return Response.json(
       {
         ...metadata,
-        scopes_supported: metadata.scopes_supported.includes('offline_access')
-          ? metadata.scopes_supported
-          : [...metadata.scopes_supported, 'offline_access'],
+        scopes_supported: scopes.includes('offline_access')
+          ? scopes
+          : [...scopes, 'offline_access'],
       },
       response
     );

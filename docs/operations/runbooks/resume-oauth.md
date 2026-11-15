@@ -31,8 +31,15 @@ ChatGPT clients using MCP 2025-06-18 or earlier request renewal during explicit
 consent. This is a compatibility exception to the newer guidance that
 authorization-server-only scopes should not appear in protected-resource
 metadata. `/api/resume` discovery and challenges, and 403 scope challenges,
-continue to request only `resume`. Existing grants without renewal need a new
-connection and consent; no refresh grant is issued silently.
+continue to request only `resume`.
+
+Existing grants without renewal need the assistant to refresh discovery and
+reauthorize with explicit consent to `resume offline_access`. The current provider
+stores both configured scopes for dynamic clients even when registration
+requests only `resume`; this does not grant consent or issue a refresh token by
+itself. No saved client's scopes are widened and no refresh grant is issued
+silently. Verify the assistant's actual consent and a call after the five-minute
+access-token expiry before claiming renewal works.
 
 Access JWTs expire in five minutes. Refresh lasts at most seven days while the
 linked browser session stays active. Verification checks signature, type,

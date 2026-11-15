@@ -163,6 +163,30 @@ it('preserves provider errors and authorization-server metadata without rewritin
     handler.mockRestore();
   }
 });
+it('adds renewal guidance when provider metadata omits optional supported scopes', async () => {
+  const handler = vi.spyOn(getAuth(), 'handler');
+  const metadata = { resource, authorization_servers: [`${origin}/api/auth`] };
+  try {
+    const provider = Response.json(metadata, {
+      status: 203,
+      statusText: 'Non-Authoritative Information',
+      headers: { 'cache-control': 'no-store', 'x-provider': 'retained' },
+    });
+    handler.mockResolvedValueOnce(provider);
+    const response = await discovery(
+      new Request(`${origin}/.well-known/oauth-protected-resource/api/mcp`)
+    );
+    expect(response.status).toBe(provider.status);
+    expect(response.statusText).toBe(provider.statusText);
+    expect([...response.headers]).toEqual([...provider.headers]);
+    expect(await response.json()).toEqual({
+      ...metadata,
+      scopes_supported: ['offline_access'],
+    });
+  } finally {
+    handler.mockRestore();
+  }
+});
 it.each(['', '/api/mcp'])('preserves bodyless provider HEAD discovery for %s', async (suffix) => {
   const request = new Request(`${origin}/.well-known/oauth-protected-resource${suffix}`, {
     method: 'HEAD',
@@ -173,7 +197,7 @@ it.each(['', '/api/mcp'])('preserves bodyless provider HEAD discovery for %s', a
   expect([...response.headers]).toEqual([...provider.headers]);
   expect(await response.text()).toBe('');
 });
-it.each(['discovery', 'challenge'])(
+it.each(['discovery', 'challenge', 'resume-only registration'])(
   'renews an expired owner grant using scopes from app %s',
   async (source) => {
     let scope: string;
@@ -197,10 +221,23 @@ it.each(['discovery', 'challenge'])(
       token_endpoint_auth_method: 'none',
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],
-      scope,
+      scope: source === 'resume-only registration' ? 'resume' : scope,
     });
     expect(registration.status).toBe(201);
     const client = await registration.json();
+    if (source === 'resume-only registration') {
+      // The maintained provider stores all registration scopes even when DCR requests fewer.
+      expect(client.scope.split(' ')).toEqual(['offline_access', 'resume']);
+      expect(
+        JSON.parse(
+          sql.prepare('SELECT scopes FROM oauthClient WHERE clientId=?').get(client.client_id)
+            .scopes as string
+        )
+      ).toEqual(['offline_access', 'resume']);
+      expect(
+        sql.prepare('SELECT COUNT(*) n FROM oauthConsent WHERE clientId=?').get(client.client_id).n
+      ).toBe(0);
+    }
     const signedQuery = await consentQuery(client.client_id, true, { scope });
     expect(await getResumeOAuthRequest(signedQuery)).toMatchObject({
       ok: true,
