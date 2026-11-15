@@ -7,6 +7,7 @@ import { getAuth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getResumeApiUserId, withResumeAccess } from '@/lib/resume-access';
 import { getResumeOAuthRequest, consentResumeOAuth } from '@/lib/actions/resume-oauth-actions';
+import { GET as discovery } from '@/app/.well-known/[...metadata]/route';
 const state = vi.hoisted(() => ({ headers: new Headers() }));
 const origin = 'http://localhost:4366';
 const secret = 'oauth-local-synthetic-test-secret-20261008';
@@ -115,7 +116,7 @@ beforeAll(() => {
 });
 afterAll(() => sql.close());
 it('advertises resource-bound OAuth endpoints through real provider discovery', async () => {
-  const response = await getAuth().handler(
+  const response = await discovery(
     new Request(`${origin}/.well-known/oauth-authorization-server/api/auth`)
   );
   expect(response.status).toBe(200);
@@ -124,11 +125,91 @@ it('advertises resource-bound OAuth endpoints through real provider discovery', 
   expect(metadata.registration_endpoint).toBe(`${origin}/api/auth/oauth2/register`);
   expect(metadata.code_challenge_methods_supported).toEqual(['S256']);
   expect(metadata.grant_types_supported).not.toContain('client_credentials');
-  const protectedResponse = await getAuth().handler(
-    new Request(`${origin}/.well-known/oauth-protected-resource/api/mcp`)
+  for (const suffix of ['', '/api/mcp']) {
+    const request = new Request(`${origin}/.well-known/oauth-protected-resource${suffix}`);
+    const provider = await getAuth().handler(request.clone());
+    const protectedResponse = await discovery(request);
+    expect(protectedResponse.status).toBe(provider.status);
+    expect([...protectedResponse.headers]).toEqual([...provider.headers]);
+    expect(await protectedResponse.json()).toEqual({
+      ...(await provider.json()),
+      scopes_supported: ['resume', 'offline_access'],
+    });
+  }
+  const resume = await discovery(
+    new Request(`${origin}/.well-known/oauth-protected-resource/api/resume`)
   );
-  expect(await protectedResponse.json()).toMatchObject({ resource, scopes_supported: ['resume'] });
+  expect(await resume.json()).toMatchObject({ scopes_supported: ['resume'] });
 });
+it.each(['discovery', 'challenge'])(
+  'renews an expired owner grant using scopes from app %s',
+  async (source) => {
+    let scope: string;
+    if (source === 'discovery') {
+      const response = await discovery(
+        new Request(`${origin}/.well-known/oauth-protected-resource/api/mcp`)
+      );
+      scope = (await response.json()).scopes_supported.join(' ');
+    } else {
+      const response = await withResumeAccess(
+        new Request(resource),
+        async () => new Response(),
+        true
+      );
+      expect(response.status).toBe(401);
+      scope = response.headers.get('www-authenticate')!.match(/scope="([^"]+)"/)![1];
+    }
+    const registration = await send('/oauth2/register', {
+      client_name: `Synthetic ${source} Assistant`,
+      redirect_uris: [redirect],
+      token_endpoint_auth_method: 'none',
+      grant_types: ['authorization_code', 'refresh_token'],
+      response_types: ['code'],
+      scope,
+    });
+    expect(registration.status).toBe(201);
+    const client = await registration.json();
+    const signedQuery = await consentQuery(client.client_id, true, { scope });
+    expect(await getResumeOAuthRequest(signedQuery)).toMatchObject({
+      ok: true,
+      scopes: ['resume', 'offline_access'],
+      signed_in: true,
+    });
+    const accepted = await consentResumeOAuth(signedQuery, true);
+    expect(accepted.ok).toBe(true);
+    if (!accepted.ok) throw new Error(accepted.error);
+    const issued = await token({
+      grant_type: 'authorization_code',
+      client_id: client.client_id,
+      redirect_uri: redirect,
+      code_verifier: verifier,
+      resource,
+      code: new URL(accepted.redirect_uri).searchParams.get('code')!,
+    });
+    expect(issued.status).toBe(200);
+    const tokens = await issued.json();
+    expect(tokens.refresh_token).toBeTruthy();
+    expect(tokens.expires_in).toBe(300);
+    expect(await (await invoke(tokens.access_token)).json()).toEqual({ user: 'oauth-owner' });
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(Date.now() + 301_000);
+      expect((await invoke(tokens.access_token)).status).toBe(401);
+      const renewed = await token({
+        grant_type: 'refresh_token',
+        client_id: client.client_id,
+        refresh_token: tokens.refresh_token,
+        resource,
+      });
+      expect(renewed.status).toBe(200);
+      expect(await (await invoke((await renewed.json()).access_token)).json()).toEqual({
+        user: 'oauth-owner',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  }
+);
 it('qualifies registration, consent, PKCE, replay resistance, owner identity, refresh and immediate session revocation', async () => {
   const registration = await send('/oauth2/register', {
     client_name: 'Synthetic Assistant',
