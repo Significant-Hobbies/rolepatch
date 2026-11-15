@@ -56,6 +56,14 @@ export function AtsCheckPageView(view: ReturnType<typeof useAtsCheckPageSourceSt
           </ul>
         </section>
       )}
+      <p className="mt-8 text-sm leading-6 text-[var(--muted-foreground)]">
+        Next, follow the{' '}
+        <Link href="/tools" className="text-foreground underline underline-offset-2">
+          complete resume review path
+        </Link>{' '}
+        to compare job terms, review bullets and inspect your revisions. Open the final file
+        yourself to check its layout and extracted reading order.
+      </p>
     </main>
   );
 }

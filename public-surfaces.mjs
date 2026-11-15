@@ -51,11 +51,11 @@ export const PUBLIC_SURFACES = [
     path: '/tools',
     title: 'Free resume tools',
     description:
-      'Use RolePatch resume utilities for keyword matching, text comparison, ATS formatting, bullet quality, word counts, and reusable snippets.',
+      'Review one resume for one job through text structure, keyword coverage, bullet feedback and version comparison, with clear tool inputs and limits.',
     details: [
       'The public tools work without creating an account.',
       'Text analysis and snippet storage run in the browser.',
-      'Each tool explains what it measures and the limits of its result.',
+      'The review path includes a final-file checklist and a handoff to the resume workspace.',
     ],
     changeFrequency: 'weekly',
     priority: 0.95,

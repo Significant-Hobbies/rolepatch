@@ -59,13 +59,13 @@ export default function KeywordsToolLayout({ children }: { children: React.React
             </p>
             <p>
               This checker shares keyword extraction with the tailor flow, but displays an
-              unweighted coverage percentage. Here you bring both texts yourself; in the app you
-              paste a job URL, RolePatch scrapes the JD, rewrites your resume to close the keyword
-              gaps, and shows you a{' '}
+              unweighted coverage percentage. Here you bring both texts yourself. The workspace can
+              prepare a role-specific draft and show a{' '}
               <a href="/tools/diff" className="text-[var(--accent)] underline underline-offset-2">
                 word-level diff
               </a>{' '}
-              before you accept.
+              for review. Keep each proposed change grounded in your actual experience. A missing
+              term is a prompt to inspect the requirement, not permission to invent a skill.
             </p>
           </>
         }

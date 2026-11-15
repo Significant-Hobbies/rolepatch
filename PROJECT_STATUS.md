@@ -1,6 +1,18 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-10-12
+Last updated: 2026-11-15
+
+## Public resume review path — 15 November
+
+The existing free-tools index now orders text structure, job terms, bullet
+feedback and version comparison into a practical first pass for one application.
+Each tool states its input and limits. Action labels use the existing readable
+foreground role, and the final-file checklist explains what still needs visual
+and extracted-text review. The ATS and keyword pages link back to this path;
+keyword guidance keeps edits grounded in supplied experience. Analysis, storage,
+accounts and application behavior are unchanged. Release qualification is tracked
+in [issue #46](https://github.com/Significant-Hobbies/rolepatch/issues/46).
+Search and referring-domain outcomes require later evidence.
 
 ## Resume API job-link/PDF release — 12 October
 
