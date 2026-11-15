@@ -72,7 +72,9 @@ export function ResumeToolLink({
         {step ? String(step).padStart(2, '0') : <tool.icon className="h-5 w-5" />}
       </span>
       <div>
-        <h3 className="font-serif text-lg font-semibold tracking-tight">{tool.title}</h3>
+        <h3 className="resume-tool-title font-serif text-lg font-semibold tracking-tight">
+          {tool.title}
+        </h3>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted-foreground)]">
           {tool.desc}
         </p>

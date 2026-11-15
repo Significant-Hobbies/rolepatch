@@ -94,6 +94,6 @@
   font-weight: 700;
   font-display: optional;
 }
-.precision-app-nav ~ .performance-page :is(h1, h2) {
+.precision-app-nav ~ .performance-page :is(h1, h2, .resume-tool-title) {
   font-family: "RolePatch Public Display", "RolePatch Display", "RolePatch Display Fallback", var(--font-sans);
 }
