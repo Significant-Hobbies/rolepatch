@@ -2,6 +2,30 @@
 
 Last updated: 2026-11-15
 
+## MCP renewal compatibility release — 15 November
+
+[PR #48](https://github.com/Significant-Hobbies/rolepatch/pull/48) advertises
+`offline_access` in MCP discovery and 401 guidance so clients can request renewal
+through explicit consent. Token lifetime, PKCE, owner/session checks, revocation,
+`/api/resume` scopes and 403 challenges retain their existing behavior.
+
+Released code `a234cad13a11e8e1937e0a1e2715aee5fefab02a` passed
+[exact-main CI](https://github.com/Significant-Hobbies/rolepatch/actions/runs/43695809119)
+and all six deploy gates. The
+[publisher and production smoke](https://github.com/Significant-Hobbies/rolepatch/actions/runs/43696160859)
+passed; Worker `resume-tailor` version `e19304e1-7665-4972-9932-d564e5741b43`
+serves that source at 100% traffic. Native quality passed 822 tests with one
+opt-in skip, the production build verified 18 routes, and the final independent
+CodeVetter review had no surviving findings with nine OAuth tests passing.
+
+Eight public production checks passed for discovery, bodyless HEAD responses,
+MCP renewal guidance and unchanged API access challenges. Actual ChatGPT
+reauthorization and post-expiry acceptance for this release remain unverified;
+existing grants without renewal need fresh consent after client discovery is
+refreshed. Broader signed-in persistence and billing remain outside this proof.
+See the [OAuth runbook](docs/operations/runbooks/resume-oauth.md). This status-only
+update does not change the qualified application code.
+
 ## Public resume review path — 15 November
 
 The existing free-tools index now orders text structure, job terms, bullet
