@@ -136,7 +136,7 @@ export async function withResumeAccess(
         status: insufficientScope ? 403 : 401,
         headers: {
           'Cache-Control': 'private, no-store',
-          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="resume", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"`,
+          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${path === '/api/mcp' && !insufficientScope ? 'resume offline_access' : 'resume'}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"`,
         },
       }
     );
