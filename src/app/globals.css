@@ -8,6 +8,7 @@
 @source "./not-found.tsx";
 @source "../components/public-pricing-view.tsx";
 @source "./tools/page.tsx";
+@source "../components/resume-tool-review.tsx";
 @source "../components/site-nav.tsx";
 @source "../components/rolepatch-mark.tsx";
 @source "../components/token-balance.tsx";

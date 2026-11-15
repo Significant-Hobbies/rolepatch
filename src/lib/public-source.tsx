@@ -20,6 +20,7 @@ import BlogPage from '@/app/blog/page';
 import PrivacyPage from '@/app/privacy/page';
 import TermsPage from '@/app/terms/page';
 import ToolsPage from '@/app/tools/page';
+import { ResumeFinalReview, ResumeToolLink } from '@/components/resume-tool-review';
 import { DiffToolPageView } from '@/app/tools/diff/page-view';
 import { KeywordsToolPageView } from '@/app/tools/keywords/page-view';
 import { AtsCheckPageView } from '@/app/tools/ats-check/page-view';
@@ -154,6 +155,8 @@ const components = [
   PrivacyPage,
   TermsPage,
   ToolsPage,
+  ResumeToolLink,
+  ResumeFinalReview,
   DiffToolPageView,
   KeywordsToolPageView,
   AtsCheckPageView,

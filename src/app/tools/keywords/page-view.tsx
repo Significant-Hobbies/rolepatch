@@ -160,6 +160,14 @@ export function KeywordsToolPageView(view: ReturnType<typeof useKeywordsToolPage
         </div>
       )}
 
+      <p className="mt-8 text-sm leading-6 text-[var(--muted-foreground)]">
+        Keyword coverage is one part of a review. Follow the{' '}
+        <Link href="/tools" className="text-foreground underline underline-offset-2">
+          resume review path
+        </Link>{' '}
+        to check structure, improve supported bullets and compare the final wording. Review the
+        exported document&apos;s layout yourself before applying.
+      </p>
       <div className="mt-16 text-center">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 max-w-xl mx-auto">
           <p className="text-[var(--muted-foreground)] mb-4">

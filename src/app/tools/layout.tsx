@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Free Resume Tools',
+  title: 'Free Resume Tools — Structure, Keywords and Review',
   description:
-    'Free resume tools — ATS keyword check, resume diff, formatting check, bullet strength, word count, and snippet library. No sign-up required.',
+    'Review one resume for one job with free text structure, keyword, bullet, diff and word-count tools. See what each check needs and where its limits are.',
   alternates: { canonical: 'https://rolepatch.com/tools' },
 };
 
