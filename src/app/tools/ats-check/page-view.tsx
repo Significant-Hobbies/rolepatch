@@ -9,7 +9,7 @@ export function AtsCheckPageView(view: ReturnType<typeof useAtsCheckPageSourceSt
         ← RolePatch
       </Link>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">Free ATS Resume Checker</h1>
-      <p className="mt-3 text-sm text-stone-600">
+      <p className="mt-3 text-sm text-[var(--muted-foreground)]">
         Paste the text of your resume for an immediate, browser-local check of seven visible
         structure and formatting signals. No sign-up, file upload, or network request is required.
         The result is a transparent heuristic report, not a prediction that a particular employer or
@@ -44,7 +44,7 @@ export function AtsCheckPageView(view: ReturnType<typeof useAtsCheckPageSourceSt
                       : 'border-rose-200 bg-rose-50'
                 }`}
               >
-                <p className="font-medium">
+                <p className="font-medium text-stone-900">
                   <span className="mr-2">
                     {f.severity === 'good' ? '✓' : f.severity === 'warn' ? '!' : '✗'}
                   </span>
