@@ -17,7 +17,7 @@ Application tables are grouped by concern below.
 | --- | --- |
 | **Identity** | `users` |
 | **Resumes** | `resumes`, `career_records`, `tailored_resumes`, `cover_letters`, `career_resume_versions`, `career_resume_requests` |
-| **Jobs** | `job_applications`, `application_events`, `application_material_versions`, `saved_job_searches`, `saved_job_shortlist`, `job_discovery_alerts`, `company_watches` |
+| **Jobs** | `job_applications`, `application_events`, `application_create_requests`, `application_material_versions`, `saved_job_searches`, `saved_job_shortlist`, `job_discovery_alerts`, `company_watches` |
 | **Evidence** | `achievement_evidence`, `interview_stories`, `skills_roadmaps`, `fit_scores`, `outreach_emails` |
 | **Stash** | `stash_entries` |
 | **Tokens / payments** | `token_balances`, `token_transactions`, `payments` |

@@ -50,7 +50,8 @@ Current production qualification remains in [project status](../../../PROJECT_ST
 
 Use the remote HTTP endpoint and OAuth. Start with `tools/list` to discover the
 input schemas and annotations. Every account operation derives the owner from
-the authorization grant. Dates on tracker tools are Unix seconds.
+the authorization grant. Database writes return the persisted ID and revision.
+Use the corresponding read tool to retrieve stored content. Dates on tracker tools are Unix seconds.
 
 1. Call `rolepatch_profiles_create` with a stable `request_id`, a name and
    optionally `is_default: true`. Keep the returned profile ID.

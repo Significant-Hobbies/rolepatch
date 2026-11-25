@@ -312,6 +312,59 @@ it('enforces a limited career grant on both token claims and current consent', a
   sql.prepare('UPDATE oauthConsent SET scopes=? WHERE clientId=?').run('[]', client_id);
   expect((await invoke(access_token, '/api/mcp', [scope])).status).toBe(403);
 });
+it('returns only a receipt and denies reads for a write-only MCP grant', async () => {
+  const scope = 'applications:write';
+  const registration = await send('/oauth2/register', {
+    client_name: 'Write applications',
+    redirect_uris: [redirect],
+    token_endpoint_auth_method: 'none',
+    grant_types: ['authorization_code'],
+    response_types: ['code'],
+    scope,
+  });
+  const { client_id } = await registration.json();
+  const consent = await consentResumeOAuth(await consentQuery(client_id, true, { scope }), true);
+  if (!consent.ok) throw new Error(consent.error);
+  const issued = await token({
+    grant_type: 'authorization_code',
+    client_id,
+    resource,
+    redirect_uri: redirect,
+    code_verifier: verifier,
+    code: new URL(consent.redirect_uri).searchParams.get('code')!,
+  });
+  const { access_token } = await issued.json();
+  const { POST } = await import('@/app/api/mcp/route');
+  const tools = await import('@/lib/resume-mcp');
+  const dispatch = vi.spyOn(tools, 'callResumeMcpTool').mockResolvedValue({
+    ok: true,
+    id: 'job',
+    revision: 2,
+    record: { notes: 'Previously saved private notes' },
+  } as unknown as Awaited<ReturnType<typeof tools.callResumeMcpTool>>);
+  const call = (name: string) =>
+    POST(
+      new Request(resource, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'content-type': 'application/json',
+          accept: 'application/json, text/event-stream',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name } }),
+      })
+    );
+  try {
+    const { result } = await (await call('rolepatch_applications_create')).json();
+    const receipt = { ok: true, id: 'job', revision: 2 };
+    expect(result.structuredContent).toEqual(receipt);
+    expect(JSON.parse(result.content[0].text)).toEqual(receipt);
+    expect((await call('rolepatch_applications_get')).status).toBe(403);
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  } finally {
+    dispatch.mockRestore();
+  }
+});
 it('qualifies registration, consent, PKCE, replay resistance, owner identity, refresh and immediate session revocation', async () => {
   const registration = await send('/oauth2/register', {
     client_name: 'Synthetic Assistant',

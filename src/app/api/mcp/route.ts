@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { callResumeMcpTool, RESUME_MCP_TOOLS } from '@/lib/resume-mcp';
+import { careerWriteResult } from '@/lib/career-write-result';
 import { careerToolScopes } from '@/lib/career-scopes';
 import { withResumeAccess } from '@/lib/resume-access';
 
@@ -153,11 +154,14 @@ export async function POST(req: Request) {
             },
           });
         }
+        const writeOnly =
+          name !== 'rolepatch_generate_resume' && scopes.some((scope) => scope.endsWith(':write'));
+        const payload = writeOnly ? careerWriteResult(output) : output;
         return rpc(id, {
           result: {
-            isError: !output.ok,
-            content: [{ type: 'text', text: JSON.stringify(output) }],
-            structuredContent: output,
+            isError: !payload.ok,
+            content: [{ type: 'text', text: JSON.stringify(payload) }],
+            structuredContent: payload,
           },
         });
       },
