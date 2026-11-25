@@ -11,10 +11,14 @@ import type { Resume } from '@/lib/types';
 interface Props {
   resume: Resume;
   index: number;
+  onOpen: () => void;
   onRefresh: (saved: boolean) => void;
 }
 
-export function LocalResumeCorrection({ resume, index, onRefresh }: Props) {
+const conflictMessage =
+  'This local resume changed in another tab. Copy any edits you want to keep, then cancel to use the latest local copy.';
+
+export function LocalResumeCorrection({ resume, index, onOpen, onRefresh }: Props) {
   const [draft, setDraft] = useState<{ original: Resume; name: string; source: string } | null>(
     null
   );
@@ -26,6 +30,7 @@ export function LocalResumeCorrection({ resume, index, onRefresh }: Props) {
         variant="outline"
         className="w-fit"
         onClick={() => {
+          onOpen();
           setDraft({ original: resume, name: resume.name, source: resume.source });
           setError('');
         }}
@@ -35,7 +40,7 @@ export function LocalResumeCorrection({ resume, index, onRefresh }: Props) {
     );
   function save(event: React.FormEvent) {
     event.preventDefault();
-    if (!draft) return;
+    if (!draft || error === conflictMessage) return;
     const issue =
       careerCredentialIssue(`${label} name`, draft.name) ??
       careerCredentialIssue(label, draft.source);
@@ -45,8 +50,7 @@ export function LocalResumeCorrection({ resume, index, onRefresh }: Props) {
     }
     try {
       if (!localCorrectResume(draft.original, draft.name, draft.source)) {
-        onRefresh(false);
-        setError('The local resume changed. Cancel and reopen the editor to load its latest copy.');
+        setError(conflictMessage);
         return;
       }
       setDraft(null);
@@ -89,7 +93,9 @@ export function LocalResumeCorrection({ resume, index, onRefresh }: Props) {
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit">Save locally</Button>
+        <Button type="submit" disabled={error === conflictMessage}>
+          Save locally
+        </Button>
         <Button
           variant="outline"
           type="button"

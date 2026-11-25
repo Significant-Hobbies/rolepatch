@@ -90,22 +90,42 @@ it('repairs each flagged local resume and sends the whole batch only on explicit
   expect(localStorage.getItem('rt-tailored')).toBe(JSON.stringify(materials));
 });
 
-it('keeps a newer edit from another tab when the recovery editor holds an older copy', async () => {
-  const initial = {
-    id: 'a',
-    name: 'Master',
-    source: 'password=synthetic12345',
-    created_at: 1,
-    updated_at: 1,
-  };
-  localStorage.setItem('rt-resumes', JSON.stringify([initial]));
-  render(<MigrationBanner />);
-  fireEvent.click(await screen.findByRole('button', { name: 'Edit local resume 1' }));
-  fireEvent.change(screen.getByLabelText('Local resume Markdown'), {
-    target: { value: 'Corrected here' },
-  });
-  const newer = { ...initial, source: 'Corrected elsewhere' };
-  localStorage.setItem('rt-resumes', JSON.stringify([newer]));
-  fireEvent.click(screen.getByRole('button', { name: 'Save locally' }));
-  expect(localStorage.getItem('rt-resumes')).toBe(JSON.stringify([newer]));
-});
+it.each([false, true])(
+  'retains the draft and conflict until Cancel, with another flagged resume: %s',
+  async (otherFlagged) => {
+    const initial = {
+      id: 'a',
+      name: 'Master',
+      source: 'password=synthetic12345',
+      created_at: 1,
+      updated_at: 1,
+    };
+    const others = otherFlagged ? [{ ...initial, id: 'b' }] : [];
+    const stored = (entry: typeof initial) => JSON.stringify([entry, ...others]);
+    localStorage.setItem('rt-resumes', stored(initial));
+    render(<MigrationBanner />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit local resume 1' }));
+    fireEvent.change(screen.getByLabelText('Local resume name'), {
+      target: { value: 'My corrected name' },
+    });
+    fireEvent.change(screen.getByLabelText('Local resume Markdown'), {
+      target: { value: 'Corrected here' },
+    });
+    const newer = { ...initial, source: 'Corrected elsewhere' };
+    localStorage.setItem('rt-resumes', stored(newer));
+    fireEvent.click(screen.getByRole('button', { name: 'Save locally' }));
+    expect(screen.getByText(/changed in another tab/i)).toBeVisible();
+    expect(screen.getByLabelText('Local resume name')).toHaveValue('My corrected name');
+    expect(screen.getByLabelText('Local resume Markdown')).toHaveValue('Corrected here');
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeDisabled();
+    expect(localStorage.getItem('rt-resumes')).toBe(stored(newer));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByLabelText('Local resume Markdown')).not.toBeInTheDocument();
+    expect(screen.queryByText(/changed in another tab/i)).not.toBeInTheDocument();
+    if (otherFlagged)
+      expect(screen.getByRole('button', { name: 'Edit local resume 2' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled();
+    expect(localStorage.getItem('rt-resumes')).toBe(stored(newer));
+  }
+);

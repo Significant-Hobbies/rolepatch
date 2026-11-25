@@ -65,8 +65,10 @@ export function MigrationBanner() {
   const [error, setError] = useState<string | null>(null);
   const [correction, setCorrection] = useState<ReturnType<typeof firstCorrection>>(null);
   const [localStatus, setLocalStatus] = useState('');
+  const [editingCorrection, setEditingCorrection] = useState(false);
   const autoAttempted = useRef(false);
   function refreshCorrection(saved: boolean) {
+    setEditingCorrection(false);
     const next = firstCorrection(getLocalItems<Resume>('rt-resumes'));
     setCorrection(next);
     setError(next?.error ?? null);
@@ -131,7 +133,7 @@ export function MigrationBanner() {
     );
   }
 
-  const visible = !isGuest && !dismissed && total > 0;
+  const visible = !isGuest && !dismissed && (total > 0 || editingCorrection);
   if (!visible) return null;
 
   const parts: string[] = [];
@@ -184,6 +186,7 @@ export function MigrationBanner() {
             key={correction.resume.id}
             resume={correction.resume}
             index={correction.index}
+            onOpen={() => setEditingCorrection(true)}
             onRefresh={refreshCorrection}
           />
         )}
@@ -196,14 +199,14 @@ export function MigrationBanner() {
       <div className="flex gap-2 shrink-0">
         <button
           onClick={handleImport}
-          disabled={loading}
+          disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-black hover:bg-neutral-200 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Importing...' : error || localStatus ? 'Retry' : 'Import'}
         </button>
         <button
           onClick={handleDismiss}
-          disabled={loading}
+          disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-50 transition-colors"
         >
           Dismiss
