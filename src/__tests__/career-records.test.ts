@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { callCareer } from '@/lib/actions/career-records';
+import { careerWriteResult } from '@/lib/career-write-result';
 import { careerTools } from '@/lib/career-tools';
 
 interface TestDatabase {
@@ -444,8 +445,25 @@ it('requires a separate reconfirmation when a changed claim echoes the old confi
   const write = (args: object) =>
     callCareer('rolepatch_career_records_upsert', { ...input, ...args });
   expect(await write({})).toMatchObject({ revision: 1 });
+  const echoed = { ...input.data, approved_wording: 'Second claim' };
+  const rejected = await write({ data: echoed, expected_revision: 1 });
+  expect(careerWriteResult(rejected)).toMatchObject({
+    ok: false,
+    code: 'invalid_input',
+    error: expect.stringContaining('reconfirm'),
+  });
+  const { profile_id: _, ...record } = input;
+  const bulk = await callCareer('rolepatch_career_records_bulk_upsert', {
+    profile_id,
+    records: [{ ...record, data: echoed, expected_revision: 1 }],
+  });
+  expect(careerWriteResult(bulk)).toMatchObject({
+    ok: true,
+    outcomes: [{ ok: false, code: 'invalid_input' }],
+  });
+  expect(await get(profile_id)).toMatchObject({ records: [{ revision: 1, data: input.data }] });
   expect(
-    await write({ data: { ...input.data, approved_wording: 'Second claim' }, expected_revision: 1 })
+    await write({ data: { approved_wording: echoed.approved_wording }, expected_revision: 1 })
   ).toMatchObject({ revision: 2, record: { data: { verification_status: 'unverified' } } });
   expect(
     await write({

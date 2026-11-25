@@ -6,6 +6,9 @@ it.each([
   'Password: bcrypt-based hashing and rotation policy',
   'Access token: 15-minute expiry with sliding refresh',
   'Password: Hashing',
+  'Token: OAuth2.0 and JWT',
+  '- Password: Argon2id hashing replaced bcrypt',
+  'Clearance: Secret: TS/SCI-2019',
   'API key: rotation, storage and auditing',
   'Built password=less login',
   'password=None skipped validation',
@@ -22,6 +25,12 @@ it('recognizes credential URL parameters, webhook and provider tokens without ec
   const token = `ghp_${'Z'.repeat(36)}`;
   for (const value of [
     'secret: synthetic2',
+    'DB_PASSWORD=supersecretvalue',
+    'API_KEY=abcdefghijklmnopqrstuvwx',
+    'Authorization: Bearer abcdefghijklmnopqrstuvwxyz',
+    'Authorization: Basic abcdefghijklmnopqrstuvwxyz',
+    'password = "my secret phrase 99"',
+    "password = 'synthetic secret phrase'",
     'token: abcd1234abcd1234',
     key,
     jwt,

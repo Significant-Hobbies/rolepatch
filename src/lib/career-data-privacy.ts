@@ -9,7 +9,7 @@ const providerToken =
 const jwt = /\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{10,}\b/;
 const authorizationValue = /\bAuthorization\s*:\s*(?:Basic|Bearer)\s+([a-z\d/+=_.-]+)/gi;
 const assignment =
-  /(?:^|[\s{"'`(,;&])(?:[A-Z0-9]+_)*(?:password|passwd|token|secret|api[ _-]?key|access[ _-]?token|refresh[ _-]?token|client[ _-]?secret|secret[ _-]?access[ _-]?key)["']?\s*[=:]\s*["']?([^\s<>{},;"'`]+)/gi;
+  /(?:^|[\s{"'`(,;&])(?:[A-Z0-9]+_)*(?:password|passwd|token|secret|api[ _-]?key|access[ _-]?token|refresh[ _-]?token|client[ _-]?secret|secret[ _-]?access[ _-]?key)["']?\s*([=:])\s*(?:"([^"]+)"|'([^']+)'|([^\s<>{},;"'`]+))/gi;
 const urlInText = /\b[a-z][a-z\d+.-]{0,24}:\/\/[^\s<>{}|"'`\])]+/gi;
 
 function privateParameters(params: URLSearchParams) {
@@ -43,6 +43,21 @@ function tokenShaped(value: string) {
     (/[0-9]/.test(value) || (/[=+/!@#$%^&*]/.test(value) && value.length >= 12))
   );
 }
+function credentialAssignment(line: string, match: RegExpExecArray) {
+  const value = match[2] ?? match[3] ?? match[4];
+  if (match[1] === '=') return value.length >= 12 || tokenShaped(value);
+  if (match[2] || match[3]) return value.length >= 12 || tokenShaped(value);
+  // In a security-clearance description, "Secret" names a clearance level.
+  if (/\bclearance\s*:\s*$/i.test(line.slice(0, match.index))) return false;
+  const remainder = line.slice(match.index + match[0].length);
+  const standalone = /^[\s.,;)}]*$/.test(remainder);
+  return tokenShaped(value) && (standalone || value.length >= 16);
+}
+function credentialAuthorization(line: string, match: RegExpExecArray) {
+  const value = match[1];
+  const remainder = line.slice(match.index + match[0].length);
+  return value.length >= 12 && (!remainder.trim() || tokenShaped(value));
+}
 function credentialLine(original: string) {
   const line = original.replace(/\\([_#*.+!(){}[\]-])/g, '$1');
   if (
@@ -52,8 +67,11 @@ function credentialLine(original: string) {
     containsCredentialLink(line)
   )
     return true;
-  return [assignment, authorizationValue].some((pattern) =>
-    Array.from(line.matchAll(pattern)).some((match) => tokenShaped(match[1]))
+  return (
+    Array.from(line.matchAll(assignment)).some((match) => credentialAssignment(line, match)) ||
+    Array.from(line.matchAll(authorizationValue)).some((match) =>
+      credentialAuthorization(line, match)
+    )
   );
 }
 export function containsCareerCredential(...values: (string | undefined)[]) {

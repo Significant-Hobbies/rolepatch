@@ -302,6 +302,11 @@ async function writeRecord(user: string, input: RecordWrite) {
     verified(merged.verification_status) &&
     !(input.reconfirm && input.data.verification_status)
   ) {
+    if (input.data.verification_status)
+      return fail(
+        'invalid_input',
+        'Review the changed claim and supply reconfirm: true to keep its verified status.'
+      );
     merged.verification_status = 'unverified';
   }
   if (merged.verification_status === 'document_supported' && !merged.source_urls?.length)
