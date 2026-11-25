@@ -169,6 +169,10 @@ function buildSourceDecision(input: {
   };
 }
 
+export function discoveryDescriptionSource(job: DiscoveredJob) {
+  return job.description?.trim() ? 'description' : 'preview';
+}
+
 export function normalizeJobUrl(url: string): string {
   return canonicalJobUrl(url) ?? url.trim().toLowerCase();
 }

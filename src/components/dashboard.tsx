@@ -79,7 +79,11 @@ import {
   localUpdateJobStatus,
 } from '@/lib/local-storage';
 import { jobDetailsOrNull } from '@/lib/job-details';
-import { normalizeJobUrl, uniqueDiscoveryAlerts } from '@/lib/job-discovery-alerts';
+import {
+  discoveryDescriptionSource,
+  normalizeJobUrl,
+  uniqueDiscoveryAlerts,
+} from '@/lib/job-discovery-alerts';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 import type {
   AchievementEvidence,
@@ -512,7 +516,7 @@ export function Dashboard(props: DashboardProps) {
       jdText,
       jdText,
       note ?? '',
-      job.description ? 'description' : 'preview'
+      discoveryDescriptionSource(job)
     );
     await queueApplication(jobId);
     setJobs(await listJobApplications());
