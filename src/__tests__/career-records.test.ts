@@ -22,7 +22,11 @@ type Statement = { sql: string; args?: (string | number | null)[] };
 function execute({ sql, args = [] }: Statement) {
   const statement = sqlite.prepare(sql);
   if (/^\s*SELECT/i.test(sql)) return { rows: statement.all(...args), rowsAffected: 0 };
-  return { rows: [], rowsAffected: Number(statement.run(...args).changes) };
+  // D1 reports all changes, including statements executed by SQLite triggers.
+  const changes = () => Number(sqlite.prepare('SELECT total_changes() AS count').all()[0].count);
+  const before = changes();
+  statement.run(...args);
+  return { rows: [], rowsAffected: changes() - before };
 }
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: async () => owner }));
 vi.mock('@/lib/db', () => ({
@@ -358,5 +362,103 @@ it('requires renewed confirmation when a verified claim changes and preserves it
       { approved_wording: 'Reduced latency 22%.', verification_status: 'user_confirmed' },
       3
     )
+  ).toMatchObject({ revision: 4, record: { data: { verification_status: 'user_confirmed' } } });
+});
+it('restores archived records with an owned active profile, explicit revision and matching sensitive access', async () => {
+  const profile_id = (await createProfile()).id;
+  const record = {
+    profile_id,
+    id: 'answer',
+    title: 'Compensation',
+    kind: 'answer',
+    data: { value: 'Private fixture' },
+  };
+  expect(
+    await callCareer('rolepatch_career_records_upsert', {
+      ...record,
+      sensitive: true,
+      include_sensitive: true,
+    })
+  ).toMatchObject({ revision: 1 });
+  expect(
+    await callCareer('rolepatch_career_records_delete', {
+      profile_id,
+      id: 'answer',
+      expected_revision: 1,
+      include_sensitive: true,
+    })
+  ).toMatchObject({ revision: 2 });
+  const restore = { ...record, data: {}, restore: true, include_sensitive: true };
+  expect(await callCareer('rolepatch_career_records_upsert', restore)).toMatchObject({
+    code: 'invalid_input',
+  });
+  expect(
+    await callCareer('rolepatch_career_records_upsert', { ...restore, expected_revision: 1 })
+  ).toMatchObject({ code: 'conflict' });
+  expect(
+    await callCareer('rolepatch_career_records_upsert', {
+      ...restore,
+      expected_revision: 2,
+      include_sensitive: false,
+    })
+  ).toMatchObject({ code: 'not_found' });
+  owner = 'two';
+  expect(
+    await callCareer('rolepatch_career_records_upsert', { ...restore, expected_revision: 2 })
+  ).toMatchObject({ code: 'not_found' });
+  owner = 'one';
+  expect(
+    await callCareer('rolepatch_profiles_archive', { profile_id, expected_revision: 3 })
+  ).toMatchObject({ revision: 4 });
+  expect(
+    await callCareer('rolepatch_career_records_upsert', { ...restore, expected_revision: 2 })
+  ).toMatchObject({ code: 'not_found' });
+  expect(
+    await callCareer('rolepatch_profiles_update', {
+      profile_id,
+      expected_revision: 4,
+      restore: true,
+      name: 'Restored',
+    })
+  ).toMatchObject({ profile: { name: 'Restored', archived_at: null, revision: 5 } });
+  expect(
+    await callCareer('rolepatch_career_records_upsert', { ...restore, expected_revision: 2 })
+  ).toMatchObject({
+    revision: 3,
+    record: { sensitive: true, archived_at: null, data: { value: 'Private fixture' } },
+  });
+  expect(
+    await callCareer('rolepatch_profiles_get', { profile_id, include_sensitive: true })
+  ).toMatchObject({ profile: { revision: 6 }, records: [{ id: 'answer', revision: 3 }] });
+});
+
+it('requires a separate reconfirmation when a changed claim echoes the old confirmed status', async () => {
+  const profile_id = (await createProfile()).id;
+  const input = {
+    profile_id,
+    id: 'claim',
+    kind: 'achievement',
+    title: 'Outcome',
+    data: { approved_wording: 'First claim', verification_status: 'user_confirmed' },
+  };
+  const write = (args: object) =>
+    callCareer('rolepatch_career_records_upsert', { ...input, ...args });
+  expect(await write({})).toMatchObject({ revision: 1 });
+  expect(
+    await write({ data: { ...input.data, approved_wording: 'Second claim' }, expected_revision: 1 })
+  ).toMatchObject({ revision: 2, record: { data: { verification_status: 'unverified' } } });
+  expect(
+    await write({
+      data: { ...input.data, approved_wording: 'Second claim' },
+      expected_revision: 2,
+      reconfirm: true,
+    })
+  ).toMatchObject({ revision: 3, record: { data: { verification_status: 'user_confirmed' } } });
+  expect(
+    await write({
+      data: { ...input.data, approved_wording: 'Third reviewed claim' },
+      expected_revision: 3,
+      reconfirm: true,
+    })
   ).toMatchObject({ revision: 4, record: { data: { verification_status: 'user_confirmed' } } });
 });

@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import {
   careerSecretMessage,
+  careerCredentialIssue,
   containsCareerCredential,
   containsCredentialAnswer,
 } from '@/lib/career-data-privacy';
@@ -13,6 +14,7 @@ import {
   careerClaimChanged,
   careerSchemas,
   type CareerProfile,
+  type CareerData,
   type CareerRecord,
   type CareerToolName,
 } from '@/lib/career-tools';
@@ -147,8 +149,11 @@ async function getProfile(user: string, input: Input<'rolepatch_profiles_get'>) 
   return { ...records, ok: true as const, profile };
 }
 async function createProfile(user: string, input: Input<'rolepatch_profiles_create'>) {
-  if (containsCareerCredential(input.name, input.source, input.request_id))
-    return fail('invalid_input', careerSecretMessage);
+  const issue =
+    careerCredentialIssue('Profile name', input.name) ??
+    careerCredentialIssue('Master resume', input.source) ??
+    careerCredentialIssue('Request ID', input.request_id);
+  if (issue) return fail('invalid_input', issue);
   const hash = Array.from(
     new Uint8Array(
       await crypto.subtle.digest(
@@ -195,8 +200,16 @@ async function updateProfile(
   input: Input<'rolepatch_profiles_update'>,
   archive: boolean
 ) {
-  if (containsCareerCredential(input.name, input.source))
-    return fail('invalid_input', careerSecretMessage);
+  if (containsCareerCredential(input.name, input.source)) {
+    const existing = (await db.execute({ sql: profileQuery, args: [user, input.profile_id] }))
+      .rows[0];
+    if (!existing) return absent();
+    if (existing.revision !== input.expected_revision) return conflict();
+    const issue =
+      careerCredentialIssue('Profile name', input.name, String(existing.name)) ??
+      careerCredentialIssue('Master resume', input.source, String(existing.source));
+    if (issue) return fail('invalid_input', issue);
+  }
   const [changed, read] = await db.batch([
     {
       sql: `UPDATE resumes SET name=coalesce(?,name),source=coalesce(?,source),
@@ -218,12 +231,51 @@ async function updateProfile(
     { sql: profileQuery, args: [user, input.profile_id] },
   ]);
   if (!read.rows[0]) return absent();
-  if (changed.rowsAffected !== 1) return conflict();
+  // D1 includes the revision and default-selection trigger writes in meta.changes.
+  if (!changed.rowsAffected) return conflict();
   const profile = profileRow(read.rows[0]);
   return { ok: true as const, id: profile.id, revision: profile.revision, profile };
 }
 type RecordWrite = Input<'rolepatch_career_records_upsert'>;
+function fieldText(value: CareerData[keyof CareerData]) {
+  if (Array.isArray(value)) return value.join('\n');
+  return typeof value === 'string' ? value : undefined;
+}
+function changedCredentialAnswer(input: RecordWrite, data: CareerData, previous?: CareerRecord) {
+  if (input.kind !== 'answer') return false;
+  const fields = ['value', 'original_text', 'approved_wording', 'summary'] as const;
+  if (previous?.title === input.title && fields.every((key) => data[key] === previous.data[key]))
+    return false;
+  return containsCredentialAnswer(
+    input.title,
+    fields.map((key) => data[key] ?? '')
+  );
+}
+function careerRecordPrivacyIssue(input: RecordWrite, merged: CareerData, previous?: CareerRecord) {
+  if (changedCredentialAnswer(input, merged, previous)) return `Answer. ${careerSecretMessage}`;
+  const labelIssue =
+    careerCredentialIssue('Record ID', input.id, previous?.id) ??
+    careerCredentialIssue('Record title', input.title, previous?.title);
+  if (labelIssue) return labelIssue;
+  for (const key of Object.keys(merged) as (keyof CareerData)[]) {
+    const issue = careerCredentialIssue(
+      `Record ${key}`,
+      fieldText(merged[key]),
+      fieldText(previous?.data[key])
+    );
+    if (issue) return issue;
+  }
+  return null;
+}
+function verified(status: CareerData['verification_status']) {
+  return status === 'user_confirmed' || status === 'document_supported';
+}
 async function writeRecord(user: string, input: RecordWrite) {
+  if (input.restore && input.expected_revision === undefined)
+    return fail(
+      'invalid_input',
+      'Read the archived record and supply its expected revision to restore it.'
+    );
   if (input.sensitive && (!input.include_sensitive || input.kind !== 'answer'))
     return fail(
       'invalid_input',
@@ -239,22 +291,17 @@ async function writeRecord(user: string, input: RecordWrite) {
   const sensitive = input.sensitive ?? previous?.sensitive ?? false;
   const merged = { ...previous?.data, ...input.data };
   for (const key of input.clear_fields ?? []) delete merged[key];
-  const valuesToCheck = Object.values(merged)
-    .flat()
-    .filter((value): value is string => typeof value === 'string');
-  if (
-    containsCareerCredential(input.id, input.title, ...valuesToCheck) ||
-    containsCredentialAnswer(input.title, [
-      merged.value ?? '',
-      merged.original_text ?? '',
-      merged.approved_wording ?? '',
-      merged.summary ?? '',
-    ])
-  )
-    return fail('invalid_input', careerSecretMessage);
+  const issue = careerRecordPrivacyIssue(input, merged, previous);
+  if (issue) return fail('invalid_input', issue);
   const factsChanged =
     input.title !== previous?.title || careerClaimChanged(previous?.data ?? {}, merged);
-  if (!merged.verification_status || (factsChanged && !input.data.verification_status)) {
+  if (!merged.verification_status) merged.verification_status = 'unverified';
+  if (
+    factsChanged &&
+    verified(previous?.data.verification_status) &&
+    verified(merged.verification_status) &&
+    !(input.reconfirm && input.data.verification_status)
+  ) {
     merged.verification_status = 'unverified';
   }
   if (merged.verification_status === 'document_supported' && !merged.source_urls?.length)
@@ -279,14 +326,15 @@ async function writeRecord(user: string, input: RecordWrite) {
         ],
       },
       {
-        sql: `UPDATE career_records SET title=?,data_json=?,sensitive=?,revision=revision+1
-        WHERE user_id=? AND profile_id=? AND id=? AND kind=? AND revision=? AND archived_at IS NULL AND (sensitive=0 OR ?)
-        AND (title<>? OR data_json<>? OR sensitive<>?) AND EXISTS (SELECT 1 FROM resumes WHERE user_id=? AND id=? AND archived_at IS NULL)`,
+        sql: `UPDATE career_records SET title=?,data_json=?,sensitive=?,archived_at=NULL,revision=revision+1
+        WHERE user_id=? AND profile_id=? AND id=? AND kind=? AND revision=? AND (archived_at IS NULL OR ?) AND (sensitive=0 OR ?)
+        AND (title<>? OR data_json<>? OR sensitive<>? OR archived_at IS NOT NULL) AND EXISTS (SELECT 1 FROM resumes WHERE user_id=? AND id=? AND archived_at IS NULL)`,
         args: [
           ...values,
           ...scope,
           input.kind,
           input.expected_revision ?? null,
+          Number(!!input.restore),
           Number(!!input.include_sensitive),
           ...values,
           user,

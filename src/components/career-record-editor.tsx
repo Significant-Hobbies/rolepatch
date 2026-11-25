@@ -61,6 +61,7 @@ export interface RecordDraft {
   data: CareerData;
   sensitive: boolean;
   expected_revision?: number;
+  reconfirm?: boolean;
   clear_fields?: (keyof CareerData)[];
 }
 
@@ -93,12 +94,16 @@ export function CareerRecordEditor({
       ...(Object.keys(record?.data ?? {}) as (keyof CareerData)[]),
     ])
   );
+  const [decision, setDecision] = useState<{ title: string; data: CareerData }>();
+  const choice =
+    decision && decision.title === title && !careerClaimChanged(decision.data, data)
+      ? decision.data.verification_status
+      : undefined;
+  const changed = !!record && (record.title !== title || careerClaimChanged(record.data, data));
+  const verification =
+    choice ?? (changed ? 'unverified' : (data.verification_status ?? 'unverified'));
   function setField(key: keyof CareerData, value: unknown) {
-    setData((old) => {
-      const next = { ...old, [key]: value };
-      if (careerClaimChanged(old, next)) next.verification_status = 'unverified';
-      return next;
-    });
+    setData((old) => ({ ...old, [key]: value }));
   }
   return (
     <form
@@ -112,7 +117,8 @@ export function CareerRecordEditor({
           id,
           kind,
           title,
-          data,
+          data: { ...data, verification_status: verification },
+          reconfirm: changed && (choice === 'user_confirmed' || choice === 'document_supported'),
           sensitive,
           clear_fields,
           expected_revision: record?.revision,
@@ -129,6 +135,7 @@ export function CareerRecordEditor({
             onChange={(event) => {
               setKind(event.target.value as CareerKind);
               setData({});
+              setDecision(undefined);
               setSensitive(false);
             }}
           >
@@ -147,7 +154,6 @@ export function CareerRecordEditor({
             maxLength={400}
             onChange={(event) => {
               setTitle(event.target.value);
-              setData((old) => ({ ...old, verification_status: 'unverified' }));
             }}
           />
         </label>
@@ -173,8 +179,16 @@ export function CareerRecordEditor({
                 {label}
                 <select
                   className={selectClass}
-                  value={data[key] ?? 'unverified'}
-                  onChange={(e) => setField(key, e.target.value)}
+                  value={verification}
+                  onChange={(e) =>
+                    setDecision({
+                      title,
+                      data: {
+                        ...data,
+                        verification_status: e.target.value as CareerData['verification_status'],
+                      },
+                    })
+                  }
                 >
                   {verificationStatuses.map((option) => (
                     <option key={option} value={option}>

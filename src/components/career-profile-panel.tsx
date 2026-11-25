@@ -430,7 +430,26 @@ function CareerRecordRow({
         </dl>
       </details>
       <div className="flex flex-wrap gap-2">
-        {!record.archived_at && (
+        {record.archived_at ? (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() =>
+              mutate('rolepatch_career_records_upsert', {
+                id: record.id,
+                kind: record.kind,
+                title: record.title,
+                data: {},
+                restore: true,
+                expected_revision: record.revision,
+                include_sensitive: sensitive,
+              })
+            }
+          >
+            Restore record
+          </Button>
+        ) : (
           <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditor(record)}>
             Edit
           </Button>

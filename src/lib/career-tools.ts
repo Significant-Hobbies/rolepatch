@@ -93,7 +93,19 @@ const writeFields = {
   title: z.string().trim().min(1).max(400),
   data: careerData,
   clear_fields: z.array(careerData.keyof()).max(25).optional(),
+  reconfirm: z
+    .boolean()
+    .optional()
+    .describe(
+      'Set only after reviewing a materially changed previously verified claim together with its new verification_status.'
+    ),
   sensitive: z.boolean().optional(),
+  restore: z
+    .boolean()
+    .optional()
+    .describe(
+      'Restore an archived record using its expected_revision. Supply the existing kind and title, and an empty data object to preserve the record.'
+    ),
   expected_revision: revision.expected_revision.optional(),
 };
 export const careerSchemas = {

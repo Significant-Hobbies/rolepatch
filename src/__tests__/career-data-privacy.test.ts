@@ -1,0 +1,47 @@
+import { expect, it } from 'vitest';
+import { containsCareerCredential, careerCredentialIssue } from '@/lib/career-data-privacy';
+
+it.each([
+  'Authentication & Authorization: Bearer token validation, RBAC and SSO',
+  'Password: bcrypt-based hashing and rotation policy',
+  'Access token: 15-minute expiry with sliding refresh',
+  'Password: Hashing',
+  'API key: rotation, storage and auditing',
+  'Built password=less login',
+  'password=None skipped validation',
+  'Portfolio: https://jane@janedoe.dev',
+  String.raw`\href{https://linkedin.com}{john@doe.com}`,
+  'Migrated sk-learn-pipelines-to-production-ready-services-2024',
+])('allows professional context %s', (line) => {
+  expect(containsCareerCredential(line)).toBe(false);
+});
+
+it('recognizes credential URL parameters, webhook and provider tokens without echoing them', () => {
+  const key = `AKIA${'X'.repeat(16)}`;
+  const jwt = `eyJ${'Y'.repeat(16)}.eyJ${'Y'.repeat(16)}.${'X'.repeat(16)}`;
+  const token = `ghp_${'Z'.repeat(36)}`;
+  for (const value of [
+    'secret: synthetic2',
+    'token: abcd1234abcd1234',
+    key,
+    jwt,
+    token.replace('_', '\\_'),
+    'https://hooks.slack.com/services/EXAMPLE/EXAMPLE/SYNTHETIC',
+    'https://example.test/?token=abc',
+    'https://example.test/#access_token=abc',
+    'https://example.test/#/callback?secret=abc',
+    'https://example.test/?sig=abc',
+  ]) {
+    expect(containsCareerCredential(value)).toBe(true);
+    const issue = careerCredentialIssue('Master resume', `Professional summary\n${value}`);
+    expect(issue).toContain('Master resume, line 2.');
+    expect(issue).not.toContain(value);
+  }
+});
+it('allows unrelated edits to an existing master while checking new occurrences', () => {
+  const old = 'API_KEY=example-12345\nOld summary';
+  expect(careerCredentialIssue('Master', 'API_KEY=example-12345\nNew summary', old)).toBeNull();
+  expect(careerCredentialIssue('Master', `${old}\nAPI_KEY=example-12345`, old)).toContain(
+    'line 3.'
+  );
+});
