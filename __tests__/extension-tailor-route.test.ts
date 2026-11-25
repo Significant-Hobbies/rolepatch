@@ -84,11 +84,9 @@ describe('POST /api/extension/tailor', () => {
 
   it('returns existing job_id when same URL already tracked by this user', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-idempotent');
-    mockExecute
-      .mockResolvedValueOnce({ rows: [{ id: 'resume-1' }] })
-      .mockResolvedValueOnce({
-        rows: [{ id: 'job-existing', normalized_url: 'https://jobs.lever.co/acme/abc' }],
-      });
+    mockExecute.mockResolvedValueOnce({ rows: [{ id: 'resume-1' }] }).mockResolvedValueOnce({
+      rows: [{ id: 'job-existing', normalized_url: 'https://jobs.lever.co/acme/abc' }],
+    });
     const { POST } = await import('@/app/api/extension/tailor/route');
     const res = await POST(makeReq({ url: 'https://jobs.lever.co/acme/abc', jd_text: longJd }));
     expect(res.status).toBe(200);
