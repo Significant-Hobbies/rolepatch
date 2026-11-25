@@ -119,7 +119,6 @@ CREATE TABLE IF NOT EXISTS job_applications (
 );
 
 CREATE TABLE IF NOT EXISTS tailored_resumes (
-  jd_snapshot TEXT,
   id TEXT PRIMARY KEY,
   user_id TEXT,
   job_id TEXT NOT NULL REFERENCES job_applications(id),
@@ -132,7 +131,8 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   score_tailored INTEGER NOT NULL DEFAULT 0,
   changes_json TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  jd_snapshot TEXT
 );
 
 CREATE TABLE IF NOT EXISTS cover_letters (
