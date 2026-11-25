@@ -224,6 +224,40 @@ describe('profile-generated resumes and immutable history', () => {
       count: 0,
     });
   });
+  it('allows only one gateway call for overlapping AI retries, and guards referenced job history', async () => {
+    fact('p', 'achievement', 'Availability', {
+      approved_wording: 'Maintained APIs.',
+      individual_contribution: 'I tested API failover.',
+      verification_status: 'user_confirmed',
+    });
+    let finish = () => {};
+    const wait = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    let started = () => {};
+    const running = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    vi.mocked(generateObject).mockImplementationOnce(async () => {
+      started();
+      await wait;
+      return { object: { rewrites: [{ id: 'p', details: [] }] } } as Awaited<
+        ReturnType<typeof generateObject>
+      >;
+    });
+    const args = { mode: 'grounded_rewrite', application_id: 'job', save_to_history: true };
+    const first = generate(args);
+    await running;
+    try {
+      expect(await generate(args)).toMatchObject({ code: 'conflict' });
+    } finally {
+      finish();
+    }
+    expect(await first).toMatchObject({ ok: true, credits_charged: 1 });
+    expect(await generate(args)).toMatchObject({ ok: true, credits_charged: 0 });
+    expect(generateObject).toHaveBeenCalledTimes(1);
+    expect(() => sql.prepare('DELETE FROM job_applications WHERE id=?').run('job')).toThrow();
+  });
   it('falls back to free fixed wording when AI selects an unknown fact', async () => {
     fact('a1', 'achievement', 'Caching', {
       individual_contribution: 'I wrote tests.',
@@ -278,21 +312,19 @@ it('exports generic and targeted one-page PDFs with selectable evidence and live
 }, async () => {
   const { PDFParse } = await import('pdf-parse');
   const renderer = await import('@/lib/pdf');
-  const render = vi
-    .spyOn(renderer, 'renderPdf')
-    .mockImplementation(
-      async (html) =>
-        new Uint8Array(
-          Buffer.from(
-            execFileSync(process.execPath, ['src/__tests__/fixtures/render-pdf.mjs'], {
-              input: html,
-              encoding: 'utf8',
-              maxBuffer: 5_000_000,
-            }),
-            'base64'
-          )
+  const render = vi.spyOn(renderer, 'renderPdf').mockImplementation(
+    async (html) =>
+      new Uint8Array(
+        Buffer.from(
+          execFileSync(process.execPath, ['src/__tests__/fixtures/render-pdf.mjs'], {
+            input: html,
+            encoding: 'utf8',
+            maxBuffer: 5_000_000,
+          }),
+          'base64'
         )
-    );
+      )
+  );
   try {
     fact('site', 'identity', 'Portfolio', {
       value: 'Portfolio',

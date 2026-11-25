@@ -1,3 +1,4 @@
+import { joinResumeSections } from '@/lib/career-resume-sections';
 import { assembleRankedResume, extractResumeBulletGroups } from '@/lib/resume-bullet-ranking';
 import { rankSourceItems } from '@/lib/resume-fallback';
 import { EMPTY_MASTER_TEMPLATE } from '@/lib/master-resume';
@@ -67,58 +68,6 @@ function retainedMaster(source: string, pages: number, query: string, structured
   return stripResumePins(output)
     .replace(/\n{3,}/g, '\n\n')
     .trim();
-}
-
-/** Merge structured entries into matching master sections, keeping unknown sections intact. */
-function joinSections(parts: string[]) {
-  const blocks = new Map<string, { heading: string; body: string[] }>();
-  const header: string[] = [];
-  for (const part of parts) {
-    let body = header;
-    for (const line of part.split('\n')) {
-      const heading = line.match(/^## (.+?)\s*$/);
-      if (!heading) {
-        body.push(line);
-        continue;
-      }
-      const key = heading[1].trim().toLowerCase();
-      let block = blocks.get(key);
-      if (!block) {
-        block = { heading: line, body: [] };
-        blocks.set(key, block);
-      }
-      body = block.body;
-      body.push('');
-    }
-    body.push('');
-  }
-  const headerLines = header.join('\n').trim().split('\n');
-  const nameIndex = headerLines.findIndex((line) => /^# /.test(line));
-  if (nameIndex > 0) headerLines.unshift(...headerLines.splice(nameIndex, 1));
-  const headings = [
-    'summary',
-    'profile',
-    'experience',
-    'employment',
-    'work history',
-    'projects',
-    'achievements',
-    'education',
-    'skills',
-  ];
-  const weight = (key: string) =>
-    headings.includes(key) ? headings.indexOf(key) : headings.length;
-  return [
-    headerLines.join('\n').trim(),
-    ...[...blocks]
-      .sort(([a], [b]) => weight(a) - weight(b))
-      .map(([, block]) => {
-        const body = block.body.join('\n').trim();
-        return body ? `${block.heading}\n\n${body}` : '';
-      }),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
 }
 
 /** JD text participates only in ranking. All printable content comes from owned source records. */
@@ -273,7 +222,7 @@ export function composeCareerResume(
     );
     used.push(...skills);
   }
-  const markdown = joinSections(sections.filter(Boolean));
+  const markdown = joinResumeSections(sections.filter(Boolean));
   if (!markdown || markdown.length > 40_000)
     throw new Error('Add printable career facts, or narrow the selection to 40,000 characters.');
   const selected_record_ids = [...(master ? [profile.id] : []), ...used.map((f) => f.id)];

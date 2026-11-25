@@ -120,6 +120,127 @@ async function formatted(row: Version, format: string, replayed: boolean) {
   }
   return result;
 }
+async function jobTarget(owner: string, input: GenerationInput) {
+  let jd = input.jd_text?.trim() ?? '';
+  let jobUrl = input.job_url ?? '';
+  if (input.application_id) {
+    const job = (
+      await db.execute({
+        sql: 'SELECT jd_text,url FROM job_applications WHERE id=? AND user_id=?',
+        args: [input.application_id, owner],
+      })
+    ).rows[0];
+    if (!job) return fail('not_found', 'Application not found.');
+    jd ||= String(job.jd_text || '');
+    jobUrl ||= String(job.url || '');
+  }
+  if (!jd && jobUrl) {
+    try {
+      jd = await extractPublicJob(jobUrl);
+    } catch {
+      return fail('generation_failed', 'Could not read the posting. Supply jd_text and retry.');
+    }
+  }
+  return { ok: true as const, jd, jobUrl };
+}
+async function profileFacts(owner: string, profileId: string) {
+  // Keyset reads handle large profiles without returning private answers or private notes.
+  const facts: CareerFact[] = [];
+  let cursor = '';
+  for (;;) {
+    const rows = (
+      await db.execute({
+        sql: `SELECT id,kind,title,data_json,revision FROM career_records
+      WHERE user_id=? AND profile_id=? AND archived_at IS NULL AND sensitive=0
+      AND kind IN ('identity','employment','project','achievement','education','skill')
+      AND id>? ORDER BY id LIMIT 100`,
+        args: [owner, profileId, cursor],
+      })
+    ).rows;
+    facts.push(
+      ...rows.map((r) => ({
+        id: String(r.id),
+        kind: String(r.kind),
+        title: String(r.title),
+        revision: Number(r.revision),
+        data: JSON.parse(String(r.data_json)),
+      }))
+    );
+    if (rows.length < 100) break;
+    cursor = String(rows.at(-1)!.id);
+  }
+  return facts;
+}
+interface GenerationCommit {
+  id: string;
+  owner: string;
+  input: GenerationInput;
+  signature: string;
+  profileId: string;
+  profileRevision: number;
+  charge: number;
+  lease: boolean;
+  markdown: string;
+  snapshot: string;
+}
+/** The version and its credit ledger entry commit together on D1. */
+async function storeGeneration(commit: GenerationCommit) {
+  const {
+    id,
+    owner,
+    input,
+    signature,
+    profileId,
+    profileRevision,
+    charge,
+    lease,
+    markdown,
+    snapshot,
+  } = commit;
+  const [insert] = await db.batch([
+    {
+      sql: `INSERT INTO career_resume_versions(id,user_id,profile_id,application_id,series_id,revision,markdown,snapshot_json,saved,request_id,request_hash)
+      SELECT ?,?,r.id,?,?,1,?,?,?,?,? FROM resumes r LEFT JOIN token_balances b ON b.user_id=r.user_id
+      WHERE r.id=? AND r.user_id=? AND r.revision=? AND r.archived_at IS NULL AND COALESCE(b.balance,0)>=?
+      AND (?=0 OR EXISTS(SELECT 1 FROM career_resume_requests q WHERE q.user_id=r.user_id AND q.request_id=? AND q.lease_id=?))
+      AND (? IS NULL OR EXISTS(SELECT 1 FROM job_applications WHERE id=? AND user_id=?))
+      ON CONFLICT(user_id,request_id) DO NOTHING`,
+      args: [
+        id,
+        owner,
+        input.application_id ?? null,
+        id,
+        markdown,
+        snapshot,
+        Number(input.save_to_history),
+        input.request_id,
+        signature,
+        profileId,
+        owner,
+        profileRevision,
+        charge,
+        Number(lease),
+        input.request_id,
+        id,
+        input.application_id ?? null,
+        input.application_id ?? null,
+        owner,
+      ],
+    },
+    {
+      sql: `UPDATE token_balances SET balance=balance-1,total_used=total_used+1,updated_at=unixepoch()
+      WHERE ?=1 AND user_id=? AND EXISTS (SELECT 1 FROM career_resume_versions WHERE user_id=? AND id=?)`,
+      args: [charge, owner, owner, id],
+    },
+    {
+      sql: `INSERT INTO token_transactions(id,user_id,amount,type,reference_id,balance_after)
+      SELECT ?,user_id,-1,'tailor',?,balance FROM token_balances WHERE user_id=? AND ?=1 AND
+      EXISTS(SELECT 1 FROM career_resume_versions WHERE user_id=? AND id=?)`,
+      args: [crypto.randomUUID(), id, owner, charge, owner, id],
+    },
+  ]);
+  return insert.rowsAffected === 1;
+}
 async function generate(owner: string, input: GenerationInput) {
   const signature = await hash('generate', input);
   // Discard expired unsaved content while retaining a tombstone so a late retry cannot debit again.
@@ -146,51 +267,10 @@ async function generate(owner: string, input: GenerationInput) {
     })
   ).rows[0];
   if (!profile) return fail('not_found', 'Select an active profile or set a default.');
-  let jd = input.jd_text?.trim() ?? '';
-  let jobUrl = input.job_url ?? '';
-  if (input.application_id) {
-    const job = (
-      await db.execute({
-        sql: 'SELECT jd_text,url FROM job_applications WHERE id=? AND user_id=?',
-        args: [input.application_id, owner],
-      })
-    ).rows[0];
-    if (!job) return fail('not_found', 'Application not found.');
-    jd ||= String(job.jd_text || '');
-    jobUrl ||= String(job.url || '');
-  }
-  if (!jd && jobUrl) {
-    try {
-      jd = await extractPublicJob(jobUrl);
-    } catch {
-      return fail('generation_failed', 'Could not read the posting. Supply jd_text and retry.');
-    }
-  }
-  // Keyset reads handle large profiles without returning private answers or private notes.
-  const facts: CareerFact[] = [];
-  let cursor = '';
-  for (;;) {
-    const rows = (
-      await db.execute({
-        sql: `SELECT id,kind,title,data_json,revision FROM career_records
-      WHERE user_id=? AND profile_id=? AND archived_at IS NULL AND sensitive=0
-      AND kind IN ('identity','employment','project','achievement','education','skill')
-      AND id>? ORDER BY id LIMIT 100`,
-        args: [owner, String(profile.id), cursor],
-      })
-    ).rows;
-    facts.push(
-      ...rows.map((r) => ({
-        id: String(r.id),
-        kind: String(r.kind),
-        title: String(r.title),
-        revision: Number(r.revision),
-        data: JSON.parse(String(r.data_json)),
-      }))
-    );
-    if (rows.length < 100) break;
-    cursor = String(rows.at(-1)!.id);
-  }
+  const target = await jobTarget(owner, input);
+  if (!target.ok) return target;
+  const { jd, jobUrl } = target;
+  const facts = await profileFacts(owner, String(profile.id));
   const profileInfo = {
     id: String(profile.id),
     source: String(profile.source),
@@ -293,48 +373,18 @@ async function generate(owner: string, input: GenerationInput) {
     exclude_ids: input.exclude_ids,
     render_settings: DEFAULT_RENDER_CONFIG,
   });
-  const [insert] = await db.batch([
-    {
-      sql: `INSERT INTO career_resume_versions(id,user_id,profile_id,application_id,series_id,revision,markdown,snapshot_json,saved,request_id,request_hash)
-      SELECT ?,?,r.id,?,?,1,?,?,?,?,? FROM resumes r LEFT JOIN token_balances b ON b.user_id=r.user_id
-      WHERE r.id=? AND r.user_id=? AND r.revision=? AND r.archived_at IS NULL AND COALESCE(b.balance,0)>=?
-      AND (?=0 OR EXISTS(SELECT 1 FROM career_resume_requests q WHERE q.user_id=r.user_id AND q.request_id=? AND q.lease_id=?))
-      AND (? IS NULL OR EXISTS(SELECT 1 FROM job_applications WHERE id=? AND user_id=?))
-      ON CONFLICT(user_id,request_id) DO NOTHING`,
-      args: [
-        id,
-        owner,
-        input.application_id ?? null,
-        id,
-        markdown,
-        snapshot,
-        Number(input.save_to_history),
-        input.request_id,
-        signature,
-        String(profile.id),
-        owner,
-        Number(profile.revision),
-        charge,
-        Number(lease),
-        input.request_id,
-        id,
-        input.application_id ?? null,
-        input.application_id ?? null,
-        owner,
-      ],
-    },
-    {
-      sql: `UPDATE token_balances SET balance=balance-1,total_used=total_used+1,updated_at=unixepoch()
-      WHERE ?=1 AND user_id=? AND EXISTS (SELECT 1 FROM career_resume_versions WHERE user_id=? AND id=?)`,
-      args: [charge, owner, owner, id],
-    },
-    {
-      sql: `INSERT INTO token_transactions(id,user_id,amount,type,reference_id,balance_after)
-      SELECT ?,user_id,-1,'tailor',?,balance FROM token_balances WHERE user_id=? AND ?=1 AND
-      EXISTS(SELECT 1 FROM career_resume_versions WHERE user_id=? AND id=?)`,
-      args: [crypto.randomUUID(), id, owner, charge, owner, id],
-    },
-  ]);
+  const inserted = await storeGeneration({
+    id,
+    owner,
+    input,
+    signature,
+    profileId: profileInfo.id,
+    profileRevision: profileInfo.revision,
+    charge,
+    lease,
+    markdown,
+    snapshot,
+  });
   if (lease)
     await db.execute({
       sql: 'DELETE FROM career_resume_requests WHERE user_id=? AND request_id=? AND lease_id=?',
@@ -349,29 +399,18 @@ async function generate(owner: string, input: GenerationInput) {
       ? fail('insufficient_tokens', 'One generation credit is required.')
       : fail('conflict', 'The profile or application changed. Retry with its current data.');
   }
-  return insert.rowsAffected === 1 ? formatted(stored, input.format, false) : replay(stored);
+  return inserted ? formatted(stored, input.format, false) : replay(stored);
 }
-async function append(
-  owner: string,
-  operation: 'save' | 'update' | 'archive',
-  input: {
-    request_id: string;
-    draft_id?: string;
-    version_id?: string;
-    expected_revision?: number;
-    markdown?: string;
-    approved?: boolean;
-  }
-) {
-  const signature = await hash(operation, input);
-  const replay = async (row: Version) =>
-    row.request_hash === signature
-      ? output(row)
-      : fail('conflict', 'That request ID belongs to another request.');
-  const cached = await byRequest(owner, input.request_id);
-  if (cached) return replay(cached);
-  const prior = await version(owner, (input.draft_id ?? input.version_id)!, operation !== 'save');
-  if (!prior) return fail('not_found', 'Resume revision not found.');
+type VersionOperation = 'save' | 'update' | 'archive';
+interface RevisionInput {
+  request_id: string;
+  draft_id?: string;
+  version_id?: string;
+  expected_revision?: number;
+  markdown?: string;
+  approved?: boolean;
+}
+function validateRevision(prior: Version, operation: VersionOperation, input: RevisionInput) {
   if (
     operation === 'save' &&
     (!prior.markdown || (!prior.saved && prior.created_at <= now() - oneDay))
@@ -383,10 +422,37 @@ async function append(
     return fail('invalid_input', 'Supply edited Markdown or an approval decision.');
   if (input.expected_revision !== undefined && input.expected_revision !== prior.revision)
     return fail('conflict', 'The expected revision is stale.');
+  return null;
+}
+function revisionSnapshot(prior: Version, markdown?: string) {
+  const snapshot = JSON.parse(prior.snapshot_json) as Snapshot & {
+    edited_from_version_id?: string;
+  };
+  if (markdown !== undefined && markdown !== prior.markdown) {
+    snapshot.edited_from_version_id = prior.id;
+    const disclosure =
+      'Markdown was edited after generation. Source references describe the generated draft.';
+    snapshot.warnings = [...new Set([...(snapshot.warnings ?? []), disclosure])];
+  }
+  return JSON.stringify(snapshot);
+}
+async function append(owner: string, operation: VersionOperation, input: RevisionInput) {
+  const signature = await hash(operation, input);
+  const replay = async (row: Version) =>
+    row.request_hash === signature
+      ? output(row)
+      : fail('conflict', 'That request ID belongs to another request.');
+  const cached = await byRequest(owner, input.request_id);
+  if (cached) return replay(cached);
+  const prior = await version(owner, (input.draft_id ?? input.version_id)!, operation !== 'save');
+  if (!prior) return fail('not_found', 'Resume revision not found.');
+  const issue = validateRevision(prior, operation, input);
+  if (issue) return issue;
   const id = crypto.randomUUID();
   const args = [
     id,
     input.markdown ?? prior.markdown,
+    revisionSnapshot(prior, input.markdown),
     Number(input.approved ?? (input.markdown === undefined && !!prior.approved)),
     Number(operation === 'archive'),
     input.request_id,
@@ -399,7 +465,7 @@ async function append(
   ];
   await db.execute({
     sql: `INSERT INTO career_resume_versions(id,user_id,profile_id,application_id,series_id,revision,markdown,snapshot_json,saved,approved,archived,request_id,request_hash)
-    SELECT ?,user_id,profile_id,application_id,series_id,revision+1,?,snapshot_json,1,?,?,?,? FROM career_resume_versions
+    SELECT ?,user_id,profile_id,application_id,series_id,revision+1,?,?,1,?,?,?,? FROM career_resume_versions
     WHERE user_id=? AND id=? AND NOT EXISTS (SELECT 1 FROM career_resume_versions WHERE series_id=? AND user_id=? AND revision>?)
     ON CONFLICT DO NOTHING`,
     args,
@@ -432,13 +498,13 @@ export async function callCareerResume(name: string, args: unknown) {
         if (input.cursor) {
           const anchor = await version(owner, input.cursor);
           if (!anchor) return fail('invalid_input', 'Invalid history cursor.');
-          where.push('(v.created_at,v.id)<(?,?)');
-          values.push(anchor.created_at, anchor.id);
+          where.push('(v.created_at,v.revision,v.id)<(?,?,?)');
+          values.push(anchor.created_at, anchor.revision, anchor.id);
         }
         const rows = (
           await db.execute({
             sql: `SELECT v.id,v.series_id,v.profile_id,v.application_id,v.revision,v.approved,v.archived,v.created_at
-          FROM career_resume_versions v WHERE ${where.join(' AND ')} ORDER BY v.created_at DESC,v.id DESC LIMIT ?`,
+          FROM career_resume_versions v WHERE ${where.join(' AND ')} ORDER BY v.created_at DESC,v.revision DESC,v.id DESC LIMIT ?`,
             args: [...values, input.limit + 1],
           })
         ).rows;

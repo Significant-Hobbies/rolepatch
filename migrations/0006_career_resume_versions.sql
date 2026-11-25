@@ -3,7 +3,7 @@ CREATE TABLE career_resume_versions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   profile_id TEXT NOT NULL REFERENCES resumes(id) ON DELETE CASCADE,
-  application_id TEXT REFERENCES job_applications(id) ON DELETE SET NULL,
+  application_id TEXT REFERENCES job_applications(id) ON DELETE RESTRICT,
   series_id TEXT NOT NULL,
   revision INTEGER NOT NULL CHECK (revision > 0),
   markdown TEXT NOT NULL,
