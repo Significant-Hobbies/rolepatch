@@ -200,7 +200,13 @@ function OutlineEditor({
     setMessage('');
     try {
       if (isGuest) localUpdateResume(resume.id, snapshot);
-      else await updateResume(resume.id, snapshot, savedSource);
+      else {
+        const issue = await updateResume(resume.id, snapshot, savedSource);
+        if (issue) {
+          setMessage(issue.error);
+          return;
+        }
+      }
       setSavedSource(snapshot);
       onSaved(snapshot);
       setMessage('Saved');

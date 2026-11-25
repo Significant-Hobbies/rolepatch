@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
+import { guestMasterIssue } from '@/lib/guest-migration-validation';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
 import { localListJobs, localListResumes, localListStashEntries } from '@/lib/local-storage';
 import type { CoverLetter, JobApplication, Resume, StashEntry, TailoredResume } from '@/lib/types';
@@ -23,6 +24,19 @@ function getLocalItems<T>(key: string): T[] {
   if (typeof window === 'undefined') return [];
   const raw = localStorage.getItem(key);
   return raw ? JSON.parse(raw) : [];
+}
+
+async function importLocalData() {
+  const resumes = getLocalItems<Resume>('rt-resumes');
+  const issue = guestMasterIssue(resumes);
+  if (issue) return { success: false, error: issue, counts: undefined };
+  return migrateGuestData({
+    resumes,
+    jobs: getLocalItems<JobApplication>('rt-jobs'),
+    tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
+    coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
+    stashEntries: getLocalItems<StashEntry>('rt-stash'),
+  });
 }
 
 function formatSuccessParts(counts: Counts): string[] {
@@ -62,14 +76,7 @@ export function MigrationBanner() {
     (async () => {
       setLoading(true);
       try {
-        const payload = {
-          resumes: getLocalItems<Resume>('rt-resumes'),
-          jobs: getLocalItems<JobApplication>('rt-jobs'),
-          tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
-          coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
-          stashEntries: getLocalItems<StashEntry>('rt-stash'),
-        };
-        const result = await migrateGuestData(payload);
+        const result = await importLocalData();
         if (result.success && result.counts) {
           // leave localStorage intact as recovery backup
           localStorage.setItem(MIGRATED_KEY, '1');
@@ -114,15 +121,7 @@ export function MigrationBanner() {
     setLoading(true);
     setError(null);
     try {
-      const payload = {
-        resumes: getLocalItems<Resume>('rt-resumes'),
-        jobs: getLocalItems<JobApplication>('rt-jobs'),
-        tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
-        coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
-        stashEntries: getLocalItems<StashEntry>('rt-stash'),
-      };
-
-      const result = await migrateGuestData(payload);
+      const result = await importLocalData();
 
       if (result.success) {
         // leave localStorage intact as recovery backup

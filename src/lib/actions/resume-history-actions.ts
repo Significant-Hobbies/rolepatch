@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { careerCredentialIssue } from '@/lib/career-data-privacy';
 import { db } from '@/lib/db';
 import { legacyApplicationIdentity } from '@/lib/tracker-store';
 import type { TailorChange, TailoredResume } from '@/lib/types';
@@ -51,6 +52,8 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
     });
     resumeId = matching.rows[0]?.id as string | undefined;
     if (!resumeId) {
+      const issue = careerCredentialIssue('Inline master resume', input.resume_source);
+      if (issue) throw new Error(issue);
       resumeId = crypto.randomUUID();
       statements.push({
         sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',

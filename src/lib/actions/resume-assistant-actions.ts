@@ -2,6 +2,7 @@ import { getJobApplication } from '@/lib/actions/job-actions';
 import { getResume, listResumes } from '@/lib/actions/resume-actions';
 import { tailorResumeForClient } from '@/lib/actions/tailor-action';
 import { recordResumeHistory } from '@/lib/actions/resume-history-actions';
+import { careerCredentialIssue } from '@/lib/career-data-privacy';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { extractPublicJob } from '@/lib/public-job-extraction';
 import {
@@ -158,6 +159,10 @@ export async function tailorResumeFromReference(raw: unknown, historyByDefault =
   const rejected = sessionFailure(input, userId);
   if (rejected) return rejected;
   const saveHistory = input.save_to_history ?? (historyByDefault && Boolean(userId));
+  if (saveHistory && input.resume_markdown) {
+    const issue = careerCredentialIssue('Inline master resume', input.resume_markdown);
+    if (issue) return failure('invalid_input', issue);
+  }
   try {
     const job = ref.savedId ? await getJobApplication(ref.savedId) : null;
     if (ref.savedId && !job) return failure('not_found', 'Saved job not found.');

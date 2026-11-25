@@ -375,3 +375,20 @@ describe('optional persisted API/MCP history', () => {
     expect(recordResumeHistory).not.toHaveBeenCalled();
   });
 });
+
+it('validates a signed-in inline history request before extraction, generation or billing', async () => {
+  vi.clearAllMocks();
+  vi.mocked(getCurrentUserId).mockResolvedValue('owner');
+  const result = await tailorResumeFromReference({
+    jd_text: jd,
+    resume_markdown: `${resume}\npassword=example12345`,
+    save_to_history: true,
+  });
+  expect(result).toMatchObject({
+    ok: false,
+    code: 'invalid_input',
+    error: expect.stringContaining('Inline master resume, line'),
+  });
+  expect(tailorResumeForClient).not.toHaveBeenCalled();
+  expect(recordResumeHistory).not.toHaveBeenCalled();
+});

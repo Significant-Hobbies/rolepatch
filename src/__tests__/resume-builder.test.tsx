@@ -27,7 +27,7 @@ beforeEach(() => {
   auth.isGuest = true;
   auth.isPending = false;
   vi.mocked(localListResumes).mockReturnValue([resume]);
-  vi.mocked(updateResume).mockResolvedValue();
+  vi.mocked(updateResume).mockResolvedValue(undefined);
 });
 
 it('saves guest edits and pins without rewriting other sections, then retains saved edits on switching', async () => {
@@ -62,7 +62,10 @@ it('saves guest edits and pins without rewriting other sections, then retains sa
 });
 it('retains edits and permits retry after an owner-scoped cloud save failure', async () => {
   auth.isGuest = false;
-  vi.mocked(updateResume).mockRejectedValueOnce(new Error('Save unavailable'));
+  vi.mocked(updateResume).mockResolvedValueOnce({
+    ok: false,
+    error: 'Master resume, line 7. Remove the credential.',
+  });
   render(<ResumeBuilder {...props} />);
   fireEvent.click(screen.getByRole('button', { name: 'Edit achievement 1: Built React screens.' }));
   fireEvent.change(screen.getAllByLabelText('Achievement 1')[0], {
@@ -70,7 +73,7 @@ it('retains edits and permits retry after an owner-scoped cloud save failure', a
   });
   fireEvent.click(screen.getByRole('button', { name: 'Done' }));
   fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-  await screen.findByText('Save unavailable');
+  await screen.findByText('Master resume, line 7. Remove the credential.');
   expect(screen.getByText('Built accessible React screens.')).toBeVisible();
   fireEvent.click(screen.getByRole('button', { name: 'Save' }));
   await screen.findByText('Saved');
