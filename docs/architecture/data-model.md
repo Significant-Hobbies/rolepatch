@@ -11,25 +11,40 @@ the non-obvious constraints.
 
 ## Tables
 
-22 tables, grouped by concern:
+Application tables are grouped by concern below.
 
 | Group | Tables |
 | --- | --- |
 | **Identity** | `users` |
-| **Resumes** | `resumes`, `tailored_resumes`, `cover_letters` |
-| **Jobs** | `job_applications`, `saved_job_searches`, `saved_job_shortlist`, `job_discovery_alerts`, `company_watches` |
+| **Resumes** | `resumes`, `career_records`, `tailored_resumes`, `cover_letters`, `career_resume_versions`, `career_resume_requests` |
+| **Jobs** | `job_applications`, `application_events`, `application_material_versions`, `saved_job_searches`, `saved_job_shortlist`, `job_discovery_alerts`, `company_watches` |
 | **Evidence** | `achievement_evidence`, `interview_stories`, `skills_roadmaps`, `fit_scores`, `outreach_emails` |
 | **Stash** | `stash_entries` |
 | **Tokens / payments** | `token_balances`, `token_transactions`, `payments` |
 | **Apply-agent** | `application_queue`, `application_receipts`, `profile_answers`, `recruiter_reply_events` |
 
-For column-level detail, read `src/lib/db-schema.sql`. The single
-migration is `migrations/0001_initial_schema.sql`.
+Apply the numbered SQL migrations in order. The schema snapshot describes a
+fresh application database. Better Auth and OAuth tables are defined in migrations
+0002 and 0003.
+
+The tracker migration adds a precise stage to each existing application and
+records its last known stage as a migration snapshot. The migration maps the old interview status to screening and labels the initial
+event as a migration snapshot. Earlier transition times are unknown.
+The tracker and existing resume/apply workflows update the same application ID.
+Event material references retain the exact revision linked at that time.
+
+A career profile uses its existing `resumes.id`. Account-wide evidence and
+reusable answers remain accessible as original sources. Profile-linked career
+records keep their own IDs, verification state and revision. A generation
+snapshot captures its profile revision, selected sources, target and Markdown.
+Appending an edit creates another version ID. See the
+[career access decision](decisions/0017-career-data-access.md).
 
 ## Guest parity contract
 
-Every entity that exists in D1 has a parallel implementation in
-`src/lib/local-storage.ts` under `rt-*` keys. The contract:
+Existing guest tools use `src/lib/local-storage.ts` under `rt-*` keys.
+The connected career database requires an account. Guest drafts and browser
+records stay local until the user signs in. The guest contract follows.
 
 1. **Same interface.** `getItems` / `setItems` are generic helpers that
    mirror the DB layer interface, so server actions can swap between DB

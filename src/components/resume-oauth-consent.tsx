@@ -1,5 +1,6 @@
 'use client';
 
+import { scopeDescriptions } from '@/lib/career-scopes';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { authClient } from '@/lib/auth-client';
@@ -64,7 +65,7 @@ export function ResumeOAuthConsent() {
       className="border border-[var(--border)] rounded-xl p-6 bg-[var(--card)]/30 space-y-4"
     >
       <h2 id="resume-oauth-heading" className="text-xl font-bold">
-        Connect your resume
+        Connect to RolePatch
       </h2>
       {!request && !error && <p role="status">Checking connection request…</p>}
       {request?.ok && (
@@ -76,10 +77,13 @@ export function ResumeOAuthConsent() {
             Client-provided name. Return address:{' '}
             <span className="break-all">{request.callback_origin}</span>
           </p>
-          <p className="text-sm">
-            This connection can read your master resumes, use your credits to prepare a resume, and
-            save versions to Jobs History when requested. It cannot submit applications.
-          </p>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {request.scopes
+              .filter((scope) => scope in scopeDescriptions)
+              .map((scope) => (
+                <li key={scope}>{scopeDescriptions[scope]}</li>
+              ))}
+          </ul>
           {request.scopes.includes('offline_access') && (
             <p className="text-sm">
               It can renew access for up to seven days while your sign-in session remains active.
@@ -94,7 +98,11 @@ export function ResumeOAuthConsent() {
                 onClick={() => decide(true)}
                 className="product-primary-action px-5 py-2.5 rounded-lg font-medium disabled:opacity-40"
               >
-                {pending ? 'Working…' : 'Allow resume access'}
+                {pending
+                  ? 'Working…'
+                  : request.scopes.every((s) => s === 'resume' || s === 'offline_access')
+                    ? 'Allow resume access'
+                    : 'Allow requested access'}
               </button>
               <button
                 type="button"

@@ -95,7 +95,8 @@ async function verifyResumeAccess(token: string, now = Date.now()): Promise<stri
 export async function withResumeAccess(
   request: Request,
   action: () => Promise<Response>,
-  requireAccount = false
+  requireAccount = false,
+  scopes: readonly string[] = ['resume']
 ): Promise<Response> {
   const authorization = request.headers.get('authorization');
   if (!authorization && !requireAccount) return action();
@@ -107,12 +108,14 @@ export async function withResumeAccess(
       authorization &&
       ['/api/resume', '/api/mcp'].includes(path) &&
       /^Bearer rp_resume_v1\.[\w-]+\.[\w-]+$/i.test(authorization)
-    )
-      userId = await verifyResumeAccess(authorization.slice(7));
-    else if (['/api/resume', '/api/mcp'].includes(path)) {
+    ) {
+      if (scopes.every((scope) => scope === 'resume'))
+        userId = await verifyResumeAccess(authorization.slice(7));
+      else insufficientScope = true;
+    } else if (['/api/resume', '/api/mcp'].includes(path)) {
       if (authorization) {
         const { verifyResumeOAuth } = await import('@/lib/resume-oauth');
-        userId = await verifyResumeOAuth(request);
+        userId = await verifyResumeOAuth(request, scopes);
       } else {
         const { getAuth } = await import('@/lib/auth');
         const session = await getAuth().api.getSession({ headers: request.headers });
@@ -127,16 +130,16 @@ export async function withResumeAccess(
     return Response.json(
       {
         ok: false,
-        code: 'invalid_access_token',
+        code: insufficientScope ? 'insufficient_scope' : 'invalid_access_token',
         error: insufficientScope
-          ? 'Authorize resume access for this connection.'
+          ? 'Reconnect and approve the requested permissions.'
           : 'Connect your account or create a new API token in Settings.',
       },
       {
         status: insufficientScope ? 403 : 401,
         headers: {
           'Cache-Control': 'private, no-store',
-          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${path === '/api/mcp' && !insufficientScope ? 'resume offline_access' : 'resume'}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"`,
+          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${[...scopes, ...(path === '/api/mcp' && !insufficientScope ? ['offline_access'] : [])].join(' ')}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"`,
         },
       }
     );

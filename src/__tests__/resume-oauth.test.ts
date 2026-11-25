@@ -3,6 +3,7 @@ import { createHash, createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
+import { resourceScopes } from '@/lib/career-scopes';
 import { getAuth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getResumeApiUserId, withResumeAccess } from '@/lib/resume-access';
@@ -74,12 +75,14 @@ async function consentQuery(client: string, signed = true, extra: Record<string,
     );
   return new URL(data.url, origin).search.slice(1);
 }
-async function invoke(access: string, path = '/api/mcp') {
+async function invoke(access: string, path = '/api/mcp', scopes = ['resume']) {
   return withResumeAccess(
     new Request(`${origin}${path}`, {
       headers: { authorization: `Bearer ${access}` },
     }),
-    async () => Response.json({ user: getResumeApiUserId() })
+    async () => Response.json({ user: getResumeApiUserId() }),
+    true,
+    scopes
   );
 }
 beforeAll(() => {
@@ -133,7 +136,7 @@ it('advertises resource-bound OAuth endpoints through real provider discovery', 
     expect([...protectedResponse.headers]).toEqual([...provider.headers]);
     expect(await protectedResponse.json()).toEqual({
       ...(await provider.json()),
-      scopes_supported: ['resume', 'offline_access'],
+      scopes_supported: [...resourceScopes, 'offline_access'],
     });
   }
   const resume = await discovery(
@@ -227,13 +230,13 @@ it.each(['discovery', 'challenge', 'resume-only registration'])(
     const client = await registration.json();
     if (source === 'resume-only registration') {
       // The maintained provider stores all registration scopes even when DCR requests fewer.
-      expect(client.scope.split(' ')).toEqual(['offline_access', 'resume']);
+      expect(client.scope.split(' ')).toEqual(['offline_access', ...resourceScopes]);
       expect(
         JSON.parse(
           sql.prepare('SELECT scopes FROM oauthClient WHERE clientId=?').get(client.client_id)
             .scopes as string
         )
-      ).toEqual(['offline_access', 'resume']);
+      ).toEqual(['offline_access', ...resourceScopes]);
       expect(
         sql.prepare('SELECT COUNT(*) n FROM oauthConsent WHERE clientId=?').get(client.client_id).n
       ).toBe(0);
@@ -241,7 +244,7 @@ it.each(['discovery', 'challenge', 'resume-only registration'])(
     const signedQuery = await consentQuery(client.client_id, true, { scope });
     expect(await getResumeOAuthRequest(signedQuery)).toMatchObject({
       ok: true,
-      scopes: ['resume', 'offline_access'],
+      scopes: scope.split(' '),
       signed_in: true,
     });
     const accepted = await consentResumeOAuth(signedQuery, true);
@@ -279,6 +282,36 @@ it.each(['discovery', 'challenge', 'resume-only registration'])(
     }
   }
 );
+it('enforces a limited career grant on both token claims and current consent', async () => {
+  const scope = 'applications:read';
+  const registration = await send('/oauth2/register', {
+    client_name: 'Read applications',
+    redirect_uris: [redirect],
+    token_endpoint_auth_method: 'none',
+    grant_types: ['authorization_code'],
+    response_types: ['code'],
+    scope,
+  });
+  const { client_id } = await registration.json();
+  const query = await consentQuery(client_id, true, { scope });
+  expect(await getResumeOAuthRequest(query)).toMatchObject({ ok: true, scopes: [scope] });
+  const consent = await consentResumeOAuth(query, true);
+  if (!consent.ok) throw new Error(consent.error);
+  const issued = await token({
+    grant_type: 'authorization_code',
+    client_id,
+    resource,
+    redirect_uri: redirect,
+    code_verifier: verifier,
+    code: new URL(consent.redirect_uri).searchParams.get('code')!,
+  });
+  const { access_token } = await issued.json();
+  expect((await invoke(access_token, '/api/mcp', [scope])).status).toBe(200);
+  expect((await invoke(access_token, '/api/mcp', ['applications:write'])).status).toBe(403);
+  expect((await invoke(access_token)).status).toBe(403);
+  sql.prepare('UPDATE oauthConsent SET scopes=? WHERE clientId=?').run('[]', client_id);
+  expect((await invoke(access_token, '/api/mcp', [scope])).status).toBe(403);
+});
 it('qualifies registration, consent, PKCE, replay resistance, owner identity, refresh and immediate session revocation', async () => {
   const registration = await send('/oauth2/register', {
     client_name: 'Synthetic Assistant',

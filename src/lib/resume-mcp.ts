@@ -1,3 +1,10 @@
+import { rendersOwnedVersion } from '@/lib/career-scopes';
+import { trackerTools } from '@/lib/tracker-tools';
+import { careerTools } from '@/lib/career-tools';
+import { careerResumeTools } from '@/lib/career-resume-tools';
+import { callTracker } from '@/lib/actions/tracker-records';
+import { callCareer } from '@/lib/actions/career-records';
+import { callCareerResume } from '@/lib/actions/career-resume';
 import {
   listResumeAssistantProfiles,
   tailorResumeFromReference,
@@ -61,18 +68,32 @@ export const RESUME_MCP_TOOLS = [
   {
     name: 'rolepatch_render_resume_pdf',
     description:
-      'Render supplied Markdown draft text as a PDF attachment without AI generation, generation credits, saved-profile reads or persistence. Use this to retry a failed PDF export. The caller must provide the returned markdown; draft IDs are not stored downloads. Output requires review.',
+      'Export supplied Markdown or an owned saved version as a PDF. Retrying an export uses no generation credits.',
     inputSchema: {
       type: 'object',
-      properties: { resume_markdown: { type: 'string', minLength: 20, maxLength: 40000 } },
-      required: ['resume_markdown'],
+      properties: {
+        resume_markdown: { type: 'string', minLength: 20, maxLength: 40000 },
+        version_id: { type: 'string' },
+      },
+      oneOf: [{ required: ['resume_markdown'] }, { required: ['version_id'] }],
       additionalProperties: false,
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
   },
+  ...trackerTools,
+  ...careerTools,
+  ...careerResumeTools,
 ];
 
 export async function callResumeMcpTool(name: string, args: unknown) {
+  if (trackerTools.some((tool) => tool.name === name)) return callTracker(name, args);
+  if (careerTools.some((tool) => tool.name === name)) return callCareer(name, args);
+  if (careerResumeTools.some((tool) => tool.name === name) || rendersOwnedVersion(name, args))
+    return callCareerResume(name, args);
+  return callLegacyTool(name, args);
+}
+
+async function callLegacyTool(name: string, args: unknown) {
   if (name === 'rolepatch_render_resume_pdf') return renderResumePdfDraft(args);
   if (name === 'rolepatch_resume_profiles') {
     if (!args || typeof args !== 'object' || Array.isArray(args) || Object.keys(args).length)

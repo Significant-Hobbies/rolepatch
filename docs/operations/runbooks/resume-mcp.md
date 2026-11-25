@@ -46,6 +46,47 @@ bearer API above stays compatible. See the [OAuth setup and qualification
 runbook](resume-oauth.md) for discovery, scopes, consent, renewal and revocation.
 Current production qualification remains in [project status](../../../PROJECT_STATUS.md).
 
+## Career database workflow on the feature branch
+
+Use the remote HTTP endpoint and OAuth. Start with `tools/list` to discover the
+input schemas and annotations. Every account operation derives the owner from
+the authorization grant. Dates on tracker tools are Unix seconds.
+
+1. Call `rolepatch_profiles_create` with a stable `request_id`, a name and
+   optionally `is_default: true`. Keep the returned profile ID.
+2. Call `rolepatch_career_records_bulk_upsert` with the profile ID and stable
+   record IDs. Add employment and projects before achievements that reference
+   them. Keep original text, attribution and approved wording in separate fields.
+   Follow `next_cursor` when reading a large profile. To include sensitive answers,
+   request the dedicated scope and send `include_sensitive: true`.
+3. Call `rolepatch_applications_bulk_upsert` with an `items` array. Give every
+   create item a stable request ID and a job URL, board-qualified ID or explicit
+   manual ID. Inspect each item’s result. Filter `rolepatch_applications_list`
+   by status or due date, then retain the application ID and revision.
+4. Call `rolepatch_generate_resume` with the profile ID and a request ID.
+   Add `application_id` to target a tracked opening. Review Markdown, source
+   IDs and warnings. Set `save_to_history: true` to keep the generated version.
+5. Attach an exact saved version through `rolepatch_materials_upsert` with
+   `kind: "resume"`, `reference_type: "resume_version"` and `reference_id`.
+   Export with `rolepatch_render_resume_pdf` and `version_id`. A rendering retry
+   uses no generation credits.
+6. Record a candidate-reported submission or interview with
+   `rolepatch_application_events_add`. Supply `material_versions` with the IDs and exact revisions used
+   for that submission. To correct an application, read its current revision, then send
+   `expected_revision` with the edit.
+
+Example batch item for `rolepatch_applications_bulk_upsert`:
+
+```json
+{"items":[{"request_id":"intake-2026-001","manual_id":"referral-001","company":"Example Systems","role":"Backend Engineer","status":"ready","jd_text":"Build APIs in Go."}]}
+```
+
+Use the same request ID and payload when retrying. For a revision conflict,
+retrieve the current record before deciding whether the proposed change still
+applies. The server limits each JSON request to 100,000 bytes. Split large
+imports into smaller batches. Signed-in users can inspect corresponding
+records in Jobs and Resume Builder.
+
 ## Local stdio clients
 
 Start RolePatch with `pnpm dev`. Configure the assistant's MCP client:

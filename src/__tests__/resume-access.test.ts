@@ -245,6 +245,16 @@ it('requires an ordinary signed-in session to issue capabilities', async () => {
   expect(await createResumeApiAccess()).toMatchObject({ ok: false });
 });
 
+it('keeps a finite resume token out of career database operations even with a live browser session', async () => {
+  const access = await createResumeApiAccess();
+  if (!access.ok) throw new Error('Expected local session');
+  const handler = vi.fn(async () => new Response());
+  const response = await withResumeAccess(request(access.token), handler, true, ['profile:write']);
+  expect(response.status).toBe(403);
+  expect(response.headers.get('www-authenticate')).toContain('scope="profile:write"');
+  expect(handler).not.toHaveBeenCalled();
+});
+
 it('requests renewal only for MCP authentication and keeps missing resume scope distinct', async () => {
   state.requestHeaders = new Headers();
   const action = vi.fn(async () => new Response());

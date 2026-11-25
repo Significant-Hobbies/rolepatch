@@ -164,8 +164,9 @@ function AccessControls({ signedIn, authPending }: { signedIn: boolean; authPend
           </p>
           <code className="block break-all">https://rolepatch.com/api/mcp</code>
           <p>
-            Sign in with Google and approve resume access when your assistant opens RolePatch. Each
-            connection uses your saved master; MCP saves to History only when requested.
+            Sign in with Google when your assistant opens RolePatch. Review the requested
+            permissions for career profiles, job applications, documents and generation. Reconnect
+            to approve additional permissions when you need them.
           </p>
         </div>
         {notice && (
