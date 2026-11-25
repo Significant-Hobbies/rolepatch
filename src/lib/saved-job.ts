@@ -9,7 +9,7 @@ type Opening = {
   jdRaw: string;
   jdText: string;
 };
-type SaveMode = 'add' | 'capture' | 'queue';
+type SaveMode = 'url' | 'manual' | 'capture' | 'queue' | 'discover';
 
 /** All signed-in legacy intake paths resolve the same opening before changing current job data. */
 export async function saveOwnedOpening(
@@ -47,26 +47,42 @@ export async function saveOwnedOpening(
   if (!jobId) throw new Error('Resume or job not found.');
   if (mode === 'capture') return { id: jobId, existing: true };
 
-  // A deliberate re-add uses the freshly entered posting. Queuing preserves an existing
-  // posting's details and appends only the discovery note, including on a restored job.
-  const detailArgs = mode === 'add' ? [company, role, jdRaw, jdText] : [];
-  const details = mode === 'add' ? 'company=?,role=?,jd_raw=?,jd_text=?,' : '';
+  // Discovery can supply a short preview and generic labels. Only the manual editor
+  // can overwrite existing posting details or rebind an existing profile.
+  const replace = Number(mode === 'manual');
+  const marker = note?.match(/^RolePatch (?:semantic match:|discovery alert\b)/)?.[0] ?? note;
   const merged = await db.execute({
-    sql: `UPDATE job_applications SET resume_id=CASE WHEN ?='queue' THEN coalesce(resume_id,?) ELSE ? END,${details}
+    sql: `UPDATE job_applications SET resume_id=CASE WHEN ? THEN ? ELSE coalesce(resume_id,?) END,
+      company=CASE WHEN (company='' OR ?) AND lower(trim(?)) NOT IN ('','unknown company','unknown') THEN ? ELSE company END,
+      role=CASE WHEN (role='' OR ?) AND lower(trim(?)) NOT IN ('','untitled role') THEN ? ELSE role END,
+      jd_raw=CASE WHEN (jd_raw='' OR ?) AND trim(?)<>'' THEN ? ELSE jd_raw END,
+      jd_text=CASE WHEN (jd_text='' OR ?) AND trim(?)<>'' THEN ? ELSE jd_text END,
       normalized_url=COALESCE(normalized_url,?),
-      status=CASE WHEN stage IN ('archived','withdrawn') THEN 'draft' ELSE status END,
+      status=CASE WHEN ? AND stage IN ('archived','withdrawn') THEN 'draft' ELSE status END,
       notes=CASE WHEN ? IS NULL OR instr(COALESCE(notes,''),?)>0 THEN notes
                  WHEN trim(COALESCE(notes,''))='' THEN ? ELSE notes||char(10,10)||? END,
       updated_at=unixepoch()
     WHERE user_id=? AND id=? AND EXISTS(SELECT 1 FROM resumes WHERE id=? AND user_id=? AND archived_at IS NULL)`,
     args: [
-      mode,
+      replace,
       resumeId,
       resumeId,
-      ...detailArgs,
+      replace,
+      company,
+      company,
+      replace,
+      role,
+      role,
+      replace,
+      jdRaw,
+      jdRaw,
+      replace,
+      jdText,
+      jdText,
       identity.url,
+      Number(mode !== 'discover'),
       note,
-      note,
+      marker,
       note,
       note,
       owner,

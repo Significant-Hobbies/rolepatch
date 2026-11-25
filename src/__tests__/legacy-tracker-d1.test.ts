@@ -2,6 +2,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { getPlatformProxy, unstable_splitSqlQuery } from 'wrangler';
+import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import {
   createJobApplication,
@@ -108,9 +109,18 @@ it('resolves legacy duplicate URLs across extension, Jobs and history while reta
   });
   expect(capture).toEqual({ id: 'dup-first', existing: true });
   const fresh = `${description} Fresh posting.`;
-  expect(await createJobApplication('master', url, 'Example', 'Engineer II', fresh, fresh)).toBe(
-    'dup-first'
-  );
+  expect(
+    await createJobApplication(
+      'master',
+      url,
+      'Example',
+      'Engineer II',
+      fresh,
+      fresh,
+      undefined,
+      'manual'
+    )
+  ).toBe('dup-first');
   const saved = await tailorResumeFromReference({
     resume_id: 'master',
     job_url: url,
@@ -156,5 +166,107 @@ it('resolves legacy duplicate URLs across extension, Jobs and history while reta
     code: 'conflict',
     id: 'dup-first',
     revision: expect.any(Number),
+  });
+});
+
+it('uses a legacy path-only LinkedIn job for extension capture, packet and fill receipt across visits', async () => {
+  const path = 'https://www.linkedin.com/jobs/view/123456';
+  await db.execute({
+    sql: "INSERT INTO job_applications(id,user_id,resume_id,url,company,role) VALUES('ext-legacy','owner','master',?,'Example','Engineer')",
+    args: [path],
+  });
+  const { POST: save } = await import('@/app/api/extension/save-job/route');
+  const { POST: packet } = await import('@/app/api/extension/apply-packet/route');
+  const { POST: receipt } = await import('@/app/api/extension/fill-receipt/route');
+  const req = (url: string, input = {}) =>
+    new NextRequest('https://rolepatch.example.invalid/', {
+      method: 'POST',
+      body: JSON.stringify({ url, ...input }),
+    });
+  for (const ref of ['a', 'b']) {
+    const url = path + '/?refId=' + ref + '&trackingId=xyz';
+    expect(
+      await (await save(req(url, { jd_text: description, queue: false }))).json()
+    ).toMatchObject({ existing: true, job_id: 'ext-legacy' });
+    expect(await (await packet(req(url))).json()).toMatchObject({
+      ok: true,
+      packet: { job_id: 'ext-legacy' },
+    });
+    expect((await receipt(req(url, { job_id: 'ext-legacy' }))).status).toBe(200);
+  }
+  expect(
+    (
+      await db.execute(
+        "SELECT id FROM job_applications WHERE url LIKE '%linkedin.com/jobs/view/123456%'"
+      )
+    ).rows
+  ).toHaveLength(1);
+});
+
+it('preserves existing posting details, stage and profile on discovery, and adds each type of note once', async () => {
+  const url = 'https://jobs.example.org/active';
+  await db.execute("INSERT INTO resumes(id,user_id,name) VALUES('another','owner','Alt')");
+  const id = await createJobApplication(
+    'master',
+    url,
+    'Example',
+    'Engineer',
+    description,
+    description
+  );
+  await db.execute({
+    sql: "UPDATE job_applications SET status='applied',notes='User note' WHERE id=?",
+    args: [id],
+  });
+  for (const preview of ['', 'Short teaser']) {
+    expect(
+      await createJobApplication(
+        'another',
+        url,
+        'Unknown Company',
+        'Untitled Role',
+        preview,
+        preview
+      )
+    ).toBe(id);
+  }
+  for (const note of [
+    'RolePatch semantic match: 80%',
+    'RolePatch semantic match: 95%',
+    'RolePatch discovery alert: first',
+    'RolePatch discovery alert.',
+  ]) {
+    expect(
+      await createJobApplication('another', url, 'Other', 'Other', 'snippet', 'snippet', note)
+    ).toBe(id);
+  }
+  expect(
+    (await db.execute({ sql: 'SELECT * FROM job_applications WHERE id=?', args: [id] })).rows[0]
+  ).toMatchObject({
+    resume_id: 'master',
+    status: 'applied',
+    company: 'Example',
+    role: 'Engineer',
+    jd_raw: description,
+    jd_text: description,
+    notes: 'User note\n\nRolePatch semantic match: 80%\n\nRolePatch discovery alert: first',
+  });
+  await createJobApplication(
+    'another',
+    url,
+    'Unknown Company',
+    'Untitled Role',
+    'Edited',
+    'Edited',
+    undefined,
+    'manual'
+  );
+  expect(
+    (await db.execute({ sql: 'SELECT * FROM job_applications WHERE id=?', args: [id] })).rows[0]
+  ).toMatchObject({
+    company: 'Example',
+    role: 'Engineer',
+    resume_id: 'another',
+    jd_text: 'Edited',
   });
 });

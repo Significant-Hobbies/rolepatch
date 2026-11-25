@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { uniqueDiscoveryAlerts } from '@/lib/job-discovery-alerts';
 import { canonicalJobUrl, jobUrlVariants } from '@/lib/job-url';
 
 describe('job URL normalization', () => {
@@ -21,4 +22,35 @@ describe('job URL normalization', () => {
       'https://jobs.lever.co/acme/1',
     ]);
   });
+});
+
+it('removes board navigation while retaining query-addressed job IDs', () => {
+  for (const [posting, navigation] of [
+    ['https://jobs.lever.co/tenant/job', 'lever-source=page'],
+    ['https://jobs.ashbyhq.com/tenant/job', 'src=share'],
+    ['https://boards.greenhouse.io/tenant/jobs/123', 'gh_jid=123&t=ad'],
+    ['https://www.linkedin.com/jobs/view/engineer-123', 'refId=first&eBP=a&position=2'],
+  ]) {
+    expect(canonicalJobUrl(posting + '?' + navigation)).toBe(posting);
+  }
+  expect(canonicalJobUrl('https://boards.greenhouse.io/embed/job_app?gh_jid=42&t=a')).toBe(
+    'https://boards.greenhouse.io/embed/job_app?gh_jid=42'
+  );
+  expect(canonicalJobUrl('https://jobs.example.org/view?job=2')).not.toBe(
+    canonicalJobUrl('https://jobs.example.org/view')
+  );
+});
+
+it('keeps valid distinct openings when a malformed discovery alert appears in the batch', () => {
+  const first = { job_url: 'https://jobs.example.org/view?id=1' };
+  const second = { job_url: 'https://jobs.example.org/view?id=2' };
+  expect(
+    uniqueDiscoveryAlerts([
+      first,
+      { job_url: 'unparseable' },
+      { job_url: 'ftp://site/open' },
+      { ...first, job_url: first.job_url + '&utm_source=x' },
+      second,
+    ])
+  ).toEqual([first, second]);
 });

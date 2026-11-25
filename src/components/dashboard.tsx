@@ -79,8 +79,7 @@ import {
   localUpdateJobStatus,
 } from '@/lib/local-storage';
 import { jobDetailsOrNull } from '@/lib/job-details';
-import { canonicalTrackerUrl } from '@/lib/job-url';
-import { normalizeJobUrl } from '@/lib/job-discovery-alerts';
+import { normalizeJobUrl, uniqueDiscoveryAlerts } from '@/lib/job-discovery-alerts';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 import type {
   AchievementEvidence,
@@ -461,15 +460,7 @@ export function Dashboard(props: DashboardProps) {
   }
 
   async function handleQueueDiscoveryAlerts(alerts: ApplyAgentDiscoveryAlert[]): Promise<void> {
-    const seenUrls = new Set<string>();
-    const uniqueAlerts = alerts.filter((alert) => {
-      if (!alert.job_url) return false;
-      const normalized = canonicalTrackerUrl(alert.job_url);
-      if (seenUrls.has(normalized)) return false;
-      seenUrls.add(normalized);
-      return true;
-    });
-    for (const alert of uniqueAlerts) {
+    for (const alert of uniqueDiscoveryAlerts(alerts)) {
       await handleQueueDiscoveryAlert(alert);
     }
   }

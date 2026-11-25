@@ -28,7 +28,8 @@ export async function createJobApplication(
   role: string,
   jdRaw: string,
   jdText: string,
-  discoveryNote?: string
+  discoveryNote?: string,
+  intake?: 'manual' | 'url'
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to create job applications');
@@ -40,7 +41,7 @@ export async function createJobApplication(
   const result = await saveOwnedOpening(
     userId,
     { resumeId, url, company, role, jdRaw, jdText },
-    discoveryNote === undefined ? 'add' : 'queue',
+    discoveryNote !== undefined ? 'queue' : (intake ?? 'discover'),
     discoveryNote || null
   );
   revalidatePath('/jobs');

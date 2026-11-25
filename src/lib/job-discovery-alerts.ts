@@ -1,3 +1,4 @@
+import { canonicalJobUrl } from '@/lib/job-url';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 
 export interface SavedJobSearch {
@@ -169,14 +170,17 @@ function buildSourceDecision(input: {
 }
 
 export function normalizeJobUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    parsed.hash = '';
-    parsed.search = '';
-    return parsed.toString().replace(/\/$/, '');
-  } catch {
-    return url.trim().toLowerCase();
-  }
+  return canonicalJobUrl(url) ?? url.trim().toLowerCase();
+}
+
+export function uniqueDiscoveryAlerts<T extends { job_url?: string | null }>(alerts: T[]): T[] {
+  const seen = new Set<string>();
+  return alerts.filter((alert) => {
+    const url = canonicalJobUrl(alert.job_url ?? '');
+    if (!url || seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
 }
 
 export function isDuplicateJob(url: string, existingUrls: string[]): boolean {
