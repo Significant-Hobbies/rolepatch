@@ -45,6 +45,19 @@ export const careerData = z.strictObject({
   value: prose.optional(),
 });
 export type CareerData = z.infer<typeof careerData>;
+/** A draft summary is separate from the approved claim. Adding a citation does
+ * not change the claim; losing a relied-on document requires another review. */
+export function careerClaimChanged(before: CareerData, after: CareerData) {
+  const lostEvidence =
+    before.verification_status === 'document_supported' &&
+    before.source_urls?.some((link) => !after.source_urls?.includes(link));
+  if (lostEvidence) return true;
+  return (Object.keys(careerData.shape) as (keyof CareerData)[]).some(
+    (key) =>
+      !['summary', 'source_urls', 'verification_status'].includes(key) &&
+      JSON.stringify(before[key]) !== JSON.stringify(after[key])
+  );
+}
 export type CareerKind = (typeof careerKinds)[number];
 export interface CareerRecord {
   id: string;

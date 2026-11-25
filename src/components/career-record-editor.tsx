@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   careerKinds,
+  careerClaimChanged,
   verificationStatuses,
   type CareerData,
   type CareerKind,
@@ -93,11 +94,11 @@ export function CareerRecordEditor({
     ])
   );
   function setField(key: keyof CareerData, value: unknown) {
-    setData((old) => ({
-      ...old,
-      verification_status: key === 'verification_status' ? old.verification_status : 'unverified',
-      [key]: value,
-    }));
+    setData((old) => {
+      const next = { ...old, [key]: value };
+      if (careerClaimChanged(old, next)) next.verification_status = 'unverified';
+      return next;
+    });
   }
   return (
     <form

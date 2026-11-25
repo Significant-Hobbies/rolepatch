@@ -219,3 +219,144 @@ it('keeps sensitive answers out of reads, writes and deletes without explicit op
     })
   ).toMatchObject({ legacy_sources: [{ id: 'answer:old', data: { answer: 'Original' } }] });
 });
+it('rejects obvious credentials per import item without echoing values or altering legacy source text', async () => {
+  const sample = 'synthetic-value-162';
+  const profile = await createProfile('Cloud security');
+  const response = await callCareer('rolepatch_profiles_update', {
+    profile_id: profile.id,
+    expected_revision: 1,
+    source: `access token: ${sample}`,
+  });
+  expect(response).toMatchObject({ code: 'invalid_input' });
+  expect(JSON.stringify(response)).not.toContain(sample);
+  expect(
+    await callCareer('rolepatch_profiles_create', {
+      request_id: 'keys',
+      name: 'Example',
+      source: '-----BEGIN OPENSSH PRIVATE KEY-----',
+    })
+  ).toMatchObject({ code: 'invalid_input' });
+  const syntheticToken = `ghp_${'X'.repeat(36)}`;
+  expect(
+    await callCareer('rolepatch_profiles_create', {
+      request_id: 'provider',
+      name: 'Example',
+      source: syntheticToken,
+    })
+  ).toMatchObject({ code: 'invalid_input' });
+  const items = [
+    {
+      id: 'ok',
+      kind: 'education',
+      title: 'Security credential',
+      data: {
+        credential: 'Professional Cloud Security Engineer',
+        original_text: 'Designed password reset and access token rotation.',
+        source_urls: ['https://portfolio.example.edu/certifications?id=123'],
+      },
+    },
+    {
+      id: 'link',
+      kind: 'project',
+      title: 'Portfolio',
+      data: { source_urls: [`https://example:${sample}@portfolio.example.edu`] },
+    },
+    {
+      id: 'query',
+      kind: 'note',
+      title: 'Repo',
+      data: { value: `See https://example.test/example?access%5Ftoken=${sample}` },
+    },
+    {
+      id: 'env',
+      kind: 'note',
+      title: 'Notes',
+      data: { original_text: `EXAMPLE_API_KEY=${sample}` },
+    },
+    {
+      id: 'answer',
+      kind: 'answer',
+      title: 'What is your password?',
+      data: { value: sample },
+      sensitive: true,
+    },
+  ];
+  const result = await callCareer('rolepatch_career_records_bulk_upsert', {
+    profile_id: profile.id,
+    records: items,
+    include_sensitive: true,
+  });
+  expect(result).toMatchObject({
+    outcomes: [
+      { ok: true },
+      { code: 'invalid_input' },
+      { code: 'invalid_input' },
+      { code: 'invalid_input' },
+      { code: 'invalid_input' },
+    ],
+  });
+  expect(JSON.stringify(result)).not.toContain(sample);
+  expect(
+    await callCareer('rolepatch_career_records_upsert', {
+      ...items[0],
+      profile_id: profile.id,
+      expected_revision: 1,
+      data: { approved_wording: `Authorization: Bearer ${sample}` },
+    })
+  ).toMatchObject({ code: 'invalid_input' });
+  expect(await get(profile.id)).toMatchObject({
+    profile: { source: '# Unmodified', revision: 2 },
+    records: [{ id: 'ok', revision: 1 }],
+  });
+  const oldSource = `Previously imported API_KEY=${sample}`;
+  sqlite.prepare('UPDATE resumes SET source=? WHERE id=?').run(oldSource, profile.id);
+  expect(await get(profile.id)).toMatchObject({ profile: { source: oldSource } });
+  expect(
+    await callCareer('rolepatch_profiles_update', {
+      profile_id: profile.id,
+      name: 'Renamed',
+      expected_revision: 3,
+    })
+  ).toMatchObject({ profile: { source: oldSource } });
+});
+it('requires renewed confirmation when a verified claim changes and preserves it for metadata and replays', async () => {
+  const profile_id = (await createProfile()).id;
+  const write = (data: Record<string, unknown>, expected_revision?: number) =>
+    callCareer('rolepatch_career_records_upsert', {
+      profile_id,
+      id: 'latency',
+      kind: 'achievement',
+      title: 'Latency',
+      data,
+      expected_revision,
+    });
+  const original = {
+    approved_wording: 'Reduced latency 20%.',
+    verification_status: 'document_supported',
+    source_urls: ['https://example.test/report'],
+  };
+  expect(await write(original)).toMatchObject({ revision: 1 });
+  expect(await write({ approved_wording: original.approved_wording }, 1)).toMatchObject({
+    revision: 1,
+    record: { data: { verification_status: 'document_supported' } },
+  });
+  expect(
+    await write(
+      {
+        summary: 'Draft wording for review.',
+        source_urls: [...original.source_urls, 'https://example.test/notes'],
+      },
+      1
+    )
+  ).toMatchObject({ revision: 2, record: { data: { verification_status: 'document_supported' } } });
+  expect(await write({ approved_wording: 'Reduced latency 90%.' }, 2)).toMatchObject({
+    revision: 3,
+    record: { data: { verification_status: 'unverified' } },
+  });
+  expect(
+    await write(
+      { approved_wording: 'Reduced latency 22%.', verification_status: 'user_confirmed' },
+      3
+    )
+  ).toMatchObject({ revision: 4, record: { data: { verification_status: 'user_confirmed' } } });
+});

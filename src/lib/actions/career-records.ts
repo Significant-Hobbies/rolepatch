@@ -1,10 +1,16 @@
 'use server';
 
 import { z } from 'zod';
+import {
+  careerSecretMessage,
+  containsCareerCredential,
+  containsCredentialAnswer,
+} from '@/lib/career-data-privacy';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import {
   careerData,
+  careerClaimChanged,
   careerSchemas,
   type CareerProfile,
   type CareerRecord,
@@ -141,6 +147,8 @@ async function getProfile(user: string, input: Input<'rolepatch_profiles_get'>) 
   return { ...records, ok: true as const, profile };
 }
 async function createProfile(user: string, input: Input<'rolepatch_profiles_create'>) {
+  if (containsCareerCredential(input.name, input.source, input.request_id))
+    return fail('invalid_input', careerSecretMessage);
   const hash = Array.from(
     new Uint8Array(
       await crypto.subtle.digest(
@@ -187,6 +195,8 @@ async function updateProfile(
   input: Input<'rolepatch_profiles_update'>,
   archive: boolean
 ) {
+  if (containsCareerCredential(input.name, input.source))
+    return fail('invalid_input', careerSecretMessage);
   const [changed, read] = await db.batch([
     {
       sql: `UPDATE resumes SET name=coalesce(?,name),source=coalesce(?,source),
@@ -229,8 +239,21 @@ async function writeRecord(user: string, input: RecordWrite) {
   const sensitive = input.sensitive ?? previous?.sensitive ?? false;
   const merged = { ...previous?.data, ...input.data };
   for (const key of input.clear_fields ?? []) delete merged[key];
+  const valuesToCheck = Object.values(merged)
+    .flat()
+    .filter((value): value is string => typeof value === 'string');
+  if (
+    containsCareerCredential(input.id, input.title, ...valuesToCheck) ||
+    containsCredentialAnswer(input.title, [
+      merged.value ?? '',
+      merged.original_text ?? '',
+      merged.approved_wording ?? '',
+      merged.summary ?? '',
+    ])
+  )
+    return fail('invalid_input', careerSecretMessage);
   const factsChanged =
-    input.title !== previous?.title || JSON.stringify(merged) !== JSON.stringify(previous?.data);
+    input.title !== previous?.title || careerClaimChanged(previous?.data ?? {}, merged);
   if (!merged.verification_status || (factsChanged && !input.data.verification_status)) {
     merged.verification_status = 'unverified';
   }

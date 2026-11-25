@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { v4 as uuid } from 'uuid';
 
+import { careerSecretMessage, containsCareerCredential } from '@/lib/career-data-privacy';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import type { Resume } from '@/lib/types';
@@ -35,6 +36,7 @@ export async function createResume(
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to create resumes');
+  if (containsCareerCredential(name, source)) throw new Error(careerSecretMessage);
   const id = uuid();
   await db.execute({
     sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',
@@ -51,6 +53,7 @@ export async function updateResume(
 ): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to update resumes');
+  if (containsCareerCredential(source)) throw new Error(careerSecretMessage);
   const result = await db.execute({
     sql: 'UPDATE resumes SET source = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ? AND archived_at IS NULL AND (? IS NULL OR source = ?)',
     args: [source, id, userId, previousSource ?? null, previousSource ?? null],
@@ -64,6 +67,7 @@ export async function renameResume(id: string, name: string): Promise<void> {
   if (!trimmed) throw new Error('Resume name cannot be empty');
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to rename resumes');
+  if (containsCareerCredential(trimmed)) throw new Error(careerSecretMessage);
   await db.execute({
     sql: 'UPDATE resumes SET name = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?',
     args: [trimmed, id, userId],
