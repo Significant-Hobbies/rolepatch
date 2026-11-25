@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
-import { guestMasterIssue } from '@/lib/guest-migration-validation';
+import { LocalResumeCorrection } from '@/components/local-resume-correction';
+import { guestMasterProblem } from '@/lib/guest-migration-validation';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
 import { localListJobs, localListResumes, localListStashEntries } from '@/lib/local-storage';
 import type { CoverLetter, JobApplication, Resume, StashEntry, TailoredResume } from '@/lib/types';
@@ -26,17 +27,23 @@ function getLocalItems<T>(key: string): T[] {
   return raw ? JSON.parse(raw) : [];
 }
 
+function firstCorrection(resumes: Resume[]) {
+  const issue = guestMasterProblem(resumes);
+  return issue ? { ...issue, resume: resumes[issue.index] } : null;
+}
+
 async function importLocalData() {
   const resumes = getLocalItems<Resume>('rt-resumes');
-  const issue = guestMasterIssue(resumes);
-  if (issue) return { success: false, error: issue, counts: undefined };
-  return migrateGuestData({
+  const correction = firstCorrection(resumes);
+  if (correction) return { success: false, error: correction.error, correction, counts: undefined };
+  const result = await migrateGuestData({
     resumes,
     jobs: getLocalItems<JobApplication>('rt-jobs'),
     tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
     coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
     stashEntries: getLocalItems<StashEntry>('rt-stash'),
   });
+  return { ...result, correction: null };
 }
 
 function formatSuccessParts(counts: Counts): string[] {
@@ -56,7 +63,21 @@ export function MigrationBanner() {
   );
   const [autoResult, setAutoResult] = useState<{ counts: Counts } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [correction, setCorrection] = useState<ReturnType<typeof firstCorrection>>(null);
+  const [localStatus, setLocalStatus] = useState('');
   const autoAttempted = useRef(false);
+  function refreshCorrection(saved: boolean) {
+    const next = firstCorrection(getLocalItems<Resume>('rt-resumes'));
+    setCorrection(next);
+    setError(next?.error ?? null);
+    setLocalStatus(
+      saved
+        ? next
+          ? 'Local correction saved.'
+          : 'Local correction saved. Retry the import when ready.'
+        : 'Local resumes refreshed.'
+    );
+  }
 
   const resumes = !isGuest && !dismissed ? localListResumes() : [];
   const jobs = !isGuest && !dismissed ? localListJobs() : [];
@@ -77,6 +98,7 @@ export function MigrationBanner() {
       setLoading(true);
       try {
         const result = await importLocalData();
+        setCorrection(result.correction);
         if (result.success && result.counts) {
           // leave localStorage intact as recovery backup
           localStorage.setItem(MIGRATED_KEY, '1');
@@ -118,10 +140,12 @@ export function MigrationBanner() {
   if (stash.length > 0) parts.push(`${stash.length} stash entr${stash.length > 1 ? 'ies' : 'y'}`);
 
   async function handleImport() {
+    setLocalStatus('');
     setLoading(true);
     setError(null);
     try {
       const result = await importLocalData();
+      setCorrection(result.correction);
 
       if (result.success) {
         // leave localStorage intact as recovery backup
@@ -143,14 +167,29 @@ export function MigrationBanner() {
   }
 
   return (
-    <div className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-      <div className="flex flex-col gap-1">
+    <div
+      className={`mb-4 flex flex-col items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 ${correction ? '' : 'sm:flex-row sm:items-center'}`}
+    >
+      <div className="flex w-full min-w-0 flex-col gap-1 sm:flex-1">
         <p className="text-sm text-foreground">
           We found {parts.join(', ')} saved locally. Import them to your account?
         </p>
         {error && (
           <p className="text-xs text-destructive" role="alert">
             {error}
+          </p>
+        )}
+        {correction && (
+          <LocalResumeCorrection
+            key={correction.resume.id}
+            resume={correction.resume}
+            index={correction.index}
+            onRefresh={refreshCorrection}
+          />
+        )}
+        {localStatus && (
+          <p className="text-sm" role="status">
+            {localStatus}
           </p>
         )}
       </div>
@@ -160,7 +199,7 @@ export function MigrationBanner() {
           disabled={loading}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-black hover:bg-neutral-200 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Importing...' : error ? 'Retry' : 'Import'}
+          {loading ? 'Importing...' : error || localStatus ? 'Retry' : 'Import'}
         </button>
         <button
           onClick={handleDismiss}

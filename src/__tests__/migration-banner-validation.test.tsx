@@ -28,3 +28,84 @@ it('keeps all guest data available when automatic or manual import fails preflig
   expect(localStorage.getItem('rt-migrated')).toBeNull();
   expect(migrateGuestData).not.toHaveBeenCalled();
 });
+
+it('repairs each flagged local resume and sends the whole batch only on explicit retry', async () => {
+  const base = { created_at: 1, updated_at: 1 };
+  const originals = [
+    { ...base, id: 'unrelated', name: 'Unaffected', source: '# Unaffected' },
+    {
+      ...base,
+      id: 'first',
+      name: 'password=synthetic12345',
+      source: '# Complete source\nunchanged',
+    },
+    { ...base, id: 'second', name: 'Engineer', source: '# Engineer\npassword=another98765' },
+  ];
+  const jobs = [{ id: 'job-one', company: 'Example', role: 'Engineer' }];
+  const materials = [{ id: 'doc-one', job_id: 'job-one', source: 'A preserved document' }];
+  localStorage.setItem('rt-resumes', JSON.stringify(originals));
+  localStorage.setItem('rt-jobs', JSON.stringify(jobs));
+  localStorage.setItem('rt-tailored', JSON.stringify(materials));
+  vi.mocked(migrateGuestData).mockResolvedValue({
+    success: false,
+    error: 'Synthetic endpoint received the corrected batch.',
+  });
+  render(<MigrationBanner />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Edit local resume 2' }));
+  fireEvent.change(screen.getByLabelText('Local resume name'), {
+    target: { value: 'Backend master' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Save locally' }));
+  expect(JSON.parse(localStorage.getItem('rt-resumes')!)[1]).toMatchObject({
+    name: 'Backend master',
+    source: originals[1].source,
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Edit local resume 3' }));
+  const source = screen.getByLabelText('Local resume Markdown');
+  fireEvent.click(screen.getByRole('button', { name: 'Save locally' }));
+  expect(source).toBeVisible();
+  fireEvent.change(source, { target: { value: '# Engineer\nBuilt APIs.\n' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save locally' }));
+  expect(await screen.findByRole('status')).toHaveTextContent('Retry the import');
+  const corrected = JSON.parse(localStorage.getItem('rt-resumes')!);
+  expect(corrected[0]).toEqual(originals[0]);
+  expect(corrected[2]).toMatchObject({
+    id: 'second',
+    name: 'Engineer',
+    source: '# Engineer\nBuilt APIs.\n',
+  });
+  expect(migrateGuestData).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'Synthetic endpoint received the corrected batch.'
+  );
+  expect(migrateGuestData).toHaveBeenCalledWith({
+    resumes: corrected,
+    jobs,
+    tailoredResumes: materials,
+    coverLetters: [],
+    stashEntries: [],
+  });
+  expect(localStorage.getItem('rt-jobs')).toBe(JSON.stringify(jobs));
+  expect(localStorage.getItem('rt-tailored')).toBe(JSON.stringify(materials));
+});
+
+it('keeps a newer edit from another tab when the recovery editor holds an older copy', async () => {
+  const initial = {
+    id: 'a',
+    name: 'Master',
+    source: 'password=synthetic12345',
+    created_at: 1,
+    updated_at: 1,
+  };
+  localStorage.setItem('rt-resumes', JSON.stringify([initial]));
+  render(<MigrationBanner />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Edit local resume 1' }));
+  fireEvent.change(screen.getByLabelText('Local resume Markdown'), {
+    target: { value: 'Corrected here' },
+  });
+  const newer = { ...initial, source: 'Corrected elsewhere' };
+  localStorage.setItem('rt-resumes', JSON.stringify([newer]));
+  fireEvent.click(screen.getByRole('button', { name: 'Save locally' }));
+  expect(localStorage.getItem('rt-resumes')).toBe(JSON.stringify([newer]));
+});
