@@ -65,19 +65,19 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
     ? { id: input.job_id, url: null }
     : await legacyApplicationIdentity(userId, input.job_url);
   let jobId = identity.id;
-  if (jobId) {
+  if (input.job_id) {
     const owned = await db.execute({
       sql: 'SELECT id, jd_text FROM job_applications WHERE id = ? AND user_id = ?',
-      args: [jobId, userId],
+      args: [input.job_id, userId],
     });
     if (!owned.rows.length) throw new Error('Job not found');
     if (String(owned.rows[0].jd_text).trim() !== input.jd_text.trim())
       throw new Error('Job description changed; generate a new version from the saved description');
-  } else {
+  } else if (!jobId) {
     jobId = crypto.randomUUID();
     statements.push({
       sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id, normalized_url)
-            SELECT ?, r.id, ?, ?, ?, ?, ?, ?, ? FROM resumes r WHERE r.id = ? AND r.user_id = ?`,
+            SELECT ?, r.id, ?, ?, ?, ?, ?, ?, ? FROM resumes r WHERE r.id = ? AND r.user_id = ? ON CONFLICT DO NOTHING`,
       args: [
         jobId,
         input.job_url,
@@ -93,29 +93,42 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
     });
   }
   const id = crypto.randomUUID();
-  const insertIndex = statements.length;
   statements.push({
-    sql: `INSERT INTO tailored_resumes (id, job_id, resume_id, source, changes_json, user_id)
-          SELECT ?, j.id, r.id, ?, ?, ? FROM job_applications j JOIN resumes r ON r.id = ? AND r.user_id = ?
-          WHERE j.id = ? AND j.user_id = ?`,
+    // NOT NULL job/master columns abort the entire batch if an owned relation vanished.
+    // A concurrent URL intake may have won the unique key since the lookup.
+    sql: `INSERT INTO tailored_resumes (id,job_id,resume_id,source,changes_json,user_id,jd_snapshot)
+          VALUES (?,(SELECT id FROM job_applications WHERE user_id=? AND id=COALESCE(
+                  (SELECT id FROM job_applications WHERE user_id=? AND normalized_url=?),?)),
+                    (SELECT id FROM resumes WHERE user_id=? AND id=?),?,?,?,?)`,
     args: [
       id,
+      userId,
+      userId,
+      identity.url,
+      jobId,
+      userId,
+      resumeId,
       input.source,
       JSON.stringify(input.changes),
       userId,
-      resumeId,
-      userId,
-      jobId,
-      userId,
+      input.jd_text,
     ],
   });
   statements.push({
-    sql: `UPDATE job_applications SET status = CASE WHEN status = 'draft' THEN 'tailored' ELSE status END, updated_at = unixepoch()
-          WHERE id = ? AND user_id = ? AND EXISTS (SELECT 1 FROM tailored_resumes WHERE id = ? AND user_id = ?)`,
-    args: [jobId, userId, id, userId],
+    sql: `UPDATE job_applications SET status=CASE WHEN status='draft' THEN 'tailored' ELSE status END,
+           normalized_url=COALESCE(normalized_url,?),jd_text=CASE WHEN jd_text='' THEN ? ELSE jd_text END,
+           jd_raw=CASE WHEN jd_raw='' THEN ? ELSE jd_raw END,updated_at=unixepoch()
+         WHERE user_id=? AND id=(SELECT job_id FROM tailored_resumes WHERE id=? AND user_id=?)`,
+    args: [identity.url, input.jd_text, input.jd_text, userId, id, userId],
+  });
+  statements.push({
+    sql: 'SELECT job_id FROM tailored_resumes WHERE id=? AND user_id=?',
+    args: [id, userId],
   });
   const results = await db.batch(statements);
-  if (results[insertIndex].rowsAffected !== 1) throw new Error('Resume history was not saved');
+  const savedJobId = results.at(-1)?.rows[0]?.job_id;
+  if (typeof savedJobId !== 'string') throw new Error('Resume history was not saved');
+  jobId = savedJobId;
   revalidatePath('/dashboard');
   return {
     id,

@@ -65,7 +65,7 @@ describe('POST /api/extension/tailor', () => {
     mockExecute
       .mockResolvedValueOnce({ rows: [{ id: 'resume-1' }] }) // resume lookup
       .mockResolvedValueOnce({ rows: [] }) // existing job lookup
-      .mockResolvedValueOnce({ rows: [] }); // insert
+      .mockResolvedValueOnce({ rows: [], rowsAffected: 1 }); // insert
     const { POST } = await import('@/app/api/extension/tailor/route');
     const res = await POST(
       makeReq({
@@ -86,7 +86,9 @@ describe('POST /api/extension/tailor', () => {
     mockGetCurrentUserId.mockResolvedValue('user-idempotent');
     mockExecute
       .mockResolvedValueOnce({ rows: [{ id: 'resume-1' }] })
-      .mockResolvedValueOnce({ rows: [{ id: 'job-existing' }] });
+      .mockResolvedValueOnce({
+        rows: [{ id: 'job-existing', normalized_url: 'https://jobs.lever.co/acme/abc' }],
+      });
     const { POST } = await import('@/app/api/extension/tailor/route');
     const res = await POST(makeReq({ url: 'https://jobs.lever.co/acme/abc', jd_text: longJd }));
     expect(res.status).toBe(200);
@@ -101,7 +103,7 @@ describe('POST /api/extension/tailor', () => {
     for (let i = 0; i < 12; i++) {
       mockExecute
         .mockResolvedValueOnce({ rows: [{ id: 'r' }] })
-        .mockResolvedValueOnce({ rows: [{ id: 'j' }] });
+        .mockResolvedValueOnce({ rows: [{ id: 'j', normalized_url: `https://x/${i}` }] });
       const ok = await POST(makeReq({ url: `https://x/${i}`, jd_text: longJd }));
       expect(ok.status).toBe(200);
     }

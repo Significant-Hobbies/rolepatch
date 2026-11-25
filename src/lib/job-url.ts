@@ -1,23 +1,28 @@
 export function canonicalJobUrl(url: string): string | null {
   try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
-    parsed.hash = '';
-    parsed.search = '';
-    parsed.hostname = parsed.hostname.toLowerCase();
-    parsed.pathname = parsed.pathname.replace(/\/+$/, '') || '/';
-    return parsed.toString();
+    return canonicalTrackerUrl(url);
   } catch {
     return null;
   }
 }
-
 export function jobUrlVariants(url: string): string[] {
   const trimmed = url.trim();
-  const canonical = canonicalJobUrl(trimmed);
-  return [...new Set([trimmed, canonical].filter((value): value is string => Boolean(value)))];
+  return [...new Set([trimmed, canonicalJobUrl(trimmed)].filter((v): v is string => Boolean(v)))];
 }
-
-export function sqlPlaceholders(values: readonly unknown[]): string {
-  return values.map(() => '?').join(', ');
+export function canonicalTrackerUrl(raw: string) {
+  const url = new URL(raw);
+  if (!['http:', 'https:'].includes(url.protocol))
+    throw new Error('Job URL must use HTTP or HTTPS.');
+  if (url.username || url.password) throw new Error('Job URL must not contain credentials.');
+  if (!/^#!?\//.test(url.hash)) url.hash = '';
+  url.pathname = url.pathname.replace(/\/+$/, '') || '/';
+  for (const key of [...url.searchParams.keys()])
+    if (
+      /^(utm_.*|gh_src|trk|trackingId)$/i.test(key) ||
+      (key === 'source' &&
+        /(^|\.)(lever\.co|greenhouse\.io|ashbyhq\.com|linkedin\.com)$/.test(url.hostname))
+    )
+      url.searchParams.delete(key);
+  url.searchParams.sort();
+  return url.href;
 }

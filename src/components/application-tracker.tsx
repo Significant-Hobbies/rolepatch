@@ -58,9 +58,20 @@ const filterFields: TrackerField[] = [
   { key: 'date_to', label: 'Applied through', type: 'date' },
   { key: 'due_before', label: 'Follow-ups due through', type: 'date' },
 ];
+class ExistingApplication extends Error {
+  readonly id: string;
+  constructor(message: string, id: string) {
+    super(message);
+    this.id = id;
+  }
+}
 async function invoke(name: TrackerName, args: unknown) {
   const result = await callTracker(name, args);
-  if (!result.ok) throw new Error(result.error);
+  if (!result.ok) {
+    if (result.code === 'conflict' && result.id)
+      throw new ExistingApplication(result.error, result.id);
+    throw new Error(result.error);
+  }
   return result;
 }
 type Task = (work: () => Promise<void>) => void;
@@ -235,6 +246,7 @@ export function ApplicationTracker({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [existingId, setExistingId] = useState<string>();
   const [filter, setFilter] = useState<Record<string, unknown>>({});
   const [applications, setApplications] = useState<List>({ ok: true });
   const [selected, setSelected] = useState<TrackerRow>();
@@ -247,10 +259,12 @@ export function ApplicationTracker({
   const [importReport, setImportReport] = useState<string[]>([]);
   const task: Task = async (work) => {
     setError('');
+    setExistingId(undefined);
     setBusy(true);
     try {
       await work();
     } catch (e) {
+      if (e instanceof ExistingApplication) setExistingId(e.id);
       setError(e instanceof Error ? e.message : 'Could not update the tracker. Please retry.');
     } finally {
       setBusy(false);
@@ -312,6 +326,11 @@ export function ApplicationTracker({
             <p role="alert" className="text-sm text-destructive">
               {error}
             </p>
+          )}
+          {existingId && (
+            <Button type="button" variant="outline" onClick={() => task(() => select(existingId))}>
+              Open existing application
+            </Button>
           )}
           <form
             className="space-y-3"

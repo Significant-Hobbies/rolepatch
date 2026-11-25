@@ -55,7 +55,7 @@ describe('POST /api/extension/save-job', () => {
     mockExecute
       .mockResolvedValueOnce({ rows: [{ id: 'resume-1' }] })
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [], rowsAffected: 1 })
       .mockResolvedValueOnce({
         rows: [
           {
@@ -107,7 +107,9 @@ describe('POST /api/extension/save-job', () => {
     mockGetCurrentUserId.mockResolvedValue('user-1');
     mockExecute
       .mockResolvedValueOnce({ rows: [{ id: 'resume-1' }] })
-      .mockResolvedValueOnce({ rows: [{ id: 'job-existing' }] })
+      .mockResolvedValueOnce({
+        rows: [{ id: 'job-existing', normalized_url: 'https://jobs.lever.co/acme/1' }],
+      })
       .mockResolvedValueOnce({
         rows: [
           {

@@ -79,6 +79,12 @@ Use the corresponding read tool to retrieve stored content. Dates on tracker too
    for that submission. To correct an application, read its current revision, then send
    `expected_revision` with the edit.
 
+If a single create matches an opening with different details, the conflict includes its ID
+and revision. Update that record explicitly. For old data with several applications at one URL,
+RolePatch uses the normalized record first, then the oldest active match with an ID tie-breaker.
+Every original application and document remains available by ID. New saved resumes capture
+the exact job description used for that version.
+
 Example batch item for `rolepatch_applications_bulk_upsert`:
 
 ```json

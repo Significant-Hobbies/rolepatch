@@ -1,3 +1,6 @@
+-- Capture the description actually used by each new legacy save. Historical rows retain NULL.
+ALTER TABLE tailored_resumes ADD COLUMN jd_snapshot TEXT;
+
 -- Every edit has its own ID so submitted materials can pin immutable text.
 CREATE TABLE career_resume_versions (
   id TEXT PRIMARY KEY,
@@ -35,7 +38,7 @@ BEGIN
   INSERT INTO career_resume_versions
     (id,user_id,profile_id,application_id,series_id,revision,markdown,snapshot_json,saved,approved,request_id,request_hash,created_at)
   SELECT NEW.id,NEW.user_id,r.id,j.id,NEW.id,1,NEW.source,
-    json_object('legacy',json('true'),'jd_text',j.jd_text),1,NEW.accepted,'legacy:' || NEW.id,'',NEW.created_at
+    json_object('legacy',json('true'),'jd_text',COALESCE(NEW.jd_snapshot,j.jd_text)),1,NEW.accepted,'legacy:' || NEW.id,'',NEW.created_at
   FROM resumes r JOIN job_applications j ON j.id=NEW.job_id AND j.user_id=NEW.user_id
   JOIN users u ON u.id=NEW.user_id
   WHERE r.id=NEW.resume_id AND r.user_id=NEW.user_id;

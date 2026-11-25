@@ -63,6 +63,7 @@ describe('owned application tracker', () => {
     expect((await ok('applications_get', { id: 'old' })).record?.status).toBe('screening');
     const legacy = await ok('applications_create', {
       ...job,
+      company: 'Old',
       request_id: 'legacy',
       url: 'https://legacy.acme.test/role/',
     });

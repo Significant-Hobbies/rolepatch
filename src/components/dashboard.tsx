@@ -79,6 +79,7 @@ import {
   localUpdateJobStatus,
 } from '@/lib/local-storage';
 import { jobDetailsOrNull } from '@/lib/job-details';
+import { canonicalTrackerUrl } from '@/lib/job-url';
 import { normalizeJobUrl } from '@/lib/job-discovery-alerts';
 import type { DiscoveredJob } from '@/lib/job-discovery-types';
 import type {
@@ -254,20 +255,21 @@ function DashboardLoading() {
   );
 }
 
-export function Dashboard({
-  serverResumes,
-  serverJobs,
-  serverFitScores,
-  browseContent,
-  serverApplicationQueue = [],
-  serverApplicationReceipts = [],
-  serverApplicationPackets = [],
-  serverProfileAnswers = [],
-  serverJobDiscoveryAlerts = [],
-  serverReplyRoutingAddress = null,
-  serverRecruiterReplyEvents = [],
-  serverHistory = [],
-}: DashboardProps) {
+export function Dashboard(props: DashboardProps) {
+  const {
+    serverResumes,
+    serverJobs,
+    serverFitScores,
+    browseContent,
+    serverApplicationQueue = [],
+    serverApplicationReceipts = [],
+    serverApplicationPackets = [],
+    serverProfileAnswers = [],
+    serverJobDiscoveryAlerts = [],
+    serverReplyRoutingAddress = null,
+    serverRecruiterReplyEvents = [],
+    serverHistory = [],
+  } = props;
   const { isGuest, isPending: authPending } = useAuth();
   const [localDataReady, setLocalDataReady] = useState(false);
   const dataPending = authPending || (isGuest && !localDataReady);
@@ -418,11 +420,10 @@ export function Dashboard({
     const normalizedAlertUrl = normalizeJobUrl(alert.job_url);
     const existing = jobs.find((job) => job.url && normalizeJobUrl(job.url) === normalizedAlertUrl);
     const note = discoveryAlertNote(alert);
-    if (existing) {
+    if (isGuest && existing) {
       const mergedNote = mergeRolePatchQueueNote(existing.notes, note, 'RolePatch discovery alert');
       if (mergedNote !== existing.notes) {
-        if (isGuest) localUpdateJobDetails(existing.id, { notes: mergedNote });
-        else await updateJobDetails(existing.id, { notes: mergedNote });
+        localUpdateJobDetails(existing.id, { notes: mergedNote });
         setJobs((prev) =>
           prev.map((job) => (job.id === existing.id ? { ...job, notes: mergedNote } : job))
         );
@@ -451,33 +452,11 @@ export function Dashboard({
       company,
       role,
       jdText,
-      jdText
+      jdText,
+      note
     );
-    await updateJobDetails(jobId, { notes: note });
     await queueApplication(jobId);
-    const now = Math.floor(Date.now() / 1000);
-    setJobs((prev) => [
-      {
-        id: jobId,
-        resume_id: resume.id,
-        url: alert.job_url ?? '',
-        company,
-        role,
-        jd_text: jdText,
-        status: 'draft',
-        created_at: now,
-        updated_at: now,
-        interview_date: null,
-        follow_up_at: null,
-        salary_min: null,
-        salary_max: null,
-        salary_currency: null,
-        offer_amount: null,
-        notes: note,
-        rejection_reason: null,
-      },
-      ...prev,
-    ]);
+    setJobs(await listJobApplications());
     await refreshApplyAgentState();
   }
 
@@ -485,7 +464,7 @@ export function Dashboard({
     const seenUrls = new Set<string>();
     const uniqueAlerts = alerts.filter((alert) => {
       if (!alert.job_url) return false;
-      const normalized = normalizeJobUrl(alert.job_url);
+      const normalized = canonicalTrackerUrl(alert.job_url);
       if (seenUrls.has(normalized)) return false;
       seenUrls.add(normalized);
       return true;
@@ -507,11 +486,10 @@ export function Dashboard({
     const existing = jobs.find(
       (item) => item.url && normalizeJobUrl(item.url) === normalizedJobUrl
     );
-    if (existing) {
+    if (isGuest && existing) {
       const mergedNote = mergeRolePatchQueueNote(existing.notes, note, 'RolePatch semantic match:');
       if (mergedNote !== existing.notes) {
-        if (isGuest) localUpdateJobDetails(existing.id, { notes: mergedNote });
-        else await updateJobDetails(existing.id, { notes: mergedNote });
+        localUpdateJobDetails(existing.id, { notes: mergedNote });
         setJobs((prev) =>
           prev.map((item) => (item.id === existing.id ? { ...item, notes: mergedNote } : item))
         );
@@ -534,32 +512,17 @@ export function Dashboard({
       return;
     }
 
-    const jobId = await createJobApplication(resumeId, job.job_url, company, role, jdText, jdText);
-    if (note) await updateJobDetails(jobId, { notes: note });
+    const jobId = await createJobApplication(
+      resumeId,
+      job.job_url,
+      company,
+      role,
+      jdText,
+      jdText,
+      note ?? ''
+    );
     await queueApplication(jobId);
-    const now = Math.floor(Date.now() / 1000);
-    setJobs((prev) => [
-      {
-        id: jobId,
-        resume_id: resumeId,
-        url: job.job_url ?? '',
-        company,
-        role,
-        jd_text: jdText,
-        status: 'draft',
-        created_at: now,
-        updated_at: now,
-        interview_date: null,
-        follow_up_at: null,
-        salary_min: null,
-        salary_max: null,
-        salary_currency: null,
-        offer_amount: null,
-        notes: note,
-        rejection_reason: null,
-      },
-      ...prev,
-    ]);
+    setJobs(await listJobApplications());
     await refreshApplyAgentState();
   }
 

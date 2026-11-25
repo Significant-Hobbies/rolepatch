@@ -1,6 +1,7 @@
 import type { trackerStages } from '@/lib/tracker-vocabulary';
 import { z } from 'zod';
 import { db } from '@/lib/db';
+import { canonicalTrackerUrl as canonical } from '@/lib/job-url';
 import { trackerSchemas, type TrackerName } from '@/lib/tracker-tools';
 
 type Value = string | number | null;
@@ -16,7 +17,7 @@ export type TrackerResult =
       next_cursor?: string | null;
       outcomes?: TrackerResult[];
     }
-  | { ok: false; code: string; error: string };
+  | { ok: false; code: string; error: string; id?: string; revision?: number };
 type Stage = (typeof trackerStages)[number];
 type S<N extends TrackerName> = z.output<(typeof trackerSchemas)[N]>;
 const fail = (code: string, error: string): never => {
@@ -72,16 +73,6 @@ async function application(owner: string, id: string) {
     [owner, id]
   );
   return found ?? missing();
-}
-function canonical(raw: string) {
-  const url = new URL(raw);
-  if (url.username || url.password) return invalid('Job URL must not contain credentials.');
-  if (!/^#!?\//.test(url.hash)) url.hash = '';
-  url.pathname = url.pathname.replace(/\/+$/, '') || '/';
-  for (const key of [...url.searchParams.keys()])
-    if (/^(utm_.*|gh_src|trk|trackingId)$/i.test(key)) url.searchParams.delete(key);
-  url.searchParams.sort();
-  return url.href;
 }
 function tupleCursor(cursor: string): [number, string] {
   try {
@@ -153,6 +144,14 @@ async function listApplications(owner: string, input: S<'rolepatch_applications_
 }
 type Changes = Partial<Omit<S<'rolepatch_applications_update'>, 'id' | 'expected_revision'>>;
 function validateIdentity(next: Changes) {
+  if (next.url) {
+    try {
+      canonical(next.url);
+    } catch {
+      invalid('Use a valid job URL without credentials.');
+    }
+  }
+
   if ((next.board == null) !== (next.external_job_id == null))
     invalid('Provide board and external_job_id together.');
   if (next.board && /^(greenhouse|lever|ashby)$/i.test(next.board))
@@ -179,6 +178,29 @@ function prepared(input: Changes): Item {
   }
   return fields;
 }
+/** A historic duplicate keeps its own materials and ID. New URL-only references pick
+ * the normalized row, or the oldest active legacy row with a stable ID tie-breaker. */
+async function matchingUrl(owner: string, url: string): Promise<string | null> {
+  const path = new URL(url);
+  path.search = '';
+  path.hash = '';
+  const escaped = path.href.replace(/\/$/, '').replace(/[\\%_]/g, '\\$&');
+  const candidates = await rows(
+    `SELECT id,url,normalized_url FROM job_applications WHERE user_id=?
+    AND (normalized_url=? OR (normalized_url IS NULL AND url LIKE ? ESCAPE '\\'))
+    ORDER BY (normalized_url IS NOT NULL) DESC,(stage IN ('archived','withdrawn')) ASC, created_at ASC,id ASC`,
+    [owner, url, `${escaped}%`]
+  );
+  for (const row of candidates) {
+    if (row.normalized_url === url) return String(row.id);
+    try {
+      if (canonical(String(row.url)) === url) return String(row.id);
+    } catch {
+      /* Historical URL could be malformed. */
+    }
+  }
+  return null;
+}
 async function matchIdentity(owner: string, input: Changes): Promise<string | null> {
   const candidates = new Set<string>();
   const conditions: string[] = [];
@@ -192,24 +214,8 @@ async function matchIdentity(owner: string, input: Changes): Promise<string | nu
     args.push(input.board.toLowerCase(), input.external_job_id);
   }
   if (input.url) {
-    const url = canonical(input.url);
-    conditions.push('normalized_url=?');
-    args.push(url);
-    // Historical rows predate normalized_url. Preserve identity-bearing query parameters.
-    const path = new URL(url);
-    path.search = '';
-    const escaped = path.href.replace(/\/$/, '').replace(/[\\%_]/g, '\\$&');
-    const old = await rows(
-      "SELECT id,url FROM job_applications WHERE user_id=? AND normalized_url IS NULL AND url LIKE ? ESCAPE '\\'",
-      [owner, `${escaped}%`]
-    );
-    for (const row of old) {
-      try {
-        if (canonical(String(row.url)) === url) candidates.add(String(row.id));
-      } catch {
-        /* Legacy malformed URL. */
-      }
-    }
+    const id = await matchingUrl(owner, canonical(input.url));
+    if (id) candidates.add(id);
   }
   if (conditions.length) {
     for (const row of await rows(
@@ -242,7 +248,7 @@ async function fingerprint(input: object) {
 }
 async function validatePatch(owner: string, id: string, before: Item, patch: Changes) {
   const merged = { ...before, ...patch } as Changes;
-  validateIdentity(merged);
+  validateIdentity({ ...merged, url: patch.url });
   if (['url', 'board', 'external_job_id', 'manual_id'].some((key) => key in patch)) {
     if (!merged.url && !merged.manual_id && !merged.external_job_id)
       invalid('A job needs a URL, board identity or explicit manual_id.');
@@ -325,9 +331,35 @@ function matchesPatch(record: Item, patch: Changes) {
     key === 'url' ? normalized(value) === normalized(record.url) : record[key] === value
   );
 }
+type Intake = S<'rolepatch_applications_create'> & { expected_revision?: number };
+async function reuseIntake(
+  owner: string,
+  id: string,
+  input: Intake,
+  bulk: boolean,
+  hash: string
+): Promise<TrackerResult> {
+  const { request_id, expected_revision, ...patch } = input;
+  const record = await application(owner, id);
+  if (matchesPatch(record, patch))
+    return bindCreateRequest(owner, request_id, hash, id, saved(record));
+  if (bulk && expected_revision)
+    return updateApplication(owner, id, expected_revision, patch, undefined, {
+      key: request_id,
+      hash,
+    });
+  const revision = Number(record.revision);
+  return {
+    ok: false,
+    code: 'conflict',
+    id,
+    revision,
+    error: `This job is already tracked as ${id} at revision ${revision}. Open the existing application and update it to change its details.`,
+  };
+}
 async function createApplication(
   owner: string,
-  input: S<'rolepatch_applications_create'> & { expected_revision?: number },
+  input: Intake,
   bulk: boolean
 ): Promise<TrackerResult> {
   const { request_id, expected_revision, ...patch } = input;
@@ -338,17 +370,7 @@ async function createApplication(
   const retry = await replayCreate(owner, request_id, hash);
   if (retry) return retry;
   const existing = await matchIdentity(owner, patch);
-  if (existing) {
-    const record = await application(owner, existing);
-    if (bulk && !matchesPatch(record, patch)) {
-      if (!expected_revision) return conflict();
-      return updateApplication(owner, existing, expected_revision, patch, undefined, {
-        key: request_id,
-        hash,
-      });
-    }
-    return bindCreateRequest(owner, request_id, hash, existing, saved(record));
-  }
+  if (existing) return reuseIntake(owner, existing, input, bulk, hash);
   if (expected_revision !== undefined) return conflict();
   const fields = {
     ...prepared({ status: 'discovered', ...patch }),
@@ -367,15 +389,7 @@ async function createApplication(
   const raced = await replayCreate(owner, request_id, hash);
   if (raced) return raced;
   const racedIdentity = await matchIdentity(owner, patch);
-  return racedIdentity && !bulk
-    ? bindCreateRequest(
-        owner,
-        request_id,
-        hash,
-        racedIdentity,
-        saved(await application(owner, racedIdentity))
-      )
-    : conflict();
+  return racedIdentity ? reuseIntake(owner, racedIdentity, input, bulk, hash) : conflict();
 }
 async function eventAdd(owner: string, input: S<'rolepatch_application_events_add'>) {
   const [retry] = await rows(

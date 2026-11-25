@@ -1,21 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { v4 as uuid } from 'uuid';
 
 import { getCurrentUserId } from '@/lib/auth-utils';
-import { db } from '@/lib/db';
 import { extensionCorsHeaders } from '@/lib/extension-cors';
 import { parseExtensionJobInput } from '@/lib/extension-route-input';
-import { canonicalJobUrl, jobUrlVariants, sqlPlaceholders } from '@/lib/job-url';
-
-function extractCompanyFromUrl(url: string, titleFallback: string): string {
-  const greenhouse = url.match(/boards\.greenhouse\.io\/([^/]+)/i);
-  if (greenhouse) return decodeURIComponent(greenhouse[1]);
-  const lever = url.match(/jobs\.lever\.co\/([^/]+)/i);
-  if (lever) return decodeURIComponent(lever[1]);
-  const match = titleFallback.match(/(?:at|@)\s+(.+?)(?:\s*[-|]|$)/i);
-  return match?.[1]?.trim() ?? '';
-}
+import { captureExtensionOpening } from '@/lib/saved-job';
 
 export function OPTIONS(req: NextRequest) {
   return new NextResponse(null, { status: 204, headers: extensionCorsHeaders(req) });
@@ -55,60 +44,9 @@ export async function POST(req: NextRequest) {
   if (jdText.length < 100) {
     return NextResponse.json({ ok: false, error: 'jd_text too short' }, { status: 400, headers });
   }
-  const storedUrl = canonicalJobUrl(url) ?? url;
-  const urlVariants = jobUrlVariants(url);
-
-  // Pick the user's most recent resume + check idempotency in parallel.
-  // Both are independent, read-only, owner-scoped SELECTs; the early-return
-  // checks below preserve the original ordering of observable behavior.
-  const [resumeRes, existing] = await Promise.all([
-    db.execute({
-      sql: 'SELECT id FROM resumes WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
-      args: [userId],
-    }),
-    db.execute({
-      sql: `SELECT id FROM job_applications WHERE url IN (${sqlPlaceholders(urlVariants)}) AND user_id = ? LIMIT 1`,
-      args: [...urlVariants, userId],
-    }),
-  ]);
-
-  const resumeRow = resumeRes.rows[0];
-  if (!resumeRow) {
-    return NextResponse.json(
-      { ok: false, error: 'Create a resume first', redirect_url: '/dashboard' },
-      { status: 400, headers }
-    );
-  }
-  const resumeId = String(resumeRow.id);
-
-  // Idempotency: if this user already has a job_applications row for this URL,
-  // return its ID instead of creating a duplicate.
-  if (existing.rows[0]) {
-    const jobId = String(existing.rows[0].id);
-    return NextResponse.json(
-      { ok: true, job_id: jobId, redirect_url: `/tailor/${jobId}` },
-      { status: 200, headers }
-    );
-  }
-
-  const title = parsed.input.title;
-  const company = parsed.input.company || extractCompanyFromUrl(url, title) || 'Unknown';
-  const role =
-    title ||
-    jdText
-      .split('\n')
-      .find((l) => l.trim().length > 0)
-      ?.trim()
-      .slice(0, 120) ||
-    'Untitled role';
-
-  const jobId = uuid();
-  await db.execute({
-    sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [jobId, resumeId, storedUrl, company, role, jdText, jdText, userId],
-  });
-
+  const saved=await captureExtensionOpening(userId,parsed.input);
+  if(!saved)return NextResponse.json({ok:false,error:'Create a resume first',redirect_url:'/dashboard'},{status:400,headers});
+  const {id:jobId}=saved;
   return NextResponse.json(
     { ok: true, job_id: jobId, redirect_url: `/tailor/${jobId}` },
     { status: 200, headers }

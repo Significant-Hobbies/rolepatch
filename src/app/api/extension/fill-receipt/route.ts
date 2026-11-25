@@ -7,7 +7,7 @@ import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
 import { extensionCorsHeaders } from '@/lib/extension-cors';
 import { parseExtensionFillReceiptInput } from '@/lib/extension-route-input';
-import { jobUrlVariants, sqlPlaceholders } from '@/lib/job-url';
+import { canonicalJobUrl, jobUrlVariants } from '@/lib/job-url';
 import type { ApplicationReceiptField } from '@/lib/types';
 
 interface JobRow {
@@ -60,12 +60,12 @@ export async function POST(req: NextRequest) {
   const jobResult = await db.execute({
     sql: `SELECT id, url, resume_id
           FROM job_applications
-          WHERE id = ? AND url IN (${sqlPlaceholders(urlVariants)}) AND user_id = ?
+          WHERE id = ? AND user_id = ?
           LIMIT 1`,
-    args: [jobId, ...urlVariants, userId],
+    args:[jobId,userId],
   });
   const job = JSON.parse(JSON.stringify(jobResult.rows[0] ?? null)) as JobRow | null;
-  if (!job) {
+  if (!job || !urlVariants.includes(canonicalJobUrl(job.url)??'')) {
     return NextResponse.json(
       { ok: false, error: 'Tracked job not found for this URL' },
       { status: 404, headers }
