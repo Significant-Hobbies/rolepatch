@@ -56,7 +56,7 @@ export async function saveProfileAnswer(input: {
             label = excluded.label,
             answer = excluded.answer,
             sensitive = excluded.sensitive,
-            updated_at = unixepoch()`,
+            updated_at = unixepoch() WHERE profile_answers.user_id = excluded.user_id`,
     args: [id, userId, normalizeCategory(input.category), label, answer, input.sensitive ? 1 : 0],
   });
   revalidatePath('/dashboard');
@@ -65,6 +65,7 @@ export async function saveProfileAnswer(input: {
     sql: 'SELECT id, category, label, answer, sensitive, created_at, updated_at FROM profile_answers WHERE id = ? AND user_id = ? LIMIT 1',
     args: [id, userId],
   });
+  if (!result.rows[0]) throw new Error('Answer not found');
   return JSON.parse(JSON.stringify(result.rows[0])) as ProfileAnswer;
 }
 

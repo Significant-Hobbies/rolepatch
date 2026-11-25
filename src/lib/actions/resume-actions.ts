@@ -12,7 +12,7 @@ export async function listResumes(): Promise<Resume[]> {
   const userId = await getCurrentUserId();
   if (!userId) return [];
   const result = await db.execute({
-    sql: 'SELECT * FROM resumes WHERE user_id = ? ORDER BY updated_at DESC',
+    sql: 'SELECT id, name, source, created_at, updated_at FROM resumes WHERE user_id = ? AND archived_at IS NULL ORDER BY is_default DESC, updated_at DESC, id',
     args: [userId],
   });
   return JSON.parse(JSON.stringify(result.rows)) as Resume[];
@@ -22,7 +22,7 @@ export async function getResume(id: string): Promise<Resume | null> {
   const userId = await getCurrentUserId();
   if (!userId) return null;
   const result = await db.execute({
-    sql: 'SELECT * FROM resumes WHERE id = ? AND user_id = ?',
+    sql: 'SELECT id, name, source, created_at, updated_at FROM resumes WHERE id = ? AND user_id = ?',
     args: [id, userId],
   });
   const row = result.rows[0];
@@ -44,13 +44,19 @@ export async function createResume(
   return id;
 }
 
-export async function updateResume(id: string, source: string): Promise<void> {
+export async function updateResume(
+  id: string,
+  source: string,
+  previousSource?: string
+): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to update resumes');
-  await db.execute({
-    sql: 'UPDATE resumes SET source = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ?',
-    args: [source, id, userId],
+  const result = await db.execute({
+    sql: 'UPDATE resumes SET source = ?, updated_at = unixepoch() WHERE id = ? AND user_id = ? AND archived_at IS NULL AND (? IS NULL OR source = ?)',
+    args: [source, id, userId, previousSource ?? null, previousSource ?? null],
   });
+  if (!result.rowsAffected)
+    throw new Error('This master changed. Reload before saving your edits.');
 }
 
 export async function renameResume(id: string, name: string): Promise<void> {
