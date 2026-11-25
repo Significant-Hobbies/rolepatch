@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { legacyApplicationIdentity } from '@/lib/tracker-store';
 import type { TailorChange, TailoredResume } from '@/lib/types';
 
 const historySchema = z
@@ -34,7 +35,7 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
   const input = historySchema.parse(raw);
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to save resume history');
-  const statements: Array<{ sql: string; args: Array<string | number> }> = [];
+  const statements: Array<{ sql: string; args: Array<string | number | null> }> = [];
   let resumeId = input.resume_id;
   if (resumeId) {
     const owned = await db.execute({
@@ -57,7 +58,10 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
       });
     }
   }
-  let jobId = input.job_id;
+  const identity = input.job_id
+    ? { id: input.job_id, url: null }
+    : await legacyApplicationIdentity(userId, input.job_url);
+  let jobId = identity.id;
   if (jobId) {
     const owned = await db.execute({
       sql: 'SELECT id, jd_text FROM job_applications WHERE id = ? AND user_id = ?',
@@ -65,12 +69,12 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
     });
     if (!owned.rows.length) throw new Error('Job not found');
     if (String(owned.rows[0].jd_text).trim() !== input.jd_text.trim())
-      throw new Error('Job description changed; generate a new job record');
+      throw new Error('Job description changed; generate a new version from the saved description');
   } else {
     jobId = crypto.randomUUID();
     statements.push({
-      sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id)
-            SELECT ?, r.id, ?, ?, ?, ?, ?, ? FROM resumes r WHERE r.id = ? AND r.user_id = ?`,
+      sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id, normalized_url)
+            SELECT ?, r.id, ?, ?, ?, ?, ?, ?, ? FROM resumes r WHERE r.id = ? AND r.user_id = ?`,
       args: [
         jobId,
         input.job_url,
@@ -79,6 +83,7 @@ export async function recordResumeHistory(raw: z.input<typeof historySchema>) {
         input.jd_text,
         input.jd_text,
         userId,
+        identity.url,
         resumeId,
         userId,
       ],

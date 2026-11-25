@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { legacyApplicationIdentity } from '@/lib/tracker-store';
 import { recordResumeHistory } from '@/lib/actions/resume-history-actions';
 import type { JobApplication, JobDetailsPatch, TailorChange, TailoredResume } from '@/lib/types';
 
@@ -31,12 +32,28 @@ export async function createJobApplication(
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to create job applications');
-  const id = uuid();
-  await db.execute({
-    sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, resumeId, url, company, role, jdRaw, jdText, userId],
+  const identity = await legacyApplicationIdentity(userId, url);
+  const id = identity.id ?? uuid();
+  const result = await db.execute({
+    sql: `INSERT INTO job_applications (id,resume_id,url,company,role,jd_raw,jd_text,user_id,normalized_url)
+      SELECT ?,r.id,?,?,?,?,?,?,? FROM resumes r WHERE r.user_id=? AND r.id=? AND r.archived_at IS NULL
+      ON CONFLICT DO NOTHING`,
+    args: [id, url, company, role, jdRaw, jdText, userId, identity.url, userId, resumeId],
   });
+  if (!result.rowsAffected) {
+    const match = await legacyApplicationIdentity(userId, url);
+    if (!match.id) throw new Error('Resume or job not found.');
+    const bound = await db.execute({
+      sql: `UPDATE job_applications SET resume_id=?,
+        jd_text=CASE WHEN jd_text='' THEN ? ELSE jd_text END,
+        jd_raw=CASE WHEN jd_raw='' THEN ? ELSE jd_raw END, updated_at=unixepoch()
+      WHERE user_id=? AND id=? AND EXISTS(SELECT 1 FROM resumes WHERE id=? AND user_id=? AND archived_at IS NULL)`,
+      args: [resumeId, jdText, jdRaw, userId, match.id, resumeId, userId],
+    });
+    if (!bound.rowsAffected) throw new Error('Resume or job not found.');
+    revalidatePath('/jobs');
+    return match.id;
+  }
   revalidatePath('/');
   return id;
 }
@@ -56,7 +73,7 @@ export async function listJobApplications(): Promise<JobApplication[]> {
   const userId = await getCurrentUserId();
   if (!userId) return [];
   const result = await db.execute({
-    sql: 'SELECT * FROM job_applications WHERE user_id = ? ORDER BY created_at DESC',
+    sql: "SELECT * FROM job_applications WHERE user_id = ? AND stage NOT IN ('archived','withdrawn') ORDER BY created_at DESC, id DESC",
     args: [userId],
   });
   return JSON.parse(JSON.stringify(result.rows)) as JobApplication[];

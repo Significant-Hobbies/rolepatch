@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 
 import { ApplyAgentCommandCenter } from '@/components/apply-agent-command-center';
+import { ApplicationTracker } from '@/components/application-tracker';
 import { ApplicationCampaignTracker } from '@/components/application-campaign-tracker';
 import { useAuth } from '@/components/auth-provider';
 import { JobResumeHistory } from '@/components/job-resume-history';
@@ -44,7 +45,12 @@ import {
   runReviewedBrowserCheck,
   updateApplicationQueueStatus,
 } from '@/lib/actions/apply-agent-actions';
-import { createJobApplication, updateJobDetails, updateJobStatus } from '@/lib/actions/job-actions';
+import {
+  createJobApplication,
+  listJobApplications,
+  updateJobDetails,
+  updateJobStatus,
+} from '@/lib/actions/job-actions';
 import {
   deleteProfileAnswer,
   listProfileAnswers,
@@ -780,6 +786,15 @@ export function Dashboard({
         </div>
       )}
 
+      {!isGuest && (
+        <ApplicationTracker
+          documents={history.map((r) => ({
+            id: r.id,
+            label: jobs.find((j) => j.id === r.job_id)?.role || 'Saved resume',
+          }))}
+          onChange={async () => setJobs(await listJobApplications())}
+        />
+      )}
       {/* Job Applications section */}
       <section id="history" aria-labelledby="history-heading">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
