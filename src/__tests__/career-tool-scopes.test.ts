@@ -27,18 +27,22 @@ describe('remote career tool authorization', () => {
       markdown: 'private draft',
       record: { answer: 'private answer' },
     };
+    const conflict = {
+      ok: false,
+      code: 'conflict',
+      error: 'Read the current revision',
+      id: 'owned',
+      revision: 2,
+    };
     expect(careerWriteResult(changed)).toEqual({ ok: true, id: 'owned', revision: 2 });
     expect(
       careerWriteResult({
         ok: true,
-        outcomes: [changed, { ok: false, code: 'conflict', error: 'Read the current revision' }],
+        outcomes: [changed, { ...conflict, record: changed.record } as typeof conflict],
       })
     ).toEqual({
       ok: true,
-      outcomes: [
-        { ok: true, id: 'owned', revision: 2 },
-        { ok: false, code: 'conflict', error: 'Read the current revision' },
-      ],
+      outcomes: [{ ok: true, id: 'owned', revision: 2 }, conflict],
     });
   });
   it('requires additional grants when a call reads sensitive answers, loads job context or saves a draft', () => {
