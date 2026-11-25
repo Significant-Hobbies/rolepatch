@@ -32,7 +32,7 @@ export function canonicalTrackerUrl(raw: string) {
   url.pathname = url.pathname.replace(/\/+$/, '') || '/';
   for (const key of [...url.searchParams.keys()])
     if (
-      /^(utm_.*|gh_src|trk|trackingId)$/i.test(key) ||
+      /^(utm(?:_.*)?|gh_src|trk|trackingId)$/i.test(key) ||
       (key === 'source' &&
         /(^|\.)(lever\.co|greenhouse\.io|ashbyhq\.com|linkedin\.com)$/.test(url.hostname))
     )
