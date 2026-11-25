@@ -44,7 +44,9 @@ export function CareerProfilePanel({ profileId }: { profileId: string }) {
     </section>
   );
 }
-function ProfileDetails({ profileId, sensitive }: { profileId: string; sensitive: boolean }) {
+type ProfileSelection = { profileId: string; sensitive: boolean };
+type ProfileControls = ReturnType<typeof useCareerProfile>;
+function useCareerProfile({ profileId, sensitive }: ProfileSelection) {
   const router = useRouter();
   const [profile, setProfile] = useState<CareerProfile>();
   const [records, setRecords] = useState<CareerRecord[]>([]);
@@ -60,23 +62,15 @@ function ProfileDetails({ profileId, sensitive }: { profileId: string; sensitive
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [confirm, setConfirm] = useState<string>();
-  const [bulk, setBulk] = useState('');
   const [bulkResult, setBulkResult] = useState<string[]>([]);
   const [editName, setEditName] = useState(false);
-  const [name, setName] = useState('');
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError('');
+
     async function load() {
-      const context = await callCareer('rolepatch_profiles_get', {
-        profile_id: profileId,
-        limit: 1,
-      });
-      if (!active) return;
-      if (!context.ok) throw new Error(context.error);
-      if ('profile' in context) setProfile(context.profile);
-      const result = await callCareer('rolepatch_career_records_list', {
+      const result = await callCareer('rolepatch_profiles_get', {
         profile_id: profileId,
         include_sensitive: sensitive,
         sections: kind ? [kind] : undefined,
@@ -87,7 +81,13 @@ function ProfileDetails({ profileId, sensitive }: { profileId: string; sensitive
       });
       if (!active) return;
       if (!result.ok) throw new Error(result.error);
-      if ('records' in result) {
+      if (
+        'profile' in result &&
+        'next_cursor' in result &&
+        'records' in result &&
+        Array.isArray(result.records)
+      ) {
+        setProfile(result.profile);
         setRecords(result.records);
         setCursor(result.next_cursor);
       }
@@ -135,99 +135,213 @@ function ProfileDetails({ profileId, sensitive }: { profileId: string; sensitive
   function save(draft: RecordDraft) {
     void mutate('rolepatch_career_records_upsert', { ...draft, include_sensitive: sensitive });
   }
+
+  return {
+    profile,
+    records,
+    cursor,
+    page,
+    setAfter,
+    query,
+    setQuery,
+    kind,
+    setKind,
+    archived,
+    setArchived,
+    editor,
+    setEditor,
+    pending,
+    loading,
+    error,
+    setError,
+    notice,
+    confirm,
+    setConfirm,
+    bulkResult,
+    editName,
+    setEditName,
+    mutate,
+    save,
+    sensitive,
+  };
+}
+function ProfileDetails(selection: ProfileSelection) {
+  const state = useCareerProfile(selection);
+  const {
+    profile,
+    editor,
+    pending,
+    sensitive,
+    save,
+    setEditor,
+    error,
+    notice,
+    page,
+    setAfter,
+    loading,
+    records,
+    cursor,
+  } = state;
   return (
     <div className="min-w-0 space-y-4">
-      {profile && (
-        <div className="space-y-3 border-b pb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <strong className="break-words">{profile.name}</strong>
-            {profile.is_default && (
-              <span className="text-sm text-muted-foreground">Default profile</span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={pending}
-              onClick={() => {
-                setName(profile.name);
-                setEditName(!editName);
-              }}
-            >
-              Rename
+      {profile && <ProfileSettings controls={state} profile={profile} />}
+      <RecordFilters controls={state} />
+      {editor && (
+        <CareerRecordEditor
+          key={editor === 'new' ? 'new' : editor.id}
+          record={editor === 'new' ? undefined : editor}
+          pending={pending}
+          includeSensitive={sensitive}
+          onSave={save}
+          onCancel={() => setEditor(undefined)}
+        />
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}{' '}
+          <button type="button" className="underline" onClick={() => setAfter(page.after)}>
+            Reload
+          </button>
+        </p>
+      )}
+      {notice && (
+        <p role="status" className="text-sm">
+          {notice}
+        </p>
+      )}
+      {loading ? (
+        <p role="status" className="text-sm text-muted-foreground">
+          Loading records…
+        </p>
+      ) : !error && !records.length ? (
+        <p className="text-sm text-muted-foreground">No career records match this view.</p>
+      ) : (
+        <ul className="divide-y rounded-md border">
+          {records.map((record) => (
+            <CareerRecordRow key={record.id} record={record} controls={state} />
+          ))}
+        </ul>
+      )}
+      {(cursor || page.after) && (
+        <div className="flex gap-2">
+          {page.after && (
+            <Button variant="outline" size="sm" onClick={() => setAfter(null)}>
+              First page
             </Button>
-            {!profile.is_default && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={pending}
-                onClick={() =>
-                  mutate('rolepatch_profiles_update', {
-                    is_default: true,
-                    expected_revision: profile.revision,
-                  })
-                }
-              >
-                Make default
-              </Button>
-            )}
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={pending}
-              onClick={() => setConfirm('profile')}
-            >
-              Archive profile
-            </Button>
-          </div>
-          {editName && (
-            <form
-              className="flex flex-wrap items-end gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void mutate('rolepatch_profiles_update', {
-                  name,
-                  expected_revision: profile.revision,
-                });
-              }}
-            >
-              <label className="text-sm">
-                Profile name
-                <Input
-                  value={name}
-                  maxLength={160}
-                  required
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </label>
-              <Button size="sm" disabled={pending}>
-                Save name
-              </Button>
-            </form>
           )}
-          {confirm === 'profile' && (
-            <div className="space-y-2 text-sm">
-              <p>
-                Archive this profile and remove it from the active list? Its records and versions
-                will be retained.
-              </p>
-              <Button
-                size="sm"
-                disabled={pending}
-                onClick={() =>
-                  mutate('rolepatch_profiles_archive', { expected_revision: profile.revision })
-                }
-              >
-                Confirm archive
-              </Button>{' '}
-              <Button size="sm" variant="ghost" onClick={() => setConfirm(undefined)}>
-                Cancel
-              </Button>
-            </div>
+          {cursor && (
+            <Button variant="outline" size="sm" onClick={() => setAfter(cursor)}>
+              Next page
+            </Button>
           )}
         </div>
       )}
+
+      <RecordImport controls={state} />
+    </div>
+  );
+}
+function ProfileSettings({
+  controls,
+  profile,
+}: {
+  controls: ProfileControls;
+  profile: CareerProfile;
+}) {
+  const { pending, mutate, confirm, setConfirm, editName, setEditName } = controls;
+  const [name, setName] = useState('');
+  return (
+    <div className="space-y-3 border-b pb-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <strong className="break-words">{profile.name}</strong>
+        {profile.is_default && (
+          <span className="text-sm text-muted-foreground">Default profile</span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={pending}
+          onClick={() => {
+            setName(profile.name);
+            setEditName(!editName);
+          }}
+        >
+          Rename
+        </Button>
+        {!profile.is_default && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() =>
+              mutate('rolepatch_profiles_update', {
+                is_default: true,
+                expected_revision: profile.revision,
+              })
+            }
+          >
+            Make default
+          </Button>
+        )}
+        <Button size="sm" variant="ghost" disabled={pending} onClick={() => setConfirm('profile')}>
+          Archive profile
+        </Button>
+      </div>
+      {editName && (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void mutate('rolepatch_profiles_update', {
+              name,
+              expected_revision: profile.revision,
+            });
+          }}
+        >
+          <label className="text-sm">
+            Profile name
+            <Input
+              value={name}
+              maxLength={160}
+              required
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <Button size="sm" disabled={pending}>
+            Save name
+          </Button>
+        </form>
+      )}
+      {confirm === 'profile' && (
+        <div className="space-y-2 text-sm">
+          <p>
+            Archive this profile and remove it from the active list? Its records and versions will
+            be retained.
+          </p>
+          <Button
+            size="sm"
+            disabled={pending}
+            onClick={() =>
+              mutate('rolepatch_profiles_archive', { expected_revision: profile.revision })
+            }
+          >
+            Confirm archive
+          </Button>{' '}
+          <Button size="sm" variant="ghost" onClick={() => setConfirm(undefined)}>
+            Cancel
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+function RecordFilters({ controls }: { controls: ProfileControls }) {
+  const { query, setQuery, kind, setKind, archived, setArchived, setAfter, pending, setEditor } =
+    controls;
+  return (
+    <>
       <div className="flex flex-wrap items-end gap-3">
         <label className="min-w-0 basis-full space-y-1 text-sm font-medium sm:flex-1">
           Search records
@@ -273,170 +387,129 @@ function ProfileDetails({ profileId, sensitive }: { profileId: string; sensitive
         />
         Include archived records
       </label>
-      {editor && (
-        <CareerRecordEditor
-          key={editor === 'new' ? 'new' : editor.id}
-          record={editor === 'new' ? undefined : editor}
-          pending={pending}
-          includeSensitive={sensitive}
-          onSave={save}
-          onCancel={() => setEditor(undefined)}
+    </>
+  );
+}
+function CareerRecordRow({
+  controls,
+  record,
+}: {
+  controls: ProfileControls;
+  record: CareerRecord;
+}) {
+  const { pending, setEditor, setConfirm, confirm, sensitive, mutate } = controls;
+  return (
+    <li className="min-w-0 space-y-2 p-3" key={record.id}>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <strong className="break-all text-sm">{record.title}</strong>
+        <span className="text-xs text-muted-foreground">
+          {record.kind} ·{' '}
+          {record.archived_at
+            ? 'archived'
+            : (record.data.verification_status ?? 'unverified').replaceAll('_', ' ')}
+        </span>
+      </div>
+      {(record.data.approved_wording || record.data.value) && (
+        <p className="break-words text-sm">{record.data.approved_wording || record.data.value}</p>
+      )}
+      <details className="text-sm">
+        <summary className="cursor-pointer">Record details</summary>
+        <dl className="mt-2 space-y-2">
+          <div>
+            <dt className="text-muted-foreground">Record ID</dt>
+            <dd className="break-all">{record.id}</dd>
+          </div>
+          {Object.entries(record.data).map(([key, value]) => (
+            <div key={key}>
+              <dt className="capitalize text-muted-foreground">{key.replaceAll('_', ' ')}</dt>
+              <dd className="whitespace-pre-wrap break-words">
+                {Array.isArray(value) ? value.join('\n') : String(value)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+      <div className="flex flex-wrap gap-2">
+        {!record.archived_at && (
+          <Button size="sm" variant="outline" disabled={pending} onClick={() => setEditor(record)}>
+            Edit
+          </Button>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={pending}
+          onClick={() => setConfirm(`record:${record.id}`)}
+        >
+          {record.archived_at ? 'Delete permanently' : 'Archive'}
+        </Button>
+      </div>
+      {confirm === `record:${record.id}` && (
+        <div className="space-x-2">
+          <Button
+            size="sm"
+            disabled={pending}
+            onClick={() =>
+              mutate('rolepatch_career_records_delete', {
+                id: record.id,
+                expected_revision: record.revision,
+                include_sensitive: sensitive,
+                permanent: !!record.archived_at,
+                confirm_id: record.archived_at ? record.id : undefined,
+              })
+            }
+          >
+            {record.archived_at ? 'Confirm permanent deletion' : 'Confirm archive'}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setConfirm(undefined)}>
+            Cancel
+          </Button>
+        </div>
+      )}
+    </li>
+  );
+}
+function RecordImport({ controls }: { controls: ProfileControls }) {
+  const { pending, sensitive, bulkResult, setError, mutate } = controls;
+  const [bulk, setBulk] = useState('');
+  return (
+    <details className="space-y-3 border-t pt-3 text-sm">
+      <summary className="cursor-pointer font-medium">Import career records</summary>
+      <label className="block space-y-1">
+        Records as a JSON array
+        <Textarea
+          value={bulk}
+          onChange={(e) => setBulk(e.target.value)}
+          placeholder={
+            '[{"id":"role-1","kind":"employment","title":"Engineer","data":{"employer":"Example"}}]'
+          }
         />
-      )}
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}{' '}
-          <button type="button" className="underline" onClick={() => setAfter(page.after)}>
-            Reload
-          </button>
-        </p>
-      )}
-      {notice && (
-        <p role="status" className="text-sm">
-          {notice}
-        </p>
-      )}
-      {loading ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading records…
-        </p>
-      ) : !error && !records.length ? (
-        <p className="text-sm text-muted-foreground">No career records match this view.</p>
-      ) : (
-        <ul className="divide-y rounded-md border">
-          {records.map((record) => (
-            <li className="min-w-0 space-y-2 p-3" key={record.id}>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <strong className="break-all text-sm">{record.title}</strong>
-                <span className="text-xs text-muted-foreground">
-                  {record.kind} ·{' '}
-                  {record.archived_at
-                    ? 'archived'
-                    : (record.data.verification_status ?? 'unverified').replaceAll('_', ' ')}
-                </span>
-              </div>
-              {(record.data.approved_wording || record.data.value) && (
-                <p className="break-words text-sm">
-                  {record.data.approved_wording || record.data.value}
-                </p>
-              )}
-              <details className="text-sm">
-                <summary className="cursor-pointer">Record details</summary>
-                <dl className="mt-2 space-y-2">
-                  <div>
-                    <dt className="text-muted-foreground">Record ID</dt>
-                    <dd className="break-all">{record.id}</dd>
-                  </div>
-                  {Object.entries(record.data).map(([key, value]) => (
-                    <div key={key}>
-                      <dt className="capitalize text-muted-foreground">
-                        {key.replaceAll('_', ' ')}
-                      </dt>
-                      <dd className="whitespace-pre-wrap break-words">
-                        {Array.isArray(value) ? value.join('\n') : String(value)}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </details>
-              <div className="flex flex-wrap gap-2">
-                {!record.archived_at && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={pending}
-                    onClick={() => setEditor(record)}
-                  >
-                    Edit
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={pending}
-                  onClick={() => setConfirm(`record:${record.id}`)}
-                >
-                  {record.archived_at ? 'Delete permanently' : 'Archive'}
-                </Button>
-              </div>
-              {confirm === `record:${record.id}` && (
-                <div className="space-x-2">
-                  <Button
-                    size="sm"
-                    disabled={pending}
-                    onClick={() =>
-                      mutate('rolepatch_career_records_delete', {
-                        id: record.id,
-                        expected_revision: record.revision,
-                        include_sensitive: sensitive,
-                        permanent: !!record.archived_at,
-                        confirm_id: record.archived_at ? record.id : undefined,
-                      })
-                    }
-                  >
-                    {record.archived_at ? 'Confirm permanent deletion' : 'Confirm archive'}
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setConfirm(undefined)}>
-                    Cancel
-                  </Button>
-                </div>
-              )}
-            </li>
+      </label>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={pending || !bulk.trim()}
+        onClick={() => {
+          try {
+            const records: unknown = JSON.parse(bulk);
+            void mutate('rolepatch_career_records_bulk_upsert', {
+              records,
+              include_sensitive: sensitive,
+            });
+          } catch {
+            setError('Enter a valid JSON array.');
+          }
+        }}
+      >
+        Import records
+      </Button>
+      {bulkResult.length > 0 && (
+        <ul>
+          {bulkResult.map((item, i) => (
+            <li key={i}>{item}</li>
           ))}
         </ul>
       )}
-      {(cursor || page.after) && (
-        <div className="flex gap-2">
-          {page.after && (
-            <Button variant="outline" size="sm" onClick={() => setAfter(null)}>
-              First page
-            </Button>
-          )}
-          {cursor && (
-            <Button variant="outline" size="sm" onClick={() => setAfter(cursor)}>
-              Next page
-            </Button>
-          )}
-        </div>
-      )}
-      <details className="space-y-3 border-t pt-3 text-sm">
-        <summary className="cursor-pointer font-medium">Import career records</summary>
-        <label className="block space-y-1">
-          Records as a JSON array
-          <Textarea
-            value={bulk}
-            onChange={(e) => setBulk(e.target.value)}
-            placeholder={
-              '[{"id":"role-1","kind":"employment","title":"Engineer","data":{"employer":"Example"}}]'
-            }
-          />
-        </label>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={pending || !bulk.trim()}
-          onClick={() => {
-            try {
-              const records: unknown = JSON.parse(bulk);
-              void mutate('rolepatch_career_records_bulk_upsert', {
-                records,
-                include_sensitive: sensitive,
-              });
-            } catch {
-              setError('Enter a valid JSON array.');
-            }
-          }}
-        >
-          Import records
-        </Button>
-        {bulkResult.length > 0 && (
-          <ul>
-            {bulkResult.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        )}
-      </details>
-    </div>
+    </details>
   );
 }

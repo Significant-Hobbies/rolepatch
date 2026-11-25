@@ -86,6 +86,8 @@ const writeFields = {
 export const careerSchemas = {
   rolepatch_profiles_list: z.strictObject({ ...page, include_archived: z.boolean().optional() }),
   rolepatch_profiles_get: z.strictObject({
+    query: z.string().max(300).optional(),
+    include_archived: z.boolean().optional(),
     profile_id: key.optional(),
     sections: kinds,
     ...page,
