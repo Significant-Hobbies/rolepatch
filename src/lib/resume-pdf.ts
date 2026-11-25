@@ -1,15 +1,16 @@
 import { renderPdf } from '@/lib/pdf';
+import type { ResumeRenderConfig } from '@/lib/resume-templates';
 import { markdownToHtml } from '@/lib/resume-html';
 
 // A generated draft may include the 20k master, 10k stash and generated summary.
 export const MAX_PDF_RESUME_CHARS = 40_000;
 export const MAX_PDF_BYTES = 2 * 1024 * 1024;
 
-export async function renderResumePdf(source: string) {
+export async function renderResumePdf(source: string, config?: Partial<ResumeRenderConfig>) {
   if (!source.trim() || source.length > MAX_PDF_RESUME_CHARS)
     throw new Error('Invalid resume size');
   // The shared formatter escapes raw HTML/images and supplies a no-network CSP.
-  const bytes = await renderPdf(markdownToHtml(source, 'Tailored resume'));
+  const bytes = await renderPdf(markdownToHtml(source, 'Tailored resume', config));
   if (
     bytes.byteLength < 20 ||
     bytes.byteLength > MAX_PDF_BYTES ||
