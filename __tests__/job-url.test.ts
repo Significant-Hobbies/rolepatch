@@ -31,7 +31,7 @@ it('removes board navigation while retaining query-addressed job IDs', () => {
     ['https://boards.greenhouse.io/tenant/jobs/123', 'gh_jid=123&t=ad'],
     ['https://www.linkedin.com/jobs/view/engineer-123', 'refId=first&eBP=a&position=2'],
   ]) {
-    expect(canonicalJobUrl(posting + '?' + navigation)).toBe(posting);
+    expect(canonicalJobUrl(`${posting}?${navigation}`)).toBe(posting);
   }
   expect(canonicalJobUrl('https://boards.greenhouse.io/embed/job_app?gh_jid=42&t=a')).toBe(
     'https://boards.greenhouse.io/embed/job_app?gh_jid=42'
@@ -49,7 +49,7 @@ it('keeps valid distinct openings when a malformed discovery alert appears in th
       first,
       { job_url: 'unparseable' },
       { job_url: 'ftp://site/open' },
-      { ...first, job_url: first.job_url + '&utm_source=x' },
+      { ...first, job_url: `${first.job_url}&utm_source=x` },
       second,
     ])
   ).toEqual([first, second]);

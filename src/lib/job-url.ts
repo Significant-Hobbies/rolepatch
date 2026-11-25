@@ -17,7 +17,7 @@ function removeBoardNavigation(url: URL) {
   }
   if (/(^|\.)greenhouse\.io$/.test(hostname)) {
     searchParams.delete('t');
-    if (pathname.endsWith('/jobs/' + searchParams.get('gh_jid')) && searchParams.has('gh_jid'))
+    if (pathname.endsWith(`/jobs/${searchParams.get('gh_jid')}`) && searchParams.has('gh_jid'))
       searchParams.delete('gh_jid');
   }
   if (/(^|\.)lever\.co$/.test(hostname)) searchParams.delete('lever-source');

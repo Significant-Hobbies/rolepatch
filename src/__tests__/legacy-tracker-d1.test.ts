@@ -184,7 +184,7 @@ it('uses a legacy path-only LinkedIn job for extension capture, packet and fill 
       body: JSON.stringify({ url, ...input }),
     });
   for (const ref of ['a', 'b']) {
-    const url = path + '/?refId=' + ref + '&trackingId=xyz';
+    const url = `${path}/?refId=${ref}&trackingId=xyz`;
     expect(
       await (await save(req(url, { jd_text: description, queue: false }))).json()
     ).toMatchObject({ existing: true, job_id: 'ext-legacy' });
