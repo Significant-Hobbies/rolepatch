@@ -24,7 +24,9 @@ type Arg = string | number | null;
 type Input<N extends CareerToolName> = z.infer<(typeof careerSchemas)[N]>;
 const fail = (code: string, error: string) => ({ ok: false as const, code, error });
 const absent = () => fail('not_found', 'No matching career profile or record.');
-const conflict = () => fail('conflict', 'The record changed. Read its current revision and retry.');
+function conflict(row: Row, message = 'The record changed. Read its current revision and retry.') {
+  return { ...fail('conflict', message), id: String(row.id), revision: Number(row.revision) };
+}
 const profileFields = 'id,name,source,is_default,archived_at,revision';
 const profileQuery = `SELECT ${profileFields} FROM resumes WHERE user_id=? AND id=?`;
 const recordQuery =
@@ -190,8 +192,9 @@ async function createProfile(user: string, input: Input<'rolepatch_profiles_crea
     },
   ]);
   const row = read.rows[0];
-  if (row?.create_payload_hash !== hash)
-    return fail('conflict', 'This request ID was already used for a different profile.');
+  if (!row) return absent();
+  if (row.create_payload_hash !== hash)
+    return conflict(row, 'This request ID was already used for a different profile.');
   const profile = profileRow(row);
   return { ok: true as const, id: profile.id, revision: profile.revision, profile };
 }
@@ -204,7 +207,7 @@ async function updateProfile(
     const existing = (await db.execute({ sql: profileQuery, args: [user, input.profile_id] }))
       .rows[0];
     if (!existing) return absent();
-    if (existing.revision !== input.expected_revision) return conflict();
+    if (existing.revision !== input.expected_revision) return conflict(existing);
     const issue =
       careerCredentialIssue('Profile name', input.name, String(existing.name)) ??
       careerCredentialIssue('Master resume', input.source, String(existing.source));
@@ -232,7 +235,7 @@ async function updateProfile(
   ]);
   if (!read.rows[0]) return absent();
   // D1 includes the revision and default-selection trigger writes in meta.changes.
-  if (!changed.rowsAffected) return conflict();
+  if (!changed.rowsAffected) return conflict(read.rows[0]);
   const profile = profileRow(read.rows[0]);
   return { ok: true as const, id: profile.id, revision: profile.revision, profile };
 }
@@ -271,6 +274,11 @@ function verified(status: CareerData['verification_status']) {
   return status === 'user_confirmed' || status === 'document_supported';
 }
 async function writeRecord(user: string, input: RecordWrite) {
+  if (input.reconfirm && !verified(input.data.verification_status))
+    return fail(
+      'invalid_input',
+      'Supply user_confirmed or document_supported alongside reconfirm: true.'
+    );
   if (input.restore && input.expected_revision === undefined)
     return fail(
       'invalid_input',
@@ -369,7 +377,7 @@ async function writeRecord(user: string, input: RecordWrite) {
     row.data_json !== data ||
     row.sensitive !== Number(sensitive)
   )
-    return conflict();
+    return conflict(row);
   const record = recordRow(row);
   return { ok: true as const, id: record.id, revision: record.revision, record };
 }
@@ -404,14 +412,14 @@ async function removeRecord(user: string, input: Input<'rolepatch_career_records
       };
   const [before, changed] = await db.batch([
     {
-      sql: `${recordQuery} AND id=? AND (sensitive=0 OR ?)`,
-      args: [...scope, Number(!!input.include_sensitive)],
+      sql: `${recordQuery} AND id=? AND (sensitive=0 OR ?) AND EXISTS (SELECT 1 FROM resumes WHERE user_id=? AND id=? AND archived_at IS NULL)`,
+      args: [...scope, Number(!!input.include_sensitive), user, input.profile_id],
     },
     remove,
   ]);
   if (!before.rows.length) return absent();
   if (!changed.rowsAffected)
-    return fail('conflict', 'Check the latest revision, archive state and linked records.');
+    return conflict(before.rows[0], 'Check the latest revision, archive state and linked records.');
   return {
     ok: true as const,
     id: input.id,

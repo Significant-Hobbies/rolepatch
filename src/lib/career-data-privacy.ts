@@ -9,7 +9,7 @@ const providerToken =
 const jwt = /\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{10,}\b/;
 const authorizationValue = /\bAuthorization\s*:\s*(?:Basic|Bearer)\s+([a-z\d/+=_.-]+)/gi;
 const assignment =
-  /(?:^|[\s{"'`(,;&])(?:[A-Z0-9]+_)*(?:password|passwd|token|secret|api[ _-]?key|access[ _-]?token|refresh[ _-]?token|client[ _-]?secret|secret[ _-]?access[ _-]?key)["']?\s*([=:])\s*(?:"([^"]+)"|'([^']+)'|([^\s<>{},;"'`]+))/gi;
+  /(?:^|[\s{"'`(,;&])(?:[A-Z0-9]+_)*(password|passwd|token|secret|api[ _-]?key|access[ _-]?token|refresh[ _-]?token|client[ _-]?secret|secret[ _-]?access[ _-]?key)["']?\s*([=:])\s*(?:"([^"]+)"|'([^']+)'|([^\s<>{},;"'`]+))/gi;
 const urlInText = /\b[a-z][a-z\d+.-]{0,24}:\/\/[^\s<>{}|"'`\])]+/gi;
 
 function privateParameters(params: URLSearchParams) {
@@ -43,20 +43,37 @@ function tokenShaped(value: string) {
     (/[0-9]/.test(value) || (/[=+/!@#$%^&*]/.test(value) && value.length >= 12))
   );
 }
-function credentialAssignment(line: string, match: RegExpExecArray) {
-  const value = match[2] ?? match[3] ?? match[4];
-  if (match[1] === '=') return value.length >= 12 || tokenShaped(value);
-  if (match[2] || match[3]) return value.length >= 12 || tokenShaped(value);
-  // In a security-clearance description, "Secret" names a clearance level.
-  if (/\bclearance\s*:\s*$/i.test(line.slice(0, match.index))) return false;
-  const remainder = line.slice(match.index + match[0].length);
-  const standalone = /^[\s.,;)}]*$/.test(remainder);
-  return tokenShaped(value) && (standalone || value.length >= 16);
+// These names commonly appear verbatim on security and platform engineering resumes.
+const technicalTerm =
+  /^(?:(?:HMAC-|PBKDF2-)?SHA-?(?:1|224|256|384|512)|PBKDF2|Argon2(?:id|i|d)?|AES-?(?:128|192|256)(?:-GCM|-CBC|-CTR)?|OAuth(?:2(?:\.0)?)?|TLS(?:1\.[0-3])?|authentication|authorization|implementation|configuration|verification|infrastructure|management|credentials?|credentialing|requirements|documentation)[.,;]?$/i;
+const reference = /^(?:process\.env\.|import\.meta\.env\.|env\.|\$|\{\{|<)/i;
+function opaqueValue(value: string) {
+  return /^[a-z\d]{12,}$/i.test(value) && !technicalTerm.test(value);
 }
-function credentialAuthorization(line: string, match: RegExpExecArray) {
+function credentialAssignment(line: string, match: RegExpExecArray) {
+  const [, field, operator, doubleQuoted, singleQuoted, unquoted] = match;
+  const value = doubleQuoted ?? singleQuoted ?? unquoted;
+  if (technicalTerm.test(value) || reference.test(value)) return false;
+  // The level can be written "Clearance: Secret" or "Clearance: Top Secret".
+  if (
+    /^secret$/i.test(field) &&
+    /\bclearance\s*:\s*(?:(?:active|top)\b\s*)*$/i.test(line.slice(0, match.index))
+  )
+    return false;
+  if (tokenShaped(value)) return true;
+  if (operator === '=' && opaqueValue(value)) return true;
+  // A direct quoted password assignment can contain a multiword passphrase.
+  return (
+    operator === '=' &&
+    /^(password|passwd)$/i.test(field) &&
+    !unquoted &&
+    value.length >= 12 &&
+    /\s/.test(value)
+  );
+}
+function credentialAuthorization(match: RegExpExecArray) {
   const value = match[1];
-  const remainder = line.slice(match.index + match[0].length);
-  return value.length >= 12 && (!remainder.trim() || tokenShaped(value));
+  return !technicalTerm.test(value) && (opaqueValue(value) || tokenShaped(value));
 }
 function credentialLine(original: string) {
   const line = original.replace(/\\([_#*.+!(){}[\]-])/g, '$1');
@@ -69,9 +86,7 @@ function credentialLine(original: string) {
     return true;
   return (
     Array.from(line.matchAll(assignment)).some((match) => credentialAssignment(line, match)) ||
-    Array.from(line.matchAll(authorizationValue)).some((match) =>
-      credentialAuthorization(line, match)
-    )
+    Array.from(line.matchAll(authorizationValue)).some((match) => credentialAuthorization(match))
   );
 }
 export function containsCareerCredential(...values: (string | undefined)[]) {

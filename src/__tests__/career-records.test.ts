@@ -445,6 +445,21 @@ it('requires a separate reconfirmation when a changed claim echoes the old confi
   const write = (args: object) =>
     callCareer('rolepatch_career_records_upsert', { ...input, ...args });
   expect(await write({})).toMatchObject({ revision: 1 });
+  for (const invalidStatus of [undefined, 'unverified', 'disputed']) {
+    expect(
+      careerWriteResult(
+        await write({
+          data: { approved_wording: 'Changed', verification_status: invalidStatus },
+          expected_revision: 1,
+          reconfirm: true,
+        })
+      )
+    ).toMatchObject({
+      ok: false,
+      code: 'invalid_input',
+      error: expect.stringContaining('alongside reconfirm'),
+    });
+  }
   const echoed = { ...input.data, approved_wording: 'Second claim' };
   const rejected = await write({ data: echoed, expected_revision: 1 });
   expect(careerWriteResult(rejected)).toMatchObject({
@@ -479,4 +494,56 @@ it('requires a separate reconfirmation when a changed claim echoes the old confi
       reconfirm: true,
     })
   ).toMatchObject({ revision: 4, record: { data: { verification_status: 'user_confirmed' } } });
+});
+it('returns owned conflict revisions to individual and bulk writers while concealing inaccessible IDs', async () => {
+  const profile_id = (await createProfile()).id;
+  const input = { id: 'owned', kind: 'note', title: 'Note', data: { value: 'First' } };
+  const upsert = async (args: object) =>
+    careerWriteResult(
+      await callCareer('rolepatch_career_records_upsert', { profile_id, ...input, ...args })
+    );
+  expect(await upsert({})).toMatchObject({ ok: true, revision: 1 });
+  expect(await upsert({ expected_revision: 1, data: { value: 'Second' } })).toMatchObject({
+    revision: 2,
+  });
+  const stale = { expected_revision: 1, data: { value: 'Stale value' } };
+  const receipt = {
+    ok: false,
+    code: 'conflict',
+    id: 'owned',
+    revision: 2,
+    error: expect.any(String),
+  };
+  expect(await upsert(stale)).toEqual(receipt);
+  expect(
+    careerWriteResult(
+      await callCareer('rolepatch_career_records_bulk_upsert', {
+        profile_id,
+        records: [{ ...input, ...stale }],
+      })
+    )
+  ).toEqual({ ok: true, outcomes: [receipt] });
+  expect(
+    careerWriteResult(
+      await callCareer('rolepatch_profiles_update', {
+        profile_id,
+        expected_revision: 1,
+        name: 'Stale name',
+      })
+    )
+  ).toMatchObject({ ok: false, code: 'conflict', id: profile_id, revision: 3 });
+  const hidden = { id: 'private', kind: 'answer', title: 'Pay' };
+  expect(await upsert({ ...hidden, include_sensitive: true, sensitive: true })).toMatchObject({
+    ok: true,
+    revision: 1,
+  });
+  const inaccessible = { ok: false, code: 'not_found', error: expect.any(String) };
+  expect(await upsert({ ...hidden, ...stale })).toMatchObject(inaccessible);
+  expect(await upsert({ ...hidden, ...stale })).not.toEqual(
+    expect.objectContaining({ revision: expect.any(Number) })
+  );
+  owner = 'different user';
+  const foreign = await upsert(stale);
+  expect(foreign).toMatchObject(inaccessible);
+  expect(foreign).not.toEqual(expect.objectContaining({ id: expect.any(String) }));
 });
