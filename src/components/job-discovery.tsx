@@ -505,7 +505,9 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
         job.company ?? 'Unknown Company',
         job.title ?? 'Untitled Role',
         job.description ?? job.description_short ?? '',
-        job.description ?? job.description_short ?? ''
+        job.description ?? job.description_short ?? '',
+        undefined,
+        job.description ? 'description' : 'preview'
       );
       router.push(`/tailor/${jobId}`);
     } catch (err) {
@@ -548,7 +550,9 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
       job.company ?? 'Unknown Company',
       job.title ?? 'Untitled Role',
       job.description ?? job.description_short ?? '',
-      job.description ?? job.description_short ?? ''
+      job.description ?? job.description_short ?? '',
+      undefined,
+      job.description ? 'description' : 'preview'
     );
     await queueApplication(jobId);
   }

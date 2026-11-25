@@ -26,13 +26,15 @@ describe('job URL normalization', () => {
 
 it('removes board navigation while retaining query-addressed job IDs', () => {
   for (const [posting, navigation] of [
-    ['https://jobs.lever.co/tenant/job', 'lever-source=page'],
+    ['https://jobs.lever.co/tenant/job', 'lever-source=page&lever-origin=ref&lever-source[]=other'],
     ['https://jobs.ashbyhq.com/tenant/job', 'src=share'],
     ['https://boards.greenhouse.io/tenant/jobs/123', 'gh_jid=123&t=ad'],
-    ['https://www.linkedin.com/jobs/view/engineer-123', 'refId=first&eBP=a&position=2'],
   ]) {
     expect(canonicalJobUrl(`${posting}?${navigation}`)).toBe(posting);
   }
+  expect(canonicalJobUrl('https://www.linkedin.com/jobs/view/engineer-123?refId=a')).toBe(
+    'https://www.linkedin.com/jobs/view/123'
+  );
   expect(canonicalJobUrl('https://boards.greenhouse.io/embed/job_app?gh_jid=42&t=a')).toBe(
     'https://boards.greenhouse.io/embed/job_app?gh_jid=42'
   );

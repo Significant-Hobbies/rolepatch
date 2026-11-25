@@ -35,6 +35,7 @@ beforeAll(async () => {
     await db.batch(unstable_splitSqlQuery(readFileSync(`migrations/${file}`, 'utf8')));
   }
   await db.execute("INSERT INTO users(id,email) VALUES('owner','owner@example.invalid')");
+  await db.execute("INSERT INTO resumes(id,user_id,name) VALUES('another','owner','Alt')");
   await db.execute({
     sql: "INSERT INTO resumes(id,user_id,name,source) VALUES('master','owner','Master',?)",
     args: [draft],
@@ -169,11 +170,12 @@ it('resolves legacy duplicate URLs across extension, Jobs and history while reta
   });
 });
 
-it('uses a legacy path-only LinkedIn job for extension capture, packet and fill receipt across visits', async () => {
+it('uses a legacy search-pane LinkedIn job for extension capture, packet and fill receipt across visits', async () => {
   const path = 'https://www.linkedin.com/jobs/view/123456';
+  const original = 'https://www.linkedin.com/jobs/search/?currentJobId=123456&refId=old';
   await db.execute({
-    sql: "INSERT INTO job_applications(id,user_id,resume_id,url,company,role) VALUES('ext-legacy','owner','master',?,'Example','Engineer')",
-    args: [path],
+    sql: "INSERT INTO job_applications(id,user_id,resume_id,url,normalized_url,company,role) VALUES('ext-legacy','owner','master',?,?,'Example','Engineer')",
+    args: [original, original],
   });
   const { POST: save } = await import('@/app/api/extension/save-job/route');
   const { POST: packet } = await import('@/app/api/extension/apply-packet/route');
@@ -183,8 +185,12 @@ it('uses a legacy path-only LinkedIn job for extension capture, packet and fill 
       method: 'POST',
       body: JSON.stringify({ url, ...input }),
     });
-  for (const ref of ['a', 'b']) {
-    const url = `${path}/?refId=${ref}&trackingId=xyz`;
+  for (const url of [
+    original.replace('old', 'new'),
+    'https://www.linkedin.com/jobs/collections/recommended/?currentJobId=123456&eBP=zz',
+    'https://www.linkedin.com/comm/jobs/view/123456?refId=message',
+    `${path}/?refId=a&trackingId=xyz`,
+  ]) {
     expect(
       await (await save(req(url, { jd_text: description, queue: false }))).json()
     ).toMatchObject({ existing: true, job_id: 'ext-legacy' });
@@ -195,17 +201,12 @@ it('uses a legacy path-only LinkedIn job for extension capture, packet and fill 
     expect((await receipt(req(url, { job_id: 'ext-legacy' }))).status).toBe(200);
   }
   expect(
-    (
-      await db.execute(
-        "SELECT id FROM job_applications WHERE url LIKE '%linkedin.com/jobs/view/123456%'"
-      )
-    ).rows
+    (await db.execute("SELECT id FROM job_applications WHERE url LIKE '%linkedin.com/%'")).rows
   ).toHaveLength(1);
 });
 
 it('preserves existing posting details, stage and profile on discovery, and adds each type of note once', async () => {
   const url = 'https://jobs.example.org/active';
-  await db.execute("INSERT INTO resumes(id,user_id,name) VALUES('another','owner','Alt')");
   const id = await createJobApplication(
     'master',
     url,
@@ -215,7 +216,7 @@ it('preserves existing posting details, stage and profile on discovery, and adds
     description
   );
   await db.execute({
-    sql: "UPDATE job_applications SET status='applied',notes='User note' WHERE id=?",
+    sql: "UPDATE job_applications SET status='applied',notes='Saw a RolePatch discovery alert yesterday' WHERE id=?",
     args: [id],
   });
   for (const preview of ['', 'Short teaser']) {
@@ -249,7 +250,8 @@ it('preserves existing posting details, stage and profile on discovery, and adds
     role: 'Engineer',
     jd_raw: description,
     jd_text: description,
-    notes: 'User note\n\nRolePatch semantic match: 80%\n\nRolePatch discovery alert: first',
+    notes:
+      'Saw a RolePatch discovery alert yesterday\n\nRolePatch semantic match: 80%\n\nRolePatch discovery alert: first',
   });
   await createJobApplication(
     'another',
@@ -270,3 +272,61 @@ it('preserves existing posting details, stage and profile on discovery, and adds
     jd_text: 'Edited',
   });
 });
+
+it.each(['url', 'discover', 'queue'] as const)(
+  'restores an archived sparse opening with a full %s intake',
+  async (mode) => {
+    const url = `https://jobs.example.org/enrich-${mode}`;
+    const teaser = 'Short teaser';
+    const id = await createJobApplication(
+      'master',
+      url,
+      'Unknown Company',
+      'Untitled Role',
+      teaser,
+      teaser,
+      undefined,
+      'preview'
+    );
+    await db.execute({
+      sql: "UPDATE job_applications SET stage='archived',status='rejected',revision=revision+1 WHERE id=?",
+      args: [id],
+    });
+    await createJobApplication(
+      'another',
+      url,
+      'Acme',
+      'Staff Engineer',
+      description,
+      description,
+      mode === 'queue' ? 'RolePatch discovery alert.' : undefined,
+      mode === 'url' ? 'url' : 'description'
+    );
+    expect(
+      (await db.execute({ sql: 'SELECT * FROM job_applications WHERE id=?', args: [id] })).rows[0]
+    ).toMatchObject({
+      company: 'Acme',
+      role: 'Staff Engineer',
+      jd_raw: description,
+      jd_text: description,
+      stage: 'preparing',
+      status: 'draft',
+      resume_id: mode === 'url' ? 'another' : 'master',
+    });
+    const longPreview = 'Teaser '.repeat(100);
+    await createJobApplication(
+      'master',
+      url,
+      'Unknown Company',
+      'Untitled Role',
+      longPreview,
+      longPreview,
+      undefined,
+      'preview'
+    );
+    expect(
+      (await db.execute({ sql: 'SELECT jd_text FROM job_applications WHERE id=?', args: [id] }))
+        .rows[0].jd_text
+    ).toBe(description);
+  }
+);

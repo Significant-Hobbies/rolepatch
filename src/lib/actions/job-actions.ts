@@ -29,7 +29,7 @@ export async function createJobApplication(
   jdRaw: string,
   jdText: string,
   discoveryNote?: string,
-  intake?: 'manual' | 'url'
+  intake?: 'manual' | 'url' | 'preview' | 'description'
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to create job applications');
@@ -40,8 +40,12 @@ export async function createJobApplication(
     throw new Error('Invalid discovery note.');
   const result = await saveOwnedOpening(
     userId,
-    { resumeId, url, company, role, jdRaw, jdText },
-    discoveryNote !== undefined ? 'queue' : (intake ?? 'discover'),
+    { resumeId, url, company, role, jdRaw, jdText, descriptionSource: intake },
+    discoveryNote !== undefined
+      ? 'queue'
+      : intake === 'manual' || intake === 'url'
+        ? intake
+        : 'discover',
     discoveryNote || null
   );
   revalidatePath('/jobs');

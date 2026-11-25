@@ -8,6 +8,7 @@ type Opening = {
   role: string;
   jdRaw: string;
   jdText: string;
+  descriptionSource?: 'manual' | 'url' | 'preview' | 'description';
 };
 type SaveMode = 'url' | 'manual' | 'capture' | 'queue' | 'discover';
 
@@ -47,19 +48,30 @@ export async function saveOwnedOpening(
   if (!jobId) throw new Error('Resume or job not found.');
   if (mode === 'capture') return { id: jobId, existing: true };
 
-  // Discovery can supply a short preview and generic labels. Only the manual editor
-  // can overwrite existing posting details or rebind an existing profile.
-  const replace = Number(mode === 'manual');
+  // A manual posting or a freshly scraped URL carries the user's selected profile.
+  // Discovery previews can populate empty fields and never replace a saved description.
+  const replace = Number(mode === 'manual' || mode === 'url');
+  const fullDescription = opening.descriptionSource === 'description';
+  const improveDescription = `(? OR trim(jd_text)='' OR
+    (? AND length(trim(?))>length(trim(jd_text))) OR
+    (? AND length(trim(jd_text))<50 AND length(trim(?))>=50))`;
+  const descriptionArgs = [
+    replace,
+    Number(fullDescription),
+    jdText,
+    Number(!opening.descriptionSource),
+    jdText,
+  ];
   const marker = note?.match(/^RolePatch (?:semantic match:|discovery alert\b)/)?.[0] ?? note;
   const merged = await db.execute({
     sql: `UPDATE job_applications SET resume_id=CASE WHEN ? THEN ? ELSE coalesce(resume_id,?) END,
-      company=CASE WHEN (company='' OR ?) AND lower(trim(?)) NOT IN ('','unknown company','unknown') THEN ? ELSE company END,
-      role=CASE WHEN (role='' OR ?) AND lower(trim(?)) NOT IN ('','untitled role') THEN ? ELSE role END,
-      jd_raw=CASE WHEN (jd_raw='' OR ?) AND trim(?)<>'' THEN ? ELSE jd_raw END,
-      jd_text=CASE WHEN (jd_text='' OR ?) AND trim(?)<>'' THEN ? ELSE jd_text END,
+      company=CASE WHEN (lower(trim(company)) IN ('','unknown company','unknown') OR ?) AND lower(trim(?)) NOT IN ('','unknown company','unknown') THEN ? ELSE company END,
+      role=CASE WHEN (lower(trim(role)) IN ('','untitled role') OR ?) AND lower(trim(?)) NOT IN ('','untitled role') THEN ? ELSE role END,
+      jd_raw=CASE WHEN (jd_raw='' OR ${improveDescription}) AND trim(?)<>'' THEN ? ELSE jd_raw END,
+      jd_text=CASE WHEN ${improveDescription} AND trim(?)<>'' THEN ? ELSE jd_text END,
       normalized_url=COALESCE(normalized_url,?),
-      status=CASE WHEN ? AND stage IN ('archived','withdrawn') THEN 'draft' ELSE status END,
-      notes=CASE WHEN ? IS NULL OR instr(COALESCE(notes,''),?)>0 THEN notes
+      status=CASE WHEN stage IN ('archived','withdrawn') THEN 'draft' ELSE status END,
+      notes=CASE WHEN ? IS NULL OR instr(char(10)||COALESCE(notes,''),char(10)||?)>0 THEN notes
                  WHEN trim(COALESCE(notes,''))='' THEN ? ELSE notes||char(10,10)||? END,
       updated_at=unixepoch()
     WHERE user_id=? AND id=? AND EXISTS(SELECT 1 FROM resumes WHERE id=? AND user_id=? AND archived_at IS NULL)`,
@@ -73,14 +85,13 @@ export async function saveOwnedOpening(
       replace,
       role,
       role,
-      replace,
+      ...descriptionArgs,
       jdRaw,
       jdRaw,
-      replace,
+      ...descriptionArgs,
       jdText,
       jdText,
       identity.url,
-      Number(mode !== 'discover'),
       note,
       marker,
       note,

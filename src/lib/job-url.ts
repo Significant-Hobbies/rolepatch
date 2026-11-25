@@ -11,16 +11,23 @@ export function jobUrlVariants(url: string): string[] {
 }
 function removeBoardNavigation(url: URL) {
   const { hostname, pathname, searchParams } = url;
-  if (/(^|\.)linkedin\.com$/.test(hostname) && /^\/jobs\/view\/(?:[\w-]+-)?\d+$/i.test(pathname)) {
-    url.search = '';
-    return;
+  if (/(^|\.)linkedin\.com$/.test(hostname)) {
+    const direct = pathname.match(/^\/(?:comm\/)?jobs\/view\/(?:[\w-]+-)?(\d+)$/i);
+    const selected = /^\/jobs\/(?:search|collections)(?:\/|$)/i.test(pathname)
+      ? searchParams.get('currentJobId')
+      : null;
+    const id = direct?.[1] ?? selected;
+    if (id && /^\d+$/.test(id)) url.href = `https://www.linkedin.com/jobs/view/${id}`;
   }
   if (/(^|\.)greenhouse\.io$/.test(hostname)) {
     searchParams.delete('t');
     if (pathname.endsWith(`/jobs/${searchParams.get('gh_jid')}`) && searchParams.has('gh_jid'))
       searchParams.delete('gh_jid');
   }
-  if (/(^|\.)lever\.co$/.test(hostname)) searchParams.delete('lever-source');
+  if (/(^|\.)lever\.co$/.test(hostname)) {
+    for (const key of [...searchParams.keys()])
+      if (/^lever-(?:source|origin)(?:\[\])?$/i.test(key)) searchParams.delete(key);
+  }
   if (/(^|\.)ashbyhq\.com$/.test(hostname)) searchParams.delete('src');
 }
 export function canonicalTrackerUrl(raw: string) {

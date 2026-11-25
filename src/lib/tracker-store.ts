@@ -185,14 +185,19 @@ async function matchingUrl(owner: string, url: string): Promise<string | null> {
   path.search = '';
   path.hash = '';
   const escaped = path.href.replace(/\/$/, '').replace(/[\\%_]/g, '\\$&');
+  // Older extension rows can store a search pane, collection or notification URL.
+  // Use the numeric ID to narrow candidates, then compare full canonical identities.
+  const linkedinId = url.match(/^https:\/\/www\.linkedin\.com\/jobs\/view\/(\d+)$/)?.[1];
+  const alternate = linkedinId ? " OR (url LIKE '%linkedin.com/%' AND url LIKE ?)" : '';
   const candidates = await rows(
     `SELECT id,url,normalized_url FROM job_applications WHERE user_id=?
-    AND (normalized_url=? OR (normalized_url IS NULL AND url LIKE ? ESCAPE '\\'))
+    AND (normalized_url=? OR (normalized_url IS NULL AND url LIKE ? ESCAPE '\\')${alternate})
     ORDER BY (normalized_url IS NOT NULL) DESC,(stage IN ('archived','withdrawn')) ASC, created_at ASC,id ASC`,
-    [owner, url, `${escaped}%`]
+    linkedinId ? [owner, url, `${escaped}%`, `%${linkedinId}%`] : [owner, url, `${escaped}%`]
   );
+  const exact = candidates.find((row) => row.normalized_url === url);
+  if (exact) return String(exact.id);
   for (const row of candidates) {
-    if (row.normalized_url === url) return String(row.id);
     try {
       if (canonical(String(row.url)) === url) return String(row.id);
     } catch {

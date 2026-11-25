@@ -401,7 +401,7 @@ export function Dashboard(props: DashboardProps) {
   ): string | null {
     if (!note) return existing ?? null;
     if (!existing?.trim()) return note;
-    if (existing.includes(marker)) return existing;
+    if (existing.split('\n').some((line) => line.startsWith(marker))) return existing;
     return `${existing.trim()}\n\n${note}`;
   }
 
@@ -452,7 +452,8 @@ export function Dashboard(props: DashboardProps) {
       role,
       jdText,
       jdText,
-      note
+      note,
+      'preview'
     );
     await queueApplication(jobId);
     setJobs(await listJobApplications());
@@ -510,7 +511,8 @@ export function Dashboard(props: DashboardProps) {
       role,
       jdText,
       jdText,
-      note ?? ''
+      note ?? '',
+      job.description ? 'description' : 'preview'
     );
     await queueApplication(jobId);
     setJobs(await listJobApplications());
