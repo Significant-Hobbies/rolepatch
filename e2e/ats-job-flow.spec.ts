@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { expect, test, type Page } from '@playwright/test';
 
 test('master onboarding preserves every role, project and education on reload', async ({
   page,
@@ -77,7 +78,7 @@ test('imported incomplete master can be completed without changing its original 
   page,
 }) => {
   await page.goto('/resume-builder');
-  await expect(page.getByRole('button', { name: '↑ Import Resume', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Import Resume', exact: true })).toBeEnabled();
   await page.locator('input[type=file]').setInputFiles({
     name: 'incomplete-master.md',
     mimeType: 'text/markdown',
@@ -248,24 +249,24 @@ test.describe('Job search tips', () => {
   });
 });
 
+async function seedReadyMaster(page: Page) {
+  const source = await readFile('__tests__/fixtures/resume-import/synthetic.md', 'utf8');
+  await page.goto('/dashboard');
+  await page.evaluate((source) => {
+    const now = Math.floor(Date.now() / 1000);
+    localStorage.setItem(
+      'rt-resumes',
+      JSON.stringify([
+        { id: 'ready-master', name: 'Master resume', source, created_at: now, updated_at: now },
+      ])
+    );
+  }, source);
+  await page.reload();
+}
+
 test.describe('Add Job modal (guest mode)', () => {
   test('opens and accepts an ATS board URL', async ({ page }) => {
-    // Seed a resume so the Add Job button is enabled
-    await page.goto('/dashboard');
-    await page.evaluate(() => {
-      const now = Math.floor(Date.now() / 1000);
-      const resumes = [
-        {
-          id: 'test-resume-1',
-          name: 'Test Resume',
-          source: '\\documentclass{article}\\begin{document}Test\\end{document}',
-          created_at: now,
-          updated_at: now,
-        },
-      ];
-      localStorage.setItem('rt-resumes', JSON.stringify(resumes));
-    });
-    await page.reload();
+    await seedReadyMaster(page);
 
     // Click Add Job
     const addJobButton = page.getByRole('button', { name: /\+ Add Job/i });
@@ -275,9 +276,7 @@ test.describe('Add Job modal (guest mode)', () => {
     // Modal should be visible
     await expect(page.getByText(/Add Job Application/i)).toBeVisible();
 
-    // Type a Greenhouse URL — the input is inside a label but has no id,
-    // so use placeholder text instead of getByLabel.
-    const urlInput = page.getByPlaceholder(/boards\.greenhouse\.io/i);
+    const urlInput = page.getByLabel('Job URL', { exact: true });
     await expect(urlInput).toBeVisible();
     await urlInput.fill('https://boards.greenhouse.io/acme/jobs/12345');
 
@@ -290,28 +289,10 @@ test.describe('Add Job modal (guest mode)', () => {
   test('falls back to manual JD paste and opens tailor page when scrape cannot read URL', async ({
     page,
   }) => {
-    await page.goto('/dashboard');
-    await page.evaluate(() => {
-      const now = Math.floor(Date.now() / 1000);
-      localStorage.setItem(
-        'rt-resumes',
-        JSON.stringify([
-          {
-            id: 'manual-resume-1',
-            name: 'Manual Resume',
-            source:
-              '\\documentclass{article}\\begin{document}\\section{Experience}Built reliable TypeScript systems.\\end{document}',
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.removeItem('rt-jobs');
-    });
-    await page.reload();
+    await seedReadyMaster(page);
 
     await page.getByRole('button', { name: /\+ Add Job/i }).click();
-    await page.getByPlaceholder(/boards\.greenhouse\.io/i).fill('http://127.0.0.1/job');
+    await page.getByLabel('Job URL', { exact: true }).fill('http://127.0.0.1/job');
     await page.getByRole('button', { name: 'Add Job', exact: true }).click();
 
     await expect(page.getByLabel('Job description')).toBeVisible({ timeout: 15000 });
@@ -344,19 +325,18 @@ test.describe('Add Job modal (guest mode)', () => {
     );
   });
 
-  test('Add Job button shows toast when no resume exists', async ({ page }) => {
+  test('Add Job stays disabled and explains the missing master resume', async ({ page }) => {
     await page.goto('/dashboard');
-    // Clear any existing resumes
-    await page.evaluate(() => localStorage.removeItem('rt-resumes'));
-    await page.reload();
-
-    const addJobButton = page.getByRole('button', { name: /\+ Add Job/i });
-    await addJobButton.click();
-
-    // Should show toast about creating a resume first
-    await expect(page.getByText('Create a resume first before adding a job.')).toBeVisible({
-      timeout: 5000,
-    });
+    const button = page.getByRole('button', { name: '+ Add Job', exact: true });
+    await expect(button).toBeDisabled();
+    await expect(button).toHaveAttribute(
+      'title',
+      'Complete your master resume before adding a job'
+    );
+    await expect(page.getByRole('link', { name: 'completing your master resume' })).toHaveAttribute(
+      'href',
+      '/resume-builder'
+    );
   });
 });
 
