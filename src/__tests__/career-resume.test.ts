@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 interface TestDatabase {
   exec(sql: string): void;
@@ -269,4 +270,73 @@ describe('profile-generated resumes and immutable history', () => {
       code: 'invalid_input',
     });
   });
+});
+
+it('exports generic and targeted one-page PDFs with selectable evidence and live links, then renders an exact saved revision without a charge', {
+  skip: !process.env.PUPPETEER_EXECUTABLE_PATH,
+  timeout: 60_000,
+}, async () => {
+  const { PDFParse } = await import('pdf-parse');
+  const renderer = await import('@/lib/pdf');
+  const render = vi
+    .spyOn(renderer, 'renderPdf')
+    .mockImplementation(
+      async (html) =>
+        new Uint8Array(
+          Buffer.from(
+            execFileSync(process.execPath, ['src/__tests__/fixtures/render-pdf.mjs'], {
+              input: html,
+              encoding: 'utf8',
+              maxBuffer: 5_000_000,
+            }),
+            'base64'
+          )
+        )
+    );
+  try {
+    fact('site', 'identity', 'Portfolio', {
+      value: 'Portfolio',
+      source_urls: ['https://example.org/portfolio'],
+    });
+    fact('role', 'employment', 'Backend Engineer', {
+      employer: 'Example Co',
+      start_date: '2022-03',
+      end_date: '2025-09',
+    });
+    for (let i = 0; i < 30; i++)
+      fact(`sample-${i}`, 'achievement', `Project ${i}`, {
+        related_role_id: 'role',
+        verification_status: 'document_supported',
+        approved_wording:
+          i === 29 ? 'Reduced PostgreSQL API latency by 31%.' : `Validated interface ${i}.`,
+      });
+    for (const [request_id, jd_text] of [
+      ['generic', ''],
+      ['targeted', 'Backend engineer PostgreSQL API'],
+    ]) {
+      const draft = await generate({ request_id, jd_text, format: 'pdf', save_to_history: true });
+      if (!draft.ok || !('pdf' in draft) || !draft.pdf) throw new Error('PDF generation failed.');
+      const exported = await callCareerResume('rolepatch_render_resume_pdf', {
+        version_id: draft.id,
+      });
+      expect(exported).toMatchObject({ ok: true, credits_charged: 0, markdown: draft.markdown });
+      const parser = new PDFParse({ data: Buffer.from(draft.pdf.data_base64, 'base64') });
+      try {
+        const info = await parser.getInfo({ parsePageInfo: true });
+        expect(info.total).toBe(1);
+        expect(JSON.stringify(info.pages)).toContain('https://example.org/portfolio');
+        const { text } = await parser.getText();
+        expect(text).toContain('Alex Morgan');
+        expect(text).toContain('Example University');
+        if (jd_text) expect(text).toContain('Reduced PostgreSQL API latency by 31%.');
+      } finally {
+        await parser.destroy();
+      }
+    }
+    expect(sql.prepare('SELECT COUNT(*) AS count FROM token_transactions').get()).toEqual({
+      count: 0,
+    });
+  } finally {
+    render.mockRestore();
+  }
 });

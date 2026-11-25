@@ -1,3 +1,4 @@
+import { assembleRankedResume, extractResumeBulletGroups } from '@/lib/resume-bullet-ranking';
 import { rankSourceItems } from '@/lib/resume-fallback';
 import { EMPTY_MASTER_TEMPLATE } from '@/lib/master-resume';
 import { listResumePoints, stripResumePins } from '@/lib/resume-pins';
@@ -39,6 +40,14 @@ function contribution(fact: CareerFact, overrides: ReadonlyMap<string, string>) 
 
 function retainedMaster(source: string, pages: number, query: string, structuredCount: number) {
   if (!source.trim() || source.trim() === EMPTY_MASTER_TEMPLATE.trim()) return '';
+  if (query) {
+    const groups = extractResumeBulletGroups(source);
+    const order = groups.map((group) => ({
+      group_id: group.id,
+      bullet_ids: rankSourceItems(group.bullets, query).map((b) => b.id),
+    }));
+    source = assembleRankedResume(source, groups, order).tailored;
+  }
   const points = listResumePoints(source);
   const limit = Math.max(2, pages * 9 - Math.min(6, structuredCount));
   if (points.length <= limit) return stripResumePins(source).trim();
@@ -58,6 +67,58 @@ function retainedMaster(source: string, pages: number, query: string, structured
   return stripResumePins(output)
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+/** Merge structured entries into matching master sections, keeping unknown sections intact. */
+function joinSections(parts: string[]) {
+  const blocks = new Map<string, { heading: string; body: string[] }>();
+  const header: string[] = [];
+  for (const part of parts) {
+    let body = header;
+    for (const line of part.split('\n')) {
+      const heading = line.match(/^## (.+?)\s*$/);
+      if (!heading) {
+        body.push(line);
+        continue;
+      }
+      const key = heading[1].trim().toLowerCase();
+      let block = blocks.get(key);
+      if (!block) {
+        block = { heading: line, body: [] };
+        blocks.set(key, block);
+      }
+      body = block.body;
+      body.push('');
+    }
+    body.push('');
+  }
+  const headerLines = header.join('\n').trim().split('\n');
+  const nameIndex = headerLines.findIndex((line) => /^# /.test(line));
+  if (nameIndex > 0) headerLines.unshift(...headerLines.splice(nameIndex, 1));
+  const headings = [
+    'summary',
+    'profile',
+    'experience',
+    'employment',
+    'work history',
+    'projects',
+    'achievements',
+    'education',
+    'skills',
+  ];
+  const weight = (key: string) =>
+    headings.includes(key) ? headings.indexOf(key) : headings.length;
+  return [
+    headerLines.join('\n').trim(),
+    ...[...blocks]
+      .sort(([a], [b]) => weight(a) - weight(b))
+      .map(([, block]) => {
+        const body = block.body.join('\n').trim();
+        return body ? `${block.heading}\n\n${body}` : '';
+      }),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 /** JD text participates only in ranking. All printable content comes from owned source records. */
@@ -113,9 +174,31 @@ export function composeCareerResume(
     .slice(0, Math.max(input.target_pages * 6, ranked.filter((x) => pin.has(x.fact.id)).length))
     .map((x) => x.fact);
   const used: CareerFact[] = [];
+  // An imported master may repeat a now-disputed or excluded structured bullet.
+  const normalize = (line: string) =>
+    stripResumePins(line)
+      .trim()
+      .replace(/^[-*+]\s+/, '')
+      .trim();
+  const allowedIds = new Set(selectable.map((f) => f.id));
+  const withheld = new Set(
+    facts
+      .filter((f) => !allowedIds.has(f.id))
+      .flatMap((f) => [
+        field(f.data, 'approved_wording'),
+        field(f.data, 'original_text'),
+        field(f.data, 'individual_contribution'),
+      ])
+      .filter(Boolean)
+      .map(normalize)
+  );
+  const source = profile.source
+    .split('\n')
+    .filter((line) => !withheld.has(normalize(line)))
+    .join('\n');
   const master = exclude.has(profile.id)
     ? ''
-    : retainedMaster(profile.source, input.target_pages, query, chosen.length);
+    : retainedMaster(source, input.target_pages, query, chosen.length);
   const sections: string[] = [master];
   function render(section: string, rows: CareerFact[], build: (row: CareerFact) => string) {
     const lines = rows.flatMap((row) => {
@@ -190,7 +273,7 @@ export function composeCareerResume(
     );
     used.push(...skills);
   }
-  const markdown = sections.filter(Boolean).join('\n\n');
+  const markdown = joinSections(sections.filter(Boolean));
   if (!markdown || markdown.length > 40_000)
     throw new Error('Add printable career facts, or narrow the selection to 40,000 characters.');
   const selected_record_ids = [...(master ? [profile.id] : []), ...used.map((f) => f.id)];

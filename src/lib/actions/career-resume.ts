@@ -1,5 +1,6 @@
 'use server';
 
+import { findSharedAiBudgetDenied } from '@/lib/shared-ai-budget';
 import { rewriteCareerFacts } from '@/lib/career-resume-rewrite';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
@@ -258,7 +259,17 @@ async function generate(owner: string, input: GenerationInput) {
         }
       }
       if (!charge) draft.warnings.push('The approved wording already fits. No credit was charged.');
-    } catch {
+    } catch (error) {
+      if (findSharedAiBudgetDenied(error)) {
+        await db.execute({
+          sql: 'DELETE FROM career_resume_requests WHERE user_id=? AND request_id=? AND lease_id=?',
+          args: [owner, input.request_id, id],
+        });
+        return fail(
+          'rate_limited',
+          'The shared AI budget is unavailable. Retry later or use fixed wording at no charge.'
+        );
+      }
       draft.warnings.push(
         'The AI rewrite was unavailable or could not be grounded. Returned fixed wording at no charge.'
       );
@@ -272,6 +283,7 @@ async function generate(owner: string, input: GenerationInput) {
     ...provenance,
     generation_credits: charge,
     profile_revision: profile.revision,
+    application_id: input.application_id ?? null,
     jd_text: jd,
     job_url: jobUrl,
     target_pages: input.target_pages,
