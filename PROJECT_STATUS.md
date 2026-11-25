@@ -11,8 +11,10 @@ imported 30 achievements, replayed a ten-job import, generated and attached
 a resume, recorded a reported submission and screening follow-up, renewed the
 grant and retrieved an unchanged version after editing its source. The PDF
 contained one page of selectable text and a clickable portfolio link.
-The installed Codex app-server also discovered the catalog and retrieved the
-signed-in default profile. Production migration, deployment and hosted ChatGPT
+A write-only application grant received an ID and revision on create and replay.
+Reading that application with the same grant returned HTTP 403. The installed
+Codex app-server also discovered the catalog and retrieved the signed-in default
+profile. Production migration, deployment and hosted ChatGPT
 qualification require a subsequent release. The administrative-time and hiring
 conversion targets have no measurements from this synthetic run.
 

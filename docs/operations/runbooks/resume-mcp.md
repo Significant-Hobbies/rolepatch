@@ -60,6 +60,9 @@ Use the corresponding read tool to retrieve stored content. Dates on tracker too
    them. Keep original text, attribution and approved wording in separate fields.
    Follow `next_cursor` when reading a large profile. To include sensitive answers,
    request the dedicated scope and send `include_sensitive: true`.
+   When a verified claim changes, obtain the candidate’s confirmation before
+   sending `reconfirm: true` with the updated verification status. To restore
+   an archived fact, upsert it with `restore: true` and its current revision.
 3. Call `rolepatch_applications_bulk_upsert` with an `items` array. Give every
    create item a stable request ID and a job URL, board-qualified ID or explicit
    manual ID. Inspect each item’s result. Filter `rolepatch_applications_list`
