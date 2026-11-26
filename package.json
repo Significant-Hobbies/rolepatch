@@ -73,6 +73,7 @@
     "quality:cache-security": "node scripts/check-http-cache-security.mjs && node --test scripts/http-cache-security.test.mjs"
   },
   "dependencies": {
+    "@saas-maker/ui": "github:sass-maker/ui-library#v0.1.18&path:/packages/ui",
     "@ai-sdk/openai-compatible": "2.0.41",
     "@better-auth/mcp": "1.7.7",
     "@cloudflare/puppeteer": "^1.1.0",

@@ -30,6 +30,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  transpilePackages: ['@saas-maker/ui'],
   // Complete stylesheets remain render-blocking on dynamic pages. Static
   // pages also retain the post-build critical-CSS inliner. Next's inlineCss
   // duplicates our full application stylesheet in the initial Flight payload.

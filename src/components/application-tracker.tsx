@@ -1,9 +1,20 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@saas-maker/ui/components/badge';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@saas-maker/ui/components/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@saas-maker/ui/components/tabs';
+import { Textarea } from '@saas-maker/ui/components/textarea';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { ChevronRight, Plus, Search } from 'lucide-react';
 import { callTracker, getApplicationAnalytics } from '@/lib/actions/tracker-records';
 import type {
   ApplicationAnalytics,
@@ -79,7 +90,7 @@ async function invoke(name: TrackerName, args: unknown) {
   }
   return result;
 }
-type Task = (work: () => Promise<void>) => void;
+type Task = (work: () => Promise<void>, scope?: 'analytics') => void;
 type Choice = { id: string; label: string };
 function RecordForm({
   record,
@@ -241,6 +252,13 @@ function MaterialForm({
   );
 }
 type List = Extract<TrackerResult, { ok: true }>;
+const pageSize = 25;
+const appliedDate = new Intl.DateTimeFormat('en', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
 export function ApplicationTracker({
   documents = [],
   onChange,
@@ -248,8 +266,9 @@ export function ApplicationTracker({
   documents?: Choice[];
   onChange?: () => Promise<void>;
 }) {
-  const [open, setOpen] = useState(false);
+  const [view, setView] = useState('applications');
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [existingId, setExistingId] = useState<string>();
   const [filter, setFilter] = useState<Record<string, unknown>>({});
@@ -265,9 +284,43 @@ export function ApplicationTracker({
   const [material, setMaterial] = useState<TrackerRow>();
   const [editMaterial, setEditMaterial] = useState(false);
   const [importReport, setImportReport] = useState<string[]>([]);
-  const task: Task = async (work) => {
-    setError('');
-    setExistingId(undefined);
+  const detail = useRef<HTMLElement>(null);
+  const focusDetail = useRef(false);
+  const detailTrigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    let active = true;
+    void invoke('rolepatch_applications_list', { limit: pageSize })
+      .then((result) => {
+        if (active) setApplications(result);
+      })
+      .catch((err: unknown) => {
+        if (active) setError(err instanceof Error ? err.message : 'Could not load applications.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (!focusDetail.current || busy || (!selected && !edit)) return;
+    focusDetail.current = false;
+    detail.current?.focus({ preventScroll: true });
+    if (window.matchMedia('(max-width: 1279px)').matches) {
+      detail.current?.scrollIntoView({ block: 'start' });
+    }
+  }, [selected, edit, busy]);
+  function closeDetail() {
+    setSelected(undefined);
+    setEdit(false);
+    detailTrigger.current?.focus();
+  }
+  const task: Task = async (work, scope) => {
+    if (scope !== 'analytics') {
+      setError('');
+      setExistingId(undefined);
+    }
     setBusy(true);
     try {
       await work();
@@ -281,7 +334,7 @@ export function ApplicationTracker({
   async function list(filters = filter, more = false) {
     const res = await invoke('rolepatch_applications_list', {
       ...filters,
-      limit: 10,
+      limit: pageSize,
       ...(more ? { cursor: applications.next_cursor } : {}),
     });
     setApplications(
@@ -306,15 +359,13 @@ export function ApplicationTracker({
       );
     }
   }
-  async function refresh() {
-    await Promise.all([list(), summarize()]);
-  }
-  async function select(id: string) {
+  async function select(id: string, bringIntoFocus = false) {
     const [job, events, materials] = await Promise.all([
       invoke('rolepatch_applications_get', { id }),
       invoke('rolepatch_application_events_list', { application_id: id }),
       invoke('rolepatch_materials_list', { application_id: id, include_archived: true }),
     ]);
+    focusDetail.current = bringIntoFocus;
     setSelected(job.record);
     setReceipts(job.submission_receipts ?? []);
     setEvents(events);
@@ -324,7 +375,8 @@ export function ApplicationTracker({
     setEdit(false);
   }
   async function changed(id?: string) {
-    await refresh();
+    setAnalytics(undefined);
+    await list();
     if (id) await select(id);
     else {
       setSelected(undefined);
@@ -333,466 +385,668 @@ export function ApplicationTracker({
     await onChange?.();
   }
   return (
-    <details
-      className="rounded-lg border"
-      onToggle={(e) => {
-        const next = e.currentTarget.open;
-        setOpen(next);
-        if (next) task(refresh);
-      }}
-    >
-      <summary className="cursor-pointer px-4 py-3 text-base font-semibold">
-        Application tracker
-      </summary>
-      {open && (
-        <fieldset disabled={busy} className="min-w-0 space-y-4 px-4 pb-4" aria-busy={busy}>
-          {busy && (
-            <p role="status" className="text-sm text-muted-foreground">
-              Loading…
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          {existingId && (
-            <Button type="button" variant="outline" onClick={() => task(() => select(existingId))}>
-              Open existing application
-            </Button>
-          )}
-          <ApplicationAnalyticsSummary
-            days={analyticsRange}
-            data={analytics}
-            error={analyticsError}
-            onChange={(days) => {
-              setAnalyticsRange(days);
-              task(() => summarize(days));
-            }}
-            onRetry={() => task(() => summarize())}
-          />
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const values = readFields(e.currentTarget, filterFields);
-              for (const key of ['due_before', 'date_to'])
-                if (typeof values[key] === 'number') values[key] = Number(values[key]) + 86399;
-              setFilter(values);
-              task(() => list(values));
+    <section aria-labelledby="application-tracker-heading" className="min-w-0 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <h2 id="application-tracker-heading" className="text-xl font-semibold tracking-tight">
+          Application tracker
+        </h2>
+        {view === 'applications' && (
+          <Button
+            type="button"
+            disabled={loading || busy}
+            onClick={(event) => {
+              detailTrigger.current = event.currentTarget;
+              setSelected(undefined);
+              focusDetail.current = true;
+              setEdit(true);
             }}
           >
-            <TrackerFields fields={filterFields.slice(0, 2)} />
-            <details>
-              <summary className="cursor-pointer text-sm">More filters</summary>
-              <div className="pt-3">
-                <TrackerFields fields={filterFields.slice(2)} />
-              </div>
-            </details>
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" variant="outline">
-                Filter applications
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  setSelected(undefined);
-                  setEdit(true);
-                }}
-              >
-                Add application
-              </Button>
-            </div>
-          </form>
-          <ul className="divide-y rounded-md border">
-            {applications.items?.map((row) => (
-              <li key={row.id}>
-                <button
-                  type="button"
-                  className="flex w-full flex-wrap justify-between gap-x-3 px-3 py-2 text-left text-sm hover:bg-muted"
-                  onClick={() => task(() => select(String(row.id)))}
-                >
-                  <span className="min-w-0 break-words">
-                    <strong>{row.role}</strong> · {row.company}
-                  </span>
-                  <span className="capitalize text-muted-foreground">
-                    {displayChoice(String(row.status))}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          {applications.items?.length === 0 && (
-            <p className="text-sm text-muted-foreground">No applications match these filters.</p>
-          )}
-          {applications.next_cursor && (
-            <Button type="button" variant="outline" onClick={() => task(() => list(filter, true))}>
-              Load more applications
-            </Button>
-          )}
-          {edit && (
-            <RecordForm
-              key={String(selected?.id ?? 'new')}
-              record={selected}
-              cancel={() => setEdit(false)}
-              save={(data) =>
-                task(async () => {
-                  const r = await invoke(
-                    selected ? 'rolepatch_applications_update' : 'rolepatch_applications_create',
-                    data
-                  );
-                  await changed(r.id);
-                })
-              }
+            <Plus className="size-4" />
+            Add application
+          </Button>
+        )}
+      </div>
+      <Tabs
+        value={view}
+        onValueChange={(next) => {
+          setView(next);
+          if (next === 'analytics' && !analytics) void task(() => summarize(), 'analytics');
+        }}
+      >
+        <div className="border-b">
+          <TabsList aria-label="Application tracker views" variant="line" className="gap-4">
+            <TabsTrigger value="applications" disabled={busy}>
+              Applications
+            </TabsTrigger>
+            <TabsTrigger value="analytics" disabled={loading || busy}>
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="analytics" className="pt-2">
+          <fieldset disabled={busy} aria-busy={busy}>
+            {busy && (
+              <p role="status" className="py-2 text-sm text-muted-foreground">
+                Loading analytics…
+              </p>
+            )}
+            <ApplicationAnalyticsSummary
+              days={analyticsRange}
+              data={analytics}
+              error={analyticsError}
+              onChange={(days) => {
+                setAnalyticsRange(days);
+                void task(() => summarize(days), 'analytics');
+              }}
+              onRetry={() => void task(() => summarize(), 'analytics')}
             />
-          )}
-          {selected && !edit && (
-            <div className="grid gap-4 rounded-lg border p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold">{selected.role}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {selected.company} · {displayChoice(String(selected.status))}
-                  </p>
-                </div>
-                <Button type="button" variant="outline" onClick={() => setEdit(true)}>
-                  Edit application
-                </Button>
-              </div>
-              <dl className="grid gap-2 sm:grid-cols-2">
-                {[...mainFields, ...detailFields]
-                  .filter(
-                    (f) =>
-                      !['company', 'role', 'status'].includes(f.key) &&
-                      selected[f.key] != null &&
-                      selected[f.key] !== ''
-                  )
-                  .map((f) => (
-                    <div key={f.key} className={f.type === 'long' ? 'sm:col-span-2' : ''}>
-                      <dt className="text-xs text-muted-foreground">{f.label}</dt>
-                      <dd className="whitespace-pre-wrap break-words text-sm">
-                        {f.type === 'date'
-                          ? new Date(Number(selected[f.key]) * 1000).toISOString().slice(0, 10)
-                          : String(selected[f.key])}
-                      </dd>
-                    </div>
-                  ))}
-              </dl>
-              <section className="grid gap-2 border-t pt-4">
-                <h4 className="font-semibold">Materials</h4>
-                {materials.items?.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No materials attached.</p>
-                )}
-                {materials.items?.map((m) => (
-                  <Button
-                    type="button"
-                    key={m.id}
-                    variant="ghost"
-                    className="justify-self-start whitespace-normal"
-                    onClick={() => {
-                      setEditMaterial(false);
-                      setMaterial(m);
-                    }}
-                  >
-                    {m.title} · revision {m.revision}
-                    {m.archived ? ' (archived)' : ''}
-                  </Button>
-                ))}
-                {materials.next_cursor && (
+          </fieldset>
+        </TabsContent>
+        <TabsContent
+          value="applications"
+          forceMount
+          className="min-w-0 pt-2 data-[state=inactive]:hidden"
+        >
+          <fieldset
+            disabled={loading || busy}
+            className="min-w-0 space-y-3"
+            aria-busy={loading || busy}
+          >
+            {error && (
+              <div
+                role="alert"
+                className="flex flex-wrap items-center gap-3 rounded-md border border-destructive/40 p-3 text-sm"
+              >
+                <p>{error}</p>
+                {!applications.items && (
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() =>
-                      task(async () => {
-                        const next = await invoke('rolepatch_materials_list', {
-                          application_id: selected.id,
-                          cursor: materials.next_cursor,
-                          include_archived: true,
-                        });
-                        setMaterials({
-                          ...next,
-                          items: [...(materials.items ?? []), ...(next.items ?? [])],
-                        });
-                      })
-                    }
+                    size="sm"
+                    onClick={() => task(() => list())}
                   >
-                    More materials
+                    Retry
                   </Button>
                 )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="justify-self-start"
-                  onClick={() => {
-                    setMaterial(undefined);
-                    setEditMaterial(true);
-                  }}
+                {existingId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void task(() => select(existingId, true))}
+                  >
+                    Open existing application
+                  </Button>
+                )}
+              </div>
+            )}
+            <form
+              className="space-y-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const values = readFields(e.currentTarget, filterFields);
+                for (const key of ['due_before', 'date_to'])
+                  if (typeof values[key] === 'number') values[key] = Number(values[key]) + 86399;
+                void task(async () => {
+                  await list(values);
+                  setFilter(values);
+                });
+              }}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative min-w-28 flex-1 sm:max-w-80">
+                  <Search
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-2.5 left-3 size-4 text-muted-foreground"
+                  />
+                  <Input
+                    name="query"
+                    type="search"
+                    aria-label="Search company, role or notes"
+                    placeholder="Search roles"
+                    defaultValue={String(filter.query ?? '')}
+                    className="pl-9"
+                  />
+                </div>
+                <select
+                  name="status"
+                  aria-label="Filter by status"
+                  defaultValue={String(filter.status ?? '')}
+                  className="h-9 max-w-32 rounded-md border border-input bg-background px-2 text-sm capitalize"
                 >
-                  Add material
+                  <option value="">All stages</option>
+                  {trackerStages.map((stage) => (
+                    <option key={stage} value={stage}>
+                      {displayChoice(stage)}
+                    </option>
+                  ))}
+                </select>
+                <Button type="submit" variant="outline">
+                  Filter
                 </Button>
-                {editMaterial ? (
-                  <MaterialForm
-                    key={String(material?.id ?? 'new')}
-                    row={material}
-                    documents={documents}
-                    cancel={() => setEditMaterial(false)}
-                    save={(data) =>
-                      task(async () => {
-                        await invoke('rolepatch_materials_upsert', {
-                          ...data,
-                          application_id: selected.id,
-                        });
-                        await select(String(selected.id));
-                      })
+              </div>
+              <details>
+                <summary className="w-fit cursor-pointer py-1 text-sm text-muted-foreground">
+                  More filters
+                </summary>
+                <div className="max-w-3xl pt-3">
+                  <TrackerFields
+                    fields={filterFields.slice(2)}
+                    record={
+                      {
+                        ...filter,
+                        date_to: typeof filter.date_to === 'number' ? filter.date_to - 86399 : null,
+                        due_before:
+                          typeof filter.due_before === 'number' ? filter.due_before - 86399 : null,
+                      } as TrackerRow
                     }
                   />
-                ) : (
-                  material && (
-                    <div className="grid gap-2 rounded-md bg-muted p-3 text-sm">
-                      <strong>
-                        {material.title} · revision {material.revision}
-                      </strong>
-                      <p className="whitespace-pre-wrap break-words">{material.content}</p>
-                      <form
-                        className="flex flex-wrap items-end gap-2"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const rev = Number(new FormData(e.currentTarget).get('revision'));
-                          task(async () => {
-                            const r = await invoke('rolepatch_materials_get', {
-                              id: material.id,
-                              revision: rev,
-                            });
-                            setMaterial(r.record);
-                          });
-                        }}
-                      >
-                        <label>
-                          View revision
-                          <Input
-                            name="revision"
-                            type="number"
-                            min={1}
-                            required
-                            defaultValue={Number(material.revision)}
-                          />
-                        </label>
-                        <Button type="submit" variant="outline">
-                          View
-                        </Button>
-                      </form>
-                      {materials.items?.some(
-                        (m) => m.id === material.id && m.revision === material.revision
-                      ) && (
-                        <>
+                </div>
+              </details>
+            </form>
+            <div
+              className={
+                selected || edit
+                  ? 'grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]'
+                  : ''
+              }
+            >
+              <div className="min-w-0 space-y-3">
+                {loading ? (
+                  <p
+                    role="status"
+                    className="rounded-md border px-4 py-6 text-sm text-muted-foreground"
+                  >
+                    Loading applications…
+                  </p>
+                ) : applications.items?.length === 0 ? (
+                  <div className="rounded-md border border-dashed p-6 text-sm">
+                    <p className="font-medium">
+                      {Object.keys(filter).length
+                        ? 'No matching applications'
+                        : 'No applications yet'}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {Object.keys(filter).length
+                        ? 'Try a different search or stage.'
+                        : 'Add a role to track its progress and keep your materials together.'}
+                    </p>
+                  </div>
+                ) : applications.items?.length ? (
+                  <div className="overflow-hidden rounded-lg border">
+                    <Table className="table-fixed">
+                      <TableHeader className="bg-muted/40">
+                        <TableRow>
+                          <TableHead scope="col">Company and role</TableHead>
+                          <TableHead scope="col" className="w-28 sm:w-32">
+                            Stage
+                          </TableHead>
+                          <TableHead scope="col" className="hidden w-32 sm:table-cell">
+                            Applied
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {applications.items.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            data-state={selected?.id === row.id ? 'selected' : undefined}
+                          >
+                            <TableCell className="min-w-0 p-0 whitespace-normal">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                aria-pressed={selected?.id === row.id}
+                                className="group h-auto min-h-14 w-full justify-start gap-3 rounded-none px-3 py-2.5 text-left whitespace-normal focus-visible:ring-inset"
+                                onClick={(event) => {
+                                  detailTrigger.current = event.currentTarget;
+                                  void task(() => select(String(row.id), true));
+                                }}
+                              >
+                                <span className="min-w-0 flex-1">
+                                  <span className="block font-medium break-words">
+                                    {row.company}
+                                  </span>
+                                  <span className="block text-xs leading-5 wrap-anywhere text-muted-foreground">
+                                    {row.role}
+                                  </span>
+                                </span>
+                                <ChevronRight
+                                  aria-hidden="true"
+                                  className="hidden size-3.5 text-muted-foreground group-hover:text-foreground md:block"
+                                />
+                              </Button>
+                            </TableCell>
+                            <TableCell className="px-2 sm:px-3">
+                              <Badge
+                                variant={
+                                  row.status === 'applied' || row.status === 'rejected'
+                                    ? 'outline'
+                                    : 'secondary'
+                                }
+                                className="max-w-full whitespace-normal capitalize"
+                              >
+                                {displayChoice(String(row.status))}
+                              </Badge>
+                              {row.applied_at != null && (
+                                <span className="mt-1 block text-xs text-muted-foreground sm:hidden">
+                                  {appliedDate.format(Number(row.applied_at) * 1000)}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="hidden text-xs text-muted-foreground tabular-nums sm:table-cell">
+                              {row.applied_at == null
+                                ? '—'
+                                : appliedDate.format(Number(row.applied_at) * 1000)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : null}
+                {applications.next_cursor && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => task(() => list(filter, true))}
+                  >
+                    Load more applications
+                  </Button>
+                )}
+              </div>
+              {(selected || edit) && (
+                <aside
+                  ref={detail}
+                  tabIndex={-1}
+                  aria-label="Application details"
+                  className="min-w-0 scroll-mt-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {edit && (
+                    <RecordForm
+                      key={String(selected?.id ?? 'new')}
+                      record={selected}
+                      cancel={selected ? () => setEdit(false) : closeDetail}
+                      save={(data) =>
+                        task(async () => {
+                          const r = await invoke(
+                            selected
+                              ? 'rolepatch_applications_update'
+                              : 'rolepatch_applications_create',
+                            data
+                          );
+                          await changed(r.id);
+                        })
+                      }
+                    />
+                  )}
+                  {selected && !edit && (
+                    <div className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <h3 className="font-semibold">{selected.role}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {selected.company} · {displayChoice(String(selected.status))}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setEditMaterial(true)}
+                            size="sm"
+                            onClick={() => setEdit(true)}
                           >
-                            Edit material
+                            Edit
                           </Button>
-                          <Removal
-                            row={material}
-                            kind="material"
-                            remove={(permanent) =>
+                          <Button type="button" variant="ghost" size="sm" onClick={closeDetail}>
+                            Close
+                          </Button>
+                        </div>
+                      </div>
+                      <dl className="grid gap-2 sm:grid-cols-2">
+                        {[...mainFields, ...detailFields]
+                          .filter(
+                            (f) =>
+                              !['company', 'role', 'status'].includes(f.key) &&
+                              selected[f.key] != null &&
+                              selected[f.key] !== ''
+                          )
+                          .map((f) => (
+                            <div key={f.key} className={f.type === 'long' ? 'sm:col-span-2' : ''}>
+                              <dt className="text-xs text-muted-foreground">{f.label}</dt>
+                              <dd className="whitespace-pre-wrap break-words text-sm">
+                                {f.type === 'date'
+                                  ? new Date(Number(selected[f.key]) * 1000)
+                                      .toISOString()
+                                      .slice(0, 10)
+                                  : String(selected[f.key])}
+                              </dd>
+                            </div>
+                          ))}
+                      </dl>
+                      <section className="grid gap-2 border-t pt-4">
+                        <h4 className="font-semibold">Materials</h4>
+                        {materials.items?.length === 0 && (
+                          <p className="text-sm text-muted-foreground">No materials attached.</p>
+                        )}
+                        {materials.items?.map((m) => (
+                          <Button
+                            type="button"
+                            key={m.id}
+                            variant="ghost"
+                            className="justify-self-start whitespace-normal"
+                            onClick={() => {
+                              setEditMaterial(false);
+                              setMaterial(m);
+                            }}
+                          >
+                            {m.title} · revision {m.revision}
+                            {m.archived ? ' (archived)' : ''}
+                          </Button>
+                        ))}
+                        {materials.next_cursor && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
                               task(async () => {
-                                await invoke('rolepatch_materials_delete', {
-                                  id: material.id,
-                                  expected_revision: material.revision,
-                                  permanent,
-                                  confirm_id: permanent ? material.id : undefined,
+                                const next = await invoke('rolepatch_materials_list', {
+                                  application_id: selected.id,
+                                  cursor: materials.next_cursor,
+                                  include_archived: true,
+                                });
+                                setMaterials({
+                                  ...next,
+                                  items: [...(materials.items ?? []), ...(next.items ?? [])],
+                                });
+                              })
+                            }
+                          >
+                            More materials
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="justify-self-start"
+                          onClick={() => {
+                            setMaterial(undefined);
+                            setEditMaterial(true);
+                          }}
+                        >
+                          Add material
+                        </Button>
+                        {editMaterial ? (
+                          <MaterialForm
+                            key={String(material?.id ?? 'new')}
+                            row={material}
+                            documents={documents}
+                            cancel={() => setEditMaterial(false)}
+                            save={(data) =>
+                              task(async () => {
+                                await invoke('rolepatch_materials_upsert', {
+                                  ...data,
+                                  application_id: selected.id,
                                 });
                                 await select(String(selected.id));
                               })
                             }
                           />
-                        </>
-                      )}
-                    </div>
-                  )
-                )}
-              </section>
-              <section className="grid gap-2 border-t pt-4">
-                <h4 className="font-semibold">Application events</h4>
-                {receipts.length > 0 && (
-                  <div className="rounded-md border p-3">
-                    <h5 className="text-sm font-semibold">Submission receipts</h5>
-                    <ul className="text-sm">
-                      {receipts.map((r) => (
-                        <li key={r.id}>
-                          {displayChoice(String(r.source))} · {r.provider} · {r.status} ·{' '}
-                          {new Date(Number(r.created_at) * 1000).toLocaleDateString()}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                <ul className="space-y-2 text-sm">
-                  {events.items?.map((ev) => (
-                    <li key={ev.id} className="border-l-2 pl-3">
-                      <strong className="capitalize">{displayChoice(String(ev.status))}</strong> ·{' '}
-                      {new Date(Number(ev.created_at) * 1000).toLocaleDateString()} ·{' '}
-                      {displayChoice(String(ev.source))}
-                      {ev.note && <p className="whitespace-pre-wrap break-words">{ev.note}</p>}
-                      {JSON.parse(String(ev.material_versions)).map(
-                        (ref: { id: string; revision: number }) => (
-                          <button
+                        ) : (
+                          material && (
+                            <div className="grid gap-2 rounded-md bg-muted p-3 text-sm">
+                              <strong>
+                                {material.title} · revision {material.revision}
+                              </strong>
+                              <p className="whitespace-pre-wrap break-words">{material.content}</p>
+                              <form
+                                className="flex flex-wrap items-end gap-2"
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  const rev = Number(new FormData(e.currentTarget).get('revision'));
+                                  task(async () => {
+                                    const r = await invoke('rolepatch_materials_get', {
+                                      id: material.id,
+                                      revision: rev,
+                                    });
+                                    setMaterial(r.record);
+                                  });
+                                }}
+                              >
+                                <label>
+                                  View revision
+                                  <Input
+                                    name="revision"
+                                    type="number"
+                                    min={1}
+                                    required
+                                    defaultValue={Number(material.revision)}
+                                  />
+                                </label>
+                                <Button type="submit" variant="outline">
+                                  View
+                                </Button>
+                              </form>
+                              {materials.items?.some(
+                                (m) => m.id === material.id && m.revision === material.revision
+                              ) && (
+                                <>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setEditMaterial(true)}
+                                  >
+                                    Edit material
+                                  </Button>
+                                  <Removal
+                                    row={material}
+                                    kind="material"
+                                    remove={(permanent) =>
+                                      task(async () => {
+                                        await invoke('rolepatch_materials_delete', {
+                                          id: material.id,
+                                          expected_revision: material.revision,
+                                          permanent,
+                                          confirm_id: permanent ? material.id : undefined,
+                                        });
+                                        await select(String(selected.id));
+                                      })
+                                    }
+                                  />
+                                </>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </section>
+                      <section className="grid gap-2 border-t pt-4">
+                        <h4 className="font-semibold">Application events</h4>
+                        {receipts.length > 0 && (
+                          <div className="rounded-md border p-3">
+                            <h5 className="text-sm font-semibold">Submission receipts</h5>
+                            <ul className="text-sm">
+                              {receipts.map((r) => (
+                                <li key={r.id}>
+                                  {displayChoice(String(r.source))} · {r.provider} · {r.status} ·{' '}
+                                  {new Date(Number(r.created_at) * 1000).toLocaleDateString()}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        <ul className="space-y-2 text-sm">
+                          {events.items?.map((ev) => (
+                            <li key={ev.id} className="border-l-2 pl-3">
+                              <strong className="capitalize">
+                                {displayChoice(String(ev.status))}
+                              </strong>{' '}
+                              · {new Date(Number(ev.created_at) * 1000).toLocaleDateString()} ·{' '}
+                              {displayChoice(String(ev.source))}
+                              {ev.note && (
+                                <p className="whitespace-pre-wrap break-words">{ev.note}</p>
+                              )}
+                              {JSON.parse(String(ev.material_versions)).map(
+                                (ref: { id: string; revision: number }) => (
+                                  <button
+                                    type="button"
+                                    key={ref.id}
+                                    className="mr-3 underline"
+                                    onClick={() =>
+                                      task(async () => {
+                                        const r = await invoke('rolepatch_materials_get', ref);
+                                        setEditMaterial(false);
+                                        setMaterial(r.record);
+                                      })
+                                    }
+                                  >
+                                    {materials.items?.find((m) => m.id === ref.id)?.title ??
+                                      'Attached material'}{' '}
+                                    · revision {ref.revision}
+                                  </button>
+                                )
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                        {events.next_cursor && (
+                          <Button
                             type="button"
-                            key={ref.id}
-                            className="mr-3 underline"
+                            variant="outline"
                             onClick={() =>
                               task(async () => {
-                                const r = await invoke('rolepatch_materials_get', ref);
-                                setEditMaterial(false);
-                                setMaterial(r.record);
+                                const next = await invoke('rolepatch_application_events_list', {
+                                  application_id: selected.id,
+                                  cursor: events.next_cursor,
+                                });
+                                setEvents({
+                                  ...next,
+                                  items: [...(events.items ?? []), ...(next.items ?? [])],
+                                });
                               })
                             }
                           >
-                            {materials.items?.find((m) => m.id === ref.id)?.title ??
-                              'Attached material'}{' '}
-                            · revision {ref.revision}
-                          </button>
-                        )
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                {events.next_cursor && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      task(async () => {
-                        const next = await invoke('rolepatch_application_events_list', {
-                          application_id: selected.id,
-                          cursor: events.next_cursor,
-                        });
-                        setEvents({
-                          ...next,
-                          items: [...(events.items ?? []), ...(next.items ?? [])],
-                        });
-                      })
-                    }
-                  >
-                    More events
-                  </Button>
-                )}
-                <form
-                  key={`${String(selected.id)}-${String(selected.revision)}`}
-                  className="grid gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const data = new FormData(e.currentTarget);
-                    task(async () => {
-                      await invoke('rolepatch_application_events_add', {
-                        application_id: selected.id,
-                        expected_revision: selected.revision,
-                        request_id: crypto.randomUUID(),
-                        status: data.get('status'),
-                        note: data.get('note'),
-                        material_versions: data
-                          .getAll('material_version')
-                          .map((value) => JSON.parse(String(value))),
-                      });
-                      await changed(String(selected.id));
-                    });
-                  }}
-                >
-                  <TrackerFields
-                    fields={[
-                      {
-                        key: 'status',
-                        label: 'Reported stage',
-                        choices: trackerStages,
-                        required: true,
-                      },
-                      { key: 'note', label: 'Event note', type: 'long', required: true },
-                    ]}
-                    record={selected}
-                  />
-                  {materials.items?.some((m) => !m.archived) && (
-                    <fieldset className="grid gap-2">
-                      <legend className="mb-1 text-sm font-medium">
-                        Materials used for this event
-                      </legend>
-                      {materials.items
-                        .filter((m) => !m.archived)
-                        .map((m) => (
-                          <label key={m.id} className="flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              name="material_version"
-                              value={JSON.stringify({ id: m.id, revision: m.revision })}
-                            />
-                            {m.title} · revision {m.revision}
-                          </label>
-                        ))}
-                    </fieldset>
+                            More events
+                          </Button>
+                        )}
+                        <form
+                          key={`${String(selected.id)}-${String(selected.revision)}`}
+                          className="grid gap-2"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const data = new FormData(e.currentTarget);
+                            task(async () => {
+                              await invoke('rolepatch_application_events_add', {
+                                application_id: selected.id,
+                                expected_revision: selected.revision,
+                                request_id: crypto.randomUUID(),
+                                status: data.get('status'),
+                                note: data.get('note'),
+                                material_versions: data
+                                  .getAll('material_version')
+                                  .map((value) => JSON.parse(String(value))),
+                              });
+                              await changed(String(selected.id));
+                            });
+                          }}
+                        >
+                          <TrackerFields
+                            fields={[
+                              {
+                                key: 'status',
+                                label: 'Reported stage',
+                                choices: trackerStages,
+                                required: true,
+                              },
+                              { key: 'note', label: 'Event note', type: 'long', required: true },
+                            ]}
+                            record={selected}
+                          />
+                          {materials.items?.some((m) => !m.archived) && (
+                            <fieldset className="grid gap-2">
+                              <legend className="mb-1 text-sm font-medium">
+                                Materials used for this event
+                              </legend>
+                              {materials.items
+                                .filter((m) => !m.archived)
+                                .map((m) => (
+                                  <label key={m.id} className="flex items-center gap-2 text-sm">
+                                    <input
+                                      type="checkbox"
+                                      name="material_version"
+                                      value={JSON.stringify({ id: m.id, revision: m.revision })}
+                                    />
+                                    {m.title} · revision {m.revision}
+                                  </label>
+                                ))}
+                            </fieldset>
+                          )}
+                          <Button type="submit" variant="outline" className="justify-self-start">
+                            Record event
+                          </Button>
+                        </form>
+                      </section>
+                      <Removal
+                        row={selected}
+                        kind="application"
+                        remove={(permanent) =>
+                          task(async () => {
+                            await invoke('rolepatch_applications_delete', {
+                              id: selected.id,
+                              expected_revision: selected.revision,
+                              permanent,
+                              confirm_id: permanent ? selected.id : undefined,
+                            });
+                            await changed();
+                          })
+                        }
+                      />
+                    </div>
                   )}
-                  <Button type="submit" variant="outline" className="justify-self-start">
-                    Record event
-                  </Button>
-                </form>
-              </section>
-              <Removal
-                row={selected}
-                kind="application"
-                remove={(permanent) =>
-                  task(async () => {
-                    await invoke('rolepatch_applications_delete', {
-                      id: selected.id,
-                      expected_revision: selected.revision,
-                      permanent,
-                      confirm_id: permanent ? selected.id : undefined,
-                    });
-                    await changed();
-                  })
-                }
-              />
+                </aside>
+              )}
             </div>
-          )}
-          <details>
-            <summary className="cursor-pointer text-sm font-medium">Import applications</summary>
-            <form
-              className="mt-3 grid gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const input = String(new FormData(e.currentTarget).get('items'));
-                task(async () => {
-                  const items = JSON.parse(input);
-                  const r = await invoke('rolepatch_applications_bulk_upsert', { items });
-                  setImportReport(
-                    (r.outcomes ?? []).map(
-                      (item, i) => `Row ${i + 1} · ${item.ok ? 'Saved' : item.error}`
-                    )
-                  );
-                  await changed();
-                });
-              }}
-            >
-              <label className="grid gap-1 text-sm">
-                Applications as a JSON array
-                <Textarea
-                  name="items"
-                  required
-                  placeholder={
-                    '[{"request_id":"job-1","manual_id":"job-1","company":"Acme","role":"Engineer"}]'
-                  }
-                />
-              </label>
-              <Button type="submit" variant="outline" className="justify-self-start">
-                Import jobs
-              </Button>
-            </form>
-            <ul className="text-sm">
-              {importReport.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </details>
-        </fieldset>
-      )}
-    </details>
+            <details>
+              <summary className="cursor-pointer text-sm font-medium">Import applications</summary>
+              <form
+                className="mt-3 grid gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const input = String(new FormData(e.currentTarget).get('items'));
+                  task(async () => {
+                    const items = JSON.parse(input);
+                    const r = await invoke('rolepatch_applications_bulk_upsert', { items });
+                    setImportReport(
+                      (r.outcomes ?? []).map(
+                        (item, i) => `Row ${i + 1} · ${item.ok ? 'Saved' : item.error}`
+                      )
+                    );
+                    await changed();
+                  });
+                }}
+              >
+                <label className="grid gap-1 text-sm">
+                  Applications as a JSON array
+                  <Textarea
+                    name="items"
+                    required
+                    placeholder={
+                      '[{"request_id":"job-1","manual_id":"job-1","company":"Acme","role":"Engineer"}]'
+                    }
+                  />
+                </label>
+                <Button type="submit" variant="outline" className="justify-self-start">
+                  Import jobs
+                </Button>
+              </form>
+              <ul className="text-sm">
+                {importReport.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </details>
+          </fieldset>
+        </TabsContent>
+      </Tabs>
+    </section>
   );
 }
