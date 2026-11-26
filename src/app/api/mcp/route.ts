@@ -40,6 +40,24 @@ function checkRateLimit(req: Request, name: string, id: unknown) {
   return null;
 }
 
+function canTailorAsGuest(args: unknown) {
+  return (
+    typeof args === 'object' &&
+    args !== null &&
+    'resume_markdown' in args &&
+    typeof args.resume_markdown === 'string' &&
+    !('resume_id' in args) &&
+    !('source' in args && args.source === 'rolepatch') &&
+    !('save_to_history' in args && args.save_to_history === true)
+  );
+}
+
+function needsHostedAuthResult(req: Request, response: Response, meta?: Record<string, unknown>) {
+  // A rejected bearer needs a transport 401 so the client can rotate its token.
+  if (response.status === 401 && req.headers.has('authorization')) return false;
+  return Object.keys(meta ?? {}).some((key) => key.startsWith('openai/'));
+}
+
 /** Stateless Streamable HTTP with JSON responses; no server-push stream. */
 export async function POST(req: Request) {
   const origin = req.headers.get('origin');
@@ -77,7 +95,12 @@ export async function POST(req: Request) {
     jsonrpc?: string;
     id?: string | number | null;
     method?: string;
-    params?: { protocolVersion?: string; name?: string; arguments?: unknown };
+    params?: {
+      protocolVersion?: string;
+      name?: string;
+      arguments?: unknown;
+      _meta?: Record<string, unknown>;
+    };
   };
   try {
     message = JSON.parse(text);
@@ -121,17 +144,12 @@ export async function POST(req: Request) {
   if (limited) return limited;
   try {
     const args = message.params?.arguments ?? {};
-    const hasInlineMaster =
-      typeof args === 'object' &&
-      args !== null &&
-      'resume_markdown' in args &&
-      typeof args.resume_markdown === 'string';
     const scopes = careerToolScopes(name!, args);
     const requireAccount =
       scopes.some((scope) => scope !== 'resume') ||
       name === 'rolepatch_resume_profiles' ||
-      (name === 'rolepatch_tailor_resume' && !hasInlineMaster);
-    return await withResumeAccess(
+      (name === 'rolepatch_tailor_resume' && !canTailorAsGuest(args));
+    const response = await withResumeAccess(
       req,
       async () => {
         const output = await callResumeMcpTool(name!, message.params?.arguments ?? {});
@@ -168,6 +186,24 @@ export async function POST(req: Request) {
       requireAccount,
       scopes
     );
+    const challenge = response.headers.get('www-authenticate');
+    if (challenge && needsHostedAuthResult(req, response, message.params?._meta)) {
+      const failure = await response.json();
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          id,
+          result: {
+            isError: true,
+            content: [{ type: 'text', text: failure.error }],
+            structuredContent: failure,
+            _meta: { 'mcp/www_authenticate': [challenge] },
+          },
+        },
+        { headers: response.headers }
+      );
+    }
+    return response;
   } catch {
     return rpc(id, {
       result: {

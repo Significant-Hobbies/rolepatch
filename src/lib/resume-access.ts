@@ -1,12 +1,13 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { ResumeOAuthScopeError } from '@/lib/career-scopes';
 import { db } from '@/lib/db';
 
-const identity = new AsyncLocalStorage<string>();
+const identity = new AsyncLocalStorage<string | null>();
 const prefix = 'rp_resume_v1';
 const lifetime = 24 * 60 * 60 * 1000;
 const encoder = new TextEncoder();
 
-export function getResumeApiUserId(): string | undefined {
+export function getResumeApiUserId(): string | null | undefined {
   return identity.getStore();
 }
 
@@ -103,6 +104,7 @@ export async function withResumeAccess(
   const path = new URL(request.url).pathname;
   let userId: string | null = null;
   let insufficientScope = false;
+  let retainedScopes: string[] = [];
   try {
     if (
       authorization &&
@@ -123,25 +125,37 @@ export async function withResumeAccess(
       }
     }
   } catch (error) {
-    insufficientScope = error instanceof Error && error.name === 'ResumeOAuthScopeError';
+    if (error instanceof ResumeOAuthScopeError) {
+      insufficientScope = true;
+      if (path === '/api/mcp') {
+        retainedScopes = error.retainedScopes;
+        if (!requireAccount && retainedScopes.some((scope) => scope !== 'offline_access')) {
+          return identity.run(null, action);
+        }
+      }
+    }
     // Auth/storage errors are fail-closed, without leaking credentials or falling back to guests.
   }
-  if (!userId)
+  if (!userId) {
+    const description = insufficientScope
+      ? 'Reconnect and approve the requested permissions.'
+      : 'Connect your account or create a new API token in Settings.';
+    const challengeScopes = new Set([...scopes, ...retainedScopes]);
+    if (path === '/api/mcp' && !insufficientScope) challengeScopes.add('offline_access');
     return Response.json(
       {
         ok: false,
         code: insufficientScope ? 'insufficient_scope' : 'invalid_access_token',
-        error: insufficientScope
-          ? 'Reconnect and approve the requested permissions.'
-          : 'Connect your account or create a new API token in Settings.',
+        error: description,
       },
       {
         status: insufficientScope ? 403 : 401,
         headers: {
           'Cache-Control': 'private, no-store',
-          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${[...scopes, ...(path === '/api/mcp' && !insufficientScope ? ['offline_access'] : [])].join(' ')}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"`,
+          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${[...challengeScopes].join(' ')}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"${path === '/api/mcp' ? `, error_description="${description}"` : ''}`,
         },
       }
     );
+  }
   return identity.run(userId, action);
 }

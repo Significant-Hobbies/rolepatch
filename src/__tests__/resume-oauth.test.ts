@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { resourceScopes } from '@/lib/career-scopes';
+import { getCurrentUserId } from '@/lib/auth-utils';
 import { getAuth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getResumeApiUserId, withResumeAccess } from '@/lib/resume-access';
@@ -83,6 +84,29 @@ async function invoke(access: string, path = '/api/mcp', scopes = ['resume']) {
     async () => Response.json({ user: getResumeApiUserId() }),
     true,
     scopes
+  );
+}
+async function hostedCall(access: string | undefined, name: string, args: object = {}) {
+  const { POST } = await import('@/app/api/mcp/route');
+  return POST(
+    new Request(resource, {
+      method: 'POST',
+      headers: {
+        ...(access ? { authorization: `Bearer ${access}` } : {}),
+        'content-type': 'application/json',
+        accept: 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: {
+          name,
+          arguments: args,
+          _meta: { 'openai/locale': 'en-US' },
+        },
+      }),
+    })
   );
 }
 beforeAll(() => {
@@ -309,6 +333,31 @@ it('enforces a limited career grant on both token claims and current consent', a
   expect((await invoke(access_token, '/api/mcp', [scope])).status).toBe(200);
   expect((await invoke(access_token, '/api/mcp', ['applications:write'])).status).toBe(403);
   expect((await invoke(access_token)).status).toBe(403);
+  const guest = await hostedCall(access_token, 'rolepatch_resolve_job', {
+    source: 'linkedin',
+    job_id: '123',
+  });
+  expect((await guest.json()).result.structuredContent).toMatchObject({
+    ok: true,
+    url: 'https://www.linkedin.com/jobs/view/123/',
+  });
+  const guestIdentity = await withResumeAccess(
+    new Request(resource, { headers: { authorization: `Bearer ${access_token}`, cookie } }),
+    async () => Response.json({ user: await getCurrentUserId() }),
+    false
+  );
+  expect(await guestIdentity.json()).toEqual({ user: null });
+  for (const args of [
+    { resume_id: 'master' },
+    { save_to_history: true },
+    { source: 'rolepatch', job_id: 'saved' },
+  ]) {
+    const owned = await hostedCall(access_token, 'rolepatch_tailor_resume', {
+      resume_markdown: 'inline draft',
+      ...args,
+    });
+    expect((await owned.json()).result.structuredContent.code).toBe('insufficient_scope');
+  }
   sql.prepare('UPDATE oauthConsent SET scopes=? WHERE clientId=?').run('[]', client_id);
   expect((await invoke(access_token, '/api/mcp', [scope])).status).toBe(403);
 });
@@ -342,16 +391,25 @@ it('returns only a receipt and denies reads for a write-only MCP grant', async (
     revision: 2,
     record: { notes: 'Previously saved private notes' },
   } as unknown as Awaited<ReturnType<typeof tools.callResumeMcpTool>>);
-  const call = (name: string) =>
+  const call = (name: string, chatgpt = false, signed = true) =>
     POST(
       new Request(resource, {
         method: 'POST',
         headers: {
-          authorization: `Bearer ${access_token}`,
+          ...(signed ? { authorization: `Bearer ${access_token}` } : {}),
           'content-type': 'application/json',
           accept: 'application/json, text/event-stream',
         },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name } }),
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: {
+            name,
+            arguments: { include_sensitive: true },
+            ...(chatgpt ? { _meta: { 'openai/locale': 'en-US' } } : {}),
+          },
+        }),
       })
     );
   try {
@@ -360,9 +418,231 @@ it('returns only a receipt and denies reads for a write-only MCP grant', async (
     expect(result.structuredContent).toEqual(receipt);
     expect(JSON.parse(result.content[0].text)).toEqual(receipt);
     expect((await call('rolepatch_applications_get')).status).toBe(403);
+    for (const signed of [true, false]) {
+      const raw = await call('rolepatch_profiles_get', false, signed);
+      expect(raw.status).toBe(signed ? 403 : 401);
+      const error = await raw.json();
+      const challenge = raw.headers.get('www-authenticate');
+      expect(challenge).toContain(
+        `scope="profile:read answers:sensitive${signed ? ' applications:write' : ' offline_access'}"`
+      );
+      expect(challenge).toContain(`error_description="${error.error}"`);
+      const hosted = await call('rolepatch_profiles_get', true, signed);
+      expect(hosted.status).toBe(200);
+      expect(await hosted.json()).toEqual({
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          isError: true,
+          content: [{ type: 'text', text: error.error }],
+          structuredContent: error,
+          _meta: { 'mcp/www_authenticate': [challenge] },
+        },
+      });
+    }
     expect(dispatch).toHaveBeenCalledTimes(1);
   } finally {
     dispatch.mockRestore();
+  }
+});
+it('lets legacy ChatGPT clients request explicit career consent without upgrading prior grants', async () => {
+  const callback = 'https://chatgpt.com/connector_platform_oauth_redirect';
+  async function register(callbackUrl: string) {
+    const response = await send('/oauth2/register', {
+      client_name: 'ChatGPT',
+      redirect_uris: [callbackUrl],
+      application_type: 'web',
+      token_endpoint_auth_method: 'none',
+      grant_types: ['authorization_code', 'refresh_token'],
+      response_types: ['code'],
+    });
+    expect(response.status).toBe(201);
+    const { client_id } = await response.json();
+    sql
+      .prepare('UPDATE oauthClient SET scopes=? WHERE clientId=?')
+      .run('["offline_access","resume"]', client_id);
+    return client_id as string;
+  }
+  const client = await register(callback);
+  const unrelated = await register(redirect);
+  async function authorize(scope: string) {
+    const consent = await consentResumeOAuth(
+      await consentQuery(client, true, { redirect_uri: callback, scope }),
+      true
+    );
+    if (!consent.ok) throw new Error(consent.error);
+    const issued = await token({
+      grant_type: 'authorization_code',
+      client_id: client,
+      resource,
+      redirect_uri: callback,
+      code_verifier: verifier,
+      code: new URL(consent.redirect_uri).searchParams.get('code')!,
+    });
+    expect(issued.status).toBe(200);
+    return issued.json();
+  }
+  const previous = await authorize('offline_access resume');
+  const extra = { redirect_uri: callback, scope: 'applications:read' };
+  const before = await send(`/oauth2/authorize?${query(client, extra)}`, undefined, true);
+  expect(new URL((await before.json()).url).searchParams.get('error')).toBe('invalid_scope');
+  const migration = readFileSync('migrations/0007_chatgpt_client_scopes.sql', 'utf8');
+  sql.exec(migration);
+  sql.exec(migration);
+  const scopes = (id: string) =>
+    JSON.parse(sql.prepare('SELECT scopes FROM oauthClient WHERE clientId=?').get(id).scopes);
+  expect(scopes(client)).toEqual(['offline_access', ...resourceScopes]);
+  expect(scopes(unrelated)).toEqual(['offline_access', 'resume']);
+  const { GET, POST } = await import('@/app/api/auth/[...all]/route');
+  const omitted = new URLSearchParams(query(client, { redirect_uri: callback, prompt: 'consent' }));
+  omitted.delete('scope');
+  const response = await GET(
+    new Request(`${origin}/api/auth/oauth2/authorize?${omitted}`, {
+      headers: { cookie, accept: 'application/json' },
+    })
+  );
+  expect(new URL((await response.json()).url, origin).searchParams.get('scope')).toBe(
+    'offline_access resume'
+  );
+  const form = await POST(
+    new Request(`${origin}/api/auth/oauth2/authorize`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: omitted,
+    })
+  );
+  expect(new URL((await form.json()).url, origin).searchParams.get('scope')).toBe(
+    'offline_access resume'
+  );
+  expect((await invoke(previous.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
+  const renewed = await token({
+    grant_type: 'refresh_token',
+    client_id: client,
+    resource,
+    refresh_token: previous.refresh_token,
+  });
+  expect(renewed.status).toBe(200);
+  expect(
+    (await invoke((await renewed.json()).access_token, '/api/mcp', [extra.scope])).status
+  ).toBe(403);
+  const fresh = await consentQuery(client, true, extra);
+  expect(await getResumeOAuthRequest(fresh)).toMatchObject({ ok: true, scopes: [extra.scope] });
+  expect(await consentResumeOAuth(fresh, false)).toMatchObject({
+    ok: true,
+    redirect_uri: expect.stringContaining('access_denied'),
+  });
+  const hosted = await hostedCall(previous.access_token, 'rolepatch_applications_list');
+  const [challenge] = (await hosted.json()).result._meta['mcp/www_authenticate'];
+  const requested = challenge.match(/scope="([^"]+)"/)[1];
+  expect(requested.split(' ').sort()).toEqual(['applications:read', 'offline_access', 'resume']);
+  const expanded = await authorize(requested);
+  expect((await invoke(previous.access_token)).status).toBe(200);
+  expect((await invoke(expanded.access_token)).status).toBe(200);
+  expect(expanded.refresh_token).toBeTruthy();
+  const refreshed = await token({
+    grant_type: 'refresh_token',
+    client_id: client,
+    resource,
+    refresh_token: expanded.refresh_token,
+  });
+  expect(refreshed.status).toBe(200);
+  expect(
+    (await invoke((await refreshed.json()).access_token, '/api/mcp', ['resume', extra.scope]))
+      .status
+  ).toBe(200);
+  expect((await invoke(expanded.access_token, '/api/mcp', [extra.scope])).status).toBe(200);
+  expect((await invoke(previous.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
+
+  // Account linking with no credential cannot know about the owner's prior grant.
+  const missing = await hostedCall(undefined, 'rolepatch_materials_list');
+  expect(missing.status).toBe(200);
+  const missingChallenge = (await missing.json()).result._meta['mcp/www_authenticate'][0];
+  const missingScopes = missingChallenge.match(/scope="([^"]+)"/)[1];
+  expect(missingScopes).toBe('materials:read offline_access');
+  const materials = await authorize(missingScopes);
+  expect((await invoke(materials.access_token, '/api/mcp', ['materials:read'])).status).toBe(200);
+  expect((await invoke(materials.access_token, '/api/mcp', ['applications:read'])).status).toBe(
+    403
+  );
+  expect((await invoke(expanded.access_token, '/api/mcp', ['resume', extra.scope])).status).toBe(
+    200
+  );
+
+  // A narrow token steps up while other tokens keep their separately consented scopes.
+  const narrow = await hostedCall(materials.access_token, 'rolepatch_profiles_list');
+  const narrowChallenge = (await narrow.json()).result._meta['mcp/www_authenticate'][0];
+  const newScopes = narrowChallenge.match(/scope="([^"]+)"/)[1];
+  expect(newScopes.split(' ').sort()).toEqual(['materials:read', 'offline_access', 'profile:read']);
+  const profile = await authorize(newScopes);
+  expect((await invoke(profile.access_token, '/api/mcp', ['profile:read'])).status).toBe(200);
+  expect((await invoke(profile.access_token)).status).toBe(403);
+  expect((await invoke(expanded.access_token, '/api/mcp', ['resume', extra.scope])).status).toBe(
+    200
+  );
+
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    vi.setSystemTime(Date.now() + 301_000);
+    const expired = await hostedCall(profile.access_token, 'rolepatch_profiles_list');
+    expect(expired.status).toBe(401);
+    expect(expired.headers.get('www-authenticate')).toContain('error="invalid_token"');
+    const rotation = await token({
+      grant_type: 'refresh_token',
+      client_id: client,
+      resource,
+      refresh_token: profile.refresh_token,
+    });
+    expect(rotation.status).toBe(200);
+    expect(
+      (await invoke((await rotation.json()).access_token, '/api/mcp', ['profile:read'])).status
+    ).toBe(200);
+  } finally {
+    vi.useRealTimers();
+  }
+
+  const { id } = sql.prepare('SELECT id FROM oauthConsent WHERE clientId=?').get(client);
+  expect(
+    (await send('/oauth2/update-consent', { id, update: { scopes: ['resume'] } }, true)).status
+  ).toBe(200);
+  expect((await invoke(expanded.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
+  expect((await invoke(previous.access_token)).status).toBe(200);
+  expect((await send('/oauth2/delete-consent', { id }, true)).ok).toBe(true);
+  expect((await invoke(previous.access_token)).status).toBe(401);
+});
+it('limits incremental consent to the same single MCP resource on the public ChatGPT client', () => {
+  sql.exec(readFileSync('migrations/0007_chatgpt_client_scopes.sql', 'utf8'));
+  const cb = 'https://chatgpt.com/connector_platform_oauth_redirect';
+  const resumeResource = `${origin}/api/resume`;
+  const oldScopes = JSON.stringify(['resume']);
+  const newScopes = JSON.stringify(['applications:read']);
+  const now = new Date().toISOString();
+  for (const [index, [callback, oldResources, newResources]] of [
+    [redirect, [resource], [resource]],
+    [cb, [resource], [resumeResource]],
+    [cb, [resumeResource], [resumeResource]],
+    [cb, [resource, resumeResource], [resource, resumeResource]],
+  ].entries()) {
+    const id = `isolated-${index}`;
+    sql
+      .prepare(
+        'INSERT INTO oauthClient(id,clientId,redirectUris,tokenEndpointAuthMethod) VALUES(?,?,?,?)'
+      )
+      .run(id, id, JSON.stringify([callback]), 'none');
+    sql
+      .prepare(
+        'INSERT INTO oauthConsent(id,clientId,userId,resources,scopes,createdAt,updatedAt) VALUES(?,?,?,?,?,?,?)'
+      )
+      .run(id, id, 'oauth-owner', JSON.stringify(oldResources), oldScopes, now, now);
+    sql
+      .prepare('UPDATE oauthConsent SET resources=?,scopes=? WHERE id=?')
+      .run(JSON.stringify(newResources), newScopes, id);
+    expect(sql.prepare('SELECT scopes FROM oauthConsent WHERE id=?').get(id).scopes).toBe(
+      newScopes
+    );
   }
 });
 it('qualifies registration, consent, PKCE, replay resistance, owner identity, refresh and immediate session revocation', async () => {

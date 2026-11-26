@@ -12,6 +12,16 @@ export const scopeDescriptions: Record<string, string> = {
 };
 export const resourceScopes = Object.keys(scopeDescriptions);
 
+export class ResumeOAuthScopeError extends Error {
+  override readonly name = 'ResumeOAuthScopeError';
+  readonly retainedScopes: string[];
+
+  constructor(retainedScopes: string[]) {
+    super('Insufficient OAuth scope');
+    this.retainedScopes = retainedScopes;
+  }
+}
+
 function generationScopes(args: Record<string, unknown>) {
   return [
     'resume:generate',

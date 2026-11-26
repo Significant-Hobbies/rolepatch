@@ -9,6 +9,7 @@ import {
 } from '@/lib/actions/resume-access-actions';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { ResumeOAuthScopeError } from '@/lib/career-scopes';
 import { getResumeApiUserId, issueResumeAccess, withResumeAccess } from '@/lib/resume-access';
 import { tailorResumeFromReference } from '@/lib/actions/resume-assistant-actions';
 import { listResumeHistory } from '@/lib/actions/resume-history-actions';
@@ -265,9 +266,7 @@ it('requests renewal only for MCP authentication and keeps missing resume scope 
       `scope="${path === '/api/mcp' ? 'resume offline_access' : 'resume'}"`
     );
     const oauth = await import('@/lib/resume-oauth');
-    vi.spyOn(oauth, 'verifyResumeOAuth').mockRejectedValueOnce(
-      Object.assign(new Error('Missing scope'), { name: 'ResumeOAuthScopeError' })
-    );
+    vi.spyOn(oauth, 'verifyResumeOAuth').mockRejectedValueOnce(new ResumeOAuthScopeError([]));
     const forbidden = await withResumeAccess(request('synthetic-oauth-token', path), action);
     expect(forbidden.status).toBe(403);
     expect(forbidden.headers.get('www-authenticate')).toContain('scope="resume"');

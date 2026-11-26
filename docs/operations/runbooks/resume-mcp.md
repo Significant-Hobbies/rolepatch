@@ -14,6 +14,21 @@ Fixed-wording tailoring: [ADR-0008](../../architecture/decisions/0008-fixed-word
 The source of the input contract is
 [`resume-assistant-input.ts`](../../../src/lib/resume-assistant-input.ts).
 
+## Hosted ChatGPT permissions
+
+Deploy the Worker before applying D1 migration 0007. Verify that the two legacy
+public ChatGPT registrations have the current registration scopes after migration.
+Refresh the app tools in ChatGPT and call `rolepatch_applications_list`. The tool
+catalog declares its base OAuth scopes. A protected call can return
+`mcp/www_authenticate` in tool-result metadata to request additional consent.
+Approve the displayed scopes and repeat the call. A valid prior grant retains
+its active scopes and renewal permission when the client follows the challenge.
+An authorization request omitting scope defaults to the legacy resume and renewal
+permissions. Migration 0007 updates the registration allowlist and preserves
+earlier approvals when the same owner explicitly links another tool on the same
+MCP resource. Each token retains its own scope limits. Owners can reduce or
+delete consent. An expired supplied bearer receives HTTP 401 for token renewal.
+
 ## Account connection
 
 RolePatch provides **Connect your resume API** in account Settings.

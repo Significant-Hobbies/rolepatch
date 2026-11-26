@@ -2,6 +2,15 @@
 
 Last updated: 2026-11-26
 
+## Career database production release — 26 November
+
+PR #50 shipped `08c7824` on Worker `7ebc0415-4819-4bc9-b4ce-13d344972bc5` at
+100% traffic. D1 migrations 0004–0006 were verified applied. All seven public
+production smoke checks passed. The optional signed-in apply-agent smoke was
+skipped. Hosted ChatGPT refreshed the 32-tool catalog and attempted
+`rolepatch_applications_list`. Reauthorization requested only the legacy
+resume and renewal permissions. [Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45766648939)
+
 ## Career database branch qualification — 26 November
 
 The production MCP catalog returned the four original resume tools during this
