@@ -2,6 +2,20 @@
 
 Last updated: 2026-11-26
 
+## Application desk production release — 26 November
+
+PR #55 shipped `ad86e71` on Worker `d7074804-bac2-409b-8942-5699ed38b701`
+at 100% traffic. The Jobs tracker opens to the applications table, with a detail
+pane and separate Analytics tab. The shared SaaS Maker appearance control exposes
+Light, Dark, and System directly. No migration was required.
+
+The deployment passed all seven public smoke checks. Signed-in checks passed for
+tracker paging, search, details, analytics, and reloading an imported master in
+Resume Builder. Local release verification also covered theme persistence and
+the tracker browser fixture covered retained drafts. The authenticated
+apply-agent smoke was outside this verification.
+[Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45873123167)
+
 ## Application analytics production release — 26 November
 
 PR #53 shipped `0370cfd` on Worker `4edd9a82-bdbb-4d8e-8f10-71aeb56303ee`
