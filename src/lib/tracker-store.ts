@@ -1,4 +1,4 @@
-import type { trackerStages } from '@/lib/tracker-vocabulary';
+import { trackerStages } from '@/lib/tracker-vocabulary';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { canonicalTrackerUrl as canonical } from '@/lib/job-url';
@@ -142,6 +142,75 @@ async function listApplications(owner: string, input: S<'rolepatch_applications_
   );
   return page(found, input.limit, 'created_at');
 }
+
+export type ApplicationAnalyticsRange = 30 | 90 | 365;
+
+export async function summarizeApplications(owner: string, days: ApplicationAnalyticsRange) {
+  const tomorrow = (Math.floor(Date.now() / 86_400_000) + 1) * 86400;
+  const from = tomorrow - days * 86400;
+  const groups = await rows(
+    `SELECT strftime('%Y-%m', applied_at, 'unixepoch') AS month, stage,
+      count(*) AS total,
+      sum(interview_date IS NOT NULL OR stage IN ('screening','technical','final_round') OR EXISTS (
+        SELECT 1 FROM application_events AS e
+        WHERE e.user_id=j.user_id AND e.job_id=j.id AND (
+          e.status IN ('screening','technical','final_round') OR
+          e.prior_status IN ('screening','technical','final_round')
+        ))) AS interviewed,
+      sum(stage IN ('offer','accepted') OR EXISTS (
+        SELECT 1 FROM application_events AS e
+        WHERE e.user_id=j.user_id AND e.job_id=j.id AND (
+          e.status IN ('offer','accepted') OR e.prior_status IN ('offer','accepted')
+        ))) AS offers
+     FROM job_applications AS j
+     WHERE j.user_id=? AND (
+       (applied_at>=? AND applied_at<?)
+       OR (applied_at IS NULL AND stage IN ('applied','screening','technical','final_round','offer','accepted','rejected','withdrawn'))
+     )
+     GROUP BY month, stage`,
+    [owner, from, tomorrow]
+  );
+  const firstMonth = new Date(from * 1000);
+  firstMonth.setUTCDate(1);
+  const months = new Map<string, number>();
+  while (firstMonth.getTime() < tomorrow * 1000) {
+    months.set(firstMonth.toISOString().slice(0, 7), 0);
+    firstMonth.setUTCMonth(firstMonth.getUTCMonth() + 1);
+  }
+  const stages = new Map<string, number>();
+  let total = 0;
+  let interviewed = 0;
+  let offers = 0;
+  let undated = 0;
+  for (const group of groups) {
+    const count = Number(group.total);
+    if (typeof group.month !== 'string') {
+      undated += count;
+      continue;
+    }
+    months.set(group.month, (months.get(group.month) ?? 0) + count);
+    const stage = String(group.stage);
+    stages.set(stage, (stages.get(stage) ?? 0) + count);
+    total += count;
+    interviewed += Number(group.interviewed);
+    offers += Number(group.offers);
+  }
+  return {
+    days,
+    total,
+    interviewed,
+    offers,
+    undated,
+    months: Array.from(months, ([month, count]) => ({ month, count })),
+    stages: trackerStages.flatMap((stage) => {
+      const count = stages.get(stage);
+      return count ? [{ stage, count }] : [];
+    }),
+  };
+}
+
+export type ApplicationAnalytics = Awaited<ReturnType<typeof summarizeApplications>>;
+
 type Changes = Partial<Omit<S<'rolepatch_applications_update'>, 'id' | 'expected_revision'>>;
 function validateIdentity(next: Changes) {
   if (next.url) {

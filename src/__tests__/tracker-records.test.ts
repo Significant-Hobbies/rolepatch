@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { createJobApplication, listJobApplications } from '@/lib/actions/job-actions';
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-import { callTracker } from '@/lib/actions/tracker-records';
+import { callTracker, getApplicationAnalytics } from '@/lib/actions/tracker-records';
 
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: vi.fn() }));
 vi.mock('@/lib/db', () => ({ db: { execute: vi.fn() } }));
@@ -48,6 +48,118 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 describe('owned application tracker', () => {
+  it('summarizes all dated submissions for the owner and preserves interview history after rejection', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-11-26T19:00:00Z'));
+      const applied = Date.parse('2026-11-10T00:00:00Z') / 1000;
+      const rangeStart = Date.parse('2026-08-29T00:00:00Z') / 1000;
+      const add = sql.prepare(
+        'INSERT INTO job_applications(id,user_id,company,role,status,stage,url,applied_at,interview_date) VALUES(?,?,?,?,?,?,?,?,?)'
+      );
+      for (let i = 0; i < 15; i++) {
+        add.run(
+          `dated-${i}`,
+          'owner',
+          'Example',
+          'Engineer',
+          'applied',
+          'applied',
+          '',
+          applied,
+          null
+        );
+      }
+      add.run(
+        'rejected',
+        'owner',
+        'Example',
+        'Engineer',
+        'interview',
+        'technical',
+        '',
+        rangeStart,
+        null
+      );
+      await ok('applications_update', { id: 'rejected', expected_revision: 1, status: 'rejected' });
+      add.run(
+        'offered',
+        'owner',
+        'Example',
+        'Engineer',
+        'offer',
+        'offer',
+        '',
+        applied,
+        applied + 86400
+      );
+      add.run(
+        'out-of-range',
+        'owner',
+        'Example',
+        'Engineer',
+        'applied',
+        'applied',
+        '',
+        rangeStart - 1,
+        null
+      );
+      add.run(
+        'future',
+        'owner',
+        'Example',
+        'Engineer',
+        'applied',
+        'applied',
+        '',
+        Date.parse('2026-11-27') / 1000,
+        null
+      );
+      add.run('draft', 'owner', 'Example', 'Engineer', 'draft', 'preparing', '', null, null);
+      add.run(
+        'other-owner',
+        'foreign',
+        'Example',
+        'Engineer',
+        'offer',
+        'offer',
+        '',
+        applied,
+        applied
+      );
+
+      expect(await getApplicationAnalytics(90)).toMatchObject({
+        ok: true,
+        summary: {
+          total: 17,
+          interviewed: 2,
+          offers: 1,
+          undated: 1,
+          months: [
+            { month: '2026-08', count: 1 },
+            { month: '2026-09', count: 0 },
+            { month: '2026-10', count: 0 },
+            { month: '2026-11', count: 16 },
+          ],
+          stages: [
+            { stage: 'applied', count: 15 },
+            { stage: 'offer', count: 1 },
+            { stage: 'rejected', count: 1 },
+          ],
+        },
+      });
+      expect(await getApplicationAnalytics(30)).toMatchObject({
+        ok: true,
+        summary: { total: 16, interviewed: 1, offers: 1, undated: 1 },
+      });
+      expect(await getApplicationAnalytics(60 as 90)).toMatchObject({ ok: false });
+      vi.mocked(getCurrentUserId).mockResolvedValue(null);
+      expect(await getApplicationAnalytics(90)).toMatchObject({ ok: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('imports ten jobs twice, maps legacy rows, filters and pages without loss', async () => {
     const items = Array.from({ length: 10 }, (_, i) => ({
       ...job,
