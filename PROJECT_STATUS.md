@@ -2,6 +2,19 @@
 
 Last updated: 2026-11-26
 
+## Application analytics production release — 26 November
+
+PR #53 shipped `0370cfd` on Worker `4edd9a82-bdbb-4d8e-8f10-71aeb56303ee`
+at 100% traffic. The signed-in Jobs tracker shows submission counts and monthly
+volume, current stages, and recorded screening, interviews, and offers. The
+report counts undated applications separately. The Jobs route also loads fit
+scores without exceeding D1's bound-parameter limit for large trackers.
+
+The deploy workflow passed all seven public smoke checks. Signed-in verification
+passed for the analytics panel and the apply-agent queue, packet, and receipt
+reads. No migration was required.
+[Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45836306089)
+
 ## Career database production release — 26 November
 
 PR #50 shipped `08c7824` on Worker `7ebc0415-4819-4bc9-b4ce-13d344972bc5` at
