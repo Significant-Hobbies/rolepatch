@@ -86,13 +86,13 @@ async function invoke(access: string, path = '/api/mcp', scopes = ['resume']) {
     scopes
   );
 }
-async function hostedCall(access: string, name: string, args: object = {}) {
+async function hostedCall(access: string | undefined, name: string, args: object = {}) {
   const { POST } = await import('@/app/api/mcp/route');
   return POST(
     new Request(resource, {
       method: 'POST',
       headers: {
-        authorization: `Bearer ${access}`,
+        ...(access ? { authorization: `Bearer ${access}` } : {}),
         'content-type': 'application/json',
         accept: 'application/json, text/event-stream',
       },
@@ -556,6 +556,94 @@ it('lets legacy ChatGPT clients request explicit career consent without upgradin
   ).toBe(200);
   expect((await invoke(expanded.access_token, '/api/mcp', [extra.scope])).status).toBe(200);
   expect((await invoke(previous.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
+
+  // Account linking with no credential cannot know about the owner's prior grant.
+  const missing = await hostedCall(undefined, 'rolepatch_materials_list');
+  expect(missing.status).toBe(200);
+  const missingChallenge = (await missing.json()).result._meta['mcp/www_authenticate'][0];
+  const missingScopes = missingChallenge.match(/scope="([^"]+)"/)[1];
+  expect(missingScopes).toBe('materials:read offline_access');
+  const materials = await authorize(missingScopes);
+  expect((await invoke(materials.access_token, '/api/mcp', ['materials:read'])).status).toBe(200);
+  expect((await invoke(materials.access_token, '/api/mcp', ['applications:read'])).status).toBe(
+    403
+  );
+  expect((await invoke(expanded.access_token, '/api/mcp', ['resume', extra.scope])).status).toBe(
+    200
+  );
+
+  // A narrow token steps up while other tokens keep their separately consented scopes.
+  const narrow = await hostedCall(materials.access_token, 'rolepatch_profiles_list');
+  const narrowChallenge = (await narrow.json()).result._meta['mcp/www_authenticate'][0];
+  const newScopes = narrowChallenge.match(/scope="([^"]+)"/)[1];
+  expect(newScopes.split(' ').sort()).toEqual(['materials:read', 'offline_access', 'profile:read']);
+  const profile = await authorize(newScopes);
+  expect((await invoke(profile.access_token, '/api/mcp', ['profile:read'])).status).toBe(200);
+  expect((await invoke(profile.access_token)).status).toBe(403);
+  expect((await invoke(expanded.access_token, '/api/mcp', ['resume', extra.scope])).status).toBe(
+    200
+  );
+
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    vi.setSystemTime(Date.now() + 301_000);
+    const expired = await hostedCall(profile.access_token, 'rolepatch_profiles_list');
+    expect(expired.status).toBe(401);
+    expect(expired.headers.get('www-authenticate')).toContain('error="invalid_token"');
+    const rotation = await token({
+      grant_type: 'refresh_token',
+      client_id: client,
+      resource,
+      refresh_token: profile.refresh_token,
+    });
+    expect(rotation.status).toBe(200);
+    expect(
+      (await invoke((await rotation.json()).access_token, '/api/mcp', ['profile:read'])).status
+    ).toBe(200);
+  } finally {
+    vi.useRealTimers();
+  }
+
+  const { id } = sql.prepare('SELECT id FROM oauthConsent WHERE clientId=?').get(client);
+  expect(
+    (await send('/oauth2/update-consent', { id, update: { scopes: ['resume'] } }, true)).status
+  ).toBe(200);
+  expect((await invoke(expanded.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
+  expect((await invoke(previous.access_token)).status).toBe(200);
+  expect((await send('/oauth2/delete-consent', { id }, true)).ok).toBe(true);
+  expect((await invoke(previous.access_token)).status).toBe(401);
+});
+it('limits incremental consent to the same single MCP resource on the public ChatGPT client', () => {
+  sql.exec(readFileSync('migrations/0007_chatgpt_client_scopes.sql', 'utf8'));
+  const cb = 'https://chatgpt.com/connector_platform_oauth_redirect';
+  const resumeResource = `${origin}/api/resume`;
+  const oldScopes = JSON.stringify(['resume']);
+  const newScopes = JSON.stringify(['applications:read']);
+  const now = new Date().toISOString();
+  for (const [index, [callback, oldResources, newResources]] of [
+    [redirect, [resource], [resource]],
+    [cb, [resource], [resumeResource]],
+    [cb, [resumeResource], [resumeResource]],
+    [cb, [resource, resumeResource], [resource, resumeResource]],
+  ].entries()) {
+    const id = `isolated-${index}`;
+    sql
+      .prepare(
+        'INSERT INTO oauthClient(id,clientId,redirectUris,tokenEndpointAuthMethod) VALUES(?,?,?,?)'
+      )
+      .run(id, id, JSON.stringify([callback]), 'none');
+    sql
+      .prepare(
+        'INSERT INTO oauthConsent(id,clientId,userId,resources,scopes,createdAt,updatedAt) VALUES(?,?,?,?,?,?,?)'
+      )
+      .run(id, id, 'oauth-owner', JSON.stringify(oldResources), oldScopes, now, now);
+    sql
+      .prepare('UPDATE oauthConsent SET resources=?,scopes=? WHERE id=?')
+      .run(JSON.stringify(newResources), newScopes, id);
+    expect(sql.prepare('SELECT scopes FROM oauthConsent WHERE id=?').get(id).scopes).toBe(
+      newScopes
+    );
+  }
 });
 it('qualifies registration, consent, PKCE, replay resistance, owner identity, refresh and immediate session revocation', async () => {
   const registration = await send('/oauth2/register', {

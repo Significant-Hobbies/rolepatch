@@ -24,7 +24,10 @@ catalog declares its base OAuth scopes. A protected call can return
 Approve the displayed scopes and repeat the call. A valid prior grant retains
 its active scopes and renewal permission when the client follows the challenge.
 An authorization request omitting scope defaults to the legacy resume and renewal
-permissions. Migration 0007 changes only which permissions a client may request.
+permissions. Migration 0007 updates the registration allowlist and preserves
+earlier approvals when the same owner explicitly links another tool on the same
+MCP resource. Each token retains its own scope limits. Owners can reduce or
+delete consent. An expired supplied bearer receives HTTP 401 for token renewal.
 
 ## Account connection
 

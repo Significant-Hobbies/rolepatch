@@ -52,6 +52,12 @@ function canTailorAsGuest(args: unknown) {
   );
 }
 
+function needsHostedAuthResult(req: Request, response: Response, meta?: Record<string, unknown>) {
+  // A rejected bearer needs a transport 401 so the client can rotate its token.
+  if (response.status === 401 && req.headers.has('authorization')) return false;
+  return Object.keys(meta ?? {}).some((key) => key.startsWith('openai/'));
+}
+
 /** Stateless Streamable HTTP with JSON responses; no server-push stream. */
 export async function POST(req: Request) {
   const origin = req.headers.get('origin');
@@ -181,11 +187,7 @@ export async function POST(req: Request) {
       scopes
     );
     const challenge = response.headers.get('www-authenticate');
-    // ChatGPT consumes tool-result metadata on successful JSON-RPC transport.
-    if (
-      challenge &&
-      Object.keys(message.params?._meta ?? {}).some((key) => key.startsWith('openai/'))
-    ) {
+    if (challenge && needsHostedAuthResult(req, response, message.params?._meta)) {
       const failure = await response.json();
       return NextResponse.json(
         {
