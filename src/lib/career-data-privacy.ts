@@ -46,7 +46,8 @@ function tokenShaped(value: string) {
 // These names commonly appear verbatim on security and platform engineering resumes.
 const technicalTerm =
   /^(?:(?:HMAC-|PBKDF2-)?SHA-?(?:1|224|256|384|512)|PBKDF2|Argon2(?:id|i|d)?|AES-?(?:128|192|256)(?:-GCM|-CBC|-CTR)?|OAuth(?:2(?:\.0)?)?|TLS(?:1\.[0-3])?|authentication|authorization|implementation|configuration|verification|infrastructure|management|credentials?|credentialing|requirements|documentation)[.,;]?$/i;
-const reference = /^(?:process\.env\.|import\.meta\.env\.|env\.|\$|\{\{|<)/i;
+const reference =
+  /^(?:(?:process\.env\.|import\.meta\.env\.|env\.|\$)[A-Z_][A-Z0-9_]*|\$\{[A-Z_][A-Z0-9_]*\})$/;
 function opaqueValue(value: string) {
   return /^[a-z\d]{12,}$/i.test(value) && !technicalTerm.test(value);
 }
