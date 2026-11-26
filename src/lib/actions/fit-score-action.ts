@@ -186,10 +186,10 @@ export async function getFitScore(jobId: string): Promise<FitScore | null> {
 export async function listFitScores(jobIds: string[]): Promise<Record<string, number>> {
   const userId = await getCurrentUserId();
   if (!userId || jobIds.length === 0) return {};
-  const placeholders = jobIds.map(() => '?').join(',');
+  // D1 allows at most 100 bound parameters, even when an account owns more jobs.
   const result = await db.execute({
-    sql: `SELECT job_id, overall_score FROM fit_scores WHERE user_id = ? AND job_id IN (${placeholders}) ORDER BY created_at DESC`,
-    args: [userId, ...jobIds],
+    sql: 'SELECT job_id, overall_score FROM fit_scores WHERE user_id = ? AND job_id IN (SELECT value FROM json_each(?)) ORDER BY created_at DESC',
+    args: [userId, JSON.stringify(jobIds)],
   });
   const scores: Record<string, number> = {};
   for (const row of result.rows) {

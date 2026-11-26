@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '@/lib/db';
+import { listFitScores } from '@/lib/actions/fit-score-action';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { createJobApplication, listJobApplications } from '@/lib/actions/job-actions';
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
@@ -48,6 +49,23 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 describe('owned application tracker', () => {
+  it('loads only the latest owned fit scores across more than 100 jobs within the D1 bind limit', async () => {
+    const insertJob = sql.prepare('INSERT INTO job_applications(id,user_id) VALUES(?,?)');
+    const insertScore = sql.prepare(
+      'INSERT INTO fit_scores(id,job_id,user_id,overall_score,created_at) VALUES(?,?,?,?,?)'
+    );
+    const ids = Array.from({ length: 125 }, (_, i) => `job-${i}`);
+    for (const id of ids) insertJob.run(id, 'owner');
+    insertScore.run('first', 'job-0', 'owner', 60, 1);
+    insertScore.run('latest', 'job-0', 'owner', 84, 2);
+    insertScore.run('last-job', 'job-124', 'owner', 90, 2);
+    insertScore.run('private', 'job-1', 'foreign', 100, 2);
+    insertScore.run('unrequested', 'old', 'owner', 77, 2);
+    expect(await listFitScores(ids)).toEqual({ 'job-0': 84, 'job-124': 90 });
+    const query = vi.mocked(db.execute).mock.lastCall?.[0];
+    expect(typeof query === 'object' && query.args).toHaveLength(2);
+  });
+
   it('summarizes all dated submissions for the owner and preserves interview history after rejection', async () => {
     vi.useFakeTimers();
     try {
