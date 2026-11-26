@@ -342,16 +342,25 @@ it('returns only a receipt and denies reads for a write-only MCP grant', async (
     revision: 2,
     record: { notes: 'Previously saved private notes' },
   } as unknown as Awaited<ReturnType<typeof tools.callResumeMcpTool>>);
-  const call = (name: string) =>
+  const call = (name: string, chatgpt = false, signed = true) =>
     POST(
       new Request(resource, {
         method: 'POST',
         headers: {
-          authorization: `Bearer ${access_token}`,
+          ...(signed ? { authorization: `Bearer ${access_token}` } : {}),
           'content-type': 'application/json',
           accept: 'application/json, text/event-stream',
         },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name } }),
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: {
+            name,
+            arguments: { include_sensitive: true },
+            ...(chatgpt ? { _meta: { 'openai/locale': 'en-US' } } : {}),
+          },
+        }),
       })
     );
   try {
@@ -360,10 +369,112 @@ it('returns only a receipt and denies reads for a write-only MCP grant', async (
     expect(result.structuredContent).toEqual(receipt);
     expect(JSON.parse(result.content[0].text)).toEqual(receipt);
     expect((await call('rolepatch_applications_get')).status).toBe(403);
+    for (const signed of [true, false]) {
+      const raw = await call('rolepatch_profiles_get', false, signed);
+      expect(raw.status).toBe(signed ? 403 : 401);
+      const error = await raw.json();
+      const challenge = raw.headers.get('www-authenticate');
+      expect(challenge).toContain(
+        `scope="profile:read answers:sensitive${signed ? '' : ' offline_access'}"`
+      );
+      expect(challenge).toContain(`error_description="${error.error}"`);
+      const hosted = await call('rolepatch_profiles_get', true, signed);
+      expect(hosted.status).toBe(200);
+      expect(await hosted.json()).toEqual({
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          isError: true,
+          content: [{ type: 'text', text: error.error }],
+          structuredContent: error,
+          _meta: { 'mcp/www_authenticate': [challenge] },
+        },
+      });
+    }
     expect(dispatch).toHaveBeenCalledTimes(1);
   } finally {
     dispatch.mockRestore();
   }
+});
+it('lets legacy ChatGPT clients request explicit career consent without upgrading prior grants', async () => {
+  const callback = 'https://chatgpt.com/connector_platform_oauth_redirect';
+  async function register(callbackUrl: string) {
+    const response = await send('/oauth2/register', {
+      client_name: 'ChatGPT',
+      redirect_uris: [callbackUrl],
+      application_type: 'web',
+      token_endpoint_auth_method: 'none',
+      grant_types: ['authorization_code', 'refresh_token'],
+      response_types: ['code'],
+    });
+    expect(response.status).toBe(201);
+    const { client_id } = await response.json();
+    sql
+      .prepare('UPDATE oauthClient SET scopes=? WHERE clientId=?')
+      .run('["offline_access","resume"]', client_id);
+    return client_id as string;
+  }
+  const client = await register(callback);
+  const unrelated = await register(redirect);
+  async function authorize(scope: string) {
+    const consent = await consentResumeOAuth(
+      await consentQuery(client, true, { redirect_uri: callback, scope }),
+      true
+    );
+    if (!consent.ok) throw new Error(consent.error);
+    const issued = await token({
+      grant_type: 'authorization_code',
+      client_id: client,
+      resource,
+      redirect_uri: callback,
+      code_verifier: verifier,
+      code: new URL(consent.redirect_uri).searchParams.get('code')!,
+    });
+    expect(issued.status).toBe(200);
+    return issued.json();
+  }
+  const previous = await authorize('offline_access resume');
+  const extra = { redirect_uri: callback, scope: 'applications:read' };
+  const before = await send(`/oauth2/authorize?${query(client, extra)}`, undefined, true);
+  expect(new URL((await before.json()).url).searchParams.get('error')).toBe('invalid_scope');
+  const migration = readFileSync('migrations/0007_chatgpt_client_scopes.sql', 'utf8');
+  sql.exec(migration);
+  sql.exec(migration);
+  const scopes = (id: string) =>
+    JSON.parse(sql.prepare('SELECT scopes FROM oauthClient WHERE clientId=?').get(id).scopes);
+  expect(scopes(client)).toEqual(['offline_access', ...resourceScopes]);
+  expect(scopes(unrelated)).toEqual(['offline_access', 'resume']);
+  const { GET } = await import('@/app/api/auth/[...all]/route');
+  const omitted = new URLSearchParams(query(client, { redirect_uri: callback, prompt: 'consent' }));
+  omitted.delete('scope');
+  const response = await GET(
+    new Request(`${origin}/api/auth/oauth2/authorize?${omitted}`, {
+      headers: { cookie, accept: 'application/json' },
+    })
+  );
+  expect(new URL((await response.json()).url, origin).searchParams.get('scope')).toBe(
+    'offline_access resume'
+  );
+  expect((await invoke(previous.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
+  const renewed = await token({
+    grant_type: 'refresh_token',
+    client_id: client,
+    resource,
+    refresh_token: previous.refresh_token,
+  });
+  expect(renewed.status).toBe(200);
+  expect(
+    (await invoke((await renewed.json()).access_token, '/api/mcp', [extra.scope])).status
+  ).toBe(403);
+  const fresh = await consentQuery(client, true, extra);
+  expect(await getResumeOAuthRequest(fresh)).toMatchObject({ ok: true, scopes: [extra.scope] });
+  expect(await consentResumeOAuth(fresh, false)).toMatchObject({
+    ok: true,
+    redirect_uri: expect.stringContaining('access_denied'),
+  });
+  const expanded = await authorize(extra.scope);
+  expect((await invoke(expanded.access_token, '/api/mcp', [extra.scope])).status).toBe(200);
+  expect((await invoke(previous.access_token, '/api/mcp', [extra.scope])).status).toBe(403);
 });
 it('qualifies registration, consent, PKCE, replay resistance, owner identity, refresh and immediate session revocation', async () => {
   const registration = await send('/oauth2/register', {

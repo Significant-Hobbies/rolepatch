@@ -1,4 +1,4 @@
-import { rendersOwnedVersion } from '@/lib/career-scopes';
+import { careerToolScopes, rendersOwnedVersion } from '@/lib/career-scopes';
 import { trackerTools } from '@/lib/tracker-tools';
 import { careerTools } from '@/lib/career-tools';
 import { careerResumeTools } from '@/lib/career-resume-tools';
@@ -83,7 +83,12 @@ export const RESUME_MCP_TOOLS = [
   ...trackerTools,
   ...careerTools,
   ...careerResumeTools,
-];
+].map((tool) => {
+  const oauth = { type: 'oauth2', scopes: careerToolScopes(tool.name, {}) };
+  const guest = ['rolepatch_resolve_job', 'rolepatch_tailor_resume', 'rolepatch_render_resume_pdf'];
+  const securitySchemes = guest.includes(tool.name) ? [{ type: 'noauth' }, oauth] : [oauth];
+  return { ...tool, securitySchemes, _meta: { securitySchemes } };
+});
 
 export async function callResumeMcpTool(name: string, args: unknown) {
   if (trackerTools.some((tool) => tool.name === name)) return callTracker(name, args);

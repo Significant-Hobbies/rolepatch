@@ -13,6 +13,10 @@ describe('remote career tool authorization', () => {
     ];
     for (const tool of RESUME_MCP_TOOLS) {
       const scopes = careerToolScopes(tool.name, {});
+      const oauth = { type: 'oauth2', scopes };
+      const guest = legacy.includes(tool.name) && tool.name !== 'rolepatch_resume_profiles';
+      expect(tool.securitySchemes).toEqual(guest ? [{ type: 'noauth' }, oauth] : [oauth]);
+      expect(tool._meta.securitySchemes).toEqual(tool.securitySchemes);
       expect(scopes.length).toBeGreaterThan(0);
       expect(scopes.includes('resume')).toBe(legacy.includes(tool.name));
     }

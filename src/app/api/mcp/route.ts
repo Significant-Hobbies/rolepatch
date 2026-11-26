@@ -77,7 +77,12 @@ export async function POST(req: Request) {
     jsonrpc?: string;
     id?: string | number | null;
     method?: string;
-    params?: { protocolVersion?: string; name?: string; arguments?: unknown };
+    params?: {
+      protocolVersion?: string;
+      name?: string;
+      arguments?: unknown;
+      _meta?: Record<string, unknown>;
+    };
   };
   try {
     message = JSON.parse(text);
@@ -131,7 +136,7 @@ export async function POST(req: Request) {
       scopes.some((scope) => scope !== 'resume') ||
       name === 'rolepatch_resume_profiles' ||
       (name === 'rolepatch_tailor_resume' && !hasInlineMaster);
-    return await withResumeAccess(
+    const response = await withResumeAccess(
       req,
       async () => {
         const output = await callResumeMcpTool(name!, message.params?.arguments ?? {});
@@ -168,6 +173,28 @@ export async function POST(req: Request) {
       requireAccount,
       scopes
     );
+    const challenge = response.headers.get('www-authenticate');
+    // ChatGPT consumes tool-result metadata on successful JSON-RPC transport.
+    if (
+      challenge &&
+      Object.keys(message.params?._meta ?? {}).some((key) => key.startsWith('openai/'))
+    ) {
+      const failure = await response.json();
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          id,
+          result: {
+            isError: true,
+            content: [{ type: 'text', text: failure.error }],
+            structuredContent: failure,
+            _meta: { 'mcp/www_authenticate': [challenge] },
+          },
+        },
+        { headers: response.headers }
+      );
+    }
+    return response;
   } catch {
     return rpc(id, {
       result: {

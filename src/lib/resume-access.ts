@@ -126,22 +126,24 @@ export async function withResumeAccess(
     insufficientScope = error instanceof Error && error.name === 'ResumeOAuthScopeError';
     // Auth/storage errors are fail-closed, without leaking credentials or falling back to guests.
   }
-  if (!userId)
+  if (!userId) {
+    const description = insufficientScope
+      ? 'Reconnect and approve the requested permissions.'
+      : 'Connect your account or create a new API token in Settings.';
     return Response.json(
       {
         ok: false,
         code: insufficientScope ? 'insufficient_scope' : 'invalid_access_token',
-        error: insufficientScope
-          ? 'Reconnect and approve the requested permissions.'
-          : 'Connect your account or create a new API token in Settings.',
+        error: description,
       },
       {
         status: insufficientScope ? 403 : 401,
         headers: {
           'Cache-Control': 'private, no-store',
-          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${[...scopes, ...(path === '/api/mcp' && !insufficientScope ? ['offline_access'] : [])].join(' ')}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"`,
+          'WWW-Authenticate': `Bearer resource_metadata="${new URL(request.url).origin}/.well-known/oauth-protected-resource${path}", scope="${[...scopes, ...(path === '/api/mcp' && !insufficientScope ? ['offline_access'] : [])].join(' ')}", error="${insufficientScope ? 'insufficient_scope' : 'invalid_token'}"${path === '/api/mcp' ? `, error_description="${description}"` : ''}`,
         },
       }
     );
+  }
   return identity.run(userId, action);
 }
