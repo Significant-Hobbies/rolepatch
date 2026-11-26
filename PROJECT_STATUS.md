@@ -11,6 +11,21 @@ skipped. Hosted ChatGPT refreshed the 32-tool catalog and attempted
 `rolepatch_applications_list`. Reauthorization requested only the legacy
 resume and renewal permissions. [Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45766648939)
 
+PR #51 shipped the ChatGPT connector update at `9730232` on the production
+Worker `7806c542-63ca-469b-a34b-a088c42df7b7` at 100% traffic.
+Migration 0007 updated both legacy ChatGPT registrations. No migrations
+remain pending. All seven public production smoke checks passed. The
+authenticated apply-agent read smoke was skipped because no session was supplied.
+[Connector deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45772470859)
+
+Hosted ChatGPT resolved a synthetic job ID and received a 20,041-byte PDF
+from supplied Markdown. After refreshing the 32-tool catalog, a read-only
+tracker lookup prompted for reconnection. RolePatch showed the requested
+`applications:read` permission alongside the existing resume and renewal
+permissions. Completing the hosted lookup requires owner Google sign-in.
+The local OAuth integration tests verified the protected read after consent,
+token renewal, isolation and revocation.
+
 ## Career database branch qualification — 26 November
 
 The production MCP catalog returned the four original resume tools during this
