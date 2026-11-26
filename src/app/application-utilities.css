@@ -1,6 +1,7 @@
 /* Complete utilities for every other route and the authenticated account UI. */
 @import "tailwindcss/theme.css" layer(theme);
 @import "./application-theme.css";
+@custom-variant dark (&:where([data-workspace-theme="dark"], [data-workspace-theme="dark"] *));
 @layer utilities {
   @tailwind utilities;
 }

@@ -90,7 +90,7 @@ async function invoke(name: TrackerName, args: unknown) {
   }
   return result;
 }
-type Task = (work: () => Promise<void>) => void;
+type Task = (work: () => Promise<void>, scope?: 'analytics') => void;
 type Choice = { id: string; label: string };
 function RecordForm({
   record,
@@ -316,9 +316,11 @@ export function ApplicationTracker({
     setEdit(false);
     detailTrigger.current?.focus();
   }
-  const task: Task = async (work) => {
-    setError('');
-    setExistingId(undefined);
+  const task: Task = async (work, scope) => {
+    if (scope !== 'analytics') {
+      setError('');
+      setExistingId(undefined);
+    }
     setBusy(true);
     try {
       await work();
@@ -357,12 +359,13 @@ export function ApplicationTracker({
       );
     }
   }
-  async function select(id: string) {
+  async function select(id: string, bringIntoFocus = false) {
     const [job, events, materials] = await Promise.all([
       invoke('rolepatch_applications_get', { id }),
       invoke('rolepatch_application_events_list', { application_id: id }),
       invoke('rolepatch_materials_list', { application_id: id, include_archived: true }),
     ]);
+    focusDetail.current = bringIntoFocus;
     setSelected(job.record);
     setReceipts(job.submission_receipts ?? []);
     setEvents(events);
@@ -407,7 +410,7 @@ export function ApplicationTracker({
         value={view}
         onValueChange={(next) => {
           setView(next);
-          if (next === 'analytics' && !analytics) void task(() => summarize());
+          if (next === 'analytics' && !analytics) void task(() => summarize(), 'analytics');
         }}
       >
         <div className="border-b">
@@ -433,13 +436,17 @@ export function ApplicationTracker({
               error={analyticsError}
               onChange={(days) => {
                 setAnalyticsRange(days);
-                void task(() => summarize(days));
+                void task(() => summarize(days), 'analytics');
               }}
-              onRetry={() => void task(() => summarize())}
+              onRetry={() => void task(() => summarize(), 'analytics')}
             />
           </fieldset>
         </TabsContent>
-        <TabsContent value="applications" className="min-w-0 pt-2">
+        <TabsContent
+          value="applications"
+          forceMount
+          className="min-w-0 pt-2 data-[state=inactive]:hidden"
+        >
           <fieldset
             disabled={loading || busy}
             className="min-w-0 space-y-3"
@@ -466,10 +473,7 @@ export function ApplicationTracker({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      focusDetail.current = true;
-                      void task(() => select(existingId));
-                    }}
+                    onClick={() => void task(() => select(existingId, true))}
                   >
                     Open existing application
                   </Button>
@@ -596,8 +600,7 @@ export function ApplicationTracker({
                                 className="group h-auto min-h-14 w-full justify-start gap-3 rounded-none px-3 py-2.5 text-left whitespace-normal focus-visible:ring-inset"
                                 onClick={(event) => {
                                   detailTrigger.current = event.currentTarget;
-                                  focusDetail.current = true;
-                                  void task(() => select(String(row.id)));
+                                  void task(() => select(String(row.id), true));
                                 }}
                               >
                                 <span className="min-w-0 flex-1">
