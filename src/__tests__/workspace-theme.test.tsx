@@ -43,8 +43,8 @@ function fixture() {
 it('persists explicit dark selection through remount and carries it into portaled forms', async () => {
   const user = userEvent.setup();
   const first = render(fixture());
-  await user.click(screen.getByRole('button', { name: /Change appearance/ }));
-  await user.click(screen.getByRole('menuitemradio', { name: 'Dark' }));
+  await user.click(screen.getByRole('radio', { name: 'Light' }));
+  await user.click(screen.getByRole('radio', { name: 'Dark' }));
   expect(localStorage.getItem('rolepatch-workspace-theme')).toBe('dark');
   expect(first.container.querySelector('[data-workspace-theme="dark"]')).toBeTruthy();
   first.unmount();
@@ -55,13 +55,13 @@ it('persists explicit dark selection through remount and carries it into portale
 it('follows the system preference only while System is selected', async () => {
   const user = userEvent.setup();
   const view = render(fixture());
+  await user.click(screen.getByRole('radio', { name: 'System' }));
   mediaDark = true;
   mediaListener?.();
   await waitFor(() =>
     expect(view.container.querySelector('[data-workspace-theme="dark"]')).toBeTruthy()
   );
-  await user.click(screen.getByRole('button', { name: /Change appearance/ }));
-  await user.click(screen.getByRole('menuitemradio', { name: 'Light' }));
+  await user.click(screen.getByRole('radio', { name: 'Light' }));
   mediaDark = false;
   mediaListener?.();
   mediaDark = true;

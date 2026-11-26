@@ -1,55 +1,38 @@
 'use client';
 
-import { Moon, Sun, Monitor } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from '@/components/ui/dropdown-menu';
+import { ToggleGroup, ToggleGroupItem } from '@saas-maker/ui/components/toggle-group';
 import { useWorkspaceTheme, type WorkspaceTheme } from '@/components/workspace-theme';
+
+const choices = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+] as const satisfies ReadonlyArray<{ value: WorkspaceTheme; label: string }>;
 
 export function ThemeToggle() {
   const state = useWorkspaceTheme();
   if (!state) return null;
-  const Icon = state.theme === 'system' ? Monitor : state.theme === 'dark' ? Moon : Sun;
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Theme: ${state.theme}. Change appearance`}
-          title="Change appearance"
+    <ToggleGroup
+      type="single"
+      size="sm"
+      value={state.theme}
+      onValueChange={(value) => {
+        const choice = choices.find((option) => option.value === value);
+        if (choice) state.setTheme(choice.value);
+      }}
+      aria-label="Appearance"
+      className="shrink-0 border bg-background p-0.5"
+    >
+      {choices.map(({ value, label }) => (
+        <ToggleGroupItem
+          key={value}
+          value={value}
+          className="h-8 px-2 text-xs data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
         >
-          <Icon className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup
-          value={state.theme}
-          onValueChange={(next) => state.setTheme(next as WorkspaceTheme)}
-        >
-          <DropdownMenuRadioItem value="light">
-            <Sun />
-            Light
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
-            <Moon />
-            Dark
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">
-            <Monitor />
-            System
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }

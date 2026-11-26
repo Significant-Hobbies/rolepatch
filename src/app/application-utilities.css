@@ -5,3 +5,5 @@
   @tailwind utilities;
 }
 @source "../";
+
+@source "../../node_modules/@saas-maker/ui/src/components/{badge,button,input,table,tabs,textarea,toggle,toggle-group}.tsx";

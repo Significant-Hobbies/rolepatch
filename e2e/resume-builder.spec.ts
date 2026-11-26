@@ -107,8 +107,8 @@ test('appearance persists and portal inputs follow Dark, Light and System withou
   await page.goto('/resume-builder');
   const workspace = page.locator('.rolepatch-workspace').first();
   const footer = await page.getByRole('contentinfo').innerHTML();
-  await page.getByRole('button', { name: /Change appearance/ }).click();
-  await page.getByRole('menuitemradio', { name: 'Dark', exact: true }).click();
+  await page.getByRole('radio', { name: 'Light', exact: true }).click();
+  await page.getByRole('radio', { name: 'Dark', exact: true }).click();
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'dark');
   expect(await workspace.evaluate((element) => getComputedStyle(element).colorScheme)).toBe('dark');
   await page.reload();
@@ -127,11 +127,9 @@ test('appearance persists and portal inputs follow Dark, Light and System withou
       );
     }
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: /Change appearance/ }).click();
-  await page.getByRole('menuitemradio', { name: 'Light', exact: true }).click();
+  await page.getByRole('radio', { name: 'Light', exact: true }).click();
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'light');
-  await page.getByRole('button', { name: /Change appearance/ }).click();
-  await page.getByRole('menuitemradio', { name: 'System', exact: true }).click();
+  await page.getByRole('radio', { name: 'System', exact: true }).click();
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'dark');
   await page.emulateMedia({ colorScheme: 'light' });

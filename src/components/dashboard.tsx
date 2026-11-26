@@ -730,6 +730,16 @@ export function Dashboard(props: DashboardProps) {
         </div>
       )}
 
+      {!isGuest && (
+        <ApplicationTracker
+          documents={history.map((r) => ({
+            id: r.id,
+            label: jobs.find((j) => j.id === r.job_id)?.role || 'Saved resume',
+          }))}
+          onChange={async () => setJobs(await listJobApplications())}
+        />
+      )}
+
       {!resumes.some((r) => masterResumeReadiness(r.source).ready) && (
         <div className="mb-8 space-y-4 rounded-lg border border-[var(--border)] p-4">
           <p>
@@ -746,15 +756,6 @@ export function Dashboard(props: DashboardProps) {
         </div>
       )}
 
-      {!isGuest && (
-        <ApplicationTracker
-          documents={history.map((r) => ({
-            id: r.id,
-            label: jobs.find((j) => j.id === r.job_id)?.role || 'Saved resume',
-          }))}
-          onChange={async () => setJobs(await listJobApplications())}
-        />
-      )}
       {/* Job Applications section */}
       <section id="history" aria-labelledby="history-heading">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
