@@ -24,15 +24,15 @@ export function ApplicationAnalyticsSummary({
   const peak = Math.max(1, ...(data?.months.map(({ count }) => count) ?? []));
   const metrics = [
     ['Submitted', data?.total],
-    ['Reached screening or interview', data?.interviewed],
-    ['Reached offer', data?.offers],
+    ['Recorded screening or interview', data?.interviewed],
+    ['Recorded offer', data?.offers],
   ] as const;
   return (
     <section aria-label="Application analytics" className="space-y-4 rounded-lg border p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">Application analytics</h3>
-          <p className="text-sm text-muted-foreground">Based on recorded submission dates (UTC).</p>
+          <p className="text-sm text-muted-foreground">Based on submission dates and receipts.</p>
         </div>
         <select
           aria-label="Analytics date range"
@@ -99,7 +99,7 @@ export function ApplicationAnalyticsSummary({
                 <dl className="space-y-1.5 text-sm">
                   {data.stages.map(({ stage, count }) => (
                     <div key={stage} className="flex items-center justify-between gap-3">
-                      <dt>{displayChoice(stage)}</dt>
+                      <dt className="capitalize">{displayChoice(stage)}</dt>
                       <dd className="tabular-nums">{count}</dd>
                     </div>
                   ))}

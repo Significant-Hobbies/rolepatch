@@ -145,11 +145,24 @@ async function listApplications(owner: string, input: S<'rolepatch_applications_
 
 export type ApplicationAnalyticsRange = 30 | 90 | 365;
 
-export async function summarizeApplications(owner: string, days: ApplicationAnalyticsRange) {
-  const tomorrow = (Math.floor(Date.now() / 86_400_000) + 1) * 86400;
+export async function summarizeApplications(
+  owner: string,
+  days: ApplicationAnalyticsRange,
+  today: number
+) {
+  const tomorrow = today + 86400;
   const from = tomorrow - days * 86400;
   const groups = await rows(
-    `SELECT strftime('%Y-%m', applied_at, 'unixepoch') AS month, stage,
+    `WITH receipts AS (
+       SELECT job_id, min(created_at) AS submitted_at
+       FROM application_receipts WHERE user_id=? AND status='submitted' GROUP BY job_id
+     ), submissions AS (
+       SELECT j.id, j.user_id, j.stage, j.interview_date,
+         coalesce(j.applied_at, receipts.submitted_at) AS submitted_at
+       FROM job_applications AS j LEFT JOIN receipts ON receipts.job_id=j.id
+       WHERE j.user_id=?
+     )
+     SELECT strftime('%Y-%m', submitted_at, 'unixepoch') AS month, stage,
       count(*) AS total,
       sum(interview_date IS NOT NULL OR stage IN ('screening','technical','final_round') OR EXISTS (
         SELECT 1 FROM application_events AS e
@@ -162,13 +175,11 @@ export async function summarizeApplications(owner: string, days: ApplicationAnal
         WHERE e.user_id=j.user_id AND e.job_id=j.id AND (
           e.status IN ('offer','accepted') OR e.prior_status IN ('offer','accepted')
         ))) AS offers
-     FROM job_applications AS j
-     WHERE j.user_id=? AND (
-       (applied_at>=? AND applied_at<?)
-       OR (applied_at IS NULL AND stage IN ('applied','screening','technical','final_round','offer','accepted','rejected','withdrawn'))
-     )
+     FROM submissions AS j
+     WHERE (submitted_at>=? AND submitted_at<?)
+       OR (submitted_at IS NULL AND stage IN ('applied','screening','technical','final_round','offer','accepted','rejected','withdrawn'))
      GROUP BY month, stage`,
-    [owner, from, tomorrow]
+    [owner, owner, from, tomorrow]
   );
   const firstMonth = new Date(from * 1000);
   firstMonth.setUTCDate(1);

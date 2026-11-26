@@ -128,7 +128,7 @@ describe('owned application tracker', () => {
         applied
       );
 
-      expect(await getApplicationAnalytics(90)).toMatchObject({
+      expect(await getApplicationAnalytics(90, '2026-11-26')).toMatchObject({
         ok: true,
         summary: {
           total: 17,
@@ -148,13 +148,49 @@ describe('owned application tracker', () => {
           ],
         },
       });
-      expect(await getApplicationAnalytics(30)).toMatchObject({
+      expect(await getApplicationAnalytics(30, '2026-11-26')).toMatchObject({
         ok: true,
         summary: { total: 16, interviewed: 1, offers: 1, undated: 1 },
       });
-      expect(await getApplicationAnalytics(60 as 90)).toMatchObject({ ok: false });
+      expect(await getApplicationAnalytics(30, '2026-11-27')).toMatchObject({
+        ok: true,
+        summary: { total: 17, interviewed: 1, offers: 1, undated: 1 },
+      });
+      expect(await getApplicationAnalytics(60 as 90, '2026-11-26')).toMatchObject({ ok: false });
+      expect(await getApplicationAnalytics(90, '2026-11-28')).toMatchObject({ ok: false });
       vi.mocked(getCurrentUserId).mockResolvedValue(null);
-      expect(await getApplicationAnalytics(90)).toMatchObject({ ok: false });
+      expect(await getApplicationAnalytics(90, '2026-11-26')).toMatchObject({ ok: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it('uses the first successful owned receipt for a missing date and prefers explicit dates', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-11-26T19:00:00Z'));
+      const recent = Date.parse('2026-11-10T00:00:00Z') / 1000;
+      const older = Date.parse('2026-09-15T00:00:00Z') / 1000;
+      const add = sql.prepare(
+        'INSERT INTO job_applications(id,user_id,company,role,status,stage,applied_at) VALUES(?,?,?,?,?,?,?)'
+      );
+      add.run('assisted', 'owner', 'Example', 'Engineer', 'applied', 'applied', null);
+      add.run('explicit', 'owner', 'Example', 'Engineer', 'applied', 'applied', recent);
+      const receipt = sql.prepare(
+        'INSERT INTO application_receipts(id,user_id,job_id,status,created_at) VALUES(?,?,?,?,?)'
+      );
+      receipt.run('foreign', 'foreign', 'old', 'submitted', recent);
+      receipt.run('failed', 'owner', 'old', 'failed', recent);
+      receipt.run('first', 'owner', 'assisted', 'submitted', older);
+      receipt.run('retry', 'owner', 'assisted', 'submitted', recent);
+      receipt.run('explicit', 'owner', 'explicit', 'submitted', older);
+      expect(await getApplicationAnalytics(30, '2026-11-26')).toMatchObject({
+        ok: true,
+        summary: { total: 1, undated: 1 },
+      });
+      expect(await getApplicationAnalytics(90, '2026-11-26')).toMatchObject({
+        ok: true,
+        summary: { total: 2, undated: 1 },
+      });
     } finally {
       vi.useRealTimers();
     }

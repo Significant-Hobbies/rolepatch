@@ -289,13 +289,18 @@ export function ApplicationTracker({
     );
   }
   async function summarize(days = analyticsRange) {
-    setAnalytics(undefined);
+    if (analytics?.days !== days) setAnalytics(undefined);
     setAnalyticsError('');
     try {
-      const result = await getApplicationAnalytics(days);
+      const now = new Date();
+      const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+      const result = await getApplicationAnalytics(days, localDate);
       if (!result.ok) throw new Error(result.error);
       setAnalytics(result.summary);
     } catch (error) {
+      setAnalytics(undefined);
       setAnalyticsError(
         error instanceof Error ? error.message : 'Could not load application analytics.'
       );
