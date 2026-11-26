@@ -73,7 +73,9 @@ describe('NewJobButton', () => {
       'Unknown Company',
       'Untitled Role',
       expect.any(String),
-      expect.any(String)
+      expect.any(String),
+      undefined,
+      'manual'
     );
     expect(mockPush).toHaveBeenCalledWith('/tailor/pasted-job');
   });
@@ -111,7 +113,9 @@ describe('NewJobButton', () => {
       'Acme',
       'Platform Engineer',
       expect.stringContaining('platform engineer'),
-      expect.stringContaining('platform engineer')
+      expect.stringContaining('platform engineer'),
+      undefined,
+      'manual'
     );
     expect(mockPush).toHaveBeenCalledWith('/tailor/job-1');
   });

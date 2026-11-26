@@ -46,6 +46,19 @@ describe('POST /api/extension/fill-receipt', () => {
     expect(mockExecute).not.toHaveBeenCalled();
   });
 
+  it('requires the opening identified by the current tab, including identity-bearing query parameters', async () => {
+    mockGetCurrentUserId.mockResolvedValue('user-1');
+    mockExecute.mockResolvedValueOnce({
+      rows: [{ id: 'job-1', url: 'https://jobs.example.org/view?job=1', resume_id: 'r1' }],
+    });
+    const { POST } = await import('@/app/api/extension/fill-receipt/route');
+    const res = await POST(
+      makeReq({ url: 'https://jobs.example.org/view?job=2', job_id: 'job-1' })
+    );
+    expect(res.status).toBe(404);
+    expect(mockExecute).toHaveBeenCalledTimes(1);
+  });
+
   it('records a filled receipt and leaves the queue ready for user review', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-1');
     mockExecute

@@ -111,7 +111,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
             company,
             role,
             manualText,
-            manualText
+            manualText,
+            undefined,
+            'manual'
           );
         }
         close();
@@ -146,7 +148,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
           scraped.company,
           scraped.role,
           scraped.html,
-          scraped.text
+          scraped.text,
+          undefined,
+          'url'
         );
       }
       close();

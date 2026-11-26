@@ -98,6 +98,22 @@ export function localRenameResume(id: string, name: string): void {
   }
 }
 
+/** Commit the two recovery fields together, preserving other guest records and any concurrent edits. */
+export function localCorrectResume(
+  original: Pick<Resume, 'id' | 'name' | 'source'>,
+  name: string,
+  source: string
+): boolean {
+  const resumes = getItems<Resume>(KEYS.resumes);
+  const row = resumes.find((r) => r.id === original.id);
+  if (!row || row.name !== original.name || row.source !== original.source) return false;
+  row.name = name;
+  row.source = source;
+  row.updated_at = Math.floor(Date.now() / 1000);
+  setItems(KEYS.resumes, resumes);
+  return true;
+}
+
 export function localDeleteResume(id: string): void {
   setItems(
     KEYS.resumes,

@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { v4 as uuid } from 'uuid';
 
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { saveOwnedOpening } from '@/lib/saved-job';
 import { recordResumeHistory } from '@/lib/actions/resume-history-actions';
 import type { JobApplication, JobDetailsPatch, TailorChange, TailoredResume } from '@/lib/types';
 
@@ -27,18 +27,29 @@ export async function createJobApplication(
   company: string,
   role: string,
   jdRaw: string,
-  jdText: string
+  jdText: string,
+  discoveryNote?: string,
+  intake?: 'manual' | 'url' | 'preview' | 'description'
 ): Promise<string> {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Sign in to create job applications');
-  const id = uuid();
-  await db.execute({
-    sql: `INSERT INTO job_applications (id, resume_id, url, company, role, jd_raw, jd_text, user_id)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, resumeId, url, company, role, jdRaw, jdText, userId],
-  });
-  revalidatePath('/');
-  return id;
+  if (
+    discoveryNote !== undefined &&
+    (typeof discoveryNote !== 'string' || discoveryNote.length > 4000)
+  )
+    throw new Error('Invalid discovery note.');
+  const result = await saveOwnedOpening(
+    userId,
+    { resumeId, url, company, role, jdRaw, jdText, descriptionSource: intake },
+    discoveryNote !== undefined
+      ? 'queue'
+      : intake === 'manual' || intake === 'url'
+        ? intake
+        : 'discover',
+    discoveryNote || null
+  );
+  revalidatePath('/jobs');
+  return result.id;
 }
 
 export async function getJobApplication(id: string): Promise<JobApplication | null> {
@@ -56,7 +67,7 @@ export async function listJobApplications(): Promise<JobApplication[]> {
   const userId = await getCurrentUserId();
   if (!userId) return [];
   const result = await db.execute({
-    sql: 'SELECT * FROM job_applications WHERE user_id = ? ORDER BY created_at DESC',
+    sql: "SELECT * FROM job_applications WHERE user_id = ? AND stage NOT IN ('archived','withdrawn') ORDER BY created_at DESC, id DESC",
     args: [userId],
   });
   return JSON.parse(JSON.stringify(result.rows)) as JobApplication[];

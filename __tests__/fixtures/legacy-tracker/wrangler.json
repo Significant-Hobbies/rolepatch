@@ -1,0 +1,11 @@
+{
+  "name": "rolepatch-legacy-tracker-test",
+  "compatibility_date": "2026-07-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "isolated-test",
+      "database_id": "00000000-0000-4000-8000-000000000001"
+    }
+  ]
+}

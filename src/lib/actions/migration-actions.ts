@@ -1,6 +1,7 @@
 'use server';
 
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { guestMasterIssue } from '@/lib/guest-migration-validation';
 import { db } from '@/lib/db';
 import type { CoverLetter, JobApplication, Resume, StashEntry, TailoredResume } from '@/lib/types';
 
@@ -28,6 +29,8 @@ export async function migrateGuestData(input: MigrationInput): Promise<Migration
   const userId = await getCurrentUserId();
   if (!userId) return { success: false, error: 'Not signed in' };
 
+  const issue = guestMasterIssue(input.resumes);
+  if (issue) return { success: false, error: issue };
   const counts = { resumes: 0, jobs: 0, tailoredResumes: 0, coverLetters: 0, stashEntries: 0 };
 
   // 1. Resumes first (jobs reference them)

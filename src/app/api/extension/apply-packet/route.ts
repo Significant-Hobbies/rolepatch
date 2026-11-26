@@ -8,7 +8,7 @@ import { db } from '@/lib/db';
 import { rowToEvidence, strField } from '@/lib/evidence-mapping';
 import { extensionCorsHeaders } from '@/lib/extension-cors';
 import { parseExtensionUrlInput } from '@/lib/extension-route-input';
-import { jobUrlVariants, sqlPlaceholders } from '@/lib/job-url';
+import {legacyApplicationIdentity} from '@/lib/tracker-store';
 import type { AchievementEvidence, ApplicationReceipt, ProfileAnswer } from '@/lib/types';
 
 interface JobRow {
@@ -83,17 +83,17 @@ export async function POST(req: NextRequest) {
   if (!/^https?:\/\//i.test(url)) {
     return NextResponse.json({ ok: false, error: 'url must be http(s)' }, { status: 400, headers });
   }
-  const urlVariants = jobUrlVariants(url);
+  const identity = await legacyApplicationIdentity(userId,url);
 
-  const jobResult = await db.execute({
+  const jobResult = identity.id ? await db.execute({
     sql: `SELECT j.id, j.url, j.company, j.role, j.jd_text, j.resume_id, r.name AS resume_name
           FROM job_applications j
           LEFT JOIN resumes r ON r.id = j.resume_id AND r.user_id = j.user_id
-          WHERE j.url IN (${sqlPlaceholders(urlVariants)}) AND j.user_id = ?
+          WHERE j.id = ? AND j.user_id = ?
           LIMIT 1`,
-    args: [...urlVariants, userId],
-  });
-  const job = JSON.parse(JSON.stringify(jobResult.rows[0] ?? null)) as JobRow | null;
+    args: [identity.id,userId],
+  }):null;
+  const job = JSON.parse(JSON.stringify(jobResult?.rows[0] ?? null)) as JobRow | null;
   if (!job) {
     return NextResponse.json(
       {

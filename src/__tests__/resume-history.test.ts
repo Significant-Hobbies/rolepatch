@@ -16,6 +16,7 @@ const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite') as {
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { db } from '@/lib/db';
+import { createJobApplication } from '@/lib/actions/job-actions';
 import { listResumeHistory, recordResumeHistory } from '@/lib/actions/resume-history-actions';
 
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: vi.fn() }));
@@ -76,6 +77,16 @@ beforeEach(() => {
 afterEach(() => sql.close());
 
 describe('owned immutable resume history with real SQL', () => {
+  it('links new tracker jobs only to active profiles belonging to the caller', async () => {
+    const create = (id: string) => createJobApplication(id, '', 'Example', 'Engineer', jd, jd);
+    await expect(create('foreign')).rejects.toThrow(/not found/i);
+    const job = await create('master');
+    expect(sql.prepare('SELECT resume_id FROM job_applications WHERE id=?').get(job)).toMatchObject(
+      { resume_id: 'master' }
+    );
+    sql.prepare('UPDATE resumes SET archived_at=unixepoch() WHERE id=?').run('master');
+    await expect(create('master')).rejects.toThrow(/not found/i);
+  });
   it('blocks guest writes and foreign job/master IDs', async () => {
     vi.mocked(getCurrentUserId).mockResolvedValue(null);
     await expect(

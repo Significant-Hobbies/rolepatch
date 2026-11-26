@@ -9,10 +9,9 @@ provider. Check [project status](../../../PROJECT_STATUS.md) for release and
 qualification before configuring the public server.
 
 Add `https://rolepatch.com/api/mcp` in an OAuth-capable assistant's MCP settings.
-Choose OAuth, sign in with Google, and review **Connect your resume** in RolePatch
+Choose OAuth, sign in with Google, and review **Connect to RolePatch** in RolePatch
 Settings. Check the client-provided name and callback origin, then allow or cancel
-access. No browser cookie needs to be copied. Request `resume` scope; clients
-supporting renewal also request `offline_access`.
+access. No browser cookie needs to be copied. Request the scopes needed for the task. Clients supporting renewal also request `offline_access`.
 
 Discovery is served at:
 
@@ -26,20 +25,25 @@ exact callbacks and use PKCE S256 with authorization-code and refresh grants.
 The implementation retains the deployed MCP protocol versions and does not
 claim CIMD or the newer MCP transport profile.
 
-MCP discovery and its 401 challenge advertise `resume offline_access` so deployed
-ChatGPT clients using MCP 2025-06-18 or earlier request renewal during explicit
-consent. This is a compatibility exception to the newer guidance that
-authorization-server-only scopes should not appear in protected-resource
-metadata. `/api/resume` discovery and challenges, and 403 scope challenges,
-continue to request only `resume`.
+The protected-resource document lists available permissions. Each MCP tool’s HTTP
+challenge identifies the scopes required by that call. A 401 on MCP also requests
+`offline_access` for clients that renew through discovery. A 403 identifies the
+missing grant. The separate `/api/resume` resource uses the original `resume` grant.
 
-Existing grants without renewal need the assistant to refresh discovery and
-reauthorize with explicit consent to `resume offline_access`. The current provider
-stores both configured scopes for dynamic clients even when registration
-requests only `resume`; this does not grant consent or issue a refresh token by
-itself. No saved client's scopes are widened and no refresh grant is issued
-silently. Verify the assistant's actual consent and a call after the five-minute
-access-token expiry before claiming renewal works.
+| Permission | Grants |
+| --- | --- |
+| `resume` | Existing master list, tailoring, and explicit history save |
+| `profile:read`, `profile:write` | Read or maintain career facts |
+| `answers:sensitive` | Explicit sensitive-answer access in addition to profile permission |
+| `applications:read`, `applications:write` | Read or maintain applications and their events |
+| `materials:read`, `materials:write` | Read or maintain materials and resume versions |
+| `resume:generate` | Generate from a readable profile |
+| `offline_access` | Renew the approved connection |
+
+Clients must request expanded scopes and show the user the signed consent
+request. Registration describes scopes a client can request. The access token
+and current owner consent must both cover the operation. Older grants and
+finite API tokens retain their original resume permissions.
 
 Access JWTs expire in five minutes. Refresh lasts at most seven days while the
 linked browser session stays active. Verification checks signature, type,

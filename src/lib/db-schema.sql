@@ -67,7 +67,12 @@ CREATE TABLE IF NOT EXISTS resumes (
   name TEXT NOT NULL,
   source TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  revision INTEGER NOT NULL DEFAULT 1,
+  is_default INTEGER NOT NULL DEFAULT 0,
+  archived_at INTEGER,
+  create_request_id TEXT,
+  create_payload_hash TEXT
 );
 
 CREATE TABLE IF NOT EXISTS job_applications (
@@ -89,7 +94,28 @@ CREATE TABLE IF NOT EXISTS job_applications (
   notes TEXT,
   rejection_reason TEXT,
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  stage TEXT,
+  revision INTEGER NOT NULL DEFAULT 1,
+  normalized_url TEXT,
+  board TEXT,
+  external_job_id TEXT,
+  manual_id TEXT,
+  location TEXT,
+  remote_eligibility TEXT,
+  india_eligibility TEXT,
+  salary_period TEXT,
+  compensation_evidence TEXT,
+  priority TEXT,
+  applied_at INTEGER,
+  next_action TEXT,
+  outcome TEXT,
+  event_source TEXT DEFAULT 'existing_workflow',
+  event_note TEXT,
+  event_key TEXT,
+  event_material_versions TEXT NOT NULL DEFAULT '[]',
+  create_key TEXT,
+  create_hash TEXT
 );
 
 CREATE TABLE IF NOT EXISTS tailored_resumes (
@@ -105,7 +131,8 @@ CREATE TABLE IF NOT EXISTS tailored_resumes (
   score_tailored INTEGER NOT NULL DEFAULT 0,
   changes_json TEXT NOT NULL DEFAULT '[]',
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  jd_snapshot TEXT
 );
 
 CREATE TABLE IF NOT EXISTS cover_letters (
@@ -351,4 +378,180 @@ CREATE TABLE IF NOT EXISTS recruiter_reply_events (
   reply_sent_body TEXT NOT NULL DEFAULT '',
   reply_send_error TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Career database objects shared by the signed-in web and MCP interfaces.
+
+CREATE UNIQUE INDEX IF NOT EXISTS tracker_url ON job_applications(user_id,normalized_url) WHERE normalized_url IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS tracker_board ON job_applications(user_id,board,external_job_id) WHERE board IS NOT NULL AND external_job_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS tracker_manual ON job_applications(user_id,manual_id) WHERE manual_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS tracker_create ON job_applications(user_id,create_key) WHERE create_key IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS tracker_order ON job_applications(user_id,created_at DESC,id DESC);
+
+CREATE TABLE IF NOT EXISTS application_create_requests (
+  user_id TEXT NOT NULL, request_id TEXT NOT NULL, job_id TEXT NOT NULL REFERENCES job_applications(id) ON DELETE CASCADE,
+  request_hash TEXT NOT NULL, PRIMARY KEY(user_id,request_id)
+);
+
+CREATE TABLE IF NOT EXISTS application_events (
+  id TEXT PRIMARY KEY, user_id TEXT NOT NULL, job_id TEXT NOT NULL REFERENCES job_applications(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL, status TEXT NOT NULL, prior_status TEXT, source TEXT NOT NULL,
+  note TEXT, request_key TEXT, material_versions TEXT NOT NULL DEFAULT '[]', created_at INTEGER NOT NULL DEFAULT(unixepoch()), UNIQUE(job_id,revision)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS tracker_event_request ON application_events(user_id,job_id,request_key) WHERE request_key IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS tracker_events ON application_events(user_id,job_id,revision DESC);
+
+CREATE TABLE IF NOT EXISTS application_material_versions (
+  user_id TEXT NOT NULL, job_id TEXT NOT NULL REFERENCES job_applications(id) ON DELETE CASCADE,
+  id TEXT NOT NULL, revision INTEGER NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL, content TEXT NOT NULL,
+  reference_type TEXT, reference_id TEXT, archived INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL DEFAULT(unixepoch()),
+  PRIMARY KEY(user_id,id,revision)
+);
+
+CREATE INDEX IF NOT EXISTS tracker_materials ON application_material_versions(user_id,job_id,id,revision DESC);
+
+CREATE TRIGGER IF NOT EXISTS tracker_initial AFTER INSERT ON job_applications WHEN NEW.user_id IS NOT NULL BEGIN
+  UPDATE job_applications SET stage=COALESCE(NEW.stage,CASE NEW.status WHEN 'draft' THEN 'preparing' WHEN 'tailored' THEN 'ready' WHEN 'interview' THEN 'screening' ELSE NEW.status END) WHERE id=NEW.id;
+  INSERT INTO application_create_requests(user_id,request_id,job_id,request_hash) SELECT NEW.user_id,NEW.create_key,NEW.id,NEW.create_hash WHERE NEW.create_key IS NOT NULL;
+  INSERT INTO application_events(id,user_id,job_id,revision,status,source,note)
+    SELECT lower(hex(randomblob(16))),user_id,id,revision,stage,event_source,event_note FROM job_applications WHERE id=NEW.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS tracker_legacy_edit AFTER UPDATE OF status,url,company,role,jd_text,jd_raw,notes,follow_up_at,interview_date,salary_min,salary_max,salary_currency,offer_amount,rejection_reason,resume_id ON job_applications
+WHEN NEW.user_id IS NOT NULL AND NEW.revision=OLD.revision BEGIN
+  UPDATE job_applications SET revision=OLD.revision+1,event_source='existing_workflow',event_note=NULL,event_key=NULL,event_material_versions='[]',
+    normalized_url=CASE WHEN NEW.url IS OLD.url THEN NEW.normalized_url ELSE NULL END,
+    stage=CASE WHEN NEW.status IS OLD.status THEN OLD.stage ELSE CASE NEW.status WHEN 'draft' THEN 'preparing' WHEN 'tailored' THEN 'ready' WHEN 'interview' THEN 'screening' ELSE NEW.status END END
+    WHERE id=NEW.id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS tracker_intake_request AFTER UPDATE OF create_key ON job_applications
+WHEN NEW.create_key IS NOT NULL AND NEW.create_key IS NOT OLD.create_key BEGIN
+  INSERT INTO application_create_requests(user_id,request_id,job_id,request_hash) VALUES(NEW.user_id,NEW.create_key,NEW.id,NEW.create_hash);
+END;
+
+CREATE TRIGGER IF NOT EXISTS tracker_event AFTER UPDATE OF revision ON job_applications
+WHEN NEW.user_id IS NOT NULL AND NEW.revision>OLD.revision AND (NEW.stage IS NOT OLD.stage OR (NEW.event_key IS NOT NULL AND NEW.event_key IS NOT OLD.event_key)) BEGIN
+  INSERT INTO application_events(id,user_id,job_id,revision,status,prior_status,source,note,request_key,material_versions)
+    VALUES(lower(hex(randomblob(16))),NEW.user_id,NEW.id,NEW.revision,NEW.stage,OLD.stage,NEW.event_source,NEW.event_note,NEW.event_key,
+      NEW.event_material_versions);
+END;
+
+CREATE UNIQUE INDEX IF NOT EXISTS resumes_create_request ON resumes(user_id,create_request_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS resumes_default ON resumes(user_id) WHERE is_default = 1;
+
+CREATE TRIGGER IF NOT EXISTS resumes_select_default BEFORE UPDATE OF is_default ON resumes
+WHEN NEW.is_default = 1 AND OLD.is_default = 0 BEGIN
+  UPDATE resumes SET is_default = 0 WHERE user_id = NEW.user_id AND is_default = 1;
+END;
+
+CREATE TRIGGER IF NOT EXISTS resumes_insert_default BEFORE INSERT ON resumes
+WHEN NEW.is_default = 1 BEGIN
+  UPDATE resumes SET is_default = 0 WHERE user_id = NEW.user_id AND is_default = 1;
+END;
+
+CREATE TRIGGER IF NOT EXISTS resumes_track_revision AFTER UPDATE OF source,name,is_default,archived_at ON resumes
+WHEN NEW.source IS NOT OLD.source OR NEW.name IS NOT OLD.name
+  OR NEW.is_default IS NOT OLD.is_default OR NEW.archived_at IS NOT OLD.archived_at BEGIN
+  UPDATE resumes SET revision = revision + 1, updated_at = unixepoch() WHERE id = NEW.id;
+END;
+
+CREATE TABLE IF NOT EXISTS career_records (
+  id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  profile_id TEXT NOT NULL REFERENCES resumes(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK(kind IN ('identity','employment','project','achievement','education','skill','answer','note')),
+  title TEXT NOT NULL,
+  data_json TEXT NOT NULL CHECK(json_valid(data_json)),
+  sensitive INTEGER NOT NULL DEFAULT 0 CHECK(sensitive = 0 OR kind = 'answer'),
+  revision INTEGER NOT NULL DEFAULT 1,
+  archived_at INTEGER,
+  PRIMARY KEY(user_id,profile_id,id)
+);
+
+CREATE INDEX IF NOT EXISTS career_record_kind ON career_records(user_id,profile_id,kind,id);
+
+CREATE TRIGGER IF NOT EXISTS career_insert_revision AFTER INSERT ON career_records BEGIN
+  UPDATE resumes SET revision=revision+1,updated_at=unixepoch() WHERE id=NEW.profile_id AND user_id=NEW.user_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS career_edit_revision AFTER UPDATE ON career_records BEGIN
+  UPDATE resumes SET revision=revision+1,updated_at=unixepoch() WHERE id=NEW.profile_id AND user_id=NEW.user_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS career_delete_revision AFTER DELETE ON career_records BEGIN
+  UPDATE resumes SET revision=revision+1,updated_at=unixepoch() WHERE id=OLD.profile_id AND user_id=OLD.user_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS career_records_validate_insert BEFORE INSERT ON career_records BEGIN
+  SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM resumes WHERE id=NEW.profile_id AND user_id=NEW.user_id AND archived_at IS NULL)
+    THEN RAISE(ABORT,'inactive career profile') END;
+  SELECT CASE WHEN json_extract(NEW.data_json,'$.related_role_id') IS NOT NULL AND NOT EXISTS
+    (SELECT 1 FROM career_records WHERE user_id=NEW.user_id AND profile_id=NEW.profile_id AND archived_at IS NULL
+       AND id=json_extract(NEW.data_json,'$.related_role_id') AND kind='employment' AND id<>NEW.id)
+    THEN RAISE(ABORT,'invalid related role') END;
+  SELECT CASE WHEN json_extract(NEW.data_json,'$.related_project_id') IS NOT NULL AND NOT EXISTS
+    (SELECT 1 FROM career_records WHERE user_id=NEW.user_id AND profile_id=NEW.profile_id AND archived_at IS NULL
+       AND id=json_extract(NEW.data_json,'$.related_project_id') AND kind='project' AND id<>NEW.id)
+    THEN RAISE(ABORT,'invalid related project') END;
+END;
+
+CREATE TRIGGER IF NOT EXISTS career_records_validate_change BEFORE UPDATE OF data_json ON career_records BEGIN
+  SELECT CASE WHEN json_extract(NEW.data_json,'$.related_role_id') IS NOT NULL AND NOT EXISTS
+    (SELECT 1 FROM career_records WHERE user_id=NEW.user_id AND profile_id=NEW.profile_id
+       AND id=json_extract(NEW.data_json,'$.related_role_id') AND kind='employment' AND id<>NEW.id)
+    THEN RAISE(ABORT,'invalid related role') END;
+  SELECT CASE WHEN json_extract(NEW.data_json,'$.related_project_id') IS NOT NULL AND NOT EXISTS
+    (SELECT 1 FROM career_records WHERE user_id=NEW.user_id AND profile_id=NEW.profile_id
+       AND id=json_extract(NEW.data_json,'$.related_project_id') AND kind='project' AND id<>NEW.id)
+    THEN RAISE(ABORT,'invalid related project') END;
+END;
+
+CREATE TABLE IF NOT EXISTS career_resume_versions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  profile_id TEXT NOT NULL REFERENCES resumes(id) ON DELETE CASCADE,
+  application_id TEXT REFERENCES job_applications(id) ON DELETE RESTRICT,
+  series_id TEXT NOT NULL,
+  revision INTEGER NOT NULL CHECK (revision > 0),
+  markdown TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL,
+  saved INTEGER NOT NULL DEFAULT 0,
+  approved INTEGER NOT NULL DEFAULT 0,
+  archived INTEGER NOT NULL DEFAULT 0,
+  request_id TEXT NOT NULL,
+  request_hash TEXT NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE (user_id, request_id),
+  UNIQUE (user_id, series_id, revision)
+);
+
+CREATE INDEX IF NOT EXISTS career_resume_history ON career_resume_versions(user_id, profile_id, saved, created_at, id);
+
+CREATE TRIGGER IF NOT EXISTS career_resume_legacy_history AFTER INSERT ON tailored_resumes
+WHEN NEW.user_id IS NOT NULL
+BEGIN
+  INSERT INTO career_resume_versions
+    (id,user_id,profile_id,application_id,series_id,revision,markdown,snapshot_json,saved,approved,request_id,request_hash,created_at)
+  SELECT NEW.id,NEW.user_id,r.id,j.id,NEW.id,1,NEW.source,
+    json_object('legacy',json('true'),'jd_text',COALESCE(NEW.jd_snapshot,j.jd_text)),1,NEW.accepted,'legacy:' || NEW.id,'',NEW.created_at
+  FROM resumes r JOIN job_applications j ON j.id=NEW.job_id AND j.user_id=NEW.user_id
+  JOIN users u ON u.id=NEW.user_id
+  WHERE r.id=NEW.resume_id AND r.user_id=NEW.user_id;
+END;
+
+CREATE TABLE IF NOT EXISTS career_resume_requests (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_id TEXT NOT NULL,
+  request_hash TEXT NOT NULL,
+  lease_id TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  PRIMARY KEY(user_id,request_id)
 );

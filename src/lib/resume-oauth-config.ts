@@ -1,3 +1,4 @@
+import { resourceScopes } from '@/lib/career-scopes';
 import { mcp } from '@better-auth/mcp';
 import { jwt } from 'better-auth/plugins';
 
@@ -15,7 +16,7 @@ export function resumeOAuthPlugins(baseURL?: string) {
       resource: `${origin}/api/mcp`,
       resources: [`${origin}/api/resume`],
       clientRegistrationDefaultResources: [`${origin}/api/resume`],
-      scopes: ['offline_access', 'resume'],
+      scopes: ['offline_access', ...resourceScopes],
       grantTypes: ['authorization_code', 'refresh_token'],
       // Current ChatGPT clients use DCR. CIMD needs a separate Workers-safe transport.
       allowDynamicClientRegistration: true,

@@ -1,5 +1,6 @@
 'use server';
 
+import { resourceScopes } from '@/lib/career-scopes';
 import { headers } from 'next/headers';
 import { getAuth } from '@/lib/auth';
 import { getCurrentUserId } from '@/lib/auth-utils';
@@ -15,8 +16,8 @@ export async function getResumeOAuthRequest(query: string) {
     const callback = new URL(params.get('redirect_uri') ?? '');
     const scopes = (params.get('scope') ?? '').split(' ').filter(Boolean);
     if (
-      !scopes.includes('resume') ||
-      scopes.some((scope) => !['resume', 'offline_access'].includes(scope))
+      !scopes.some((scope) => resourceScopes.includes(scope)) ||
+      scopes.some((scope) => scope !== 'offline_access' && !resourceScopes.includes(scope))
     )
       throw new Error('Unsupported access');
     const session = userId ? await getAuth().api.getSession({ headers: await headers() }) : null;

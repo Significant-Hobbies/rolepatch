@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 
 import { getAIModel, getAIModelRetryOptions, toUserFacingAIError } from '@/lib/ai';
 import { getCurrentUserId } from '@/lib/auth-utils';
+import { careerCredentialIssue } from '@/lib/career-data-privacy';
 import { db } from '@/lib/db';
 import type { AIProviderConfig } from '@/lib/types';
 
@@ -119,6 +120,18 @@ export async function importResumeFromFile(
     };
   }
 
+  let userId: string | null;
+  try {
+    userId = await getCurrentUserId();
+  } catch {
+    return { success: false, error: 'Could not check your account. Please try again.' };
+  }
+  if (userId) {
+    const issue =
+      careerCredentialIssue('Resume name', name) ??
+      careerCredentialIssue('Imported resume', extracted);
+    if (issue) return { success: false, error: issue };
+  }
   let markdown: string;
   if (mimeType === 'text/markdown' || (extension === 'md' && mimeType === 'text/plain')) {
     // The master already has approved wording and structure. Import it losslessly.
@@ -141,12 +154,13 @@ export async function importResumeFromFile(
     return { success: false, error: 'The AI service returned an empty resume. Please try again.' };
 
   try {
-    const userId = await getCurrentUserId();
     if (!userId) {
       // Guest: let the caller store to localStorage
       return { success: true, id: '', source: markdown };
     }
 
+    const issue = careerCredentialIssue('Imported resume', markdown);
+    if (issue) return { success: false, error: issue };
     const id = uuid();
     await db.execute({
       sql: 'INSERT INTO resumes (id, name, source, user_id) VALUES (?, ?, ?, ?)',

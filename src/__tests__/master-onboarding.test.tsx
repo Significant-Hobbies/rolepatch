@@ -7,8 +7,8 @@ import { localCreateResume } from '@/lib/local-storage';
 const state = vi.hoisted(() => ({ isGuest: true, isPending: false, push: vi.fn() }));
 vi.mock('@/components/auth-provider', () => ({ useAuth: () => state }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: state.push }) }));
-vi.mock('@/lib/actions/resume-actions', () => ({ createResume: vi.fn() }));
-vi.mock('@/lib/local-storage', () => ({ localCreateResume: vi.fn() }));
+vi.mock('@/lib/actions/resume-actions', () => ({ createResume: vi.fn(), renameResume: vi.fn() }));
+vi.mock('@/lib/local-storage', () => ({ localCreateResume: vi.fn(), localRenameResume: vi.fn() }));
 afterEach(cleanup);
 beforeEach(() => {
   vi.resetAllMocks();
@@ -69,11 +69,16 @@ describe('onboarding storage and recovery', () => {
   });
   it('retains entered data after a save failure and permits retry', async () => {
     state.isGuest = false;
-    vi.mocked(createResume).mockRejectedValueOnce(new Error('Save unavailable'));
+    vi.mocked(createResume).mockResolvedValueOnce({
+      ok: false,
+      error: 'Resume name, line 1. Remove the credential.',
+    });
     render(<CreateResumeButton />);
     fillMaster();
     fireEvent.click(screen.getByRole('button', { name: 'Save master resume' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Save unavailable');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Resume name, line 1. Remove the credential.'
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
@@ -93,4 +98,31 @@ describe('onboarding storage and recovery', () => {
     expect(screen.getByRole('button', { name: '+ New Resume' })).toBeDisabled();
     expect(localCreateResume).not.toHaveBeenCalled();
   });
+});
+
+it('retains the authoritative saved name and displays the validation field when a rename is rejected', async () => {
+  const { ResumeNameEditor } = await import('@/components/resume-name-editor');
+  const { renameResume } = await import('@/lib/actions/resume-actions');
+  vi.mocked(renameResume).mockResolvedValueOnce({
+    ok: false,
+    error: 'Resume name, line 1. Remove the credential.',
+  });
+  const saved = vi.fn(),
+    error = vi.fn();
+  render(
+    <ResumeNameEditor
+      resumeId="r"
+      isGuest={false}
+      name="Saved name"
+      onSaved={saved}
+      onError={error}
+    />
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Saved name' }));
+  const input = screen.getByRole('textbox', { name: 'Resume name' });
+  fireEvent.change(input, { target: { value: 'Invalid name' } });
+  fireEvent.blur(input);
+  expect(await screen.findByRole('button', { name: 'Saved name' })).toBeVisible();
+  expect(saved).not.toHaveBeenCalled();
+  expect(error).toHaveBeenLastCalledWith('Resume name, line 1. Remove the credential.');
 });

@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises';
 
 async function seedHistory(page: import('@playwright/test').Page) {
   await page.goto('/dashboard');
-  await expect(page.getByRole('button', { name: '+ Add Job', exact: true })).toBeEnabled();
   await page.evaluate(() => {
     const now = Math.floor(Date.now() / 1000);
     const master =

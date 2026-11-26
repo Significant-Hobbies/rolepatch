@@ -14,8 +14,9 @@ import Markdown from 'react-markdown';
 import { LocalResumeExport } from '@/components/local-resume-export';
 import { MasterResumeGuide } from '@/components/master-resume-guide';
 import { useAuth } from '@/components/auth-provider';
-import { renameResume, updateResume } from '@/lib/actions/resume-actions';
-import { localGetResume, localRenameResume, localUpdateResume } from '@/lib/local-storage';
+import { ResumeNameEditor } from '@/components/resume-name-editor';
+import { updateResume } from '@/lib/actions/resume-actions';
+import { localGetResume, localUpdateResume } from '@/lib/local-storage';
 import { listResumePoints, setResumePointPinned, stripResumePins } from '@/lib/resume-pins';
 import {
   DEFAULT_TEMPLATE,
@@ -148,8 +149,6 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [resolvedName, setResolvedName] = useState(resumeName ?? '');
-  const [editingName, setEditingName] = useState(false);
-  const [nameDraft, setNameDraft] = useState('');
 
   // For guests, initialSource may be null — resolve from localStorage
   const [source, setSource] = useState(initialSource ?? '');
@@ -247,7 +246,11 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
       if (isGuest) {
         localUpdateResume(resumeId, text);
       } else {
-        await updateResume(resumeId, text);
+        const issue = await updateResume(resumeId, text);
+        if (issue) {
+          setSaveError(issue.error);
+          return;
+        }
         // Server now has the authoritative copy — clear the local draft.
         try {
           localStorage.removeItem(`resume-draft-${resumeId}`);
@@ -432,44 +435,13 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               />
             </svg>
           </Link>
-          {editingName ? (
-            <input
-              ref={(el) => el?.focus()}
-              value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
-              onBlur={async () => {
-                const trimmed = nameDraft.trim();
-                if (trimmed && trimmed !== resolvedName) {
-                  setResolvedName(trimmed);
-                  if (isGuest) {
-                    localRenameResume(resumeId, trimmed);
-                  } else {
-                    await renameResume(resumeId, trimmed);
-                  }
-                }
-                setEditingName(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.currentTarget.blur();
-                } else if (e.key === 'Escape') {
-                  setEditingName(false);
-                }
-              }}
-              className="text-sm font-medium text-gray-700 px-1 py-0 border border-gray-300 rounded outline-none focus:border-blue-400 w-48"
-            />
-          ) : (
-            <button
-              onClick={() => {
-                setNameDraft(resolvedName);
-                setEditingName(true);
-              }}
-              className="text-sm font-medium text-gray-700 truncate hover:text-blue-600 transition-colors"
-              title="Click to rename"
-            >
-              {resolvedName}
-            </button>
-          )}
+          <ResumeNameEditor
+            resumeId={resumeId}
+            name={resolvedName}
+            isGuest={isGuest}
+            onSaved={setResolvedName}
+            onError={setSaveError}
+          />
 
           <span
             className={`text-xs tabular-nums ${breakPoints.length > 1 ? 'text-amber-600 font-medium' : 'text-gray-400'}`}

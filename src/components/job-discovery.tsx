@@ -40,6 +40,7 @@ import { rankDiscoveredJobsByResumeSimilarity } from '@/lib/actions/job-discover
 import {
   buildDiscoveryEngagementSummary,
   diffNewJobs,
+  discoveryDescriptionSource,
   inferJobSignals,
   isDuplicateJob,
   normalizeJobUrl,
@@ -505,7 +506,9 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
         job.company ?? 'Unknown Company',
         job.title ?? 'Untitled Role',
         job.description ?? job.description_short ?? '',
-        job.description ?? job.description_short ?? ''
+        job.description ?? job.description_short ?? '',
+        undefined,
+        discoveryDescriptionSource(job)
       );
       router.push(`/tailor/${jobId}`);
     } catch (err) {
@@ -548,7 +551,9 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
       job.company ?? 'Unknown Company',
       job.title ?? 'Untitled Role',
       job.description ?? job.description_short ?? '',
-      job.description ?? job.description_short ?? ''
+      job.description ?? job.description_short ?? '',
+      undefined,
+      discoveryDescriptionSource(job)
     );
     await queueApplication(jobId);
   }

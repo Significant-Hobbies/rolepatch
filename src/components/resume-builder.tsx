@@ -21,6 +21,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useWorkspaceOutline } from '@/components/workspace-outline';
 import { AchievementEvidenceBank } from '@/components/achievement-evidence-bank';
 import { useAuth } from '@/components/auth-provider';
+import { CareerResumeStudio } from '@/components/career-resume-studio';
+import { ArchivedCareerProfiles } from '@/components/archived-career-profiles';
+import { CareerProfilePanel } from '@/components/career-profile-panel';
 import { CreateResumeButton } from '@/components/create-resume-button';
 import { MasterResumeGuide } from '@/components/master-resume-guide';
 import { ResumeImportButton } from '@/components/resume-import-button';
@@ -128,6 +131,13 @@ export function ResumeBuilder({
           </p>
         </div>
       )}
+      {!isGuest && !isPending && resume && (
+        <div key={resume.id} className="space-y-6">
+          <CareerProfilePanel profileId={resume.id} />
+          <CareerResumeStudio profileId={resume.id} />
+        </div>
+      )}
+      {!isGuest && !isPending && <ArchivedCareerProfiles />}
       <section id="sources" className="scroll-mt-6 rounded-xl border bg-card p-6">
         <AchievementEvidenceBank serverEntries={serverEvidence} embedded />
       </section>
@@ -168,10 +178,16 @@ function OutlineEditor({
   const navigation = useMemo(
     () => [
       ...sections.map(({ id, title }) => ({ id, title })),
+      ...(!isGuest
+        ? [
+            { id: 'career-records', title: 'Career profile' },
+            { id: 'career-resume-heading', title: 'Generate a resume' },
+          ]
+        : []),
       { id: 'sources', title: 'Achievements & sources' },
       { id: 'extra-experience', title: 'Extra experience' },
     ],
-    [sections]
+    [sections, isGuest]
   );
   useEffect(() => {
     setSections?.(navigation);
@@ -184,7 +200,13 @@ function OutlineEditor({
     setMessage('');
     try {
       if (isGuest) localUpdateResume(resume.id, snapshot);
-      else await updateResume(resume.id, snapshot);
+      else {
+        const issue = await updateResume(resume.id, snapshot, savedSource);
+        if (issue) {
+          setMessage(issue.error);
+          return;
+        }
+      }
       setSavedSource(snapshot);
       onSaved(snapshot);
       setMessage('Saved');

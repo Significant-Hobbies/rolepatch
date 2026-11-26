@@ -17,7 +17,10 @@ function includesJSON(value: unknown, item: string) {
 }
 
 /** Official JWT/DPoP verification plus current owner/session/consent checks. */
-export async function verifyResumeOAuth(request: Request): Promise<string | null> {
+export async function verifyResumeOAuth(
+  request: Request,
+  requiredScopes: readonly string[] = ['resume']
+): Promise<string | null> {
   const authorization = parseAccessTokenAuthorization(request.headers.get('authorization'));
   if (!authorization) return null;
   const auth = getAuth();
@@ -36,8 +39,8 @@ export async function verifyResumeOAuth(request: Request): Promise<string | null
     url: request.url,
     replayStore: createDpopReplayStore(context.internalAdapter),
   });
-  if (typeof payload.scope !== 'string' || !payload.scope.split(' ').includes('resume'))
-    throw new ResumeOAuthScopeError();
+  const granted = typeof payload.scope === 'string' ? payload.scope.split(' ') : [];
+  if (!requiredScopes.every((scope) => granted.includes(scope))) throw new ResumeOAuthScopeError();
   if (
     typeof payload.sub !== 'string' ||
     typeof payload.sid !== 'string' ||
@@ -53,14 +56,15 @@ export async function verifyResumeOAuth(request: Request): Promise<string | null
         AND (client.disabled IS NULL OR client.disabled = 0)`,
     args: [payload.sid, payload.sub, payload.client_id],
   });
-  return result.rows.some(
+  const live = result.rows.filter(
     (row) =>
       new Date(String(row.expiresAt)).getTime() > Date.now() &&
-      includesJSON(row.scopes, 'resume') &&
       includesJSON(row.resources, resource)
-  )
-    ? payload.sub
-    : null;
+  );
+  if (!live.length) return null;
+  if (!live.some((row) => requiredScopes.every((scope) => includesJSON(row.scopes, scope))))
+    throw new ResumeOAuthScopeError();
+  return payload.sub;
 }
 
 class ResumeOAuthScopeError extends Error {

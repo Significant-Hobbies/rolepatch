@@ -168,3 +168,28 @@ describe('resume file import action', () => {
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });
+
+it('rejects credentials in signed-in input, document names and generated Markdown with actionable errors', async () => {
+  mocks.getCurrentUserId.mockResolvedValue('owner');
+  const { importResumeFromFile } = await import('@/lib/actions/import-action');
+  const sample = 'password=example12345';
+  const raw = await importResumeFromFile(input(`${source}\n${sample}`, 'txt'), config);
+  expect(raw).toMatchObject({
+    success: false,
+    error: expect.stringContaining('Imported resume, line 5'),
+  });
+  const named = input();
+  named.set('name', sample);
+  expect(await importResumeFromFile(named, config)).toMatchObject({
+    success: false,
+    error: expect.stringContaining('Resume name, line 1'),
+  });
+  expect(mocks.generateText).not.toHaveBeenCalled();
+  mocks.generateText.mockResolvedValue({ text: `${source}\n${sample}` });
+  expect(await importResumeFromFile(input(source, 'txt'), config)).toMatchObject({
+    success: false,
+    error: expect.stringContaining('Imported resume, line 5'),
+  });
+  expect(mocks.execute).not.toHaveBeenCalled();
+  expect(JSON.stringify(raw)).not.toContain(sample);
+});

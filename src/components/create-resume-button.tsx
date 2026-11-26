@@ -62,7 +62,12 @@ export function CreateResumeButton({
       if (isGuest) {
         id = localCreateResume(trimmed, source);
       } else {
-        id = await createResume(trimmed, source);
+        const result = await createResume(trimmed, source);
+        if (typeof result !== 'string') {
+          setError(result.error);
+          return;
+        }
+        id = result;
       }
       setOpen(false);
       setMaster(emptyMasterResume());

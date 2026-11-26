@@ -88,7 +88,10 @@ it('discovers PDF format and strict render-only retry tool while preserving Mark
   expect(
     RESUME_MCP_TOOLS.find((tool) => tool.name === 'rolepatch_render_resume_pdf')
   ).toMatchObject({
-    inputSchema: { required: ['resume_markdown'], additionalProperties: false },
+    inputSchema: {
+      oneOf: [{ required: ['resume_markdown'] }, { required: ['version_id'] }],
+      additionalProperties: false,
+    },
     annotations: { readOnlyHint: true },
   });
 });

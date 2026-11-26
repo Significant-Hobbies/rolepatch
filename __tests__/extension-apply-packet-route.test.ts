@@ -60,6 +60,9 @@ describe('POST /api/extension/apply-packet', () => {
     mockGetCurrentUserId.mockResolvedValue('user-1');
     mockExecute
       .mockResolvedValueOnce({
+        rows: [{ id: 'job-1', url: 'https://boards.greenhouse.io/acme/jobs/1' }],
+      })
+      .mockResolvedValueOnce({
         rows: [
           {
             id: 'job-1',
@@ -163,6 +166,7 @@ describe('POST /api/extension/apply-packet', () => {
   it('matches tracked jobs when the current tab URL has query params or a hash', async () => {
     mockGetCurrentUserId.mockResolvedValue('user-1');
     mockExecute
+      .mockResolvedValueOnce({ rows: [{ id: 'job-1', url: 'https://jobs.lever.co/acme/abc' }] })
       .mockResolvedValueOnce({
         rows: [
           {
@@ -189,9 +193,10 @@ describe('POST /api/extension/apply-packet', () => {
 
     expect(res.status).toBe(200);
     expect(mockExecute.mock.calls[0][0].args).toEqual([
-      'https://jobs.lever.co/acme/abc?utm_source=linkedin#apply',
-      'https://jobs.lever.co/acme/abc',
       'user-1',
+      'https://jobs.lever.co/acme/abc',
+      'https://jobs.lever.co/acme/abc%',
     ]);
+    expect(mockExecute.mock.calls[1][0].args).toEqual(['job-1', 'user-1']);
   });
 });
