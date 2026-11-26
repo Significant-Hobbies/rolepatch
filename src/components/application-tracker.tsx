@@ -499,7 +499,7 @@ export function ApplicationTracker({
                     name="query"
                     type="search"
                     aria-label="Search company, role or notes"
-                    placeholder="Search applications"
+                    placeholder="Search roles"
                     defaultValue={String(filter.query ?? '')}
                     className="pl-9"
                   />
