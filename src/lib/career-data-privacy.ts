@@ -47,14 +47,14 @@ function tokenShaped(value: string) {
 const technicalTerm =
   /^(?:(?:HMAC-|PBKDF2-)?SHA-?(?:1|224|256|384|512)|PBKDF2|Argon2(?:id|i|d)?|AES-?(?:128|192|256)(?:-GCM|-CBC|-CTR)?|OAuth(?:2(?:\.0)?)?|TLS(?:1\.[0-3])?|authentication|authorization|implementation|configuration|verification|infrastructure|management|credentials?|credentialing|requirements|documentation)[.,;]?$/i;
 const reference =
-  /^(?:(?:process\.env\.|import\.meta\.env\.|env\.|\$)[A-Z_][A-Z0-9_]*|\$\{[A-Z_][A-Z0-9_]*\})$/;
+  /^(?:(?:process\.env\.|import\.meta\.env\.|env\.|\$)[A-Z_][A-Z0-9_]*|\$[a-z]+(?:_[a-z]+)+|\$\{[a-zA-Z_][a-zA-Z_0-9]*\}|\$\{\{\s*(?:secrets|env|vars)\.[a-zA-Z_][a-zA-Z_0-9]*\s*\}\})$/;
 function opaqueValue(value: string) {
   return /^[a-z\d]{12,}$/i.test(value) && !technicalTerm.test(value);
 }
 function credentialAssignment(line: string, match: RegExpExecArray) {
   const [, field, operator, doubleQuoted, singleQuoted, unquoted] = match;
   const value = doubleQuoted ?? singleQuoted ?? unquoted;
-  if (technicalTerm.test(value) || reference.test(value)) return false;
+  if (technicalTerm.test(value) || reference.test(value.replace(/[.)]+$/, ''))) return false;
   // The level can be written "Clearance: Secret" or "Clearance: Top Secret".
   if (
     /^secret$/i.test(field) &&
