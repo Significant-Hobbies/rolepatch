@@ -4,10 +4,15 @@ import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { callTracker } from '@/lib/actions/tracker-records';
-import type { TrackerResult } from '@/lib/tracker-store';
+import { callTracker, getApplicationAnalytics } from '@/lib/actions/tracker-records';
+import type {
+  ApplicationAnalytics,
+  ApplicationAnalyticsRange,
+  TrackerResult,
+} from '@/lib/tracker-store';
 import type { TrackerName } from '@/lib/tracker-tools';
 import { materialKinds, trackerStages } from '@/lib/tracker-vocabulary';
+import { ApplicationAnalyticsSummary } from './application-analytics';
 import {
   TrackerFields,
   readFields,
@@ -249,6 +254,9 @@ export function ApplicationTracker({
   const [existingId, setExistingId] = useState<string>();
   const [filter, setFilter] = useState<Record<string, unknown>>({});
   const [applications, setApplications] = useState<List>({ ok: true });
+  const [analyticsRange, setAnalyticsRange] = useState<ApplicationAnalyticsRange>(90);
+  const [analytics, setAnalytics] = useState<ApplicationAnalytics>();
+  const [analyticsError, setAnalyticsError] = useState('');
   const [selected, setSelected] = useState<TrackerRow>();
   const [edit, setEdit] = useState(false);
   const [receipts, setReceipts] = useState<TrackerRow[]>([]);
@@ -280,6 +288,27 @@ export function ApplicationTracker({
       more ? { ...res, items: [...(applications.items ?? []), ...(res.items ?? [])] } : res
     );
   }
+  async function summarize(days = analyticsRange) {
+    if (analytics?.days !== days) setAnalytics(undefined);
+    setAnalyticsError('');
+    try {
+      const now = new Date();
+      const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+      const result = await getApplicationAnalytics(days, localDate);
+      if (!result.ok) throw new Error(result.error);
+      setAnalytics(result.summary);
+    } catch (error) {
+      setAnalytics(undefined);
+      setAnalyticsError(
+        error instanceof Error ? error.message : 'Could not load application analytics.'
+      );
+    }
+  }
+  async function refresh() {
+    await Promise.all([list(), summarize()]);
+  }
   async function select(id: string) {
     const [job, events, materials] = await Promise.all([
       invoke('rolepatch_applications_get', { id }),
@@ -295,7 +324,7 @@ export function ApplicationTracker({
     setEdit(false);
   }
   async function changed(id?: string) {
-    await list();
+    await refresh();
     if (id) await select(id);
     else {
       setSelected(undefined);
@@ -309,7 +338,7 @@ export function ApplicationTracker({
       onToggle={(e) => {
         const next = e.currentTarget.open;
         setOpen(next);
-        if (next) task(() => list());
+        if (next) task(refresh);
       }}
     >
       <summary className="cursor-pointer px-4 py-3 text-base font-semibold">
@@ -332,6 +361,16 @@ export function ApplicationTracker({
               Open existing application
             </Button>
           )}
+          <ApplicationAnalyticsSummary
+            days={analyticsRange}
+            data={analytics}
+            error={analyticsError}
+            onChange={(days) => {
+              setAnalyticsRange(days);
+              task(() => summarize(days));
+            }}
+            onRetry={() => task(() => summarize())}
+          />
           <form
             className="space-y-3"
             onSubmit={(e) => {

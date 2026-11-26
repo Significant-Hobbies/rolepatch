@@ -3,10 +3,11 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '@/lib/db';
+import { listFitScores } from '@/lib/actions/fit-score-action';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { createJobApplication, listJobApplications } from '@/lib/actions/job-actions';
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-import { callTracker } from '@/lib/actions/tracker-records';
+import { callTracker, getApplicationAnalytics } from '@/lib/actions/tracker-records';
 
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: vi.fn() }));
 vi.mock('@/lib/db', () => ({ db: { execute: vi.fn() } }));
@@ -48,6 +49,171 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 describe('owned application tracker', () => {
+  it('loads only the latest owned fit scores across more than 100 jobs within the D1 bind limit', async () => {
+    const insertJob = sql.prepare('INSERT INTO job_applications(id,user_id) VALUES(?,?)');
+    const insertScore = sql.prepare(
+      'INSERT INTO fit_scores(id,job_id,user_id,overall_score,created_at) VALUES(?,?,?,?,?)'
+    );
+    const ids = Array.from({ length: 125 }, (_, i) => `job-${i}`);
+    for (const id of ids) insertJob.run(id, 'owner');
+    insertScore.run('first', 'job-0', 'owner', 60, 1);
+    insertScore.run('latest', 'job-0', 'owner', 84, 2);
+    insertScore.run('last-job', 'job-124', 'owner', 90, 2);
+    insertScore.run('private', 'job-1', 'foreign', 100, 2);
+    insertScore.run('unrequested', 'old', 'owner', 77, 2);
+    expect(await listFitScores(ids)).toEqual({ 'job-0': 84, 'job-124': 90 });
+    const query = vi.mocked(db.execute).mock.lastCall?.[0];
+    expect(typeof query === 'object' && query.args).toHaveLength(2);
+  });
+
+  it('summarizes all dated submissions for the owner and preserves interview history after rejection', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-11-26T19:00:00Z'));
+      const applied = Date.parse('2026-11-10T00:00:00Z') / 1000;
+      const rangeStart = Date.parse('2026-08-29T00:00:00Z') / 1000;
+      const add = sql.prepare(
+        'INSERT INTO job_applications(id,user_id,company,role,status,stage,url,applied_at,interview_date) VALUES(?,?,?,?,?,?,?,?,?)'
+      );
+      for (let i = 0; i < 15; i++) {
+        add.run(
+          `dated-${i}`,
+          'owner',
+          'Example',
+          'Engineer',
+          'applied',
+          'applied',
+          '',
+          applied,
+          null
+        );
+      }
+      add.run(
+        'rejected',
+        'owner',
+        'Example',
+        'Engineer',
+        'interview',
+        'technical',
+        '',
+        rangeStart,
+        null
+      );
+      await ok('applications_update', { id: 'rejected', expected_revision: 1, status: 'rejected' });
+      add.run(
+        'offered',
+        'owner',
+        'Example',
+        'Engineer',
+        'offer',
+        'offer',
+        '',
+        applied,
+        applied + 86400
+      );
+      add.run(
+        'out-of-range',
+        'owner',
+        'Example',
+        'Engineer',
+        'applied',
+        'applied',
+        '',
+        rangeStart - 1,
+        null
+      );
+      add.run(
+        'future',
+        'owner',
+        'Example',
+        'Engineer',
+        'applied',
+        'applied',
+        '',
+        Date.parse('2026-11-27') / 1000,
+        null
+      );
+      add.run('draft', 'owner', 'Example', 'Engineer', 'draft', 'preparing', '', null, null);
+      add.run(
+        'other-owner',
+        'foreign',
+        'Example',
+        'Engineer',
+        'offer',
+        'offer',
+        '',
+        applied,
+        applied
+      );
+
+      expect(await getApplicationAnalytics(90, '2026-11-26')).toMatchObject({
+        ok: true,
+        summary: {
+          total: 17,
+          interviewed: 2,
+          offers: 1,
+          undated: 1,
+          months: [
+            { month: '2026-08', count: 1 },
+            { month: '2026-09', count: 0 },
+            { month: '2026-10', count: 0 },
+            { month: '2026-11', count: 16 },
+          ],
+          stages: [
+            { stage: 'applied', count: 15 },
+            { stage: 'offer', count: 1 },
+            { stage: 'rejected', count: 1 },
+          ],
+        },
+      });
+      expect(await getApplicationAnalytics(30, '2026-11-26')).toMatchObject({
+        ok: true,
+        summary: { total: 16, interviewed: 1, offers: 1, undated: 1 },
+      });
+      expect(await getApplicationAnalytics(30, '2026-11-27')).toMatchObject({
+        ok: true,
+        summary: { total: 17, interviewed: 1, offers: 1, undated: 1 },
+      });
+      expect(await getApplicationAnalytics(60 as 90, '2026-11-26')).toMatchObject({ ok: false });
+      expect(await getApplicationAnalytics(90, '2026-11-28')).toMatchObject({ ok: false });
+      vi.mocked(getCurrentUserId).mockResolvedValue(null);
+      expect(await getApplicationAnalytics(90, '2026-11-26')).toMatchObject({ ok: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it('uses the first successful owned receipt for a missing date and prefers explicit dates', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-11-26T19:00:00Z'));
+      const recent = Date.parse('2026-11-10T00:00:00Z') / 1000;
+      const older = Date.parse('2026-09-15T00:00:00Z') / 1000;
+      const add = sql.prepare(
+        'INSERT INTO job_applications(id,user_id,company,role,status,stage,applied_at) VALUES(?,?,?,?,?,?,?)'
+      );
+      add.run('assisted', 'owner', 'Example', 'Engineer', 'applied', 'applied', null);
+      add.run('explicit', 'owner', 'Example', 'Engineer', 'applied', 'applied', recent);
+      const receipt = sql.prepare(
+        'INSERT INTO application_receipts(id,user_id,job_id,status,created_at) VALUES(?,?,?,?,?)'
+      );
+      receipt.run('foreign', 'foreign', 'old', 'submitted', recent);
+      receipt.run('failed', 'owner', 'old', 'failed', recent);
+      receipt.run('first', 'owner', 'assisted', 'submitted', older);
+      receipt.run('retry', 'owner', 'assisted', 'submitted', recent);
+      receipt.run('explicit', 'owner', 'explicit', 'submitted', older);
+      expect(await getApplicationAnalytics(30, '2026-11-26')).toMatchObject({
+        ok: true,
+        summary: { total: 1, undated: 1 },
+      });
+      expect(await getApplicationAnalytics(90, '2026-11-26')).toMatchObject({
+        ok: true,
+        summary: { total: 2, undated: 1 },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('imports ten jobs twice, maps legacy rows, filters and pages without loss', async () => {
     const items = Array.from({ length: 10 }, (_, i) => ({
       ...job,
