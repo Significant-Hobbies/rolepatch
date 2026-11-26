@@ -6,7 +6,8 @@ import { getResumeApiUserId } from '@/lib/resume-access';
 
 export async function getCurrentUserId(requestHeaders?: Headers): Promise<string | null> {
   const apiUser = getResumeApiUserId();
-  if (apiUser) return apiUser;
+  // A null API identity forces guest execution even if another account has a browser cookie.
+  if (apiUser !== undefined) return apiUser;
   const session = await getAuth().api.getSession({ headers: requestHeaders ?? (await headers()) });
   const user = session?.user;
   if (!user?.id) return null;

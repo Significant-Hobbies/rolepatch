@@ -4,6 +4,7 @@ import {
   parseAccessTokenAuthorization,
   verifyJwsAccessToken,
 } from 'better-auth/oauth2';
+import { resourceScopes, ResumeOAuthScopeError } from '@/lib/career-scopes';
 import { getAuth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
@@ -40,7 +41,6 @@ export async function verifyResumeOAuth(
     replayStore: createDpopReplayStore(context.internalAdapter),
   });
   const granted = typeof payload.scope === 'string' ? payload.scope.split(' ') : [];
-  if (!requiredScopes.every((scope) => granted.includes(scope))) throw new ResumeOAuthScopeError();
   if (
     typeof payload.sub !== 'string' ||
     typeof payload.sid !== 'string' ||
@@ -62,11 +62,14 @@ export async function verifyResumeOAuth(
       includesJSON(row.resources, resource)
   );
   if (!live.length) return null;
-  if (!live.some((row) => requiredScopes.every((scope) => includesJSON(row.scopes, scope))))
-    throw new ResumeOAuthScopeError();
+  if (
+    !requiredScopes.every((scope) => granted.includes(scope)) ||
+    !live.some((row) => requiredScopes.every((scope) => includesJSON(row.scopes, scope)))
+  ) {
+    const retainedScopes = ['offline_access', ...resourceScopes].filter(
+      (scope) => granted.includes(scope) && live.some((row) => includesJSON(row.scopes, scope))
+    );
+    throw new ResumeOAuthScopeError(retainedScopes);
+  }
   return payload.sub;
-}
-
-class ResumeOAuthScopeError extends Error {
-  override readonly name = 'ResumeOAuthScopeError';
 }

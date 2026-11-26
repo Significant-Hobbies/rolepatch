@@ -40,6 +40,18 @@ function checkRateLimit(req: Request, name: string, id: unknown) {
   return null;
 }
 
+function canTailorAsGuest(args: unknown) {
+  return (
+    typeof args === 'object' &&
+    args !== null &&
+    'resume_markdown' in args &&
+    typeof args.resume_markdown === 'string' &&
+    !('resume_id' in args) &&
+    !('source' in args && args.source === 'rolepatch') &&
+    !('save_to_history' in args && args.save_to_history === true)
+  );
+}
+
 /** Stateless Streamable HTTP with JSON responses; no server-push stream. */
 export async function POST(req: Request) {
   const origin = req.headers.get('origin');
@@ -126,16 +138,11 @@ export async function POST(req: Request) {
   if (limited) return limited;
   try {
     const args = message.params?.arguments ?? {};
-    const hasInlineMaster =
-      typeof args === 'object' &&
-      args !== null &&
-      'resume_markdown' in args &&
-      typeof args.resume_markdown === 'string';
     const scopes = careerToolScopes(name!, args);
     const requireAccount =
       scopes.some((scope) => scope !== 'resume') ||
       name === 'rolepatch_resume_profiles' ||
-      (name === 'rolepatch_tailor_resume' && !hasInlineMaster);
+      (name === 'rolepatch_tailor_resume' && !canTailorAsGuest(args));
     const response = await withResumeAccess(
       req,
       async () => {
