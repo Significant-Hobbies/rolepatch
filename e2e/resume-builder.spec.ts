@@ -144,13 +144,11 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   }
 });
 
-test('appearance persists and portal inputs follow Dark, Light and System without changing the footer', async ({
+test('appearance persists and portal inputs follow Dark, Light and System', async ({
   page,
 }, testInfo) => {
   await page.goto('/resume-builder');
   const workspace = page.locator('.rolepatch-workspace').first();
-  const footer = page.getByRole('contentinfo');
-  const footerColor = await footer.evaluate((element) => getComputedStyle(element).color);
   await page.getByRole('radio', { name: 'Light', exact: true }).click();
   await page.getByRole('radio', { name: 'Dark', exact: true }).click();
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'dark');
@@ -178,6 +176,4 @@ test('appearance persists and portal inputs follow Dark, Light and System withou
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'dark');
   await page.emulateMedia({ colorScheme: 'light' });
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'light');
-  await expect(footer).toHaveCSS('color', footerColor);
-  await expect(footer.getByRole('heading', { name: 'Help shape RolePatch.' })).toBeVisible();
 });

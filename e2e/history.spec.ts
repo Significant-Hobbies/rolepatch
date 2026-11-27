@@ -151,6 +151,8 @@ test('the workspace has three visible page links and History is a separate page'
   page,
 }) => {
   await page.goto('/jobs');
+  const footer = page.getByRole('contentinfo');
+  await expect(footer).toHaveCount(0);
   const navigation = page.getByRole('navigation', { name: 'Primary', exact: true });
   await expect(navigation.getByRole('link')).toHaveCount(3);
   await expect(navigation.getByRole('link', { name: 'Jobs', exact: true })).toHaveAttribute(
@@ -162,6 +164,7 @@ test('the workspace has three visible page links and History is a separate page'
   await navigation.getByRole('link', { name: 'History', exact: true }).click();
   await expect(page).toHaveURL(/\/history$/);
   await expect(page.getByRole('heading', { name: 'History', exact: true })).toBeVisible();
+  await expect(footer).toHaveCount(0);
   await expect(navigation.getByRole('link', { name: 'History', exact: true })).toHaveAttribute(
     'aria-current',
     'page'
@@ -173,6 +176,7 @@ test('the workspace has three visible page links and History is a separate page'
   await navigation.getByRole('link', { name: 'Resume Builder', exact: true }).click();
   await expect(page).toHaveURL(/\/resume-builder$/);
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
+  await expect(footer).toHaveCount(0);
   await expect(
     navigation.getByRole('link', { name: 'Resume Builder', exact: true })
   ).toHaveAttribute('aria-current', 'page');
