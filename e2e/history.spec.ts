@@ -220,3 +220,11 @@ test('the workspace has three visible page links and History is a separate page'
     navigation.getByRole('link', { name: 'Resume Builder', exact: true })
   ).toHaveAttribute('aria-current', 'page');
 });
+
+test('legacy workspace history links open the standalone History page', async ({ page }) => {
+  for (const path of ['/dashboard#history', '/jobs#history']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/history$/);
+    await expect(page.getByRole('heading', { name: 'History', exact: true })).toBeVisible();
+  }
+});

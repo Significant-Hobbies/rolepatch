@@ -226,7 +226,9 @@ function DashboardHeader({ isGuest, resumes }: { isGuest: boolean; resumes: Resu
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
+        <h1 id="jobs-heading" className="text-3xl font-bold tracking-tight">
+          Jobs
+        </h1>
         <p className="mt-2 text-muted-foreground">
           {isGuest
             ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
@@ -249,7 +251,11 @@ function DashboardLoading({ historyOnly }: { historyOnly: boolean }) {
       aria-busy="true"
       className="min-h-128 space-y-4"
     >
-      {historyOnly && <h1 className="text-3xl font-bold tracking-tight">History</h1>}
+      {historyOnly && (
+        <h1 id="history-heading" className="text-3xl font-bold tracking-tight">
+          History
+        </h1>
+      )}
       <div
         role="status"
         aria-label={historyOnly ? 'Loading job history' : 'Loading jobs'}
@@ -769,17 +775,11 @@ export function Dashboard(props: DashboardProps) {
             </div>
           )}
 
-          <Link
-            id="history"
-            href="/history"
-            className={
-              isGuest
-                ? 'text-sm font-medium text-primary underline-offset-4 hover:underline'
-                : 'hidden text-sm font-medium text-primary hover:underline target:inline'
-            }
-          >
-            View job history
-          </Link>
+          {isGuest && (
+            <Link href="/history" className="text-sm font-medium text-primary hover:underline">
+              View job history
+            </Link>
+          )}
         </>
       )}
 
@@ -835,9 +835,11 @@ export function Dashboard(props: DashboardProps) {
               <p className="text-sm font-bold text-foreground">
                 {jobs.length ? 'No jobs match this filter' : 'No job history yet'}
               </p>
-              <p className="text-xs font-medium text-[var(--muted-foreground)] mt-2">
-                Add a job URL or paste its description to tailor your resume.
-              </p>
+              {jobs.length === 0 && (
+                <Button asChild variant="outline" className="mt-3">
+                  <Link href="/jobs">Go to Jobs</Link>
+                </Button>
+              )}
             </div>
           ) : (
             <div className="rounded-md border">

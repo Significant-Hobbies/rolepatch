@@ -34,8 +34,8 @@ describe('production smoke harness', () => {
   it('runs public smoke checks without a session cookie', async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
       const url = input instanceof Request ? input.url : String(input);
-      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1>');
-      if (url.endsWith('/history')) return new Response('<h1>History</h1>');
+      if (url.endsWith('/jobs')) return new Response('<h1 id="jobs-heading">Jobs</h1>');
+      if (url.endsWith('/history')) return new Response('<h1 id="history-heading">History</h1>');
       if (url.endsWith('/resume-builder'))
         return new Response(
           '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'
@@ -108,8 +108,8 @@ describe('production smoke harness', () => {
       if (url.endsWith('/api/apply-agent/receipts')) {
         return Response.json({ receipts: [] });
       }
-      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1>');
-      if (url.endsWith('/history')) return new Response('<h1>History</h1>');
+      if (url.endsWith('/jobs')) return new Response('<h1 id="jobs-heading">Jobs</h1>');
+      if (url.endsWith('/history')) return new Response('<h1 id="history-heading">History</h1>');
       if (url.endsWith('/resume-builder'))
         return new Response(
           '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'
@@ -195,7 +195,7 @@ describe('production smoke harness', () => {
       response.end(
         {
           '/': '<h1>RolePatch</h1>',
-          '/history': '<h1>History</h1>',
+          '/history': '<h1 id="history-heading">History</h1>',
           '/pricing': '<h1>Tokens</h1>',
           '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
           '/resume-builder':

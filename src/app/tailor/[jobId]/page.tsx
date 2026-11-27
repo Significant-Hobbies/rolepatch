@@ -40,11 +40,8 @@ export default async function TailorPage({
             preserved.
           </p>
         </div>
-        <Link
-          href="/dashboard"
-          className="text-sm text-[var(--muted-foreground)] hover:text-primary"
-        >
-          Back
+        <Link href="/history" className="text-sm text-[var(--muted-foreground)] hover:text-primary">
+          History
         </Link>
       </header>
       <TailorFlow

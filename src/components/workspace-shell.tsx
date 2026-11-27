@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, type ReactNode } from 'react';
 import { SiteNav } from '@/components/site-nav';
 
 // Public tools and pricing do not need the editor sidebar and its dependencies.
@@ -15,6 +15,16 @@ const ApplicationStyles = dynamic(() =>
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
+  const router = useRouter();
+  useEffect(() => {
+    if (pathname !== '/jobs' && pathname !== '/dashboard') return;
+    const openHistory = () => {
+      if (window.location.hash === '#history') router.replace('/history');
+    };
+    openHistory();
+    window.addEventListener('hashchange', openHistory);
+    return () => window.removeEventListener('hashchange', openHistory);
+  }, [pathname, router]);
   const builder = pathname === '/resume-builder' || pathname.startsWith('/editor/');
   const workspacePage = builder
     ? '/resume-builder'
