@@ -42,6 +42,10 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   await builderSections.getByRole('link', { name: 'Evidence', exact: true }).click();
   await expect(page).toHaveURL(/\/resume-builder$/);
   await expect(page.getByRole('status')).toContainText('Save your changes before leaving');
+  await page.evaluate(() => {
+    window.location.hash = 'sources';
+  });
+  await expect(page).toHaveURL(/\/resume-builder#sources$/);
   await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeVisible();

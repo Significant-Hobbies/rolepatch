@@ -17,9 +17,11 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
   const router = useRouter();
   useEffect(() => {
+    const isJobsRoot = pathname === '/jobs' || pathname === '/dashboard';
+    if (!isJobsRoot && pathname !== '/resume-builder') return;
     const openBookmark = () => {
       const { hash, search } = window.location;
-      if ((pathname === '/jobs' || pathname === '/dashboard') && hash === '#history') {
+      if (isJobsRoot && hash === '#history') {
         router.replace('/history');
       }
       if (pathname === '/resume-builder') {
@@ -33,6 +35,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
       }
     };
     openBookmark();
+    if (!isJobsRoot) return;
     window.addEventListener('hashchange', openBookmark);
     return () => window.removeEventListener('hashchange', openBookmark);
   }, [pathname, router]);

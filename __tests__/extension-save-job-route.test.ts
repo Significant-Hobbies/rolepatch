@@ -100,7 +100,7 @@ describe('POST /api/extension/save-job', () => {
     expect(json.ok).toBe(true);
     expect(json.job_id).toMatch(/^[0-9a-f-]{36}$/);
     expect(json.queue_id).toBe('queue-1');
-    expect(json.redirect_url).toBe('/dashboard');
+    expect(json.redirect_url).toBe('/jobs/queue');
   });
 
   it('reuses an existing tracked job and refreshes its queue entry', async () => {
