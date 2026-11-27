@@ -65,6 +65,10 @@ test.describe('mobile (390px)', () => {
     await editor.click();
     await editor.pressSequentially('# Tailor flow mobile test');
     await expect(editor).toContainText('Tailor flow mobile test');
+    await expect(editor).toBeFocused();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.reload();
+    await expect(page.locator('.cm-content')).toContainText('Tailor flow mobile test');
 
     await expectNoHorizontalScroll(page);
   });

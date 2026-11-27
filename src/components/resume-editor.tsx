@@ -16,7 +16,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 
 import { LocalResumeExport } from '@/components/local-resume-export';
@@ -292,24 +292,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     return () => clearTimeout(t);
   }, [source, resumeId, ready, isGuest]);
 
-  // Restore the unsaved draft (if any) once the editor is ready.
-  useEffect(() => {
-    if (isGuest || !ready) return;
-    try {
-      const draft = localStorage.getItem(`resume-draft-${resumeId}`);
-      if (draft !== null && draft !== (initialSource ?? '')) {
-        const view = viewRef.current;
-        if (view) {
-          view.dispatch({
-            changes: { from: 0, to: view.state.doc.length, insert: draft },
-          });
-        } else {
-          setSource(draft);
-        }
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- restore once when ready flips true
-  }, [ready, initialSource, resumeId, isGuest]);
+  const readEditorSource = useEffectEvent(() => source);
 
   useEffect(() => {
     if (!editorContainerRef.current || viewRef.current || !ready) return;
@@ -332,7 +315,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     });
 
     const state = EditorState.create({
-      doc: source,
+      doc: readEditorSource(),
       extensions: [
         basicSetup,
         oneDark,
@@ -355,8 +338,23 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
       viewRef.current?.destroy();
       viewRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only initialize editor once when ready; source is captured at init time
-  }, [ready, source]);
+  }, [ready]);
+
+  // Restore any signed-in draft after the editor has mounted.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (isGuest || !ready || !view) return;
+    try {
+      const draft = localStorage.getItem(`resume-draft-${resumeId}`);
+      if (
+        draft !== null &&
+        draft !== (initialSource ?? '') &&
+        draft !== view.state.doc.toString()
+      ) {
+        view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: draft } });
+      }
+    } catch {}
+  }, [ready, initialSource, resumeId, isGuest]);
 
   const [downloading, setDownloading] = useState(false);
 
