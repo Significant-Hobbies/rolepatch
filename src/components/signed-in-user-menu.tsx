@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@saas-maker/ui/components/dropdown-menu';
 import { authClient } from '@/lib/auth-client';
+import { isWorkspacePath } from '@/lib/workspace-return';
 import { useWorkspaceTheme } from '@/components/workspace-theme';
 
 export function SignedInUserMenu({
@@ -79,7 +80,12 @@ export function SignedInUserMenu({
         <DropdownMenuItem
           onSelect={() => {
             void authClient.signOut({
-              fetchOptions: { onSuccess: () => window.location.replace('/sign-in') },
+              fetchOptions: {
+                onSuccess: () => {
+                  if (isWorkspacePath(window.location.pathname))
+                    window.location.replace('/sign-in');
+                },
+              },
             });
           }}
         >

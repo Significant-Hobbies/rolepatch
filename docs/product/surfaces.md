@@ -33,7 +33,8 @@ when a route is added or removed.
 ## Web workspace
 
 Workspace pages require a valid Google sign-in session. The `/sign-in` page
-returns visitors to their requested workspace page after sign-in.
+returns visitors to their requested workspace page after sign-in. Returning
+visitors can import previously saved browser work after they sign in.
 
 | Route | Purpose |
 | --- | --- |

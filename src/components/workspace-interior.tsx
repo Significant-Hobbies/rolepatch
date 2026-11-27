@@ -22,6 +22,7 @@ import {
 import { BriefcaseBusiness, FileText, History, PanelLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { MigrationBanner } from '@/components/migration-banner';
 import { RolePatchMark } from '@/components/rolepatch-mark';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { TokenBalance } from '@/components/token-balance';
@@ -279,6 +280,7 @@ function WorkspaceLayout({ children, page }: { children: ReactNode; page: Worksp
             ))}
           </nav>
           <div id="workspace-content" tabIndex={-1} className="flex min-h-0 flex-1 flex-col">
+            <MigrationBanner />
             {children}
           </div>
         </div>

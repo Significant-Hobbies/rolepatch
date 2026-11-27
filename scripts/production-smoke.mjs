@@ -11,6 +11,16 @@ export function normalizeBaseUrl(value = DEFAULT_BASE_URL) {
   return parsed.toString().replace(/\/$/, '');
 }
 
+function signInRedirectCheck(label, path) {
+  return {
+    name: `${label} requires sign-in`,
+    method: 'GET',
+    path,
+    expectStatus: 307,
+    redirectTo: `/sign-in?${new URLSearchParams({ returnTo: path })}`,
+  };
+}
+
 export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
   const publicChecks = [
     {
@@ -21,27 +31,9 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       requiredText: ['RolePatch'],
       requiredHeaders: { 'content-security-policy': CONTENT_SECURITY_POLICY },
     },
-    {
-      name: 'jobs requires sign-in',
-      method: 'GET',
-      path: '/jobs',
-      expectStatus: 307,
-      redirectTo: '/sign-in?returnTo=%2Fjobs',
-    },
-    {
-      name: 'history requires sign-in',
-      method: 'GET',
-      path: '/history',
-      expectStatus: 307,
-      redirectTo: '/sign-in?returnTo=%2Fhistory',
-    },
-    {
-      name: 'resume builder requires sign-in',
-      method: 'GET',
-      path: '/resume-builder',
-      expectStatus: 307,
-      redirectTo: '/sign-in?returnTo=%2Fresume-builder',
-    },
+    signInRedirectCheck('jobs', '/jobs'),
+    signInRedirectCheck('history', '/history'),
+    signInRedirectCheck('resume builder', '/resume-builder'),
     {
       name: 'pricing',
       method: 'GET',
@@ -63,13 +55,7 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       expectStatus: 400,
       jsonKeys: ['ok', 'error'],
     },
-    {
-      name: 'settings requires sign-in',
-      method: 'GET',
-      path: '/settings',
-      expectStatus: 307,
-      redirectTo: '/sign-in?returnTo=%2Fsettings',
-    },
+    signInRedirectCheck('settings', '/settings'),
     {
       name: 'workspace sign-in',
       method: 'GET',

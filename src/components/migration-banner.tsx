@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@saas-maker/ui/components/button';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
 import { LocalResumeCorrection } from '@/components/local-resume-correction';
@@ -13,14 +13,6 @@ import type { CoverLetter, JobApplication, Resume, StashEntry, TailoredResume } 
 const DISMISSED_KEY = 'rt-migration-dismissed';
 // leave localStorage intact as recovery backup
 const MIGRATED_KEY = 'rt-migrated';
-
-type Counts = {
-  resumes: number;
-  jobs: number;
-  tailoredResumes: number;
-  coverLetters: number;
-  stashEntries: number;
-};
 
 function getLocalItems<T>(key: string): T[] {
   if (typeof window === 'undefined') return [];
@@ -36,7 +28,7 @@ function firstCorrection(resumes: Resume[]) {
 async function importLocalData() {
   const resumes = getLocalItems<Resume>('rt-resumes');
   const correction = firstCorrection(resumes);
-  if (correction) return { success: false, error: correction.error, correction, counts: undefined };
+  if (correction) return { success: false, error: correction.error, correction };
   const result = await migrateGuestData({
     resumes,
     jobs: getLocalItems<JobApplication>('rt-jobs'),
@@ -47,27 +39,18 @@ async function importLocalData() {
   return { ...result, correction: null };
 }
 
-function formatSuccessParts(counts: Counts): string[] {
-  const parts: string[] = [];
-  if (counts.resumes > 0) parts.push(`${counts.resumes} resume${counts.resumes > 1 ? 's' : ''}`);
-  if (counts.jobs > 0) parts.push(`${counts.jobs} job${counts.jobs > 1 ? 's' : ''}`);
-  if (counts.stashEntries > 0)
-    parts.push(`${counts.stashEntries} stash entr${counts.stashEntries > 1 ? 'ies' : 'y'}`);
-  return parts;
-}
-
 export function MigrationBanner() {
   const { isGuest } = useAuth();
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(
-    () => typeof window !== 'undefined' && localStorage.getItem(DISMISSED_KEY) === '1'
+    () =>
+      typeof window !== 'undefined' &&
+      (localStorage.getItem(DISMISSED_KEY) === '1' || localStorage.getItem(MIGRATED_KEY) === '1')
   );
-  const [autoResult, setAutoResult] = useState<{ counts: Counts } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [correction, setCorrection] = useState<ReturnType<typeof firstCorrection>>(null);
   const [localStatus, setLocalStatus] = useState('');
   const [editingCorrection, setEditingCorrection] = useState(false);
-  const autoAttempted = useRef(false);
   function refreshCorrection(saved: boolean) {
     setEditingCorrection(false);
     const next = firstCorrection(getLocalItems<Resume>('rt-resumes'));
@@ -86,54 +69,6 @@ export function MigrationBanner() {
   const jobs = !isGuest && !dismissed ? localListJobs() : [];
   const stash = !isGuest && !dismissed ? localListStashEntries() : [];
   const total = resumes.length + jobs.length + stash.length;
-
-  // Auto-migrate on first authenticated load when data exists and flag is not set
-  useEffect(() => {
-    if (isGuest) return;
-    if (autoAttempted.current) return;
-    if (typeof window === 'undefined') return;
-    if (localStorage.getItem(MIGRATED_KEY) === '1') return;
-    if (total === 0) return;
-
-    autoAttempted.current = true;
-
-    (async () => {
-      setLoading(true);
-      try {
-        const result = await importLocalData();
-        setCorrection(result.correction);
-        if (result.success && result.counts) {
-          // leave localStorage intact as recovery backup
-          localStorage.setItem(MIGRATED_KEY, '1');
-          setAutoResult({ counts: result.counts });
-        } else {
-          setError(result.error ?? 'Migration failed');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Migration failed');
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [isGuest, total]);
-
-  // Success banner after auto-migration
-  if (autoResult) {
-    const parts = formatSuccessParts(autoResult.counts);
-    if (parts.length === 0) return null;
-    return (
-      <div className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <p className="text-sm text-foreground">{parts.join(', ')} moved to your account.</p>
-        <Button
-          variant="ghost"
-          onClick={() => setAutoResult(null)}
-          className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors shrink-0"
-        >
-          Dismiss
-        </Button>
-      </div>
-    );
-  }
 
   const visible = !isGuest && !dismissed && (total > 0 || editingCorrection);
   if (!visible) return null;
@@ -172,11 +107,11 @@ export function MigrationBanner() {
 
   return (
     <div
-      className={`mb-4 flex flex-col items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 ${correction ? '' : 'sm:flex-row sm:items-center'}`}
+      className={`mx-4 mt-4 flex flex-col items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 ${correction ? '' : 'sm:flex-row sm:items-center'}`}
     >
       <div className="flex w-full min-w-0 flex-col gap-1 sm:flex-1">
         <p className="text-sm text-foreground">
-          We found {parts.join(', ')} saved locally. Import them to your account?
+          We found {parts.join(', ')} saved in this browser. Import them to your account?
         </p>
         {error && (
           <p className="text-xs text-destructive" role="alert">

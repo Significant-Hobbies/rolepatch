@@ -112,7 +112,7 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
     .click();
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
   await builderSections.getByRole('link', { name: 'Evidence', exact: true }).click();
-  await expect(page).toHaveURL(`**/resume-builder/evidence?resume=${id}`);
+  await expect(page).toHaveURL(`/resume-builder/evidence?resume=${id}`);
   await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
   await builderSections.getByRole('link', { name: 'Master résumé', exact: true }).click();
@@ -124,7 +124,7 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   await page.waitForURL(/resume-builder\/evidence#extra-experience/);
   await expect(page.getByRole('heading', { name: 'Extra experience' })).toBeVisible();
   await page.goto(`/resume-builder?resume=${id}#sources`);
-  await expect(page).toHaveURL(`**/resume-builder/evidence?resume=${id}#sources`);
+  await expect(page).toHaveURL(`/resume-builder/evidence?resume=${id}#sources`);
   await page.goto('/jobs');
   await expect(page.getByRole('heading', { name: 'Jobs', exact: true })).toBeVisible();
   const nav = page.getByRole('navigation', { name: 'Primary', exact: true });

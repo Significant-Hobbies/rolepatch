@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { expect, test } from './fixtures/workspace';
 
 test('private pages redirect to sign-in before rendering workspace content', async ({
@@ -90,4 +91,48 @@ test('a valid account can open the workspace and sign-out closes it', async ({
   await expect(page).toHaveURL(/\/sign-in$/);
   await page.goto('/jobs');
   await expect(page).toHaveURL(/\/sign-in\?/);
+});
+
+test('a returning guest can choose to bring a browser-saved résumé into their account', async ({
+  page,
+  workspace,
+}) => {
+  const id = randomUUID();
+  const resume = {
+    id,
+    name: 'Saved guest master',
+    source: '# Alex Morgan\n\n## Experience\n\n- Built accessible tools.',
+    created_at: 1,
+    updated_at: 1,
+  };
+  await page.addInitScript((resume) => {
+    localStorage.setItem('rt-resumes', JSON.stringify([resume]));
+  }, resume);
+  await page.goto(`/resume-builder?resume=${id}`);
+  await expect(page.getByRole('heading', { name: 'Sign in to RolePatch' })).toBeVisible();
+  await workspace.signIn();
+  await page.goto(`/resume-builder?resume=${id}`);
+  await expect(page.getByText(/saved in this browser/i)).toBeVisible();
+  expect(workspace.query('SELECT id FROM resumes WHERE id = ?', id)).toHaveLength(0);
+  await page.getByRole('button', { name: 'Import', exact: true }).click();
+  await expect(page.getByLabel('Master resume', { exact: true })).toHaveValue(id);
+  await expect(page.getByRole('button', { name: 'Import', exact: true })).toHaveCount(0);
+  expect(workspace.query('SELECT user_id FROM resumes WHERE id = ?', id)[0].user_id).toBe(
+    workspace.userId
+  );
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]'))).toEqual(
+    [resume]
+  );
+});
+
+test('signing out on a public tool keeps its inputs on screen', async ({ page, workspace }) => {
+  await workspace.signIn();
+  await page.goto('/tools/diff');
+  const original = page.locator('textarea').first();
+  await original.fill('Keep this text when signing out');
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  await page.getByRole('menuitem', { name: 'Sign out' }).click();
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/tools\/diff$/);
+  await expect(original).toHaveValue('Keep this text when signing out');
 });

@@ -126,7 +126,7 @@ test('Always include selections persist with the base resume and education stays
     'Pinned base'
   );
   await page.goto(`/editor/${id}`);
-  const pinned = page.locator('summary').filter({ hasText: 'Always include' });
+  const pinned = page.locator('#workspace-content summary').filter({ hasText: 'Always include' });
   await pinned.click();
   const education = page.getByRole('checkbox', { name: 'Education · always included' });
   await expect(education).toBeChecked();
@@ -138,7 +138,7 @@ test('Always include selections persist with the base resume and education stays
     .getByRole('checkbox', { name: 'Always include: Released Widget.', exact: true })
     .check();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByText('Always include · 2 points', { exact: true })).toBeVisible();
+  await expect(pinned).toHaveText('Always include · 2 points');
   await page.reload();
   await pinned.click();
   await expect(
@@ -154,7 +154,7 @@ test('Always include selections persist with the base resume and education stays
     .getByRole('checkbox', { name: 'Always include: Shipped customer APIs.', exact: true })
     .uncheck();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByText('Always include · 1 point', { exact: true })).toBeVisible();
+  await expect(pinned).toHaveText('Always include · 1 point');
 });
 
 /**
