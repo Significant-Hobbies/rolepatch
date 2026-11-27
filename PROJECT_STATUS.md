@@ -2,6 +2,21 @@
 
 Last updated: 2026-11-27
 
+## Workspace sign-in release — 27 November
+
+PR #63 shipped `40141d3` on Worker `2b31f8dc-0dd2-4cce-9995-ab4772def6ac`
+at 100% traffic. The workspace requires a valid Google sign-in session.
+Public tools remain available to visitors. Returning guests can choose to
+import browser-saved résumés, jobs, cover letters, and extra experience.
+There was no database migration.
+
+All nine production smoke checks passed. Direct requests to 14 private URLs
+redirected before rendering the workspace. Local verification passed 108
+browser checks, including sign-out, history navigation, forged and expired
+sessions, and the browser import. Signed-in coverage used isolated test
+accounts.
+[Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45987231766)
+
 ## Shared workspace UI release — 27 November
 
 PR #61 shipped `8ec7753` on Worker `aae98cca-362f-48b3-a84d-d2582b953fed`
