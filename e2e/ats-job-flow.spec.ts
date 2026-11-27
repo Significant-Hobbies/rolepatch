@@ -147,7 +147,9 @@ test('Always include selections persist with the base resume and education stays
   await expect(
     page.getByRole('checkbox', { name: 'Always include: Released Widget.', exact: true })
   ).toBeChecked();
-  await expect(page.locator('#resume-print-target')).not.toContainText('rolepatch:always-include');
+  await expect(page.locator('#workspace-content #resume-print-target')).not.toContainText(
+    'rolepatch:always-include'
+  );
   const saved = String(workspace.query('SELECT source FROM resumes WHERE id = ?', id)[0].source);
   expect(saved.match(/rolepatch:always-include/g)).toHaveLength(2);
   await page
