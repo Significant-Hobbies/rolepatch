@@ -10,6 +10,20 @@ afterEach(() => {
   vi.clearAllMocks();
   cleanup();
   localStorage.clear();
+  sessionStorage.clear();
+});
+
+it('lets an account dismiss the browser import for this tab without deleting the backup', () => {
+  const source = JSON.stringify([
+    { id: 'local', name: 'Master', source: '# Alex', created_at: 1, updated_at: 1 },
+  ]);
+  localStorage.setItem('rt-resumes', source);
+  const { unmount } = render(<MigrationBanner />);
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+  unmount();
+  render(<MigrationBanner />);
+  expect(screen.queryByRole('button', { name: 'Import' })).not.toBeInTheDocument();
+  expect(localStorage.getItem('rt-resumes')).toBe(source);
 });
 it('keeps all guest data available when an explicit import fails preflight', async () => {
   const originals = {

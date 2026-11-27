@@ -16,8 +16,18 @@ const ApplicationStyles = dynamic(() =>
 );
 
 function useEndedWorkspaceSession(pathname: string) {
+  const router = useRouter();
   const { isGuest, isPending, isSessionError } = useAuth();
-  const sessionEnded = isWorkspacePath(pathname) && !isPending && !isSessionError && isGuest;
+  const inWorkspace = isWorkspacePath(pathname);
+  const sessionEnded = inWorkspace && !isPending && !isSessionError && isGuest;
+  useEffect(() => {
+    if (!inWorkspace) return;
+    const recheckRestoredPage = (event: PageTransitionEvent) => {
+      if (event.persisted) router.refresh();
+    };
+    window.addEventListener('pageshow', recheckRestoredPage);
+    return () => window.removeEventListener('pageshow', recheckRestoredPage);
+  }, [inWorkspace, router]);
   useEffect(() => {
     if (!sessionEnded) return;
     const { pathname, search, hash } = window.location;

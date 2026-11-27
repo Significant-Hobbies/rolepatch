@@ -88,7 +88,7 @@ test('a valid account can open the workspace and sign-out closes it', async ({
   await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Account menu' }).click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
-  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page).toHaveURL('/sign-in?returnTo=%2Fsettings');
   await page.goto('/jobs');
   await expect(page).toHaveURL(/\/sign-in\?/);
 });
@@ -135,12 +135,28 @@ test('signing out on a public tool keeps its inputs on screen', async ({ page, w
   const original = page.locator('textarea').first();
   await original.fill('Keep this text when signing out');
   await page.getByRole('button', { name: 'Account menu' }).click();
+  await page.route('**/api/auth/get-session**', (route) =>
+    route.fulfill({ status: 503, json: { message: 'Session refetch unavailable' } })
+  );
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\/tools\/diff$/);
   await expect(original).toHaveValue('Keep this text when signing out');
   await page.goBack();
   await expect(page).toHaveURL(/\/tools$/);
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Sign in to RolePatch' })).toBeVisible();
+  await expect(page.locator('#workspace-content')).toHaveCount(0);
+});
+
+test('document history is gated after sign-out', async ({ page, workspace }) => {
+  await workspace.signIn();
+  await page.goto('/history');
+  await expect(page.getByRole('heading', { name: 'History', exact: true })).toBeVisible();
+  await page.goto('/pricing');
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  await page.getByRole('menuitem', { name: 'Sign out' }).click();
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Sign in to RolePatch' })).toBeVisible();
   await expect(page.locator('#workspace-content')).toHaveCount(0);

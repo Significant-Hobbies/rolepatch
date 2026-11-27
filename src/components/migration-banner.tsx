@@ -41,9 +41,9 @@ function describeLocalData(local: ReturnType<typeof getLocalData>) {
     .map(([count, label, plural]) => `${count} ${count === 1 ? label : (plural ?? `${label}s`)}`);
 }
 
-function hasImported(key: string) {
+function readBrowserMarker(key: string, tabOnly = false) {
   try {
-    return localStorage.getItem(key) === '1';
+    return (tabOnly ? sessionStorage : localStorage).getItem(key) === '1';
   } catch {
     return false;
   }
@@ -65,6 +65,7 @@ async function importLocalData(userId: string) {
 export function MigrationBanner() {
   const { userId } = useAuth();
   const importedKey = `rt-migrated:${userId}`;
+  const dismissalKey = `rt-migration-dismissed:${userId}`;
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +86,13 @@ export function MigrationBanner() {
     );
   }
 
-  if (!userId || dismissed || hasImported(importedKey)) return null;
+  if (
+    !userId ||
+    dismissed ||
+    readBrowserMarker(importedKey) ||
+    readBrowserMarker(dismissalKey, true)
+  )
+    return null;
   const parts = describeLocalData(getLocalData());
   if (parts.length === 0 && !editingCorrection) return null;
 
@@ -111,6 +118,13 @@ export function MigrationBanner() {
     }
   }
 
+  function dismiss() {
+    try {
+      sessionStorage.setItem(dismissalKey, '1');
+    } catch {}
+    setDismissed(true);
+  }
+
   return (
     <div
       className={`mx-4 mt-4 flex flex-col items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 ${correction ? '' : 'sm:flex-row sm:items-center'}`}
@@ -119,6 +133,7 @@ export function MigrationBanner() {
         <p className="text-sm text-foreground">
           We found {parts.join(', ')} saved in this browser. Import them to your account?
         </p>
+        <p className="text-sm text-muted-foreground">Items already in this account are skipped.</p>
         {error && (
           <p className="text-xs text-destructive" role="alert">
             {error}
@@ -150,7 +165,7 @@ export function MigrationBanner() {
         </Button>
         <Button
           variant="ghost"
-          onClick={() => setDismissed(true)}
+          onClick={dismiss}
           disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-50 transition-colors"
         >
