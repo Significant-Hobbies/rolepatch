@@ -2,6 +2,22 @@
 
 Last updated: 2026-11-27
 
+## Shared workspace UI release — 27 November
+
+PR #61 shipped `8ec7753` on Worker `aae98cca-362f-48b3-a84d-d2582b953fed`
+at 100% traffic. The React web app uses SaaS Maker UI for its reusable
+controls. CI checks the workspace and public React routes for local copies
+and raw control elements. Resume Builder, Jobs, and History have clearer
+entry points, keyboard navigation, and phone layouts. No migration was required.
+
+The production smoke passed all eight checks. The release build passed 54
+Chromium and WebKit checks, including theme changes, keyboard focus, editing
+and reopening a résumé, and filtering application history. The queue label
+contrast checks passed on production in Light and Dark mode. Browser verification
+used guest and synthetic account data. The owner's signed-in browser session
+was unavailable.
+[Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45967389875)
+
 ## Jobs and Résumé Builder subpages — 27 November
 
 PR #59 shipped `38594a4` on Worker `1aa7671f-8691-49ba-af2a-9a85fe2a0ae6`
