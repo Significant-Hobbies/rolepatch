@@ -803,7 +803,7 @@ export function Dashboard(props: DashboardProps) {
             />
           </div>
           <p className="mb-4 text-sm text-muted-foreground">
-            Every job and its saved tailored resumes. Generating a draft does not apply for a job.
+            Jobs and their saved tailored résumés.
           </p>
           <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
             {(
@@ -847,7 +847,7 @@ export function Dashboard(props: DashboardProps) {
                     <TableHead>Role & company</TableHead>
                     <TableHead>Stage</TableHead>
                     <TableHead>Resumes</TableHead>
-                    <TableHead>Added</TableHead>
+                    <TableHead className="hidden sm:table-cell">Added</TableHead>
                     <TableHead>
                       <span className="sr-only">Open job</span>
                     </TableHead>
@@ -871,6 +871,9 @@ export function Dashboard(props: DashboardProps) {
                           <div className="text-sm text-muted-foreground">
                             {job.company || 'Unknown Company'}
                           </div>
+                          <div className="text-xs text-muted-foreground sm:hidden">
+                            {timeAgo(job.created_at)}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <select
@@ -889,7 +892,7 @@ export function Dashboard(props: DashboardProps) {
                         <TableCell>
                           <Badge variant="secondary">{historyByJob.get(job.id)?.length ?? 0}</Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell className="hidden text-muted-foreground sm:table-cell">
                           {timeAgo(job.created_at)}
                         </TableCell>
                         <TableCell>
