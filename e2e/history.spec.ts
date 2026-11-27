@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
 async function seedHistory(page: import('@playwright/test').Page) {
-  await page.goto('/dashboard');
+  await page.goto('/history');
   await page.evaluate(() => {
     const now = Math.floor(Date.now() / 1000);
     const master =
@@ -188,4 +188,35 @@ test('history filters applied jobs and reopens the exact old resume after reload
       .frameLocator('iframe[title="Resume document preview"]')
       .getByText('Latest frontend summary for the saved history version.', { exact: true })
   ).toBeVisible();
+});
+
+test('the workspace has three visible page links and History is a separate page', async ({
+  page,
+}) => {
+  await page.goto('/jobs');
+  const navigation = page.getByRole('navigation', { name: 'Primary', exact: true });
+  await expect(navigation.getByRole('link')).toHaveCount(3);
+  await expect(navigation.getByRole('link', { name: 'Jobs', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page'
+  );
+  await expect(page.getByRole('region', { name: 'History', exact: true })).toHaveCount(0);
+
+  await navigation.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page).toHaveURL(/\/history$/);
+  await expect(page.getByRole('heading', { name: 'History', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('link', { name: 'History', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page'
+  );
+  await expect(page.getByRole('region', { name: 'Application tracker', exact: true })).toHaveCount(
+    0
+  );
+
+  await navigation.getByRole('link', { name: 'Resume Builder', exact: true }).click();
+  await expect(page).toHaveURL(/\/resume-builder$/);
+  await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
+  await expect(
+    navigation.getByRole('link', { name: 'Resume Builder', exact: true })
+  ).toHaveAttribute('aria-current', 'page');
 });

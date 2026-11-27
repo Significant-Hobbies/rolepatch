@@ -16,14 +16,19 @@ const ApplicationStyles = dynamic(() =>
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
   const builder = pathname === '/resume-builder' || pathname.startsWith('/editor/');
-  const workspace =
-    builder || pathname === '/jobs' || pathname === '/dashboard' || pathname.startsWith('/tailor/');
+  const workspacePage = builder
+    ? '/resume-builder'
+    : pathname === '/history'
+      ? '/history'
+      : pathname === '/jobs' || pathname === '/dashboard' || pathname.startsWith('/tailor/')
+        ? '/jobs'
+        : null;
   const catalog = pathname === '/pricing' || pathname === '/tools';
   return (
     <>
       {!catalog && <ApplicationStyles />}
-      {workspace ? (
-        <WorkspaceInterior builder={builder}>{children}</WorkspaceInterior>
+      {workspacePage ? (
+        <WorkspaceInterior page={workspacePage}>{children}</WorkspaceInterior>
       ) : (
         <>
           <SiteNav />

@@ -2,7 +2,8 @@
 
 import '@/app/workspace.css';
 
-import { BriefcaseBusiness, FileText } from 'lucide-react';
+import { BriefcaseBusiness, FileText, History } from 'lucide-react';
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import { RolePatchMark } from '@/components/rolepatch-mark';
@@ -39,13 +40,15 @@ import { WorkspaceOutlineContext, type WorkspaceSection } from '@/components/wor
 const links = [
   { href: '/resume-builder', label: 'Resume Builder', icon: FileText },
   { href: '/jobs', label: 'Jobs', icon: BriefcaseBusiness },
-];
+  { href: '/history', label: 'History', icon: History },
+] as const;
+type WorkspacePage = (typeof links)[number]['href'];
 
 function WorkspaceSidebar({
-  builder,
+  page,
   sections,
 }: {
-  builder: boolean;
+  page: WorkspacePage;
   sections: WorkspaceSection[];
 }) {
   const { setOpenMobile } = useSidebar();
@@ -73,15 +76,11 @@ function WorkspaceSidebar({
             <SidebarMenu>
               {links.map(({ href, label, icon: Icon }) => (
                 <SidebarMenuItem key={href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={builder === (href === '/resume-builder')}
-                    tooltip={label}
-                  >
+                  <SidebarMenuButton asChild isActive={page === href} tooltip={label}>
                     <Link
                       href={href}
                       prefetch={false}
-                      aria-current={builder === (href === '/resume-builder') ? 'page' : undefined}
+                      aria-current={page === href ? 'page' : undefined}
                       onClick={() => setOpenMobile(false)}
                     >
                       <Icon />
@@ -93,7 +92,7 @@ function WorkspaceSidebar({
             </SidebarMenu>
           </nav>
         </SidebarGroup>
-        {builder && sections.length > 0 && (
+        {page === '/resume-builder' && sections.length > 0 && (
           <SidebarGroup className="group-data-[collapsible=icon]:hidden">
             <SidebarGroupLabel>Master resume</SidebarGroupLabel>
             <nav aria-label="Resume sections">
@@ -121,10 +120,10 @@ function WorkspaceSidebar({
 
 export function WorkspaceInterior({
   children,
-  builder,
+  page,
 }: {
   children: ReactNode;
-  builder: boolean;
+  page: WorkspacePage;
 }) {
   const [sections, setSections] = useState<WorkspaceSection[]>([]);
   const outline = useMemo(() => ({ sections, setSections }), [sections]);
@@ -132,7 +131,7 @@ export function WorkspaceInterior({
     <WorkspaceOutlineContext.Provider value={outline}>
       <WorkspaceThemeProvider>
         <SidebarProvider>
-          <WorkspaceSidebar builder={builder} sections={sections} />
+          <WorkspaceSidebar page={page} sections={sections} />
           <SidebarInset className="min-w-0">
             <header className="flex h-16 shrink-0 items-center gap-2 border-b">
               <div className="flex items-center gap-2 px-4">
@@ -149,7 +148,9 @@ export function WorkspaceInterior({
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
-                      <BreadcrumbPage>{builder ? 'Resume Builder' : 'Jobs'}</BreadcrumbPage>
+                      <BreadcrumbPage>
+                        {links.find((link) => link.href === page)?.label}
+                      </BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
@@ -159,6 +160,24 @@ export function WorkspaceInterior({
                 <TokenBalance />
               </div>
             </header>
+            <nav
+              aria-label="Primary"
+              className="flex justify-center gap-1 border-b px-2 py-1.5 md:hidden"
+            >
+              {links.map(({ href, label }) => (
+                <Button
+                  key={href}
+                  asChild
+                  variant={page === href ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="min-h-10 px-2.5"
+                >
+                  <Link href={href} aria-current={page === href ? 'page' : undefined}>
+                    {label}
+                  </Link>
+                </Button>
+              ))}
+            </nav>
             {children}
           </SidebarInset>
         </SidebarProvider>

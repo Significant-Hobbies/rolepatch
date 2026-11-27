@@ -26,7 +26,14 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       method: 'GET',
       path: '/jobs',
       expectStatus: 200,
-      requiredText: ['Jobs', 'History'],
+      requiredText: ['Jobs'],
+    },
+    {
+      name: 'history workspace',
+      method: 'GET',
+      path: '/history',
+      expectStatus: 200,
+      requiredText: ['History'],
     },
     {
       name: 'resume builder',

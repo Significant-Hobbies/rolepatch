@@ -19,6 +19,7 @@ describe('production smoke harness', () => {
     expect(buildSmokeChecks({ hasSessionCookie: false }).map((check) => check.name)).toEqual([
       'landing',
       'jobs workspace',
+      'history workspace',
       'resume builder',
       'pricing',
       'proof project',
@@ -33,7 +34,8 @@ describe('production smoke harness', () => {
   it('runs public smoke checks without a session cookie', async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
       const url = input instanceof Request ? input.url : String(input);
-      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1><h2>History</h2>');
+      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1>');
+      if (url.endsWith('/history')) return new Response('<h1>History</h1>');
       if (url.endsWith('/resume-builder'))
         return new Response(
           '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'
@@ -63,8 +65,8 @@ describe('production smoke harness', () => {
 
     expect(summary.authenticated).toBe(false);
     expect(summary.failed).toBe(0);
-    expect(summary.passed).toBe(7);
-    expect(fetchImpl).toHaveBeenCalledTimes(7);
+    expect(summary.passed).toBe(8);
+    expect(fetchImpl).toHaveBeenCalledTimes(8);
     expect(fetchImpl.mock.calls.some(([url]) => String(url).includes('/api/apply-agent'))).toBe(
       false
     );
@@ -106,7 +108,7 @@ describe('production smoke harness', () => {
       if (url.endsWith('/api/apply-agent/receipts')) {
         return Response.json({ receipts: [] });
       }
-      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1><h2>History</h2>');
+      if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1>');
       if (url.endsWith('/resume-builder'))
         return new Response(
           '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'

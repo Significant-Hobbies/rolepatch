@@ -55,9 +55,9 @@ for (const width of [390, 768, 1440]) {
         await route.fulfill({ json: null });
       });
       try {
-        await page.goto('/dashboard');
+        await page.goto('/history');
         const history = page.getByRole('region', { name: 'History', exact: true });
-        await expect(page.getByRole('heading', { name: 'Jobs', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'History', exact: true })).toBeVisible();
         await expect(history.getByText('No job history yet', { exact: true })).toHaveCount(0);
         await expect(history.getByText('0 jobs', { exact: true })).toHaveCount(0);
         await expect(history.getByRole('group', { name: 'Filter history' })).toHaveCount(0);

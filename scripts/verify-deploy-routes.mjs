@@ -8,6 +8,7 @@ import { join } from 'node:path';
 export const REQUIRED_DEPLOY_ROUTES = [
   '/',
   '/jobs',
+  '/history',
   '/proof',
   '/pricing',
   '/settings',
