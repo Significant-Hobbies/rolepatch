@@ -2,6 +2,20 @@
 
 Last updated: 2026-11-27
 
+## Jobs and Résumé Builder subpages — 27 November
+
+PR #59 shipped `38594a4` on Worker `1aa7671f-8691-49ba-af2a-9a85fe2a0ae6`
+at 100% traffic. Jobs opens to the tracker and analytics. Find jobs and Apply
+queue have dedicated routes. Résumé Builder opens to the master editor, with
+Evidence, Career profile, and Generate on their own routes. The workspace has
+three primary links. There was no database migration.
+
+The release build passed 38 browser checks, including unsaved master edits,
+older bookmarks, and guest queue receipts. All eight production smoke checks
+passed. The signed-in browser connection was unavailable for this release, and
+the optional authenticated apply-agent smoke was not run.
+[Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45961509313)
+
 ## Three-page workspace release — 27 November
 
 PR #57 shipped `acf8702` on Worker `7a0f7c7c-b67a-4402-8144-ae8403e54daf`
