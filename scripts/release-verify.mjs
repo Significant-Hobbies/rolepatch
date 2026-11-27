@@ -98,14 +98,14 @@ export async function main() {
   await withBuiltServer(async (baseUrl, testEnv) => {
     run('pnpm', ['smoke:prod'], {
       env: {
-        ROLEPATCH_E2E_DB_PATH: testEnv.ROLEPATCH_E2E_DB_PATH,
-        ROLEPATCH_E2E_AUTH_SECRET: testEnv.ROLEPATCH_E2E_AUTH_SECRET,
-        ROLEPATCH_E2E_REUSE_SERVER: '1',
         ROLEPATCH_SMOKE_BASE_URL: baseUrl,
       },
     });
     run('pnpm', FOCUSED_E2E_ARGS, {
       env: {
+        ROLEPATCH_E2E_DB_PATH: testEnv.ROLEPATCH_E2E_DB_PATH,
+        ROLEPATCH_E2E_AUTH_SECRET: testEnv.ROLEPATCH_E2E_AUTH_SECRET,
+        ROLEPATCH_E2E_REUSE_SERVER: '1',
         PLAYWRIGHT_BASE_URL: baseUrl,
         PLAYWRIGHT_WEB_SERVER_COMMAND: `pnpm exec next start -p ${new URL(baseUrl).port}`,
       },

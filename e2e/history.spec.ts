@@ -130,19 +130,19 @@ test('history filters applied jobs and reopens the exact old resume after reload
   await expect(page.getByLabel('Saved resume version')).toHaveValue(oldVersion);
   await expect(
     page
-      .frameLocator('iframe[title="Resume document preview"]')
+      .frameLocator('#workspace-content iframe[title="Resume document preview"]')
       .getByText('Earlier frontend summary for the saved history version.', { exact: true })
   ).toBeVisible();
   await page.reload();
   await expect(
     page
-      .frameLocator('iframe[title="Resume document preview"]')
+      .frameLocator('#workspace-content iframe[title="Resume document preview"]')
       .getByText('Earlier frontend summary for the saved history version.', { exact: true })
   ).toBeVisible();
   await page.getByLabel('Saved resume version').selectOption(newVersion);
   await expect(
     page
-      .frameLocator('iframe[title="Resume document preview"]')
+      .frameLocator('#workspace-content iframe[title="Resume document preview"]')
       .getByText('Latest frontend summary for the saved history version.', { exact: true })
   ).toBeVisible();
 });

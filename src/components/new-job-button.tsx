@@ -31,7 +31,8 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
   const workspaceTheme = useWorkspaceTheme();
   const router = useRouter();
   const { isGuest, isPending: authPending } = useAuth();
-  const [resumes, setResumes] = useState(serverResumes);
+  const [guestResumes, setGuestResumes] = useState<NewJobButtonProps['resumes']>([]);
+  const resumes = !authPending && isGuest ? guestResumes : serverResumes;
   const [open, setOpen] = useState(false);
   const [resumeId, setResumeId] = useState('');
   const [url, setUrl] = useState('');
@@ -46,13 +47,13 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
 
   // For guests, supplement with localStorage resumes
   useEffect(() => {
-    if (isGuest) {
+    if (!authPending && isGuest) {
       const localResumes = localListResumes()
         .filter((r) => masterResumeReadiness(r.source).ready)
         .map((r) => ({ id: r.id, name: r.name }));
-      setResumes(localResumes);
+      setGuestResumes(localResumes);
     }
-  }, [isGuest]);
+  }, [authPending, isGuest]);
 
   const close = useCallback(() => {
     if (loading) return;

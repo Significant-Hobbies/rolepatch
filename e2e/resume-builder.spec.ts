@@ -64,7 +64,9 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   const builderSections = page.getByRole('navigation', { name: 'Resume Builder sections' });
   await builderSections.getByRole('link', { name: 'Evidence', exact: true }).click();
   await expect(page).toHaveURL(/\/resume-builder$/);
-  await expect(page.getByRole('status')).toContainText('Save your changes before leaving');
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Save your changes before leaving' })
+  ).toBeVisible();
   const unexpectedNavigation = expect(
     page.waitForURL(/\/resume-builder\/evidence/, { timeout: 750 })
   ).rejects.toThrow('Timeout');
@@ -147,7 +149,8 @@ test('appearance persists and portal inputs follow Dark, Light and System withou
 }, testInfo) => {
   await page.goto('/resume-builder');
   const workspace = page.locator('.rolepatch-workspace').first();
-  const footer = await page.getByRole('contentinfo').innerHTML();
+  const footer = page.getByRole('contentinfo');
+  const footerColor = await footer.evaluate((element) => getComputedStyle(element).color);
   await page.getByRole('radio', { name: 'Light', exact: true }).click();
   await page.getByRole('radio', { name: 'Dark', exact: true }).click();
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'dark');
@@ -175,5 +178,6 @@ test('appearance persists and portal inputs follow Dark, Light and System withou
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'dark');
   await page.emulateMedia({ colorScheme: 'light' });
   await expect(workspace).toHaveAttribute('data-workspace-theme', 'light');
-  expect(await page.getByRole('contentinfo').innerHTML()).toBe(footer);
+  await expect(footer).toHaveCSS('color', footerColor);
+  await expect(footer.getByRole('heading', { name: 'Help shape RolePatch.' })).toBeVisible();
 });

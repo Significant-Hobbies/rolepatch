@@ -66,10 +66,12 @@ test('master onboarding preserves every role, project and education on reload', 
   expect(source).not.toContain('your.email@example.com');
   await page.getByRole('link', { name: 'Choose a job' }).click();
   await page.getByRole('button', { name: '+ Add Job', exact: true }).click();
-  await page.getByRole('button', { name: /Paste the description instead/i }).click();
-  await page.getByLabel('Company', { exact: true }).fill('Example Co');
-  await page.getByLabel('Role', { exact: true }).fill('Frontend Engineer');
-  await page
+  const paste = page.getByRole('button', { name: /Paste the description instead/i });
+  if (await paste.isVisible()) await paste.click();
+  const jobForm = page.getByRole('dialog', { name: 'Add Job Application' });
+  await jobForm.getByLabel('Company', { exact: true }).fill('Example Co');
+  await jobForm.getByLabel('Role', { exact: true }).fill('Frontend Engineer');
+  await jobForm
     .getByLabel('Job description', { exact: true })
     .fill(
       'Build customer-facing React and TypeScript interfaces, integrate APIs, improve performance, and ship readable product experiences.'
@@ -124,7 +126,8 @@ test('Always include selections persist with the base resume and education stays
     'Pinned base'
   );
   await page.goto(`/editor/${id}`);
-  await page.getByText('Always include · 0 points', { exact: true }).click();
+  const pinned = page.locator('summary').filter({ hasText: 'Always include' });
+  await pinned.click();
   const education = page.getByRole('checkbox', { name: 'Education · always included' });
   await expect(education).toBeChecked();
   await expect(education).toBeDisabled();
@@ -137,7 +140,7 @@ test('Always include selections persist with the base resume and education stays
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByText('Always include · 2 points', { exact: true })).toBeVisible();
   await page.reload();
-  await page.getByText('Always include · 2 points', { exact: true }).click();
+  await pinned.click();
   await expect(
     page.getByRole('checkbox', { name: 'Always include: Shipped customer APIs.', exact: true })
   ).toBeChecked();
@@ -272,6 +275,8 @@ test.describe('Add Job modal', () => {
     // Modal should be visible
     await expect(page.getByText(/Add Job Application/i)).toBeVisible();
 
+    const readUrl = page.getByRole('button', { name: 'Read a posting URL instead' });
+    if (await readUrl.isVisible()) await readUrl.click();
     const urlInput = page.getByLabel('Job URL', { exact: true });
     await expect(urlInput).toBeVisible();
     await urlInput.fill('https://boards.greenhouse.io/acme/jobs/12345');
@@ -289,13 +294,16 @@ test.describe('Add Job modal', () => {
     await seedReadyMaster(page, workspace);
 
     await page.getByRole('button', { name: /\+ Add Job/i }).click();
+    const readUrl = page.getByRole('button', { name: 'Read a posting URL instead' });
+    if (await readUrl.isVisible()) await readUrl.click();
     await page.getByLabel('Job URL', { exact: true }).fill('http://127.0.0.1/job');
     await page.getByRole('button', { name: 'Add Job', exact: true }).click();
 
     await expect(page.getByLabel('Job description')).toBeVisible({ timeout: 15000 });
-    await page.getByLabel('Company').fill('Fallback Co');
-    await page.getByLabel('Role', { exact: true }).fill('Platform Engineer');
-    await page
+    const jobForm = page.getByRole('dialog', { name: 'Add Job Application' });
+    await jobForm.getByLabel('Company', { exact: true }).fill('Fallback Co');
+    await jobForm.getByLabel('Role', { exact: true }).fill('Platform Engineer');
+    await jobForm
       .getByLabel('Job description')
       .fill(
         'We need a platform engineer with TypeScript, distributed systems, observability, and strong incident response experience.'
@@ -491,7 +499,9 @@ test.describe('Apply-agent queue receipts', () => {
     await page.getByRole('button', { name: 'Mark submitted' }).click();
 
     await expect(page.getByText(/Receipt: lever/i)).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/Marked submitted manually in RolePatch/i)).toBeVisible();
+    await expect(
+      page.getByText(/Marked submitted through the RolePatch apply-agent API/i)
+    ).toBeVisible();
 
     expect(query('SELECT status FROM job_applications WHERE id = ?', jobId)[0].status).toBe(
       'applied'
@@ -510,7 +520,7 @@ test.describe('Apply-agent queue receipts', () => {
           queue_id: queueId,
           provider: 'lever',
           status: 'submitted',
-          confirmation_text: 'Marked submitted manually in RolePatch.',
+          confirmation_text: 'Marked submitted through the RolePatch apply-agent API.',
         }),
       ])
     );

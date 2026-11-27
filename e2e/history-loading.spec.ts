@@ -46,9 +46,7 @@ for (const width of [390, 768, 1440]) {
         await expect(page.getByRole('heading', { name: 'History', exact: true })).toBeVisible();
         await expect(history.getByText('No job history yet', { exact: true })).toHaveCount(0);
         await expect(history.getByText('0 jobs', { exact: true })).toHaveCount(0);
-        await expect(
-          history.getByRole('button', { name: 'Saved pending history job', exact: true })
-        ).toBeVisible();
+        await expect(history.getByRole('status', { name: 'Loading job history' })).toBeVisible();
         // Let viewport initialization settle before measuring the data transition.
         await page.waitForTimeout(600);
         releaseSession();

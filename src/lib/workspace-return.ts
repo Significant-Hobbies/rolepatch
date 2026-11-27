@@ -1,4 +1,4 @@
-export const DEFAULT_WORKSPACE_PATH = '/resume-builder';
+const DEFAULT_WORKSPACE_PATH = '/resume-builder';
 
 const workspacePath =
   /^\/(resume-builder|jobs|history|dashboard|editor|tailor|cover-letter|interview-prep|settings)(\/|$)/;
