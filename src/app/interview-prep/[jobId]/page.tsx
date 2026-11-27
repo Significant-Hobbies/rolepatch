@@ -9,12 +9,17 @@ import { getJobApplication } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
 import { getCurrentUserId } from '@/lib/auth-utils';
 
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+
 export default async function InterviewPrepPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ jobId: string }>;
+  searchParams: WorkspaceSearchParams;
 }) {
   const { jobId } = await params;
+  await requireWorkspaceSignIn(`/interview-prep/${encodeURIComponent(jobId)}`, searchParams);
   if (!(await getCurrentUserId())) return <GuestInterviewPrep key={jobId} jobId={jobId} />;
   const job = await getJobApplication(jobId);
   if (!job) notFound();

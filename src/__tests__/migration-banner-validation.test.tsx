@@ -2,13 +2,30 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { MigrationBanner } from '@/components/migration-banner';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
-vi.mock('@/components/auth-provider', () => ({ useAuth: () => ({ isGuest: false }) }));
+vi.mock('@/components/auth-provider', () => ({
+  useAuth: () => ({ isGuest: false, userId: 'owner' }),
+}));
 vi.mock('@/lib/actions/migration-actions', () => ({ migrateGuestData: vi.fn() }));
 afterEach(() => {
+  vi.clearAllMocks();
   cleanup();
   localStorage.clear();
+  sessionStorage.clear();
 });
-it('keeps all guest data available when automatic or manual import fails preflight', async () => {
+
+it('lets an account dismiss the browser import for this tab without deleting the backup', () => {
+  const source = JSON.stringify([
+    { id: 'local', name: 'Master', source: '# Alex', created_at: 1, updated_at: 1 },
+  ]);
+  localStorage.setItem('rt-resumes', source);
+  const { unmount } = render(<MigrationBanner />);
+  fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+  unmount();
+  render(<MigrationBanner />);
+  expect(screen.queryByRole('button', { name: 'Import' })).not.toBeInTheDocument();
+  expect(localStorage.getItem('rt-resumes')).toBe(source);
+});
+it('keeps all guest data available when an explicit import fails preflight', async () => {
   const originals = {
     'rt-resumes': JSON.stringify([
       { id: 'a', name: 'Master', source: 'password=example12345', created_at: 1, updated_at: 1 },
@@ -20,12 +37,14 @@ it('keeps all guest data available when automatic or manual import fails preflig
   };
   for (const [key, value] of Object.entries(originals)) localStorage.setItem(key, value);
   render(<MigrationBanner />);
+  expect(migrateGuestData).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Import' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Local resume 1, line 1');
   fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Your local data is intact.');
   for (const [key, value] of Object.entries(originals))
     expect(localStorage.getItem(key)).toBe(value);
-  expect(localStorage.getItem('rt-migrated')).toBeNull();
+  expect(localStorage.getItem('rt-migrated:owner')).toBeNull();
   expect(migrateGuestData).not.toHaveBeenCalled();
 });
 
@@ -51,6 +70,8 @@ it('repairs each flagged local resume and sends the whole batch only on explicit
     error: 'Synthetic endpoint received the corrected batch.',
   });
   render(<MigrationBanner />);
+  expect(migrateGuestData).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Import' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Edit local resume 2' }));
   fireEvent.change(screen.getByLabelText('Local resume name'), {
     target: { value: 'Backend master' },
@@ -79,13 +100,16 @@ it('repairs each flagged local resume and sends the whole batch only on explicit
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Synthetic endpoint received the corrected batch.'
   );
-  expect(migrateGuestData).toHaveBeenCalledWith({
-    resumes: corrected,
-    jobs,
-    tailoredResumes: materials,
-    coverLetters: [],
-    stashEntries: [],
-  });
+  expect(migrateGuestData).toHaveBeenCalledWith(
+    {
+      resumes: corrected,
+      jobs,
+      tailoredResumes: materials,
+      coverLetters: [],
+      stashEntries: [],
+    },
+    'owner'
+  );
   expect(localStorage.getItem('rt-jobs')).toBe(JSON.stringify(jobs));
   expect(localStorage.getItem('rt-tailored')).toBe(JSON.stringify(materials));
 });
@@ -104,6 +128,8 @@ it.each([false, true])(
     const stored = (entry: typeof initial) => JSON.stringify([entry, ...others]);
     localStorage.setItem('rt-resumes', stored(initial));
     render(<MigrationBanner />);
+    expect(migrateGuestData).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Edit local resume 1' }));
     fireEvent.change(screen.getByLabelText('Local resume name'), {
       target: { value: 'My corrected name' },

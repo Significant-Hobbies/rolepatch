@@ -1,9 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
+import { workspaceTestEnv } from './e2e/fixtures/environment.mjs';
 
 // Plain Playwright config (formerly @saas-maker/test-config/playwright factory, inlined).
 const ci = Boolean(process.env.CI);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ?? 'pnpm dev';
+const testEnv = workspaceTestEnv(baseURL);
+process.env.ROLEPATCH_E2E_DB_PATH = testEnv.ROLEPATCH_E2E_DB_PATH;
+process.env.ROLEPATCH_E2E_AUTH_SECRET = testEnv.ROLEPATCH_E2E_AUTH_SECRET;
 
 export default defineConfig({
   testDir: './e2e',
@@ -30,6 +34,7 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: baseURL,
-    reuseExistingServer: !ci,
+    env: testEnv,
+    reuseExistingServer: process.env.ROLEPATCH_E2E_REUSE_SERVER === '1',
   },
 });

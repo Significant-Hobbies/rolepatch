@@ -32,7 +32,6 @@ import { JobResumeHistory } from '@/components/job-resume-history';
 import { JobDetailsModal, type JobDetailsModalInitialValues } from '@/components/job-details-modal';
 import { JobDiscovery, type DiscoveryQueueContext } from '@/components/job-discovery';
 import { JobSearchTips } from '@/components/job-search-tips';
-import { MigrationBanner } from '@/components/migration-banner';
 import { CreateResumeButton } from '@/components/create-resume-button';
 import { ResumeImportButton } from '@/components/resume-import-button';
 import { masterResumeReadiness } from '@/lib/master-resume';
@@ -773,7 +772,6 @@ export function Dashboard(props: DashboardProps) {
 
   return (
     <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
-      <MigrationBanner />
       {!historyOnly && <DashboardHeader view={view} resumes={resumes} />}
       {dataPending && <DashboardLoading historyOnly={historyOnly} />}
 

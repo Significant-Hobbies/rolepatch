@@ -1,37 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
 
 for (const width of [390, 768, 1440]) {
   test(`initial editor toolbar hit targets and keyboard access at ${width}`, async ({
     context,
     page,
+    workspace,
   }, testInfo) => {
     test.setTimeout(90_000);
     await page.setViewportSize({ width, height: 900 });
     await context.route('**/*', (route) => {
       const url = new URL(route.request().url());
       if (url.origin !== new URL(testInfo.project.use.baseURL!).origin) return route.abort();
-      if (url.pathname === '/api/auth/get-session') return route.fulfill({ json: null });
       return route.continue();
     });
-    await page.goto('/resume-builder');
-    await expect(page.getByRole('button', { name: '+ New Resume', exact: true })).toBeEnabled({
-      timeout: 30_000,
-    });
-    await page.evaluate(() =>
-      localStorage.setItem(
-        'rt-resumes',
-        JSON.stringify([
-          {
-            id: 'synthetic-toolbar',
-            name: 'Synthetic Resume',
-            source: '# Ada Example\n\n## Experience\n- Built accessible TypeScript screens.\n',
-            created_at: 1767225600,
-            updated_at: 1767225600,
-          },
-        ])
-      )
+    await workspace.signIn();
+    const id = workspace.seedResume(
+      '# Ada Example\n\n## Experience\n- Built accessible TypeScript screens.\n',
+      'Synthetic Resume'
     );
-    await page.goto('/editor/synthetic-toolbar');
+    await page.goto(`/editor/${id}`);
     await expect(page.locator('.cm-editor')).toBeVisible({ timeout: 30_000 });
     await page.evaluate(() => document.fonts.ready);
     const toolbar = page.locator('.product-editor-toolbar');
@@ -39,7 +26,7 @@ for (const width of [390, 768, 1440]) {
       toolbar.getByTitle('Back to Resume Builder'),
       toolbar.getByTitle('Click to rename'),
       toolbar.getByTitle('Format settings'),
-      toolbar.locator('summary').filter({ hasText: 'Export resume' }),
+      toolbar.getByRole('button', { name: 'Export', exact: true }),
       toolbar.getByRole('button', { name: 'Save', exact: true }),
     ];
     const initialScroll = await toolbar.evaluate((element) => {

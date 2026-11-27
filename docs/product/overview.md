@@ -18,8 +18,7 @@ diff view for review.
 
 ## Who it's for
 
-- **Job seekers (guest mode)** — full app works without auth via
-  `localStorage`. No sign-up required to try every core flow.
+- **Visitors** — public résumé tools, pricing, articles, and product information.
 - **Signed-in users (Google OAuth via better-auth)** — persistence to
   Cloudflare D1 with `user_id` filtering, token purchases, saved
   searches, company watches, recruiter reply routing.

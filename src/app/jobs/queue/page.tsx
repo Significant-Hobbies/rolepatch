@@ -15,10 +15,17 @@ import {
 import { listResumes } from '@/lib/actions/resume-actions';
 import { listResumeHistory } from '@/lib/actions/resume-history-actions';
 
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Apply queue' };
 
-export default async function ApplyQueuePage() {
+export default async function ApplyQueuePage({
+  searchParams,
+}: {
+  searchParams: WorkspaceSearchParams;
+}) {
+  await requireWorkspaceSignIn('/jobs/queue', searchParams);
   const [resumes, jobs, queue, receipts, packets, answers, alerts, address, replies, history] =
     await Promise.all([
       listResumes(),

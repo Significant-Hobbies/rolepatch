@@ -1,9 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
 
 test.describe('settings operational readiness', () => {
   test('renders Cloudflare-first readiness without leaking configured secrets', async ({
     page,
+    workspace,
   }) => {
+    await workspace.signIn();
     await page.goto('/settings');
 
     await expect(page.getByRole('heading', { name: 'Feature availability' })).toBeVisible();

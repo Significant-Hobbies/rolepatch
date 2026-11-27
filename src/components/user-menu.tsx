@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import { Button } from '@saas-maker/ui/components/button';
+import { useAuth } from '@/components/auth-provider';
 import { authClient } from '@/lib/auth-client';
 import { captureAuthFailure } from '@/lib/foundry-monitoring';
 
@@ -19,7 +20,8 @@ export function UserMenu({
   callbackURL?: string;
 }) {
   const { data: session, isPending } = authClient.useSession();
-  if (!session?.user) {
+  const { signedOut } = useAuth();
+  if (signedOut || !session?.user) {
     function handleSignIn() {
       authClient.signIn
         .social({ provider: 'google', callbackURL })
@@ -47,7 +49,7 @@ export function UserMenu({
       <Button
         variant="outline"
         className={sidebar ? 'w-full' : undefined}
-        disabled={isPending}
+        disabled={!signedOut && isPending}
         onClick={handleSignIn}
       >
         Sign in

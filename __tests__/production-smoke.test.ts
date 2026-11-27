@@ -13,18 +13,27 @@ import {
   runProductionSmoke,
 } from '../scripts/production-smoke.mjs';
 
+function workspaceRedirect(path: string) {
+  if (!['/jobs', '/history', '/resume-builder', '/settings'].includes(path)) return null;
+  return new Response(null, {
+    status: 307,
+    headers: { location: `/sign-in?${new URLSearchParams({ returnTo: path })}` },
+  });
+}
+
 describe('production smoke harness', () => {
   it('normalizes base URLs and keeps auth checks opt-in', () => {
     expect(normalizeBaseUrl('https://rolepatch.com/')).toBe('https://rolepatch.com');
     expect(buildSmokeChecks({ hasSessionCookie: false }).map((check) => check.name)).toEqual([
       'landing',
-      'jobs workspace',
-      'history workspace',
-      'resume builder',
+      'jobs requires sign-in',
+      'history requires sign-in',
+      'resume builder requires sign-in',
       'pricing',
       'proof project',
       'truehire proof preview guard',
-      'settings readiness',
+      'settings requires sign-in',
+      'workspace sign-in',
     ]);
     expect(buildSmokeChecks({ hasSessionCookie: true }).map((check) => check.name)).toContain(
       'apply queue api'
@@ -34,10 +43,10 @@ describe('production smoke harness', () => {
   it('runs public smoke checks without a session cookie', async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
       const url = input instanceof Request ? input.url : String(input);
-      if (url.endsWith('/jobs')) return new Response('<h1 id="jobs-heading">Jobs</h1>');
-      if (url.endsWith('/history')) return new Response('<h1 id="history-heading">History</h1>');
-      if (url.endsWith('/resume-builder'))
-        return new Response('<h1 id="resume-builder-master-heading">Resume Builder</h1>');
+      const privateRoute = workspaceRedirect(new URL(url).pathname);
+      if (privateRoute) return privateRoute;
+      if (url.endsWith('/sign-in'))
+        return new Response('Sign in to RolePatch. Continue with Google');
       if (url.endsWith('/pricing')) return new Response('<h1>Tokens</h1>');
       if (url.endsWith('/proof')) {
         return new Response('<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>');
@@ -47,9 +56,6 @@ describe('production smoke harness', () => {
           { ok: false, error: 'Enter a TrueHire handle or profile URL.' },
           { status: 400 }
         );
-      }
-      if (url.endsWith('/settings')) {
-        return new Response('<h1>Feature availability</h1><h2>Chrome extension</h2>');
       }
       return new Response('<h1>RolePatch</h1>', {
         headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
@@ -63,8 +69,8 @@ describe('production smoke harness', () => {
 
     expect(summary.authenticated).toBe(false);
     expect(summary.failed).toBe(0);
-    expect(summary.passed).toBe(8);
-    expect(fetchImpl).toHaveBeenCalledTimes(8);
+    expect(summary.passed).toBe(9);
+    expect(fetchImpl).toHaveBeenCalledTimes(9);
     expect(fetchImpl.mock.calls.some(([url]) => String(url).includes('/api/apply-agent'))).toBe(
       false
     );
@@ -95,7 +101,7 @@ describe('production smoke harness', () => {
   );
 
   it('runs authenticated apply-agent read checks when a session cookie is supplied', async () => {
-    const fetchImpl = vi.fn(async (input: string | URL | Request) => {
+    const fetchImpl = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = input instanceof Request ? input.url : String(input);
       if (url.endsWith('/api/apply-agent/queue')) {
         return Response.json({ queue: [] });
@@ -106,10 +112,13 @@ describe('production smoke harness', () => {
       if (url.endsWith('/api/apply-agent/receipts')) {
         return Response.json({ receipts: [] });
       }
-      if (url.endsWith('/jobs')) return new Response('<h1 id="jobs-heading">Jobs</h1>');
-      if (url.endsWith('/history')) return new Response('<h1 id="history-heading">History</h1>');
-      if (url.endsWith('/resume-builder'))
+      if (url.endsWith('/resume-builder') && new Headers(init?.headers).has('cookie')) {
         return new Response('<h1 id="resume-builder-master-heading">Resume Builder</h1>');
+      }
+      const privateRoute = workspaceRedirect(new URL(url).pathname);
+      if (privateRoute) return privateRoute;
+      if (url.endsWith('/sign-in'))
+        return new Response('Sign in to RolePatch. Continue with Google');
       if (url.endsWith('/pricing')) return new Response('<h1>Tokens</h1>');
       if (url.endsWith('/proof')) {
         return new Response('<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>');
@@ -119,9 +128,6 @@ describe('production smoke harness', () => {
           { ok: false, error: 'Enter a TrueHire handle or profile URL.' },
           { status: 400 }
         );
-      }
-      if (url.endsWith('/settings')) {
-        return new Response('<h1>Feature availability</h1><h2>Chrome extension</h2>');
       }
       return new Response('<h1>RolePatch</h1>', {
         headers: { 'content-security-policy': CONTENT_SECURITY_POLICY },
@@ -136,7 +142,7 @@ describe('production smoke harness', () => {
 
     expect(summary.authenticated).toBe(true);
     expect(summary.failed).toBe(0);
-    expect(summary.passed).toBe(11);
+    expect(summary.passed).toBe(13);
     expect(fetchImpl.mock.calls.map(([url]) => String(url))).toEqual(
       expect.arrayContaining([
         'https://rolepatch.com/api/apply-agent/queue',
@@ -158,7 +164,7 @@ describe('production smoke harness', () => {
     });
 
     expect(summary.passed).toBe(0);
-    expect(summary.failed).toBe(8);
+    expect(summary.failed).toBe(9);
     expect(summary.results[0]).toMatchObject({
       ok: false,
       status: 0,
@@ -184,6 +190,12 @@ describe('production smoke harness', () => {
         return;
       }
 
+      const privateRoute = workspaceRedirect(path);
+      if (privateRoute) {
+        response.writeHead(privateRoute.status, Object.fromEntries(privateRoute.headers));
+        response.end();
+        return;
+      }
       response.writeHead(200, {
         'content-type': 'text/html',
         ...(path === '/' ? { 'content-security-policy': CONTENT_SECURITY_POLICY } : {}),
@@ -191,11 +203,9 @@ describe('production smoke harness', () => {
       response.end(
         {
           '/': '<h1>RolePatch</h1>',
-          '/history': '<h1 id="history-heading">History</h1>',
           '/pricing': '<h1>Tokens</h1>',
+          '/sign-in': 'Sign in to RolePatch. Continue with Google',
           '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
-          '/resume-builder': '<h1 id="resume-builder-master-heading">Resume Builder</h1>',
-          '/settings': '<h1>Feature availability</h1><h2>Chrome extension</h2>',
         }[path] ?? '<h1>Unexpected route</h1>'
       );
     });
@@ -250,7 +260,7 @@ describe('production smoke harness', () => {
       });
 
       expect(spacedScriptPath).toContain(' ');
-      expect(stdout).toContain('RolePatch production smoke: 7/8 passed');
+      expect(stdout).toContain('RolePatch production smoke: 8/9 passed');
       expect(code).toBe(1);
       expect(stderr).toBe('');
       expect(
@@ -260,15 +270,16 @@ describe('production smoke harness', () => {
           .map((line) => line.replace(/^(PASS|FAIL) /, '').replace(/ \d+ \d+ms.*$/, ''))
       ).toEqual([
         'landing',
-        'jobs workspace',
-        'history workspace',
-        'resume builder',
+        'jobs requires sign-in',
+        'history requires sign-in',
+        'resume builder requires sign-in',
         'pricing',
         'proof project',
         'truehire proof preview guard',
-        'settings readiness',
+        'settings requires sign-in',
+        'workspace sign-in',
       ]);
-      expect(stdout).toContain('FAIL jobs workspace 503');
+      expect(stdout).toContain('FAIL jobs requires sign-in 503');
       expect(requestedPaths).toEqual([
         '/',
         '/jobs',
@@ -278,6 +289,7 @@ describe('production smoke harness', () => {
         '/proof',
         '/api/proof/truehire-preview',
         '/settings',
+        '/sign-in',
       ]);
     } finally {
       await new Promise<void>((resolve, reject) =>

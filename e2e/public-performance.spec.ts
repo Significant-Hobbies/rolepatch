@@ -1,31 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
 
-test('account menu becomes usable after a synthetic session loads its account-only code', async ({
+test('account menu becomes usable after a signed-in session loads its account-only code', async ({
   page,
+  workspace,
 }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.addInitScript(() => {
     localStorage.setItem('rolepatch-workspace-theme', 'light');
   });
-  const synthetic = {
-    user: {
-      id: 'public-performance-fixture',
-      name: 'Sample Reader',
-      email: 'sample@example.org',
-      emailVerified: false,
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z',
-    },
-    session: {
-      id: 'fixture-session',
-      token: 'synthetic-local-only',
-      userId: 'public-performance-fixture',
-      expiresAt: '2030-01-01T00:00:00.000Z',
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z',
-    },
-  };
-  await page.route('**/api/auth/get-session**', (route) => route.fulfill({ json: synthetic }));
+  await workspace.signIn();
   for (const path of ['/pricing', '/resume-builder']) {
     await page.goto(path);
     if (path === '/resume-builder' && (page.viewportSize()?.width ?? 0) < 768) {

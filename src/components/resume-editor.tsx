@@ -423,9 +423,9 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-full overflow-y-auto md:overflow-hidden">
+    <div className="flex flex-col lg:flex-row w-full h-full overflow-y-auto lg:overflow-hidden">
       {/* Editor pane */}
-      <div className="@container/editor min-w-0 w-full md:w-1/2 min-h-[50vh] md:min-h-0 flex flex-col overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 print-hide">
+      <div className="@container/editor min-w-0 w-full lg:w-1/2 min-h-[50vh] lg:min-h-0 flex flex-col overflow-hidden border-b lg:border-b-0 lg:border-r border-gray-200 print-hide">
         {/* Toolbar */}
         <div className="product-editor-toolbar flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 border-b border-gray-200 bg-white">
           <Link
@@ -712,12 +712,12 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
             </div>
           </div>
         </NativeDisclosure>
-        <div ref={editorContainerRef} className="flex-1 overflow-hidden min-h-[40vh] md:min-h-0" />
+        <div ref={editorContainerRef} className="flex-1 overflow-hidden min-h-[40vh] lg:min-h-0" />
       </div>
 
       {/* Preview pane — paginated */}
       <div
-        className="w-full md:w-1/2 min-h-[60vh] md:min-h-0 overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 print-hide"
+        className="w-full lg:w-1/2 min-h-[60vh] lg:min-h-0 overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 print-hide"
         id="resume-print-target"
       >
         {/* Hidden measurement div — same styling, unconstrained height */}

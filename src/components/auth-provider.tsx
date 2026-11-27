@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import { TokenBalanceProvider } from '@/components/token-balance-provider';
 import { trackSignup } from '@/lib/analytics';
@@ -10,12 +10,18 @@ interface AuthContextValue {
   userId: string | null;
   isGuest: boolean;
   isPending: boolean;
+  isSessionError: boolean;
+  signedOut: boolean;
+  markSignedOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   userId: null,
   isGuest: true,
   isPending: true,
+  isSessionError: false,
+  signedOut: false,
+  markSignedOut: () => {},
 });
 
 // localStorage key recording every userId this browser has seen signed in.
@@ -32,8 +38,9 @@ function readSeenUsers(): string[] {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = authClient.useSession();
-  const userId = session?.user?.id ?? null;
+  const { data: session, isPending, error } = authClient.useSession();
+  const [signedOut, setSignedOut] = useState(false);
+  const userId = signedOut ? null : (session?.user?.id ?? null);
 
   // Fire `signup` once, on the first session we ever see for this account.
   useEffect(() => {
@@ -49,7 +56,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   return (
-    <AuthContext.Provider value={{ isGuest: !userId, userId, isPending }}>
+    <AuthContext.Provider
+      value={{
+        userId,
+        isGuest: !userId,
+        isPending: !signedOut && isPending,
+        isSessionError: !signedOut && !!error,
+        signedOut,
+        markSignedOut: () => setSignedOut(true),
+      }}
+    >
       <TokenBalanceProvider userId={userId}>{children}</TokenBalanceProvider>
     </AuthContext.Provider>
   );

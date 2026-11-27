@@ -51,6 +51,7 @@ describe('release verifier', () => {
       'e2e/settings-readiness.spec.ts',
       'e2e/history.spec.ts',
       'e2e/resume-builder.spec.ts',
+      'e2e/workspace-access.spec.ts',
       '--workers=1',
     ]);
     expect(BUILT_SERVER_COMMAND).toEqual([process.execPath, ['.next/standalone/server.js']]);

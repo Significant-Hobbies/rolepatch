@@ -55,6 +55,16 @@ describe('NewJobButton', () => {
     expect(screen.getByRole('button', { name: '+ Add Job' })).toBeDisabled();
   });
 
+  it('uses the signed-in master when the browser session finishes loading', () => {
+    mockUseAuth.mockReturnValue({ isGuest: true, isPending: true });
+    const resumes = [{ id: 'ready', name: 'Master' }];
+    const { rerender } = render(<NewJobButton resumes={resumes} />);
+    expect(screen.getByRole('button', { name: '+ Add Job' })).toBeDisabled();
+    mockUseAuth.mockReturnValue({ isGuest: false, isPending: false });
+    rerender(<NewJobButton resumes={resumes} />);
+    expect(screen.getByRole('button', { name: '+ Add Job' })).toBeEnabled();
+  });
+
   it('accepts a pasted description directly without fetching a URL', async () => {
     const user = userEvent.setup();
     mockCreateJobApplication.mockResolvedValueOnce('pasted-job');

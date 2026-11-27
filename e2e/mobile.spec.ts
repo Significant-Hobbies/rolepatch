@@ -1,4 +1,5 @@
-import { devices, expect, type Page, test } from '@playwright/test';
+import { devices, type Page } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
 
 // Exercise the primary flow entry points at a 390px viewport (iPhone 13).
 // Wave 1 goal: no horizontal scroll, hamburger nav, single-column layouts.
@@ -14,7 +15,11 @@ async function expectNoHorizontalScroll(page: Page) {
 }
 
 test.describe('mobile (390px)', () => {
-  test('Jobs has visible primary links and an accessible workspace menu', async ({ page }) => {
+  test('Jobs has visible primary links and an accessible workspace menu', async ({
+    page,
+    workspace,
+  }) => {
+    await workspace.signIn();
     await page.goto('/jobs');
     const primary = page.getByRole('navigation', { name: 'Primary', exact: true });
     await expect(primary.getByRole('link')).toHaveCount(3);
@@ -41,23 +46,13 @@ test.describe('mobile (390px)', () => {
     await expectNoHorizontalScroll(page);
   });
 
-  test('resume editor is usable at mobile width', async ({ page }) => {
-    await page.goto('/resume-builder');
-    await page.evaluate(() => {
-      localStorage.setItem(
-        'rt-resumes',
-        JSON.stringify([
-          {
-            id: 'mobile-editor',
-            name: 'Mobile editor sample',
-            source: '# Alex Morgan\n\n## Experience\n- Wrote clear docs.\n',
-            created_at: 1,
-            updated_at: 1,
-          },
-        ])
-      );
-    });
-    await page.goto('/editor/mobile-editor');
+  test('resume editor is usable at mobile width', async ({ page, workspace }) => {
+    await workspace.signIn();
+    const id = workspace.seedResume(
+      '# Alex Morgan\n\n## Experience\n- Wrote clear docs.\n',
+      'Mobile editor sample'
+    );
+    await page.goto(`/editor/${id}`);
 
     // CodeMirror editor mounts and is reachable.
     await expect(page.locator('.cm-editor')).toBeVisible({ timeout: 10000 });
