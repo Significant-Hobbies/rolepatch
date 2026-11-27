@@ -174,10 +174,26 @@ test('Always include selections persist with the base resume and education stays
  */
 
 test.describe('Job search tips', () => {
-  test('search tips panel is visible and expandable on dashboard', async ({ page }) => {
+  test('search tips live on the Find jobs page, with the workspace navigation intact', async ({
+    page,
+  }) => {
     await page.goto('/dashboard');
 
-    await page.getByText('Find more jobs', { exact: true }).click();
+    const navigation = page.getByRole('navigation', { name: 'Jobs sections' });
+    await expect(page.getByRole('heading', { name: 'Jobs', exact: true })).toBeVisible();
+    await expect(page.getByLabel('Role or keywords')).toHaveCount(0);
+    await expect(page.getByText('Application queue', { exact: true })).toHaveCount(0);
+    await navigation.getByRole('link', { name: 'Find jobs', exact: true }).click();
+    await expect(page).toHaveURL(/\/jobs\/discover$/);
+    await expect(navigation.getByRole('link', { name: 'Find jobs', exact: true })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary', exact: true })
+        .getByRole('link', { name: 'Jobs', exact: true })
+    ).toHaveAttribute('aria-current', 'page');
 
     // The tips panel should be present
     const tipsButton = page.getByRole('button', {
@@ -199,8 +215,7 @@ test.describe('Job search tips', () => {
   });
 
   test('builds a Google query preview and open link', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.getByText('Find more jobs', { exact: true }).click();
+    await page.goto('/jobs/discover');
 
     const tipsButton = page.getByRole('button', {
       name: /find less-competitive jobs on ats boards/i,
@@ -225,8 +240,7 @@ test.describe('Job search tips', () => {
   });
 
   test('toggling boards updates the query', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.getByText('Find more jobs', { exact: true }).click();
+    await page.goto('/jobs/discover');
 
     const tipsButton = page.getByRole('button', {
       name: /find less-competitive jobs on ats boards/i,
@@ -551,7 +565,11 @@ test.describe('Apply-agent queue receipts (guest mode)', () => {
     });
     await page.reload();
 
-    await page.getByText('Application preparation & follow-ups', { exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Jobs sections' })
+      .getByRole('link', { name: 'Apply queue', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/jobs\/queue$/);
     await expect(page.getByText('Application queue', { exact: true })).toBeVisible();
     await expect(page.getByText(/ReceiptCo · Tailored materials/i)).toBeVisible();
     await page.getByRole('button', { name: 'Mark submitted' }).click();
@@ -582,10 +600,10 @@ test.describe('Apply-agent queue receipts (guest mode)', () => {
   });
 });
 
-test.describe('Dashboard discover section copy', () => {
-  test('mentions ATS boards in the discover section', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.getByText('Find more jobs', { exact: true }).click();
+test.describe('Find jobs', () => {
+  test('old observed feed URLs open Find jobs', async ({ page }) => {
+    await page.goto('/jobs?page=2');
+    await expect(page).toHaveURL(/\/jobs\/discover\?page=2$/);
     await expect(page.getByText(/Ashby, Greenhouse, Lever/i)).toBeVisible();
   });
 });

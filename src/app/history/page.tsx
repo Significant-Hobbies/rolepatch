@@ -15,7 +15,7 @@ export default async function HistoryPage() {
 
   return (
     <Dashboard
-      historyOnly
+      view="history"
       serverResumes={[]}
       serverJobs={jobs}
       serverHistory={versions}

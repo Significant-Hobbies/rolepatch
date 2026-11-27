@@ -6,6 +6,7 @@ export const privatePaths = [
   '/api/',
   '/dashboard',
   '/jobs',
+  '/history',
   '/evidence',
   '/resume-builder',
   '/editor',

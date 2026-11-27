@@ -17,20 +17,37 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
   const router = useRouter();
   useEffect(() => {
-    if (pathname !== '/jobs' && pathname !== '/dashboard') return;
-    const openHistory = () => {
-      if (window.location.hash === '#history') router.replace('/history');
+    const openBookmark = () => {
+      const { hash, search } = window.location;
+      if ((pathname === '/jobs' || pathname === '/dashboard') && hash === '#history') {
+        router.replace('/history');
+      }
+      if (pathname === '/resume-builder') {
+        if (hash === '#sources' || hash === '#extra-experience') {
+          router.replace(`/resume-builder/evidence${search}${hash}`);
+        } else if (hash === '#career-records') {
+          router.replace(`/resume-builder/profile${search}`);
+        } else if (hash === '#career-resume-heading') {
+          router.replace(`/resume-builder/generate${search}`);
+        }
+      }
     };
-    openHistory();
-    window.addEventListener('hashchange', openHistory);
-    return () => window.removeEventListener('hashchange', openHistory);
+    openBookmark();
+    window.addEventListener('hashchange', openBookmark);
+    return () => window.removeEventListener('hashchange', openBookmark);
   }, [pathname, router]);
-  const builder = pathname === '/resume-builder' || pathname.startsWith('/editor/');
+  const builder =
+    pathname === '/resume-builder' ||
+    pathname.startsWith('/resume-builder/') ||
+    pathname.startsWith('/editor/');
   const workspacePage = builder
     ? '/resume-builder'
     : pathname === '/history'
       ? '/history'
-      : pathname === '/jobs' || pathname === '/dashboard' || pathname.startsWith('/tailor/')
+      : pathname === '/jobs' ||
+          pathname.startsWith('/jobs/') ||
+          pathname === '/dashboard' ||
+          pathname.startsWith('/tailor/')
         ? '/jobs'
         : null;
   const catalog = pathname === '/pricing' || pathname === '/tools';

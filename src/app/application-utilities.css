@@ -7,4 +7,4 @@
 }
 @source "../";
 
-@source "../../node_modules/@saas-maker/ui/src/components/{badge,button,input,table,tabs,textarea,toggle,toggle-group}.tsx";
+@source "../../node_modules/@saas-maker/ui/src/components/{avatar,badge,button,card,checkbox,input,label,skeleton,table,tabs,textarea,toggle,toggle-group}.tsx";

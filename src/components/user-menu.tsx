@@ -11,12 +11,18 @@ const SignedInUserMenu = dynamic(() =>
   import('./signed-in-user-menu').then((module) => module.SignedInUserMenu)
 );
 
-export function UserMenu({ sidebar = false }: { sidebar?: boolean }) {
+export function UserMenu({
+  sidebar = false,
+  callbackURL = '/resume-builder',
+}: {
+  sidebar?: boolean;
+  callbackURL?: string;
+}) {
   const { data: session, isPending } = authClient.useSession();
   if (!session?.user) {
     function handleSignIn() {
       authClient.signIn
-        .social({ provider: 'google', callbackURL: '/resume-builder' })
+        .social({ provider: 'google', callbackURL })
         .then((result) => {
           if (result?.error)
             captureAuthFailure({

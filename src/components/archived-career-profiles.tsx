@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@saas-maker/ui/components/button';
 import { callCareer } from '@/lib/actions/career-records';
 
 export function ArchivedCareerProfiles() {

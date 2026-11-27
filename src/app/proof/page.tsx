@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://rolepatch.com/proof' },
 };
 export default async function ProofPage() {
-  if (await getCurrentUserId()) redirect('/resume-builder#sources');
+  if (await getCurrentUserId()) redirect('/resume-builder/evidence#sources');
   const entries = await listAchievementEvidence();
   return (
     <ProofProjectOverview

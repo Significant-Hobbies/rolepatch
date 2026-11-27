@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, FileText, Pencil } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@saas-maker/ui/components/avatar';
+import { Badge } from '@saas-maker/ui/components/badge';
+import { Button } from '@saas-maker/ui/components/button';
 import {
   Card,
   CardContent,
@@ -13,11 +13,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@saas-maker/ui/components/card';
+import { Checkbox } from '@saas-maker/ui/components/checkbox';
+import { Input } from '@saas-maker/ui/components/input';
+import { Label } from '@saas-maker/ui/components/label';
+import { Skeleton } from '@saas-maker/ui/components/skeleton';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useWorkspaceOutline } from '@/components/workspace-outline';
 import { AchievementEvidenceBank } from '@/components/achievement-evidence-bank';
 import { useAuth } from '@/components/auth-provider';
@@ -30,6 +31,8 @@ import { ResumeImportButton } from '@/components/resume-import-button';
 import { StashList } from '@/components/stash-list';
 import { ResumeContent, ResumeContentBlock } from '@/components/resume-content-block';
 import { AchievementInputs } from '@/components/achievement-inputs';
+import { UserMenu } from '@/components/user-menu';
+import { WorkspaceSectionNav } from '@/components/workspace-section-nav';
 import { updateResume } from '@/lib/actions/resume-actions';
 import { localListResumes, localUpdateResume } from '@/lib/local-storage';
 import { masterResumeEntry } from '@/lib/master-resume';
@@ -37,54 +40,96 @@ import { replaceResumeRange, resumeOutline } from '@/lib/resume-outline';
 import { listResumePoints, setResumePointPinned } from '@/lib/resume-pins';
 import type { AchievementEvidence, Resume, StashEntry } from '@/lib/types';
 
+const builderPages = {
+  master: {
+    href: '/resume-builder',
+    label: 'Master résumé',
+    title: 'Resume Builder',
+    description: 'Edit the master résumé you use to tailor applications.',
+  },
+  evidence: {
+    href: '/resume-builder/evidence',
+    label: 'Evidence',
+    title: 'Evidence',
+    description: 'Keep achievements, source links, and extra experience to draw on when tailoring.',
+  },
+  profile: {
+    href: '/resume-builder/profile',
+    label: 'Career profile',
+    title: 'Career profile',
+    description: 'Manage the career records and application answers for this profile.',
+  },
+  generate: {
+    href: '/resume-builder/generate',
+    label: 'Generate',
+    title: 'Generate a résumé',
+    description: 'Create a general résumé or tailor one to a specific role.',
+  },
+} as const;
+
 export function ResumeBuilder({
   serverResumes,
-  serverEvidence,
-  serverStash,
+  serverEvidence = [],
+  serverStash = [],
   requestedResume,
+  view = 'master',
 }: {
   serverResumes: Resume[];
-  serverEvidence: AchievementEvidence[];
-  serverStash: StashEntry[];
+  serverEvidence?: AchievementEvidence[];
+  serverStash?: StashEntry[];
   requestedResume?: string;
+  view?: keyof typeof builderPages;
 }) {
   const { isGuest, isPending } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
   const [dirty, setDirty] = useState(false);
-  const [selected, setSelected] = useState(requestedResume ?? serverResumes[0]?.id ?? '');
+  const [selected, setSelected] = useState(
+    serverResumes.find((item) => item.id === requestedResume)?.id ?? serverResumes[0]?.id ?? ''
+  );
   const previousRequest = useRef(requestedResume);
   useEffect(() => {
     if (isPending) return;
     const items = isGuest ? localListResumes() : serverResumes;
     setResumes(items);
-    if (requestedResume !== previousRequest.current) {
-      previousRequest.current = requestedResume;
-      if (items.some((item) => item.id === requestedResume)) {
-        setSelected(requestedResume ?? '');
-        return;
+    const requestChanged = requestedResume !== previousRequest.current;
+    previousRequest.current = requestedResume;
+    setSelected((current) => {
+      if ((requestChanged || !current) && items.some((item) => item.id === requestedResume)) {
+        return requestedResume ?? '';
       }
-    }
-    setSelected((current) =>
-      items.some((item) => item.id === current) ? current : (items[0]?.id ?? '')
-    );
+      return items.some((item) => item.id === current) ? current : (items[0]?.id ?? '');
+    });
   }, [isGuest, isPending, serverResumes, requestedResume]);
   const resume = resumes.find((item) => item.id === selected);
+  const { title, description, href } = builderPages[view];
+  const editMaster = view === 'master';
+  const useProfile = view === 'profile' || view === 'generate';
   return (
-    <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
+    <main className="w-full min-w-0 max-w-6xl flex-1 space-y-6 p-4 md:p-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resume Builder</h1>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Your complete history, in one place. Refine your points once and reuse them for every
-            job.
-          </p>
+          <h1
+            id={editMaster ? 'resume-builder-heading' : undefined}
+            className="text-3xl font-bold tracking-tight"
+          >
+            {title}
+          </h1>
+          <p className="mt-2 max-w-xl text-muted-foreground">{description}</p>
         </div>
-        <fieldset disabled={dirty} className="flex flex-wrap gap-2">
-          <ResumeImportButton />
-          <CreateResumeButton destination="builder" />
-        </fieldset>
+        {editMaster && (
+          <fieldset disabled={dirty} className="flex flex-wrap gap-2">
+            <ResumeImportButton />
+            <CreateResumeButton destination="builder" />
+          </fieldset>
+        )}
       </header>
-      {resumes.length > 0 && (
+      <WorkspaceSectionNav
+        label="Resume Builder sections"
+        items={Object.values(builderPages)}
+        current={href}
+        resumeId={selected || requestedResume}
+      />
+      {(editMaster || (useProfile && !isGuest && !isPending)) && resumes.length > 0 && (
         <div className="max-w-md space-y-2">
           <label htmlFor="master-selection" className="block text-sm font-semibold mb-2">
             Master resume
@@ -109,45 +154,83 @@ export function ResumeBuilder({
           )}
         </div>
       )}
-      {resume ? (
-        <OutlineEditor
-          key={resume.id}
-          resume={resume}
-          isGuest={isGuest}
-          disabled={isPending}
-          onDirty={setDirty}
-          onSaved={(source) =>
-            setResumes((items) =>
-              items.map((item) => (item.id === resume.id ? { ...item, source } : item))
-            )
-          }
-        />
-      ) : (
-        <div className="rounded-xl border border-[var(--border)] p-8 mb-10">
-          <h2 className="text-xl font-bold">Start with your complete master resume</h2>
-          <p className="mt-3 text-[var(--muted-foreground)]">
-            Import a resume or choose New Resume to add your roles, products, education and skills.
-            You can save a draft and finish later.
-          </p>
-        </div>
+      {editMaster &&
+        (resume ? (
+          <OutlineEditor
+            key={resume.id}
+            resume={resume}
+            isGuest={isGuest}
+            disabled={isPending}
+            onDirty={setDirty}
+            onSaved={(source) =>
+              setResumes((items) =>
+                items.map((item) => (item.id === resume.id ? { ...item, source } : item))
+              )
+            }
+          />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Start with your complete master resume</CardTitle>
+              <CardDescription>
+                Import a resume or choose New Resume to add your roles, products, education and
+                skills. You can save a draft and finish later.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      {useProfile && isPending && <Skeleton aria-label="Loading career profile" className="h-40" />}
+      {useProfile &&
+        !isPending &&
+        (isGuest ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign in to use your career profile</CardTitle>
+              <CardDescription>
+                Career records and generated résumés are saved to your account.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <UserMenu callbackURL={href} />
+            </CardFooter>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {resume ? (
+              view === 'profile' ? (
+                <CareerProfilePanel key={resume.id} profileId={resume.id} />
+              ) : (
+                <CareerResumeStudio key={resume.id} profileId={resume.id} />
+              )
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Start with a master résumé</CardTitle>
+                </CardHeader>
+                <CardFooter>
+                  <Button asChild variant="outline">
+                    <Link href="/resume-builder">Open master résumé</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+            {view === 'profile' && <ArchivedCareerProfiles />}
+          </div>
+        ))}
+      {view === 'evidence' && (
+        <>
+          <section id="sources" className="rounded-xl border bg-card p-4 sm:p-6">
+            <AchievementEvidenceBank serverEntries={serverEvidence} embedded />
+          </section>
+          <section id="extra-experience" className="rounded-xl border bg-card p-4 sm:p-6">
+            <h2 className="text-base font-semibold">Extra experience</h2>
+            <p className="mt-2 mb-6 text-muted-foreground">
+              Keep additional projects, skills and achievements here for relevant applications.
+            </p>
+            <StashList serverEntries={serverStash} />
+          </section>
+        </>
       )}
-      {!isGuest && !isPending && resume && (
-        <div key={resume.id} className="space-y-6">
-          <CareerProfilePanel profileId={resume.id} />
-          <CareerResumeStudio profileId={resume.id} />
-        </div>
-      )}
-      {!isGuest && !isPending && <ArchivedCareerProfiles />}
-      <section id="sources" className="scroll-mt-6 rounded-xl border bg-card p-6">
-        <AchievementEvidenceBank serverEntries={serverEvidence} embedded />
-      </section>
-      <section id="extra-experience" className="scroll-mt-6 rounded-xl border bg-card p-6">
-        <h2 className="text-base font-semibold">Extra experience</h2>
-        <p className="mt-2 mb-6 text-[var(--muted-foreground)]">
-          Keep additional projects, skills and achievements here for relevant applications.
-        </p>
-        <StashList serverEntries={serverStash} />
-      </section>
     </main>
   );
 }
@@ -175,24 +258,10 @@ function OutlineEditor({
   const sections = useMemo(() => resumeOutline(source), [source]);
   const outline = useWorkspaceOutline();
   const setSections = outline?.setSections;
-  const navigation = useMemo(
-    () => [
-      ...sections.map(({ id, title }) => ({ id, title })),
-      ...(!isGuest
-        ? [
-            { id: 'career-records', title: 'Career profile' },
-            { id: 'career-resume-heading', title: 'Generate a resume' },
-          ]
-        : []),
-      { id: 'sources', title: 'Achievements & sources' },
-      { id: 'extra-experience', title: 'Extra experience' },
-    ],
-    [sections, isGuest]
-  );
   useEffect(() => {
-    setSections?.(navigation);
+    setSections?.(sections.map(({ id, title }) => ({ id, title })));
     return () => setSections?.([]);
-  }, [setSections, navigation]);
+  }, [setSections, sections]);
   const points = listResumePoints(source);
   async function save() {
     const snapshot = source;
@@ -258,12 +327,6 @@ function OutlineEditor({
                 {section.title}
               </a>
             ))}
-            <a className="outline-link" href="#sources">
-              Achievements & sources
-            </a>
-            <a className="outline-link" href="#extra-experience">
-              Extra experience
-            </a>
           </div>
         </aside>
       )}

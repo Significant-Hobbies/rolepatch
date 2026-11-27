@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { CareerRecordEditor, type RecordDraft } from '@/components/career-record-editor';
 import { callCareer } from '@/lib/actions/career-records';
 import {
@@ -23,7 +23,7 @@ export function CareerProfilePanel({ profileId }: { profileId: string }) {
       className="min-w-0 space-y-4 rounded-xl border bg-card p-4 md:p-6"
     >
       <h2 id="career-records-heading" className="text-base font-semibold">
-        Career profile
+        Profile details
       </h2>
       <p className="text-sm text-muted-foreground">
         Keep career facts, approved wording and source links for future applications.
