@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge } from '@saas-maker/ui/atoms/badge';
 import { Button } from '@saas-maker/ui/components/button';
 import { Label } from '@saas-maker/ui/components/label';
 import { Input } from '@saas-maker/ui/components/input';
@@ -1248,9 +1249,7 @@ export function ApplyAgentCommandCenter({
               className="rounded-xl border border-[var(--border)]/60 bg-muted/20 p-4"
             >
               <item.icon className="mb-3 h-4 w-4 text-[var(--muted-foreground)]" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)] opacity-70">
-                {item.label}
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">{item.label}</p>
               <p className="mt-1 text-2xl font-black">{item.value}</p>
             </div>
           ))}
@@ -1265,15 +1264,9 @@ export function ApplyAgentCommandCenter({
             {roadmap.map((item) => (
               <div key={item.label} className="flex items-center justify-between gap-3 text-sm">
                 <span className="text-[var(--muted-foreground)]">{item.label}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
-                    item.state === 'Live'
-                      ? 'bg-accent/10 text-accent'
-                      : 'bg-muted text-[var(--muted-foreground)]'
-                  }`}
-                >
-                  {item.state}
-                </span>
+                <Badge variant={item.state === 'Live' ? 'secondary' : 'outline'}>
+                  {item.state === 'Live' ? 'Available' : item.state}
+                </Badge>
               </div>
             ))}
           </div>
@@ -1295,17 +1288,7 @@ export function ApplyAgentCommandCenter({
             <div key={mode.label} className="rounded-xl border border-[var(--border)]/60 p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-black text-foreground">{mode.label}</p>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
-                    mode.state === 'Live' || mode.state === 'Ready'
-                      ? 'bg-accent/10 text-accent'
-                      : mode.state === 'Blocked' || mode.state === 'Locked'
-                        ? 'bg-red-500/10 text-red-300'
-                        : 'bg-muted text-[var(--muted-foreground)]'
-                  }`}
-                >
-                  {mode.state}
-                </span>
+                <Badge variant="outline">{mode.state === 'Live' ? 'Available' : mode.state}</Badge>
               </div>
               <p className="mt-2 text-xs leading-relaxed text-[var(--muted-foreground)]">
                 {mode.detail}
@@ -1340,7 +1323,7 @@ export function ApplyAgentCommandCenter({
         <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-300">
+              <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-900 dark:text-amber-300">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Queue safety
               </p>
@@ -1354,10 +1337,10 @@ export function ApplyAgentCommandCenter({
               <span className="rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-destructive">
                 {queueSafetySummary.blockedEntries} blocked
               </span>
-              <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-amber-200">
+              <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-amber-900 dark:text-amber-200">
                 {queueSafetySummary.totalWarnings} warnings
               </span>
-              <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-accent">
+              <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-foreground">
                 {queueSafetySummary.cleanEntries} clean
               </span>
             </div>
@@ -1394,7 +1377,7 @@ export function ApplyAgentCommandCenter({
                       {job.company || 'Unknown company'}
                     </p>
                   </div>
-                  <span className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[10px] font-black text-accent">
+                  <span className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-[10px] font-black text-foreground">
                     {Math.max(0, Math.min(100, Math.round(score)))}%
                   </span>
                 </div>
@@ -1470,7 +1453,7 @@ export function ApplyAgentCommandCenter({
                       </p>
                     </div>
                     {!alert.seen && (
-                      <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-accent">
+                      <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-foreground">
                         New
                       </span>
                     )}
@@ -1592,11 +1575,11 @@ export function ApplyAgentCommandCenter({
       {answerGapPrompts.length > 0 && (
         <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-500/5">
           <div className="flex items-center justify-between gap-3 border-b border-amber-400/20 px-4 py-3">
-            <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-300">
+            <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-900 dark:text-amber-300">
               <AlertCircle className="h-3.5 w-3.5" />
               Missing answer prompts
             </p>
-            <span className="text-[10px] font-black uppercase tracking-widest text-amber-200/80">
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-900 dark:text-amber-200/80">
               {plural(answerGapPrompts.length, 'field')}
             </span>
           </div>
@@ -1614,7 +1597,7 @@ export function ApplyAgentCommandCenter({
                   variant="ghost"
                   type="button"
                   onClick={() => handleAnswerGapPrompt(prompt.label)}
-                  className="mt-3 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 transition-opacity hover:opacity-90"
+                  className="mt-3 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 transition-opacity hover:opacity-90"
                 >
                   Use prompt
                 </Button>
@@ -1669,7 +1652,7 @@ export function ApplyAgentCommandCenter({
               type="button"
               onClick={() => void handleBulkStatus('ready_to_submit')}
               disabled={selectedQueueCount === 0 || checkingBatch}
-              className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-bold text-accent transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-bold text-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               Mark ready
             </Button>
@@ -1800,7 +1783,7 @@ export function ApplyAgentCommandCenter({
                       )}
                       {safetyWarnings.length > 0 && (
                         <div className="mt-3 rounded-lg border border-amber-400/25 bg-amber-500/5 p-3">
-                          <p className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-amber-300">
+                          <p className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-amber-900 dark:text-amber-300">
                             <ShieldCheck className="h-3.5 w-3.5" />
                             Safety review
                           </p>
@@ -1820,7 +1803,7 @@ export function ApplyAgentCommandCenter({
                                         key={category}
                                         type="button"
                                         onClick={() => handleRequiredSafetyAnswerPrompt(category)}
-                                        className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-200 transition-opacity hover:opacity-90"
+                                        className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900 dark:text-amber-200 transition-opacity hover:opacity-90"
                                       >
                                         Add {profileCategoryLabel(category)}
                                       </Button>
@@ -1844,7 +1827,7 @@ export function ApplyAgentCommandCenter({
                           >
                             <div
                               className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${
-                                item.ready ? 'text-accent' : 'text-[var(--muted-foreground)]'
+                                item.ready ? 'text-foreground' : 'text-[var(--muted-foreground)]'
                               }`}
                             >
                               {item.ready ? (
@@ -1862,7 +1845,7 @@ export function ApplyAgentCommandCenter({
                       </div>
                       {receipt && (
                         <div className="mt-1 space-y-1">
-                          <p className="text-xs text-accent">
+                          <p className="text-xs text-foreground">
                             Receipt: {receipt.provider || 'unknown'} · {receipt.confirmation_text}
                           </p>
                           {(() => {
@@ -1884,7 +1867,7 @@ export function ApplyAgentCommandCenter({
                                   </span>
                                 )}
                                 {summary.manualUploads > 0 && (
-                                  <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-amber-200">
+                                  <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-amber-900 dark:text-amber-200">
                                     {summary.manualUploads} manual uploads
                                   </span>
                                 )}
@@ -1894,7 +1877,7 @@ export function ApplyAgentCommandCenter({
                                   </span>
                                 )}
                                 {summary.hasConfirmation && (
-                                  <span className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-accent">
+                                  <span className="rounded-full border border-accent/20 bg-accent/10 px-2 py-0.5 text-foreground">
                                     confirmation captured
                                   </span>
                                 )}
@@ -2020,7 +2003,7 @@ export function ApplyAgentCommandCenter({
                         type="button"
                         onClick={() => void onRecordManualReceipt(entry.id)}
                         disabled={entry.status === 'submitted'}
-                        className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-bold text-accent transition-opacity hover:opacity-90 disabled:opacity-40"
+                        className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-bold text-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
                       >
                         Mark submitted
                       </Button>
@@ -2210,7 +2193,7 @@ export function ApplyAgentCommandCenter({
                       )}
                       {packet?.receipt && (
                         <div className="mt-4 rounded-lg border border-accent/20 bg-accent/10 p-3">
-                          <p className="text-xs font-bold text-accent">
+                          <p className="text-xs font-bold text-foreground">
                             Receipt recorded: {packet.receipt.provider || 'unknown provider'}
                           </p>
                           <p className="mt-1 text-xs text-[var(--muted-foreground)]">
@@ -2425,14 +2408,14 @@ export function ApplyAgentCommandCenter({
           </div>
           {answerBankReview.missingCategories.length > 0 && (
             <div className="mb-3 rounded-lg border border-amber-400/25 bg-amber-500/5 p-3">
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-300">
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-900 dark:text-amber-300">
                 Missing coverage
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {answerBankReview.missingCategories.map((category) => (
                   <span
                     key={category}
-                    className="rounded-full border border-amber-400/25 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-amber-200"
+                    className="rounded-full border border-amber-400/25 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-amber-900 dark:text-amber-200"
                   >
                     {profileCategoryLabel(category)}
                   </span>
@@ -2490,7 +2473,7 @@ export function ApplyAgentCommandCenter({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)]/60 bg-muted/20 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2 text-sm">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-accent" />
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" />
           <span className="font-medium text-foreground">Next step:</span>
           <span className="text-[var(--muted-foreground)]">{nextStep}</span>
         </div>
