@@ -21,7 +21,7 @@ import {
 } from '@saas-maker/ui/components/sheet';
 import { BriefcaseBusiness, FileText, History, PanelLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { RolePatchMark } from '@/components/rolepatch-mark';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { TokenBalance } from '@/components/token-balance';
@@ -46,7 +46,7 @@ function WorkspaceNavigation({
   page: WorkspacePage;
   sections: WorkspaceSection[];
   collapsed?: boolean;
-  onNavigate?: () => void;
+  onNavigate?: (href: string) => void;
 }) {
   return (
     <>
@@ -59,7 +59,7 @@ function WorkspaceNavigation({
         <Link
           href="/resume-builder"
           prefetch={false}
-          onClick={onNavigate}
+          onClick={() => onNavigate?.('/resume-builder')}
           aria-label="RolePatch workspace"
         >
           <RolePatchMark className="size-8 rounded-lg" />
@@ -79,7 +79,7 @@ function WorkspaceNavigation({
               <Link
                 href={href}
                 prefetch={false}
-                onClick={onNavigate}
+                onClick={() => onNavigate?.(href)}
                 aria-label={collapsed ? label : undefined}
                 title={collapsed ? label : undefined}
                 aria-current={page === href ? 'page' : undefined}
@@ -101,7 +101,7 @@ function WorkspaceNavigation({
                 className="justify-start overflow-hidden"
                 asChild
               >
-                <a href={`#${id}`} onClick={onNavigate}>
+                <a href={`#${id}`} onClick={() => onNavigate?.(`#${id}`)}>
                   <span className="truncate">{title}</span>
                 </a>
               </Button>
@@ -130,6 +130,7 @@ function WorkspaceHeader({
   onDrawerChange: (open: boolean) => void;
 }) {
   const theme = useWorkspaceTheme();
+  const sectionTarget = useRef<string | null>(null);
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-1 border-b px-2 sm:gap-2 sm:px-4">
       <div className="flex min-w-0 items-center gap-1 sm:gap-2">
@@ -162,13 +163,25 @@ function WorkspaceHeader({
             data-sidebar="sidebar"
             data-workspace-theme={theme?.resolved}
             className="rolepatch-workspace w-72 max-w-[90vw] gap-2 bg-sidebar px-3 py-4"
+            onCloseAutoFocus={(event) => {
+              const id = sectionTarget.current;
+              sectionTarget.current = null;
+              const target = id ? document.getElementById(id) : null;
+              if (!target) return;
+              event.preventDefault();
+              target.focus({ preventScroll: true });
+              target.scrollIntoView({ block: 'start' });
+            }}
           >
             <SheetTitle className="sr-only">Workspace menu</SheetTitle>
             <SheetDescription className="sr-only">Page links and account settings</SheetDescription>
             <WorkspaceNavigation
               page={page}
               sections={sections}
-              onNavigate={() => onDrawerChange(false)}
+              onNavigate={(href) => {
+                sectionTarget.current = href.startsWith('#') ? href.slice(1) : null;
+                onDrawerChange(false);
+              }}
             />
           </SheetContent>
         </Sheet>

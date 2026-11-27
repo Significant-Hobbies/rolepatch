@@ -311,7 +311,7 @@ function ProfileSettings({
             });
           }}
         >
-          <Label className="text-sm">
+          <Label className="block text-sm">
             Profile name
             <Input
               value={name}
@@ -354,7 +354,7 @@ function RecordFilters({ controls }: { controls: ProfileControls }) {
   return (
     <>
       <div className="flex flex-wrap items-end gap-3">
-        <Label className="min-w-0 basis-full space-y-1 text-sm font-medium sm:flex-1">
+        <Label className="block min-w-0 basis-full space-y-1 text-sm font-medium sm:flex-1">
           Search records
           <Input
             type="search"
@@ -365,7 +365,7 @@ function RecordFilters({ controls }: { controls: ProfileControls }) {
             }}
           />
         </Label>
-        <Label className="space-y-1 text-sm font-medium">
+        <Label className="block space-y-1 text-sm font-medium">
           Type
           <NativeSelect
             className="block h-9 w-full rounded-md border border-input bg-background px-2"

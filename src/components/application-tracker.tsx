@@ -164,7 +164,7 @@ function Removal({
           Archive {kind}
         </Button>
         <Label className="grid gap-1">
-          To permanently delete, type the ID <code className="break-all">{row.id}</code>
+          To permanently delete, type the ID <code className="break-all select-text">{row.id}</code>
           <Input value={confirm} autoComplete="off" onChange={(e) => setConfirm(e.target.value)} />
         </Label>
         <Button

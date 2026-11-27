@@ -182,7 +182,7 @@ function RefinementForm({
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Label className="min-w-0 text-sm">
+        <Label className="block min-w-0 text-sm">
           Section
           <NativeSelect
             value={selection}
@@ -197,7 +197,7 @@ function RefinementForm({
             ))}
           </NativeSelect>
         </Label>
-        <Label className="min-w-0 text-sm">
+        <Label className="block min-w-0 text-sm">
           What should change?
           <Textarea
             value={instruction}

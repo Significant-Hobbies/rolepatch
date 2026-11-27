@@ -236,7 +236,7 @@ export function StashList({ serverEntries }: StashListProps) {
       >
         <DialogContent
           data-workspace-theme={theme?.resolved ?? 'light'}
-          className="rolepatch-workspace max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md"
+          className="rolepatch-workspace max-h-[calc(100dvh-2rem)] overflow-y-auto shadow-xl sm:max-w-md"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             (returnFocus.current?.isConnected ? returnFocus.current : addButton.current)?.focus();

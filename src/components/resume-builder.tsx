@@ -566,7 +566,7 @@ function ResumeOutlineSection({
   }
   if (cursor < section.end || !sectionPoints.length) addDetails(cursor, section.end, 'end');
   return (
-    <section id={section.id} className="scroll-mt-20">
+    <section id={section.id} tabIndex={-1} className="scroll-mt-20">
       <Card>
         <CardHeader>
           <CardTitle>

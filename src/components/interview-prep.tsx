@@ -25,7 +25,7 @@ function StoryCard({ story, index }: { story: InterviewStory; index: number }) {
         size="content"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="w-full px-5 py-4 flex items-start gap-4 text-left hover:bg-muted/10 transition-colors flex-col justify-start"
+        className="flex w-full items-start justify-start gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/10"
       >
         <span className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-xs font-black text-[var(--primary)] shrink-0 mt-0.5">
           {index + 1}

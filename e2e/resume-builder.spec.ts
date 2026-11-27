@@ -42,6 +42,14 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   );
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
+  if (testInfo.project.name === 'mobile') {
+    await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
+    const menu = page.getByRole('dialog', { name: 'Workspace menu' });
+    await menu.getByRole('link', { name: 'Projects', exact: true }).click();
+    await expect(menu).toBeHidden();
+    await expect(page.locator('#section-2')).toBeFocused();
+    await page.goto('/resume-builder');
+  }
   await page
     .getByRole('button', { name: 'Edit achievement 1: Built React screens.', exact: true })
     .click();

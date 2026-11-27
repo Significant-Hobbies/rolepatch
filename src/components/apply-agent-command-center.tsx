@@ -1638,15 +1638,13 @@ export function ApplyAgentCommandCenter({
         <div className="flex flex-wrap gap-2 border-b border-[var(--border)]/60 px-4 py-3">
           {queueFilters.map((filter) => (
             <Button
-              variant="default"
+              variant={queueFilter === filter.key ? 'secondary' : 'outline'}
               key={filter.key}
               type="button"
+              size="sm"
+              aria-pressed={queueFilter === filter.key}
               onClick={() => setQueueFilter(filter.key)}
-              className={`rounded-full border px-3 py-1 text-xs font-bold transition-colors ${
-                queueFilter === filter.key
-                  ? 'border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]'
-                  : 'border-[var(--border)] text-[var(--muted-foreground)] hover:bg-muted hover:text-foreground'
-              }`}
+              className="rounded-full"
             >
               {filter.label} {filter.count}
             </Button>

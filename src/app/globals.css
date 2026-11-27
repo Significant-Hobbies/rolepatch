@@ -51,6 +51,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Explicit line counts on a shared textarea reserve room for the answer. */
+textarea[data-slot="textarea"][rows] {
+  field-sizing: fixed;
+}
+
 .font-serif {
   font-family: var(--font-serif);
   letter-spacing: -0.02em;

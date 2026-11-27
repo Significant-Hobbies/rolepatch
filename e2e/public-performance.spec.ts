@@ -32,7 +32,7 @@ test('account menu becomes usable after a synthetic session loads its account-on
       await page.getByRole('button', { name: 'Toggle Sidebar', exact: true }).click();
     }
     if (path === '/resume-builder') {
-      await expect(page.locator('[data-sidebar="sidebar"]:visible')).toHaveCSS(
+      await expect(page.locator('[data-sidebar="sidebar"]').filter({ visible: true })).toHaveCSS(
         'background-color',
         'oklch(0.985 0 0)'
       );

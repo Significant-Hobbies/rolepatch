@@ -128,7 +128,7 @@ export function CareerRecordEditor({
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
-        <Label className="space-y-1 text-sm font-medium">
+        <Label className="block space-y-1 text-sm font-medium">
           Record type
           <NativeSelect
             className={selectClass}
@@ -148,7 +148,7 @@ export function CareerRecordEditor({
             ))}
           </NativeSelect>
         </Label>
-        <Label className="space-y-1 text-sm font-medium">
+        <Label className="block space-y-1 text-sm font-medium">
           Title
           <Input
             required
