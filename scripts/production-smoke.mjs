@@ -40,7 +40,7 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       method: 'GET',
       path: '/resume-builder',
       expectStatus: 200,
-      requiredText: ['id="resume-builder-heading"'],
+      requiredText: ['id="resume-builder-master-heading"'],
     },
     {
       name: 'pricing',

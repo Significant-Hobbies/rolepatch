@@ -37,7 +37,7 @@ describe('production smoke harness', () => {
       if (url.endsWith('/jobs')) return new Response('<h1 id="jobs-heading">Jobs</h1>');
       if (url.endsWith('/history')) return new Response('<h1 id="history-heading">History</h1>');
       if (url.endsWith('/resume-builder'))
-        return new Response('<h1 id="resume-builder-heading">Resume Builder</h1>');
+        return new Response('<h1 id="resume-builder-master-heading">Resume Builder</h1>');
       if (url.endsWith('/pricing')) return new Response('<h1>Tokens</h1>');
       if (url.endsWith('/proof')) {
         return new Response('<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>');
@@ -109,7 +109,7 @@ describe('production smoke harness', () => {
       if (url.endsWith('/jobs')) return new Response('<h1 id="jobs-heading">Jobs</h1>');
       if (url.endsWith('/history')) return new Response('<h1 id="history-heading">History</h1>');
       if (url.endsWith('/resume-builder'))
-        return new Response('<h1 id="resume-builder-heading">Resume Builder</h1>');
+        return new Response('<h1 id="resume-builder-master-heading">Resume Builder</h1>');
       if (url.endsWith('/pricing')) return new Response('<h1>Tokens</h1>');
       if (url.endsWith('/proof')) {
         return new Response('<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>');
@@ -194,7 +194,7 @@ describe('production smoke harness', () => {
           '/history': '<h1 id="history-heading">History</h1>',
           '/pricing': '<h1>Tokens</h1>',
           '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
-          '/resume-builder': '<h1 id="resume-builder-heading">Resume Builder</h1>',
+          '/resume-builder': '<h1 id="resume-builder-master-heading">Resume Builder</h1>',
           '/settings': '<h1>Feature availability</h1><h2>Chrome extension</h2>',
         }[path] ?? '<h1>Unexpected route</h1>'
       );
