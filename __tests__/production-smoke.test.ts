@@ -109,6 +109,7 @@ describe('production smoke harness', () => {
         return Response.json({ receipts: [] });
       }
       if (url.endsWith('/jobs')) return new Response('<h1>Jobs</h1>');
+      if (url.endsWith('/history')) return new Response('<h1>History</h1>');
       if (url.endsWith('/resume-builder'))
         return new Response(
           '<h1>Resume Builder</h1>Achievements &amp; sources<p>Extra experience</p>'
@@ -139,7 +140,7 @@ describe('production smoke harness', () => {
 
     expect(summary.authenticated).toBe(true);
     expect(summary.failed).toBe(0);
-    expect(summary.passed).toBe(10);
+    expect(summary.passed).toBe(11);
     expect(fetchImpl.mock.calls.map(([url]) => String(url))).toEqual(
       expect.arrayContaining([
         'https://rolepatch.com/api/apply-agent/queue',
@@ -161,7 +162,7 @@ describe('production smoke harness', () => {
     });
 
     expect(summary.passed).toBe(0);
-    expect(summary.failed).toBe(7);
+    expect(summary.failed).toBe(8);
     expect(summary.results[0]).toMatchObject({
       ok: false,
       status: 0,
@@ -194,6 +195,7 @@ describe('production smoke harness', () => {
       response.end(
         {
           '/': '<h1>RolePatch</h1>',
+          '/history': '<h1>History</h1>',
           '/pricing': '<h1>Tokens</h1>',
           '/proof': '<h1>TrueHire proof project</h1><h2>Candidate proof profile</h2>',
           '/resume-builder':
@@ -253,7 +255,7 @@ describe('production smoke harness', () => {
       });
 
       expect(spacedScriptPath).toContain(' ');
-      expect(stdout).toContain('RolePatch production smoke: 6/7 passed');
+      expect(stdout).toContain('RolePatch production smoke: 7/8 passed');
       expect(code).toBe(1);
       expect(stderr).toBe('');
       expect(
@@ -264,6 +266,7 @@ describe('production smoke harness', () => {
       ).toEqual([
         'landing',
         'jobs workspace',
+        'history workspace',
         'resume builder',
         'pricing',
         'proof project',
@@ -274,6 +277,7 @@ describe('production smoke harness', () => {
       expect(requestedPaths).toEqual([
         '/',
         '/jobs',
+        '/history',
         '/resume-builder',
         '/pricing',
         '/proof',
