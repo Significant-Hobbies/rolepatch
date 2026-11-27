@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { scopeDescriptions } from '@/lib/career-scopes';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
@@ -92,7 +93,8 @@ export function ResumeOAuthConsent() {
           )}
           {userId && request.signed_in ? (
             <div className="flex flex-wrap gap-3">
-              <button
+              <Button
+                variant="default"
                 type="button"
                 disabled={pending || isPending}
                 onClick={() => decide(true)}
@@ -103,25 +105,27 @@ export function ResumeOAuthConsent() {
                   : request.scopes.every((s) => s === 'resume' || s === 'offline_access')
                     ? 'Allow resume access'
                     : 'Allow requested access'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 type="button"
                 disabled={pending || isPending}
                 onClick={() => decide(false)}
                 className="px-5 py-2.5 rounded-lg border border-[var(--border)] font-medium disabled:opacity-40"
               >
                 Cancel connection
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
+            <Button
+              variant="default"
               type="button"
               disabled={pending || isPending}
               onClick={signIn}
               className="product-primary-action px-5 py-2.5 rounded-lg font-medium disabled:opacity-40"
             >
               Sign in with Google to continue
-            </button>
+            </Button>
           )}
         </>
       )}

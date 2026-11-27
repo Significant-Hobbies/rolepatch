@@ -10,6 +10,7 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   return (
     <div className="flex h-[calc(100svh-8.5rem)] overflow-hidden md:h-[calc(100svh-5rem)]">
       <ResumeEditor
+        key={id}
         resumeId={id}
         initialSource={resume?.source ?? null}
         resumeName={resume?.name ?? null}

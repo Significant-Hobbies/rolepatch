@@ -1,5 +1,6 @@
 'use client';
 
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
 import { Button } from '@saas-maker/ui/components/button';
 import { Input } from '@saas-maker/ui/components/input';
 import { Label } from '@saas-maker/ui/components/label';
@@ -707,15 +708,15 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
             placeholder="San Francisco, Remote, ..."
           />
         </div>
-        <label className="inline-flex items-center gap-2 px-3 py-2 text-sm text-foreground cursor-pointer select-none">
-          <input
+        <Label className="inline-flex items-center gap-2 px-3 py-2 text-sm text-foreground cursor-pointer select-none">
+          <Input
             type="checkbox"
             checked={remote}
             onChange={(e) => setRemote(e.target.checked)}
             className="accent-[var(--primary)]"
           />
           Remote
-        </label>
+        </Label>
         <Button
           type="submit"
           disabled={loading || !query.trim() || needsResume || !turnstileToken}
@@ -802,7 +803,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               <Bell className="h-4 w-4" />
               Job alerts {unseenAlerts > 0 ? `(${unseenAlerts} new)` : ''}
             </div>
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={async () => {
                 if (isGuest) localMarkJobDiscoveryAlertsSeen();
@@ -812,7 +814,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               className="text-xs font-medium text-[var(--primary)] hover:underline"
             >
               Mark seen
-            </button>
+            </Button>
           </div>
           <div className="space-y-2">
             {alerts.slice(0, 5).map((alert) => (
@@ -826,11 +828,11 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
       )}
 
       {resumes.length > 1 && (
-        <label className="block max-w-sm">
+        <Label className="block max-w-sm">
           <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
             Base Profile
           </span>
-          <select
+          <NativeSelect
             value={selectedResumeId}
             onChange={(event) => setSelectedResumeId(event.target.value)}
             className="input-base"
@@ -840,26 +842,27 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                 {resume.name}
               </option>
             ))}
-          </select>
-        </label>
+          </NativeSelect>
+        </Label>
       )}
 
       {query.trim() && (
         <div className="flex flex-wrap items-center gap-2">
-          <input
+          <Input
             value={saveSearchName}
             onChange={(event) => setSaveSearchName(event.target.value)}
             placeholder="Name this search"
             className="input-base max-w-xs"
           />
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={handleSaveSearch}
             disabled={!saveSearchName.trim()}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-[var(--border)] hover:bg-muted"
           >
             Save search alert
-          </button>
+          </Button>
         </div>
       )}
 
@@ -870,15 +873,17 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
           </p>
           {savedSearches.map((search) => (
             <div key={search.id} className="flex flex-wrap items-center gap-2 text-sm">
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => handleRunSavedSearch(search)}
                 className="font-medium text-foreground hover:text-[var(--primary)]"
               >
                 {search.name}
-              </button>
+              </Button>
               <span className="text-xs text-[var(--muted-foreground)]">{search.query}</span>
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={async () => {
                   if (isGuest) {
@@ -892,8 +897,9 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                 className="text-xs text-[var(--muted-foreground)] hover:text-foreground"
               >
                 {search.paused ? 'Resume' : 'Pause'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={async () => {
                   if (isGuest) {
@@ -908,7 +914,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                 aria-label="Delete saved search"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -925,25 +931,25 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
-            <input
+            <Input
               value={watchCompany}
               onChange={(event) => setWatchCompany(event.target.value)}
               placeholder="Company"
               className="input-base"
             />
-            <input
+            <Input
               value={watchRoleQuery}
               onChange={(event) => setWatchRoleQuery(event.target.value)}
               placeholder="Role keywords"
               className="input-base"
             />
-            <input
+            <Input
               value={watchLocation}
               onChange={(event) => setWatchLocation(event.target.value)}
               placeholder="Location"
               className="input-base"
             />
-            <input
+            <Input
               value={watchCareerUrl}
               onChange={(event) => setWatchCareerUrl(event.target.value)}
               placeholder="Career URL: ATS board or custom page"
@@ -951,23 +957,24 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
             />
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <label className="inline-flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-              <input
+            <Label className="inline-flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+              <Input
                 type="checkbox"
                 checked={watchRemote}
                 onChange={(event) => setWatchRemote(event.target.checked)}
                 className="accent-[var(--primary)]"
               />
               Remote
-            </label>
-            <button
+            </Label>
+            <Button
+              variant="ghost"
               type="button"
               onClick={handleSaveCompanyWatch}
               disabled={!watchCompany.trim()}
               className="px-3 py-2 text-xs font-medium rounded-lg border border-[var(--border)] hover:bg-muted disabled:opacity-40"
             >
               Save company watch
-            </button>
+            </Button>
           </div>
           {companyWatches.length > 0 && (
             <div className="mt-4 space-y-2">
@@ -977,19 +984,21 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                   className="rounded-lg border border-[var(--border)]/50 px-3 py-2"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => handleRunCompanyWatch(watch)}
                       className="font-medium text-foreground hover:text-[var(--primary)]"
                     >
                       {watch.company}
-                    </button>
+                    </Button>
                     <span className="text-xs text-[var(--muted-foreground)]">
                       {watch.role_query || 'Any role'}
                       {watch.location ? ` · ${watch.location}` : ''}
                       {watch.remote ? ' · Remote' : ''}
                     </span>
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={async () => {
                         await updateCompanyWatch(watch.id, !watch.paused);
@@ -998,16 +1007,18 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                       className="text-xs text-[var(--muted-foreground)] hover:text-foreground"
                     >
                       {watch.paused ? 'Resume' : 'Pause'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => handleRunCompanyWatch(watch)}
                       disabled={checkingWatchId === watch.id}
                       className="text-xs text-[var(--primary)] hover:underline disabled:opacity-40"
                     >
                       {checkingWatchId === watch.id ? 'Checking...' : 'Check now'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={async () => {
                         await deleteCompanyWatch(watch.id);
@@ -1017,7 +1028,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                       aria-label="Delete company watch"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)]">
                     <span>
@@ -1059,7 +1070,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               <span className="text-xs text-[var(--muted-foreground)] truncate">
                 {item.company}
               </span>
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={async () => {
                   if (isGuest) {
@@ -1074,7 +1086,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                 aria-label="Remove from shortlist"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -1116,7 +1128,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={handleRankByResumeMatch}
                 disabled={needsResume || semanticRanking || results.length === 0}
@@ -1124,8 +1137,9 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 {semanticRanking ? 'Ranking...' : 'Rank by resume match'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={handleQueueVisibleResults}
                 disabled={needsResume || batchQueueing || queueableResults.length === 0}
@@ -1137,7 +1151,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                   : queueableResults.length === 0
                     ? 'All visible queued'
                     : `Queue ${queueableResults.length} for review`}
-              </button>
+              </Button>
             </div>
           </div>
           {availableSignalFilters.length > 0 && (
@@ -1148,7 +1162,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               {availableSignalFilters.map((signal) => {
                 const active = activeSignalFilters.has(signal.id);
                 return (
-                  <button
+                  <Button
+                    variant="default"
                     key={signal.id}
                     type="button"
                     onClick={() => toggleSignalFilter(signal.id)}
@@ -1159,17 +1174,18 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                     }`}
                   >
                     {signal.label}
-                  </button>
+                  </Button>
                 );
               })}
               {activeSignalFilters.size > 0 && (
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={() => setActiveSignalFilters(new Set())}
                   className="ml-auto text-xs font-medium text-[var(--muted-foreground)] hover:text-foreground"
                 >
                   Clear filters
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -1181,7 +1197,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
               {SEMANTIC_SCORE_FILTERS.map((filter) => {
                 const active = semanticScoreFilter === filter.value;
                 return (
-                  <button
+                  <Button
+                    variant="default"
                     key={filter.value}
                     type="button"
                     onClick={() => setSemanticScoreFilter(active ? null : filter.value)}
@@ -1192,19 +1209,21 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                     }`}
                   >
                     {filter.label}
-                  </button>
+                  </Button>
                 );
               })}
               {semanticScoreFilter != null && (
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={() => setSemanticScoreFilter(null)}
                   className="text-xs font-medium text-[var(--muted-foreground)] hover:text-foreground"
                 >
                   Clear match filter
-                </button>
+                </Button>
               )}
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={handleQueueStrongMatches}
                 disabled={needsResume || batchQueueing || strongMatchQueueableResults.length === 0}
@@ -1216,7 +1235,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                   : strongMatchQueueableResults.length === 0
                     ? 'Strong matches queued'
                     : `Queue ${strongMatchQueueableResults.length} strong match${strongMatchQueueableResults.length === 1 ? '' : 'es'}`}
-              </button>
+              </Button>
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1297,7 +1316,8 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                   )}
 
                   <div className="flex items-center gap-2 mt-auto pt-2">
-                    <button
+                    <Button
+                      variant="default"
                       type="button"
                       onClick={() => handleQueueForReview(job)}
                       disabled={needsResume || queued || queueingId === job.id || !job.job_url}
@@ -1309,15 +1329,17 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                         : queued
                           ? 'Queued'
                           : 'Queue for review'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       onClick={() => handleTailor(job)}
                       disabled={needsResume || tailoringId === job.id}
                       className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] text-[var(--muted-foreground)] hover:text-foreground hover:bg-muted disabled:opacity-40 transition-colors"
                     >
                       {tailoringId === job.id ? 'Saving…' : 'Tailor this'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => handleShortlist(job)}
                       disabled={saved || !job.job_url}
@@ -1325,7 +1347,7 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
                     >
                       <Star className="w-3 h-3" />
                       {saved ? 'Saved' : 'Shortlist'}
-                    </button>
+                    </Button>
                     {job.job_url && (
                       <a
                         href={job.job_url}

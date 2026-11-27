@@ -121,7 +121,7 @@ test('history filters applied jobs and reopens the exact old resume after reload
   );
   await drawer.getByRole('tab', { name: 'Resumes', exact: true }).click();
   await expect(
-    drawer.getByText('2 saved resumes · Frontend Engineer · Example Co', { exact: true })
+    drawer.getByLabel('2 saved resumes for Frontend Engineer at Example Co')
   ).toBeVisible();
   await drawer.getByRole('tab', { name: 'Details', exact: true }).click();
   await drawer.getByLabel('Notes', { exact: true }).fill('Review-first UI check');
@@ -138,15 +138,13 @@ test('history filters applied jobs and reopens the exact old resume after reload
   await history.getByRole('textbox', { name: 'Search jobs' }).fill('');
 
   await expect(history).toBeVisible();
-  await history.getByRole('button', { name: 'Applied and later (1)' }).click();
+  await history.getByRole('button', { name: 'Applied jobs (1)' }).click();
   await expect(history.getByRole('button', { name: 'Agents Engineer', exact: true })).toBeVisible();
   await expect(history.getByRole('button', { name: 'Frontend Engineer', exact: true })).toHaveCount(
     0
   );
   await history.getByRole('button', { name: 'All jobs (3)' }).click();
-  await history
-    .getByText('2 saved resumes · Frontend Engineer · Example Co', { exact: true })
-    .click();
+  await history.getByLabel('2 saved resumes for Frontend Engineer at Example Co').click();
   const versionLink = history.locator('a[href*="version=version-old"]');
   const downloadPromise = page.waitForEvent('download');
   await history.getByRole('button', { name: 'Download Markdown', exact: true }).nth(1).click();

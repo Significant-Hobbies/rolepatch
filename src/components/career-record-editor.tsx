@@ -1,9 +1,11 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import {
   careerKinds,
   careerClaimChanged,
@@ -126,9 +128,9 @@ export function CareerRecordEditor({
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="space-y-1 text-sm font-medium">
+        <Label className="block space-y-1 text-sm font-medium">
           Record type
-          <select
+          <NativeSelect
             className={selectClass}
             value={kind}
             disabled={!!record}
@@ -144,9 +146,9 @@ export function CareerRecordEditor({
                 {option}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="space-y-1 text-sm font-medium">
+          </NativeSelect>
+        </Label>
+        <Label className="block space-y-1 text-sm font-medium">
           Title
           <Input
             required
@@ -156,7 +158,7 @@ export function CareerRecordEditor({
               setTitle(event.target.value);
             }}
           />
-        </label>
+        </Label>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {keys.map((key) => {
@@ -164,20 +166,20 @@ export function CareerRecordEditor({
             labels[key] ?? key.replaceAll('_', ' ').replace(/^./, (s) => s.toUpperCase());
           if (key === 'metric_is_estimate')
             return (
-              <label key={key} className="flex items-center gap-2 text-sm">
-                <input
+              <Label key={key} className="flex items-center gap-2 text-sm">
+                <Input
                   type="checkbox"
                   checked={!!data[key]}
                   onChange={(e) => setField(key, e.target.checked)}
                 />
                 {label}
-              </label>
+              </Label>
             );
           if (key === 'verification_status')
             return (
-              <label key={key} className="space-y-1 text-sm font-medium">
+              <Label key={key} className="space-y-1 text-sm font-medium">
                 {label}
-                <select
+                <NativeSelect
                   className={selectClass}
                   value={verification}
                   onChange={(e) =>
@@ -195,12 +197,12 @@ export function CareerRecordEditor({
                       {option.replaceAll('_', ' ')}
                     </option>
                   ))}
-                </select>
-              </label>
+                </NativeSelect>
+              </Label>
             );
           if (key === 'technologies' || key === 'source_urls')
             return (
-              <label key={key} className="space-y-1 text-sm font-medium">
+              <Label key={key} className="space-y-1 text-sm font-medium">
                 {label}
                 <Textarea
                   rows={2}
@@ -215,7 +217,7 @@ export function CareerRecordEditor({
                     )
                   }
                 />
-              </label>
+              </Label>
             );
           const isLong = [
             'context',
@@ -234,22 +236,22 @@ export function CareerRecordEditor({
               setField(key, e.target.value || undefined),
           };
           return (
-            <label key={key} className="space-y-1 text-sm font-medium">
+            <Label key={key} className="space-y-1 text-sm font-medium">
               {label}
               {isLong ? <Textarea rows={2} {...props} /> : <Input {...props} />}
-            </label>
+            </Label>
           );
         })}
       </div>
       {kind === 'answer' && includeSensitive && (
-        <label className="flex items-center gap-2 text-sm">
-          <input
+        <Label className="flex items-center gap-2 text-sm">
+          <Input
             type="checkbox"
             checked={sensitive}
             onChange={(e) => setSensitive(e.target.checked)}
           />
           Sensitive answer
-        </label>
+        </Label>
       )}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={pending}>

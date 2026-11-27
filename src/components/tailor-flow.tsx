@@ -1,5 +1,9 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
 import Link from 'next/link';
 import {
   type Dispatch,
@@ -415,7 +419,8 @@ export function TailorFlow(props: TailorFlowProps) {
       <div className="precision-panels">
         {/* Left panel: Job Description */}
         <div className="precision-job-rail">
-          <button
+          <Button
+            variant="ghost"
             type="button"
             aria-expanded={showJobContext}
             aria-controls="job-preparation"
@@ -425,7 +430,7 @@ export function TailorFlow(props: TailorFlowProps) {
             {showJobContext
               ? 'Hide job description and preparation'
               : 'View job description and preparation'}
-          </button>
+          </Button>
           <div
             id="job-preparation"
             className={`precision-preparation ${showJobContext ? 'is-open' : ''}`}
@@ -459,23 +464,25 @@ export function TailorFlow(props: TailorFlowProps) {
                 {currentFitScore ? (
                   <>
                     <FitScoreCard fitScore={currentFitScore} />
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={handleFitScore}
                       disabled={fitScoreLoading || authPending}
                       className="min-h-11 w-full rounded-md border border-input px-3 text-sm text-muted-foreground disabled:opacity-40"
                     >
                       {fitScoreLoading ? 'Analyzing fit...' : 'Reanalyze job fit'}
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button
+                  <Button
+                    variant="default"
                     onClick={handleFitScore}
                     disabled={fitScoreLoading || !resume}
                     className="w-full px-3 py-2.5 text-sm font-medium rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 text-[var(--primary)] hover:bg-[var(--primary)]/10 disabled:opacity-40 transition-colors"
                   >
                     {fitScoreLoading ? 'Analyzing fit...' : 'Analyze Job Fit'}
-                  </button>
+                  </Button>
                 )}
                 {fitScoreError && (
                   <p role="alert" className="text-sm text-[var(--foreground)]">
@@ -507,7 +514,7 @@ export function TailorFlow(props: TailorFlowProps) {
                   {tailoredSource ? 'Tailored resume' : 'Your base resume'}
                 </h2>
                 {resumes.length > 1 ? (
-                  <select
+                  <NativeSelect
                     aria-label="Base resume"
                     value={selectedResumeId}
                     onChange={(event) => {
@@ -523,7 +530,7 @@ export function TailorFlow(props: TailorFlowProps) {
                         {item.name}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 ) : (
                   <p className="text-xs text-[var(--muted-foreground)]">{resume.name}</p>
                 )}
@@ -608,10 +615,10 @@ function VersionHistoryBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-[var(--border)] text-sm">
-      <label htmlFor="resume-history-version" className="font-bold">
+      <Label htmlFor="resume-history-version" className="font-bold">
         Saved resume version
-      </label>
-      <select
+      </Label>
+      <NativeSelect
         id="resume-history-version"
         className="input-base max-w-full"
         value={value}
@@ -626,7 +633,7 @@ function VersionHistoryBar({
             {new Date(version.created_at * 1000).toLocaleString()}
           </option>
         ))}
-      </select>
+      </NativeSelect>
       <Link
         href="/history"
         className="min-h-11 inline-flex items-center font-medium text-primary hover:underline"
@@ -661,27 +668,29 @@ function RemixOptionsPanel({
           Include extra experience
         </h3>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => onChange(new Set(options.map((option) => option.id)))}
             className="text-[10px] font-bold text-[var(--primary)] hover:underline"
           >
             All
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => onChange(new Set())}
             className="text-[10px] font-bold text-[var(--muted-foreground)] hover:text-foreground"
           >
             Clear
-          </button>
+          </Button>
         </div>
       </div>
       <div className="space-y-2">
         {options.map((option) => {
           const checked = selectedIds.has(option.id);
           return (
-            <label
+            <Label
               key={option.id}
               className={`block rounded-xl border p-3 text-left transition-colors ${
                 checked
@@ -690,7 +699,7 @@ function RemixOptionsPanel({
               }`}
             >
               <div className="flex items-start gap-2">
-                <input
+                <Input
                   type="checkbox"
                   checked={checked}
                   onChange={(event) => {
@@ -712,7 +721,7 @@ function RemixOptionsPanel({
                   </span>
                 </span>
               </div>
-            </label>
+            </Label>
           );
         })}
       </div>
@@ -794,13 +803,14 @@ function GenerateControls(props: GenerateControlsProps) {
       </Link>
       {tailoredSource && (
         <>
-          <button
+          <Button
+            variant="ghost"
             onClick={onSave}
             disabled={isPending || authPending}
             className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
           >
             {isPending ? 'Saving...' : 'Accept & Save'}
-          </button>
+          </Button>
           <LocalResumeExport source={tailoredSource} name={`${resumeName} tailored`} />
         </>
       )}
@@ -813,13 +823,14 @@ function GenerateControls(props: GenerateControlsProps) {
           Buy Tokens
         </Link>
       ) : (
-        <button
+        <Button
+          variant="default"
           onClick={onGenerate}
           disabled={isPending || authPending}
           className="min-h-[44px] md:min-h-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 transition-colors"
         >
           {isPending ? 'Generating...' : 'Generate Tailored Resume'}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -868,22 +879,24 @@ function ResumeView({
           className="flex gap-2 px-4 py-2 border-b bg-card"
           aria-label="Resume view"
         >
-          <button
+          <Button
+            variant="secondary"
             type="button"
             aria-pressed={!showDiff}
             onClick={() => onShowDiffChange(false)}
             className={`min-h-11 px-3 rounded text-sm ${!showDiff ? 'bg-secondary text-primary font-semibold' : 'text-muted-foreground'}`}
           >
             Resume preview
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
             type="button"
             aria-pressed={showDiff}
             onClick={() => onShowDiffChange(true)}
             className={`min-h-11 px-3 rounded text-sm ${showDiff ? 'bg-secondary text-primary font-semibold' : 'text-muted-foreground'}`}
           >
             Compare and edit changes
-          </button>
+          </Button>
         </div>
       )}
       <div className="precision-document-region">

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
@@ -25,9 +26,13 @@ export default function InterviewPrepError({
           Something went wrong while preparing this page. Your saved stories are safe — try again.
         </p>
         <div className="flex gap-3 justify-center">
-          <button onClick={retry} className="px-4 py-2 rounded border hover:opacity-80">
+          <Button
+            variant="ghost"
+            onClick={retry}
+            className="px-4 py-2 rounded border hover:opacity-80"
+          >
             Try again
-          </button>
+          </Button>
           <Link href="/dashboard" className="px-4 py-2 rounded border hover:opacity-80">
             Dashboard
           </Link>

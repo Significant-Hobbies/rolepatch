@@ -1,5 +1,13 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import {
+  NativeSelect,
+  NativeDisclosure,
+  NativeSummary,
+} from '@saas-maker/ui/components/native-controls';
+import { Input } from '@saas-maker/ui/components/input';
 import '@/styles/resume-print.css';
 
 import { markdown } from '@codemirror/lang-markdown';
@@ -8,7 +16,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 
 import { LocalResumeExport } from '@/components/local-resume-export';
@@ -284,24 +292,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     return () => clearTimeout(t);
   }, [source, resumeId, ready, isGuest]);
 
-  // Restore the unsaved draft (if any) once the editor is ready.
-  useEffect(() => {
-    if (isGuest || !ready) return;
-    try {
-      const draft = localStorage.getItem(`resume-draft-${resumeId}`);
-      if (draft !== null && draft !== (initialSource ?? '')) {
-        const view = viewRef.current;
-        if (view) {
-          view.dispatch({
-            changes: { from: 0, to: view.state.doc.length, insert: draft },
-          });
-        } else {
-          setSource(draft);
-        }
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- restore once when ready flips true
-  }, [ready, initialSource, resumeId, isGuest]);
+  const readEditorSource = useEffectEvent(() => source);
 
   useEffect(() => {
     if (!editorContainerRef.current || viewRef.current || !ready) return;
@@ -324,7 +315,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
     });
 
     const state = EditorState.create({
-      doc: source,
+      doc: readEditorSource(),
       extensions: [
         basicSetup,
         oneDark,
@@ -347,8 +338,23 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
       viewRef.current?.destroy();
       viewRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only initialize editor once when ready; source is captured at init time
-  }, [ready, source]);
+  }, [ready]);
+
+  // Restore any signed-in draft after the editor has mounted.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (isGuest || !ready || !view) return;
+    try {
+      const draft = localStorage.getItem(`resume-draft-${resumeId}`);
+      if (
+        draft !== null &&
+        draft !== (initialSource ?? '') &&
+        draft !== view.state.doc.toString()
+      ) {
+        view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: draft } });
+      }
+    } catch {}
+  }, [ready, initialSource, resumeId, isGuest]);
 
   const [downloading, setDownloading] = useState(false);
 
@@ -453,7 +459,8 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
 
           <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
             <div className="relative" ref={configRef}>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setShowConfig((v) => !v)}
                 className={`flex items-center justify-center w-10 h-10 md:w-auto md:h-auto md:p-1.5 rounded transition-colors ${showConfig ? 'bg-gray-200 text-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                 title="Format settings"
@@ -465,16 +472,16 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                     clipRule="evenodd"
                   />
                 </svg>
-              </button>
+              </Button>
 
               {showConfig && (
                 <div className="absolute left-0 md:left-auto md:right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64 max-w-[calc(100cqw-2rem)]">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                      <Label className="block text-xs font-medium text-gray-500 mb-1">
                         Template
-                      </label>
-                      <select
+                      </Label>
+                      <NativeSelect
                         value={template}
                         onChange={(e) => setTemplate(e.target.value as TemplateId)}
                         className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -484,16 +491,16 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                             {t.label}
                           </option>
                         ))}
-                      </select>
+                      </NativeSelect>
                       <p className="text-[10px] text-gray-400 mt-1">
                         {RESUME_TEMPLATES.find((t) => t.id === template)?.description}
                       </p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                      <Label className="block text-xs font-medium text-gray-500 mb-1">
                         Font Family
-                      </label>
-                      <select
+                      </Label>
+                      <NativeSelect
                         value={fontFamily}
                         onChange={(e) => setFontFamily(e.target.value)}
                         className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -503,14 +510,14 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                             {f.label}
                           </option>
                         ))}
-                      </select>
+                      </NativeSelect>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                        <Label className="block text-xs font-medium text-gray-500 mb-1">
                           Size (pt)
-                        </label>
-                        <input
+                        </Label>
+                        <Input
                           type="number"
                           min={8}
                           max={14}
@@ -521,10 +528,10 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                        <Label className="block text-xs font-medium text-gray-500 mb-1">
                           Leading
-                        </label>
-                        <input
+                        </Label>
+                        <Input
                           type="number"
                           min={1}
                           max={2}
@@ -535,10 +542,10 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                        <Label className="block text-xs font-medium text-gray-500 mb-1">
                           Margin (in)
-                        </label>
-                        <input
+                        </Label>
+                        <Input
                           type="number"
                           min={0.25}
                           max={1}
@@ -562,7 +569,8 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               />
             ) : (
               <div className="relative" ref={exportRef}>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setShowExport((v) => !v)}
                   disabled={downloading}
                   className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 transition-colors"
@@ -581,10 +589,11 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                       clipRule="evenodd"
                     />
                   </svg>
-                </button>
+                </Button>
                 {showExport && (
                   <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-1 w-32">
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         handleDownload('pdf');
                         setShowExport(false);
@@ -592,8 +601,9 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                       className="w-full text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 rounded transition-colors"
                     >
                       PDF
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         handleDownload('docx');
                         setShowExport(false);
@@ -601,8 +611,9 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                       className="w-full text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 rounded transition-colors"
                     >
                       Word (.doc)
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         handleDownload('html');
                         setShowExport(false);
@@ -610,8 +621,9 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                       className="w-full text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 rounded transition-colors"
                     >
                       HTML
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         handleDownload('txt');
                         setShowExport(false);
@@ -619,18 +631,19 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                       className="w-full text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-100 rounded transition-colors"
                     >
                       Plain Text
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
             )}
-            <button
+            <Button
+              variant="default"
               onClick={save}
               disabled={saving}
               className="inline-flex items-center min-h-[40px] md:min-h-0 px-3 py-1.5 text-xs font-medium product-primary-action rounded-md disabled:opacity-40 transition-colors"
             >
               {saving ? 'Saving...' : 'Save'}
-            </button>
+            </Button>
           </div>
         </div>
         {saveError && (
@@ -646,26 +659,26 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: updated } });
           }}
         />
-        <details className="border-b border-[var(--border)] bg-[var(--card)] px-4 py-3">
-          <summary className="cursor-pointer text-sm font-semibold">
+        <NativeDisclosure className="border-b border-[var(--border)] bg-[var(--card)] px-4 py-3">
+          <NativeSummary className="cursor-pointer text-sm font-semibold">
             Always include · {pinnedCount} {pinnedCount === 1 ? 'point' : 'points'}
-          </summary>
+          </NativeSummary>
           <div className="mt-3 space-y-3">
             <p className="text-sm text-[var(--muted-foreground)]">
               Choose points to keep in every new draft from this base resume. Click Save to remember
               your selections.
             </p>
-            <label className="flex items-center gap-3 text-sm font-semibold">
-              <input type="checkbox" checked disabled className="accent-[var(--primary)]" />
+            <Label className="flex items-center gap-3 text-sm font-semibold">
+              <Input type="checkbox" checked disabled className="accent-[var(--primary)]" />
               Education · always included
-            </label>
+            </Label>
             <p className="text-xs text-[var(--muted-foreground)]">
               All other points are currently kept too; the job description changes their order.
             </p>
             <div className="max-h-64 overflow-y-auto space-y-3 pr-2">
               {points.map((point) => (
-                <label key={point.id} className="flex items-start gap-3 text-sm leading-relaxed">
-                  <input
+                <Label key={point.id} className="flex items-start gap-3 text-sm leading-relaxed">
+                  <Input
                     type="checkbox"
                     checked={point.pinned}
                     aria-label={`Always include: ${point.label}`}
@@ -689,7 +702,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
                     </span>
                     {point.label}
                   </span>
-                </label>
+                </Label>
               ))}
               {!points.length && (
                 <p className="text-sm text-[var(--muted-foreground)]">
@@ -698,7 +711,7 @@ export function ResumeEditor({ resumeId, initialSource, resumeName }: Props) {
               )}
             </div>
           </div>
-        </details>
+        </NativeDisclosure>
         <div ref={editorContainerRef} className="flex-1 overflow-hidden min-h-[40vh] md:min-h-0" />
       </div>
 

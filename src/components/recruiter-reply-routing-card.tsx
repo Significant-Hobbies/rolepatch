@@ -1,5 +1,8 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { Check, Copy, Mail, Send } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -58,7 +61,8 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
             updates interview, offer, or rejection status.
           </p>
         </div>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={async () => {
             await navigator.clipboard.writeText(address);
@@ -69,7 +73,7 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? 'Copied' : 'Copy'}
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 rounded-xl border border-[var(--border)] bg-muted/20 px-3 py-2 font-mono text-xs text-foreground">
@@ -106,7 +110,7 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
                     </span>
                   )}
                 </div>
-                <input
+                <Input
                   type="text"
                   value={drafts[event.id]?.subject ?? event.suggested_reply_subject}
                   onChange={(e) =>
@@ -120,7 +124,7 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
                   }
                   className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-2 py-1 font-bold text-foreground"
                 />
-                <textarea
+                <Textarea
                   value={drafts[event.id]?.body ?? event.suggested_reply_body}
                   onChange={(e) =>
                     setDrafts((current) => ({
@@ -135,7 +139,8 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
                   className="mt-2 w-full resize-y rounded-md border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-[var(--muted-foreground)]"
                 />
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={async () => {
                       const draft = drafts[event.id] ?? {
@@ -156,8 +161,9 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
                       <Copy className="h-3 w-3" />
                     )}
                     {copiedDraftId === event.id ? 'Copied' : 'Copy'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="default"
                     type="button"
                     disabled={sendingId === event.id || Boolean(event.reply_sent_at)}
                     onClick={async () => {
@@ -196,7 +202,7 @@ export function RecruiterReplyRoutingCard({ address, events }: RecruiterReplyRou
                   >
                     <Send className="h-3 w-3" />
                     {sendingId === event.id ? 'Sending' : event.reply_sent_at ? 'Sent' : 'Send'}
-                  </button>
+                  </Button>
                   {(sendError[event.id] || event.reply_send_error) && (
                     <span className="text-[10px] font-semibold text-red-600">
                       {sendError[event.id] || event.reply_send_error}

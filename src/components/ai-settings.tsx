@@ -3,6 +3,9 @@
 // Local vendored AI settings component (formerly @saas-maker/ai's AISettings).
 // Renders endpoint URL / API key / model fields with a "Fetch Models" combobox.
 
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
+import { Button } from '@saas-maker/ui/components/button';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import type { AIConfig } from '@/lib/ai-vendor';
@@ -87,10 +90,10 @@ export function AISettings({
   return (
     <div className={cn.container} data-smw-ai-settings>
       <div className={cn.field} data-smw-ai-field>
-        <label htmlFor={`${fieldId}-endpoint`} className={cn.label} data-smw-ai-label>
+        <Label htmlFor={`${fieldId}-endpoint`} className={cn.label} data-smw-ai-label>
           {labels.endpointUrl ?? 'Endpoint URL'}
-        </label>
-        <input
+        </Label>
+        <Input
           id={`${fieldId}-endpoint`}
           type="text"
           value={config.endpointUrl}
@@ -102,10 +105,10 @@ export function AISettings({
       </div>
 
       <div className={cn.field} data-smw-ai-field>
-        <label htmlFor={`${fieldId}-key`} className={cn.label} data-smw-ai-label>
+        <Label htmlFor={`${fieldId}-key`} className={cn.label} data-smw-ai-label>
           {labels.apiKey ?? 'API Key'}
-        </label>
-        <input
+        </Label>
+        <Input
           id={`${fieldId}-key`}
           type="password"
           value={config.apiKey}
@@ -117,12 +120,12 @@ export function AISettings({
       </div>
 
       <div className={cn.field} data-smw-ai-field>
-        <label htmlFor={`${fieldId}-model`} className={cn.label} data-smw-ai-label>
+        <Label htmlFor={`${fieldId}-model`} className={cn.label} data-smw-ai-label>
           {labels.model ?? 'Model'}
-        </label>
+        </Label>
         <div style={{ position: 'relative' }} ref={comboboxRef}>
           <div className={cn.modelRow} style={{ display: 'flex', gap: '0.5rem' }}>
-            <input
+            <Input
               id={`${fieldId}-model`}
               type="text"
               value={config.model}
@@ -138,7 +141,8 @@ export function AISettings({
               style={{ flex: 1 }}
               data-smw-ai-input
             />
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => discover(config.endpointUrl, config.apiKey)}
               disabled={!config.endpointUrl || loading}
@@ -146,7 +150,7 @@ export function AISettings({
               data-smw-ai-fetch-btn
             >
               {loading ? 'Loading...' : (labels.fetchModels ?? 'Fetch Models')}
-            </button>
+            </Button>
           </div>
           {dropdownOpen && filteredModels.length > 0 && (
             <div
@@ -162,7 +166,8 @@ export function AISettings({
               data-smw-ai-dropdown
             >
               {filteredModels.map((m) => (
-                <button
+                <Button
+                  variant="ghost"
                   key={m}
                   type="button"
                   onClick={() => {
@@ -183,7 +188,7 @@ export function AISettings({
                   data-smw-ai-dropdown-item
                 >
                   {m}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -209,9 +214,15 @@ export function AISettings({
       </div>
 
       {!hideSave && onSave && (
-        <button type="button" onClick={handleSave} className={cn.saveButton} data-smw-ai-save-btn>
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={handleSave}
+          className={cn.saveButton}
+          data-smw-ai-save-btn
+        >
           {saved ? 'Saved' : (labels.save ?? 'Save Settings')}
-        </button>
+        </Button>
       )}
     </div>
   );

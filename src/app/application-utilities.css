@@ -7,4 +7,5 @@
 }
 @source "../";
 
-@source "../../node_modules/@saas-maker/ui/src/components/{badge,button,card,checkbox,input,label,skeleton,table,tabs,textarea,toggle,toggle-group}.tsx";
+@source "../../node_modules/@saas-maker/ui/src/components/{accordion,alert,avatar,badge,breadcrumb,button,card,checkbox,dialog,dropdown-menu,input,label,native-controls,radio-group,separator,sheet,skeleton,table,tabs,textarea,toggle,toggle-group,tooltip}.tsx";
+@source "../../node_modules/@saas-maker/ui/src/lib/{native-control-styles,native-primitives,surface-motion}.ts";

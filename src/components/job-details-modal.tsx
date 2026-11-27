@@ -1,18 +1,20 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
+import { useWorkspaceTheme } from '@/components/workspace-theme';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+} from '@saas-maker/ui/components/sheet';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@saas-maker/ui/components/tabs';
 import { JobResumeHistory } from '@/components/job-resume-history';
 import type { TailoredResume, JobDetailsPatch } from '@/lib/types';
 
@@ -68,6 +70,7 @@ function dollarsToCents(value: string): number | null {
 }
 
 export function JobDetailsModal(props: JobDetailsModalProps) {
+  const workspaceTheme = useWorkspaceTheme();
   const {
     open,
     jobTitle,
@@ -151,13 +154,14 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
       }}
     >
       <SheetContent
+        data-workspace-theme={workspaceTheme?.resolved ?? 'light'}
         onCloseAutoFocus={(event) => {
           if (onReturnFocus) {
             event.preventDefault();
             onReturnFocus();
           }
         }}
-        className="overflow-y-auto sm:max-w-xl"
+        className="rolepatch-workspace overflow-y-auto sm:max-w-xl"
         onEscapeKeyDown={(event) => {
           if (saving) event.preventDefault();
         }}
@@ -187,12 +191,12 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label
+                  <Label
                     htmlFor="job-details-interviewDate"
                     className="block text-sm font-medium mb-2"
                   >
                     Interview
-                  </label>
+                  </Label>
                   <Input
                     type="datetime-local"
                     id="job-details-interviewDate"
@@ -201,12 +205,12 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
                   />
                 </div>
                 <div>
-                  <label
+                  <Label
                     htmlFor="job-details-followUpAt"
                     className="block text-sm font-medium mb-2"
                   >
                     Follow-up
-                  </label>
+                  </Label>
                   <Input
                     type="datetime-local"
                     id="job-details-followUpAt"
@@ -218,9 +222,9 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
 
               <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_90px] gap-3">
                 <div>
-                  <label htmlFor="job-details-salaryMin" className="block text-sm font-medium mb-2">
+                  <Label htmlFor="job-details-salaryMin" className="block text-sm font-medium mb-2">
                     Salary min
-                  </label>
+                  </Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -232,9 +236,9 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="job-details-salaryMax" className="block text-sm font-medium mb-2">
+                  <Label htmlFor="job-details-salaryMax" className="block text-sm font-medium mb-2">
                     Salary max
-                  </label>
+                  </Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -246,12 +250,12 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
                   />
                 </div>
                 <div>
-                  <label
+                  <Label
                     htmlFor="job-details-salaryCurrency"
                     className="block text-sm font-medium mb-2"
                   >
                     Currency
-                  </label>
+                  </Label>
                   <Input
                     type="text"
                     id="job-details-salaryCurrency"
@@ -265,9 +269,9 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
               </div>
 
               <div>
-                <label htmlFor="job-details-offerAmount" className="block text-sm font-medium mb-2">
+                <Label htmlFor="job-details-offerAmount" className="block text-sm font-medium mb-2">
                   Offer amount
-                </label>
+                </Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -280,9 +284,9 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
               </div>
 
               <div>
-                <label htmlFor="job-details-notes" className="block text-sm font-medium mb-2">
+                <Label htmlFor="job-details-notes" className="block text-sm font-medium mb-2">
                   Notes
-                </label>
+                </Label>
                 <Textarea
                   id="job-details-notes"
                   value={notes}
@@ -293,12 +297,12 @@ export function JobDetailsModal(props: JobDetailsModalProps) {
               </div>
 
               <div>
-                <label
+                <Label
                   htmlFor="job-details-rejectionReason"
                   className="block text-sm font-medium mb-2"
                 >
                   Rejection reason
-                </label>
+                </Label>
                 <Input
                   type="text"
                   id="job-details-rejectionReason"

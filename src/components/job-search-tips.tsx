@@ -1,5 +1,8 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
 import { ChevronDown, ExternalLink, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -71,7 +74,8 @@ export function JobSearchTips() {
 
   return (
     <div className="rounded-2xl border border-[var(--border)]/60 bg-muted/5">
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
@@ -83,7 +87,7 @@ export function JobSearchTips() {
         <ChevronDown
           className={`h-4 w-4 text-[var(--muted-foreground)] transition-transform ${open ? 'rotate-180' : ''}`}
         />
-      </button>
+      </Button>
 
       {open && (
         <div className="px-4 pb-4 space-y-4 text-sm text-[var(--muted-foreground)]">
@@ -96,13 +100,13 @@ export function JobSearchTips() {
 
           {/* Keywords input */}
           <div>
-            <label
+            <Label
               htmlFor="ats-keywords"
               className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
             >
               Role, skill, or keyword
-            </label>
-            <input
+            </Label>
+            <Input
               id="ats-keywords"
               value={keywords}
               onChange={(e) => setKeywords(e.target.value)}
@@ -124,27 +128,30 @@ export function JobSearchTips() {
                 ATS boards ({selectedBoards.size}/{ALL_BOARDS.length})
               </span>
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={selectAll}
                   className="text-[10px] text-[var(--primary)] hover:underline"
                 >
                   All
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={selectNone}
                   className="text-[10px] text-[var(--muted-foreground)] hover:underline"
                 >
                   None
-                </button>
+                </Button>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {ALL_BOARDS.map((b) => {
                 const active = selectedBoards.has(b.board);
                 return (
-                  <button
+                  <Button
+                    variant="default"
                     key={b.board}
                     type="button"
                     onClick={() => toggleBoard(b.board)}
@@ -155,7 +162,7 @@ export function JobSearchTips() {
                     }`}
                   >
                     {b.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>

@@ -1,5 +1,28 @@
 import { expect, test } from '@playwright/test';
 
+test('the experience form is reachable by keyboard and restores focus when closed', async ({
+  page,
+}) => {
+  await page.goto('/resume-builder/evidence');
+  const add = page.getByRole('button', { name: /add experience/i });
+  await add.focus();
+  await page.keyboard.press('Enter');
+  const form = page.getByRole('dialog', { name: 'Add experience' });
+  await expect(form).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(form).toBeHidden();
+  await expect(add).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await form.getByLabel('Title', { exact: true }).fill('Launch checklist');
+  await form
+    .getByLabel('Your contribution and result')
+    .fill('Organized launch reviews for the product team.');
+  await form.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('button', { name: /launch checklist/i })).toBeVisible();
+  await expect(add).toBeFocused();
+});
+
 test('Outline edits, pins and added projects survive reload and legacy links open the same workspace', async ({
   page,
 }, testInfo) => {
@@ -19,6 +42,14 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   );
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
+  if (testInfo.project.name === 'mobile') {
+    await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
+    const menu = page.getByRole('dialog', { name: 'Workspace menu' });
+    await menu.getByRole('link', { name: 'Projects', exact: true }).click();
+    await expect(menu).toBeHidden();
+    await expect(page.locator('#section-2')).toBeFocused();
+    await page.goto('/resume-builder');
+  }
   await page
     .getByRole('button', { name: 'Edit achievement 1: Built React screens.', exact: true })
     .click();

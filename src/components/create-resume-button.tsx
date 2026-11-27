@@ -1,5 +1,6 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 
@@ -13,8 +14,9 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
+} from '@saas-maker/ui/components/sheet';
 import { useAuth } from '@/components/auth-provider';
+import { useWorkspaceTheme } from '@/components/workspace-theme';
 import { MasterResumeFields } from '@/components/master-resume-fields';
 import { createResume } from '@/lib/actions/resume-actions';
 import { localCreateResume } from '@/lib/local-storage';
@@ -25,6 +27,7 @@ export function CreateResumeButton({
 }: {
   destination?: 'editor' | 'builder';
 }) {
+  const workspaceTheme = useWorkspaceTheme();
   const router = useRouter();
   const { isGuest, isPending: authPending } = useAuth();
   const [open, setOpen] = useState(false);
@@ -100,7 +103,8 @@ export function CreateResumeButton({
       </SheetTrigger>
 
       <SheetContent
-        className="flex w-full flex-col overflow-hidden p-0 sm:max-w-xl"
+        data-workspace-theme={workspaceTheme?.resolved ?? 'light'}
+        className="rolepatch-workspace flex w-full flex-col overflow-hidden p-0 sm:max-w-xl"
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           inputRef.current?.focus();
@@ -115,8 +119,8 @@ export function CreateResumeButton({
         <SheetHeader className="shrink-0 border-b px-6 py-5 pr-12">
           <SheetTitle>Build your master resume</SheetTitle>
           <SheetDescription>
-            Add your complete history once. We keep your points and projects, rank them for each
-            job, and write a fresh summary. You can save a draft and finish later.
+            Add your work, education, and skills. This is the resume you’ll reuse when applying for
+            jobs. You can save a draft and finish later.
           </SheetDescription>
         </SheetHeader>
         <div className="min-h-0 flex-1 overflow-y-auto px-6">
@@ -140,12 +144,12 @@ export function CreateResumeButton({
               </div>
               <TabsContent value="personal" className="space-y-5 pt-4">
                 <div>
-                  <label
+                  <Label
                     htmlFor="master-document-name"
                     className="block text-sm font-semibold mb-2"
                   >
                     Resume name
-                  </label>
+                  </Label>
                   <Input
                     ref={inputRef}
                     id="master-document-name"

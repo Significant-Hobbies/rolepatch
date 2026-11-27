@@ -1,4 +1,13 @@
-import { Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Label } from '@saas-maker/ui/components/label';
+import {
+  NativeDisclosure,
+  NativeSelect,
+  NativeSummary,
+} from '@saas-maker/ui/components/native-controls';
+import { Textarea } from '@saas-maker/ui/components/textarea';
+import { createElement, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
 
 type Props = Record<string, unknown> & { children?: ReactNode };
 type SourceElement = ReactElement<Props>;
@@ -14,6 +23,17 @@ interface Context extends Options {
   code: string[];
   quoted?: boolean;
 }
+
+// Serialize reviewed controls as their native elements without executing UI behavior.
+const sharedControls = new Map<unknown, (props: Props) => ReactNode>([
+  [Button, (props) => (props.asChild ? props.children : createElement('button', props))],
+  [Input, (props) => createElement('input', props)],
+  [Label, (props) => createElement('label', props)],
+  [NativeSelect, (props) => createElement('select', props)],
+  [NativeDisclosure, (props) => createElement('details', props)],
+  [NativeSummary, (props) => createElement('summary', props)],
+  [Textarea, (props) => createElement('textarea', props)],
+]);
 
 // Only reviewed, pure authored components are evaluated. No DOM or HTML parser,
 // effects, browser state, or rendered-HTML roundtrip participates in this path.
@@ -73,7 +93,7 @@ function renderElement(value: SourceElement, context: Context): string {
   if (type === Fragment) {
     return renderNode(props.children, context);
   }
-  const adapter = context.adapters?.get(type);
+  const adapter = context.adapters?.get(type) ?? sharedControls.get(type);
   if (adapter) {
     return renderNode(adapter(props), context);
   }

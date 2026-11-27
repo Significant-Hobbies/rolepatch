@@ -1,5 +1,10 @@
 'use client';
 
+import {
+  NativeSelect,
+  NativeDisclosure,
+  NativeSummary,
+} from '@saas-maker/ui/components/native-controls';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Check, FileText, Pencil } from 'lucide-react';
@@ -43,25 +48,27 @@ const builderPages = {
     href: '/resume-builder',
     label: 'Master résumé',
     title: 'Resume Builder',
-    description: 'Edit the master résumé you use to tailor applications.',
+    description:
+      'Keep your work, education, and skills in one master resume. Use it to make a tailored copy for each job.',
   },
   evidence: {
     href: '/resume-builder/evidence',
     label: 'Evidence',
     title: 'Evidence',
-    description: 'Keep achievements, source links, and extra experience to draw on when tailoring.',
+    description: 'Save achievements and links that back up your experience.',
   },
   profile: {
     href: '/resume-builder/profile',
     label: 'Career profile',
     title: 'Career profile',
-    description: 'Manage the career records and application answers for this profile.',
+    description: 'Manage the work history and answers you reuse on job applications.',
   },
   generate: {
     href: '/resume-builder/generate',
     label: 'Generate',
     title: 'Generate a résumé',
-    description: 'Create a general résumé or tailor one to a specific role.',
+    description:
+      'Draft a resume from your saved profile. Add a job description to tailor it to that role.',
   },
 } as const;
 
@@ -230,10 +237,10 @@ function MasterResumePicker({
   if (resumes.length === 0) return null;
   return (
     <div className="max-w-md space-y-2">
-      <label htmlFor="master-selection" className="block text-sm font-semibold mb-2">
+      <Label htmlFor="master-selection" className="block text-sm font-semibold mb-2">
         Master resume
-      </label>
-      <select
+      </Label>
+      <NativeSelect
         id="master-selection"
         className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
         disabled={dirty}
@@ -245,7 +252,7 @@ function MasterResumePicker({
             {item.name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
       {dirty && (
         <p className="mt-2 text-sm text-[var(--muted-foreground)]">
           Save your changes before switching resumes.
@@ -559,7 +566,7 @@ function ResumeOutlineSection({
   }
   if (cursor < section.end || !sectionPoints.length) addDetails(cursor, section.end, 'end');
   return (
-    <section id={section.id} className="scroll-mt-20">
+    <section id={section.id} tabIndex={-1} className="scroll-mt-20">
       <Card>
         <CardHeader>
           <CardTitle>
@@ -718,27 +725,31 @@ function AddEntry({ project, onAdd }: { project: boolean; onAdd: (entry: string)
   const [points, setPoints] = useState('');
   const [open, setOpen] = useState(false);
   return (
-    <details open={open} onToggle={(event) => setOpen(event.currentTarget.open)} className="mt-6">
-      <summary className="cursor-pointer font-semibold">
+    <NativeDisclosure
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+      className="mt-6"
+    >
+      <NativeSummary className="cursor-pointer font-semibold">
         + Add {project ? 'project or product' : 'role'}
-      </summary>
+      </NativeSummary>
       <div className="space-y-4 mt-5">
-        <label className="block text-sm font-semibold">
+        <Label className="block text-sm font-semibold">
           {project ? 'Project name' : 'Role and company'}
           <Input
             className="mt-2"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
-        </label>
-        <label className="block text-sm font-semibold">
+        </Label>
+        <Label className="block text-sm font-semibold">
           {project ? 'Technologies and link' : 'Dates and location'}
           <Input
             className="mt-2"
             value={details}
             onChange={(event) => setDetails(event.target.value)}
           />
-        </label>
+        </Label>
         <AchievementInputs value={points} onChange={setPoints} label="Achievements" />
         <Button
           type="button"
@@ -754,6 +765,6 @@ function AddEntry({ project, onAdd }: { project: boolean; onAdd: (entry: string)
           Add to master
         </Button>
       </div>
-    </details>
+    </NativeDisclosure>
   );
 }

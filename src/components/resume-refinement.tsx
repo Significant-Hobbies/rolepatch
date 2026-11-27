@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  NativeDisclosure,
+  NativeSummary,
+  NativeSelect,
+} from '@saas-maker/ui/components/native-controls';
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useRef, useState, useTransition } from 'react';
 import { refineResumeSectionForClient } from '@/lib/actions/refine-resume-action';
 import { markdownToHtml } from '@/lib/resume-html';
@@ -102,10 +110,10 @@ export function ResumeRefinement(props: Props) {
     });
   }
   return (
-    <details className="border-b border-border px-4 py-3">
-      <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">
+    <NativeDisclosure className="border-b border-border px-4 py-3">
+      <NativeSummary className="min-h-11 cursor-pointer content-center text-sm font-medium">
         Refine one section
-      </summary>
+      </NativeSummary>
       <div className="space-y-3 pb-2 pt-2">
         <p className="text-sm text-muted-foreground">
           Refine the summary or reorder approved points. Achievement wording stays fixed.{' '}
@@ -126,7 +134,8 @@ export function ResumeRefinement(props: Props) {
           }}
         />
         <div className="flex flex-wrap gap-2">
-          <button
+          <Button
+            variant="default"
             type="button"
             onClick={propose}
             disabled={
@@ -135,7 +144,7 @@ export function ResumeRefinement(props: Props) {
             className="min-h-11 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-40"
           >
             {pending ? 'Preparing proposal…' : 'Preview refinement'}
-          </button>
+          </Button>
           <RefinementActions
             state={state}
             source={props.draft.source}
@@ -151,7 +160,7 @@ export function ResumeRefinement(props: Props) {
         )}
         <RefinementFeedback state={state} source={props.draft.source} />
       </div>
-    </details>
+    </NativeDisclosure>
   );
 }
 
@@ -173,9 +182,9 @@ function RefinementForm({
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="min-w-0 text-sm">
+        <Label className="block min-w-0 text-sm">
           Section
-          <select
+          <NativeSelect
             value={selection}
             onChange={(event) => onSelection(event.target.value)}
             disabled={disabled}
@@ -186,11 +195,11 @@ function RefinementForm({
                 {option.label}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="min-w-0 text-sm">
+          </NativeSelect>
+        </Label>
+        <Label className="block min-w-0 text-sm">
           What should change?
-          <textarea
+          <Textarea
             value={instruction}
             onChange={(event) => onInstruction(event.target.value)}
             maxLength={1000}
@@ -199,7 +208,7 @@ function RefinementForm({
             placeholder="Lead with frontend delivery for this role"
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm"
           />
-        </label>
+        </Label>
       </div>
       <p className="text-xs text-muted-foreground">
         Instructions guide emphasis. Add new facts to your original resume first.
@@ -224,7 +233,8 @@ function RefinementActions({
   if (state.status === 'ready' && state.before.source === source)
     return (
       <>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           disabled={disabled}
           onClick={() => {
@@ -234,19 +244,21 @@ function RefinementActions({
           className="min-h-11 rounded-md border border-input px-3 text-sm font-medium disabled:opacity-40"
         >
           Apply refinement
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => onState({ status: 'idle' })}
           className="min-h-11 rounded-md border border-input px-3 text-sm"
         >
           Discard proposal
-        </button>
+        </Button>
       </>
     );
   if (state.status === 'applied' && state.after.source === source)
     return (
-      <button
+      <Button
+        variant="ghost"
         type="button"
         disabled={disabled}
         onClick={() => {
@@ -256,7 +268,7 @@ function RefinementActions({
         className="min-h-11 rounded-md border border-input px-3 text-sm disabled:opacity-40"
       >
         Undo refinement
-      </button>
+      </Button>
     );
   return null;
 }

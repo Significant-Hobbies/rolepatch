@@ -1,9 +1,17 @@
 'use client';
 
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
 import { AlertCircle, ArrowRight, Calendar, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@saas-maker/ui/components/button';
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@saas-maker/ui/components/card';
 import { Badge } from '@saas-maker/ui/components/badge';
 import { Input } from '@saas-maker/ui/components/input';
 import { Skeleton } from '@saas-maker/ui/components/skeleton';
@@ -31,6 +39,7 @@ import { masterResumeReadiness } from '@/lib/master-resume';
 import { NewJobButton } from '@/components/new-job-button';
 import { RecruiterReplyRoutingCard } from '@/components/recruiter-reply-routing-card';
 import { WorkspaceSectionNav } from '@/components/workspace-section-nav';
+import { UserMenu } from '@/components/user-menu';
 import {
   bulkUpdateApplicationQueueStatus,
   listApplicationPackets,
@@ -184,20 +193,21 @@ const jobsPages = {
     href: '/jobs',
     label: 'Tracker',
     title: 'Jobs',
-    description: 'Track your applications and see how they’re progressing.',
+    description: 'Track where you’ve applied. Add a job link to make a resume for that role.',
   },
   discover: {
     href: '/jobs/discover',
     label: 'Find jobs',
     title: 'Find jobs',
     description:
-      'Search LinkedIn, browse recent roles, or add a URL from Ashby, Greenhouse, Lever, or another job board.',
+      'Search LinkedIn or paste a job link from Ashby, Greenhouse, Lever, or another job board.',
   },
   queue: {
     href: '/jobs/queue',
     label: 'Apply queue',
     title: 'Apply queue',
-    description: 'Prepare applications for review and manage your follow-ups.',
+    description:
+      'Review your resume and answers for each job before you submit. Manage follow-ups here too.',
   },
 } as const;
 
@@ -245,6 +255,29 @@ function timeAgo(unixSeconds: number): string {
     month: 'short',
     day: 'numeric',
   });
+}
+
+function HistoryStage({
+  job,
+  onChange,
+}: {
+  job: DashboardJob;
+  onChange: (id: string, status: string) => void;
+}) {
+  return (
+    <NativeSelect
+      aria-label={`Application status for ${job.role || 'Untitled Role'}`}
+      value={job.status}
+      onChange={(event) => onChange(job.id, event.target.value)}
+      className="w-auto max-w-full text-sm"
+    >
+      {STATUS_OPTIONS.map((status) => (
+        <option key={status} value={status}>
+          {statusConfig[status]?.label ?? status}
+        </option>
+      ))}
+    </NativeSelect>
+  );
 }
 
 function DashboardHeader({ view, resumes }: { view: JobsView; resumes: Resume[] }) {
@@ -797,9 +830,23 @@ export function Dashboard(props: DashboardProps) {
           )}
 
           {isGuest && (
-            <Link href="/history" className="text-sm font-medium text-primary hover:underline">
-              View job history
-            </Link>
+            <Card className="max-w-xl">
+              <CardHeader>
+                <CardTitle>
+                  <h2>Track your applications</h2>
+                </CardTitle>
+                <CardDescription>
+                  Sign in to track your applications and see analytics. Jobs saved as a guest are
+                  available in History on this browser.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter className="flex flex-wrap gap-2">
+                <UserMenu callbackURL="/jobs" />
+                <Button variant="ghost" asChild>
+                  <Link href="/history">View job history</Link>
+                </Button>
+              </CardFooter>
+            </Card>
           )}
         </>
       )}
@@ -824,13 +871,13 @@ export function Dashboard(props: DashboardProps) {
             />
           </div>
           <p className="mb-4 text-sm text-muted-foreground">
-            Jobs and their saved tailored résumés.
+            Review past jobs and download the tailored resumes you saved for them.
           </p>
           <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
             {(
               [
                 { id: 'all', label: `All jobs (${jobs.length})` },
-                { id: 'applied', label: `Applied and later (${appliedJobs.length})` },
+                { id: 'applied', label: `Applied jobs (${appliedJobs.length})` },
                 {
                   id: 'resumes',
                   label: `With resumes (${jobs.filter((job) => historyByJob.has(job.id)).length})`,
@@ -868,7 +915,7 @@ export function Dashboard(props: DashboardProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Role & company</TableHead>
-                    <TableHead>Stage</TableHead>
+                    <TableHead className="hidden sm:table-cell">Stage</TableHead>
                     <TableHead>Resumes</TableHead>
                     <TableHead className="hidden sm:table-cell">Added</TableHead>
                     <TableHead>
@@ -880,37 +927,30 @@ export function Dashboard(props: DashboardProps) {
                   {visibleJobs.map((job) => (
                     <Fragment key={job.id}>
                       <TableRow>
-                        <TableCell>
-                          <button
+                        <TableCell className="whitespace-normal">
+                          <Button
+                            variant="ghost"
                             type="button"
-                            className="text-left font-medium hover:underline"
+                            className="h-auto px-0 text-left font-medium whitespace-normal hover:underline"
                             onClick={(event) => {
                               detailsTrigger.current = event.currentTarget;
                               setDetailsJobId(job.id);
                             }}
                           >
                             {job.role || 'Untitled Role'}
-                          </button>
+                          </Button>
                           <div className="text-sm text-muted-foreground">
                             {job.company || 'Unknown Company'}
                           </div>
                           <div className="text-xs text-muted-foreground sm:hidden">
                             {timeAgo(job.created_at)}
                           </div>
+                          <div className="mt-2 sm:hidden">
+                            <HistoryStage job={job} onChange={handleStatusChange} />
+                          </div>
                         </TableCell>
-                        <TableCell>
-                          <select
-                            aria-label={`Application status for ${job.role || 'Untitled Role'}`}
-                            value={job.status}
-                            onChange={(event) => handleStatusChange(job.id, event.target.value)}
-                            className="h-8 rounded-md border border-input bg-transparent px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            {STATUS_OPTIONS.map((status) => (
-                              <option key={status} value={status}>
-                                {statusConfig[status]?.label ?? status}
-                              </option>
-                            ))}
-                          </select>
+                        <TableCell className="hidden sm:table-cell">
+                          <HistoryStage job={job} onChange={handleStatusChange} />
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">{historyByJob.get(job.id)?.length ?? 0}</Badge>
@@ -922,7 +962,7 @@ export function Dashboard(props: DashboardProps) {
                           <Button variant="ghost" size="icon" asChild>
                             <Link
                               href={`/tailor/${job.id}`}
-                              aria-label="Open tailor"
+                              aria-label={`Tailor resume for ${job.role || 'this job'}`}
                               prefetch={false}
                             >
                               <ArrowRight />
@@ -930,15 +970,17 @@ export function Dashboard(props: DashboardProps) {
                           </Button>
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell colSpan={5}>
-                          <JobResumeHistory
-                            role={job.role || 'Job description'}
-                            company={job.company}
-                            versions={historyByJob.get(job.id) ?? []}
-                          />
-                        </TableCell>
-                      </TableRow>
+                      {historyByJob.has(job.id) && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="whitespace-normal">
+                            <JobResumeHistory
+                              role={job.role || 'Job description'}
+                              company={job.company}
+                              versions={historyByJob.get(job.id) ?? []}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </Fragment>
                   ))}
                 </TableBody>

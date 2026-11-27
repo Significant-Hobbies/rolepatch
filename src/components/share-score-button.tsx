@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { useEffect, useState, useTransition } from 'react';
 
 import {
@@ -81,22 +82,24 @@ export function ShareScoreButton({ tailoredId }: ShareScoreButtonProps) {
   if (isPublic && slug) {
     return (
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={handleCopy}
           title={shareUrl}
           className="px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--accent)]/40 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 transition-colors"
         >
           {copied ? 'Copied!' : `/badge/${slug}`}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           type="button"
           onClick={handleUnpublish}
           disabled={isPending}
           className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
         >
           {isPending ? '…' : 'Unshare'}
-        </button>
+        </Button>
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>
     );
@@ -104,14 +107,15 @@ export function ShareScoreButton({ tailoredId }: ShareScoreButtonProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={handlePublish}
         disabled={isPending}
         className="px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors"
       >
         {isPending ? 'Sharing…' : 'Share score'}
-      </button>
+      </Button>
       {error && <span className="text-xs text-red-400">{error}</span>}
     </div>
   );

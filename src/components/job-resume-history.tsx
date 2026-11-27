@@ -1,5 +1,7 @@
 'use client';
 
+import { NativeDisclosure, NativeSummary } from '@saas-maker/ui/components/native-controls';
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import { useState } from 'react';
 import { exportLocalResume } from '@/lib/resume-download';
@@ -16,19 +18,17 @@ export function JobResumeHistory({
 }) {
   const [error, setError] = useState('');
   if (!versions.length)
-    return (
-      <p className="w-[calc(100vw-3rem)] max-w-full sm:w-full px-6 pb-4 text-sm text-[var(--muted-foreground)] border-b border-[var(--border)]/40">
-        No saved tailored resume yet · {role}
-        {company ? ` · ${company}` : ''}
-      </p>
-    );
+    return <p className="px-3 pb-3 text-sm text-muted-foreground">No tailored resume saved yet.</p>;
+  const label = `${versions.length} saved resume${versions.length === 1 ? '' : 's'}`;
   return (
-    <details className="w-[calc(100vw-3rem)] max-w-full sm:w-full px-6 pb-4 border-b border-[var(--border)]/40">
-      <summary className="cursor-pointer min-h-11 py-2 text-sm font-bold">
-        {versions.length} saved resume{versions.length === 1 ? '' : 's'} · {role}
-        {company ? ` · ${company}` : ''}
-      </summary>
-      <ol className="space-y-2 mt-2" aria-label={`Saved resumes for ${role}`}>
+    <NativeDisclosure className="min-w-0 whitespace-normal">
+      <NativeSummary
+        aria-label={`${label} for ${role}${company ? ` at ${company}` : ''}`}
+        className="min-h-11 py-2.5 text-sm font-semibold"
+      >
+        {label}
+      </NativeSummary>
+      <ol className="space-y-2 px-3 pb-3" aria-label={`Saved resumes for ${role}`}>
         {versions.map((version, index) => (
           <li key={version.id} className="flex flex-wrap items-center gap-3 text-sm">
             <span className="font-medium">
@@ -46,7 +46,8 @@ export function JobResumeHistory({
             >
               View resume
             </Link>
-            <button
+            <Button
+              variant="ghost"
               type="button"
               className="min-h-11 font-medium hover:underline"
               onClick={() => {
@@ -65,7 +66,7 @@ export function JobResumeHistory({
               }}
             >
               Download Markdown
-            </button>
+            </Button>
           </li>
         ))}
       </ol>
@@ -74,6 +75,6 @@ export function JobResumeHistory({
           {error}
         </p>
       )}
-    </details>
+    </NativeDisclosure>
   );
 }

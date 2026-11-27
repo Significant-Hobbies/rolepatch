@@ -1,5 +1,6 @@
 'use client';
 
+import { Input } from '@saas-maker/ui/components/input';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 
@@ -64,7 +65,7 @@ export function ResumeImportButton() {
 
   return (
     <>
-      <input ref={inputRef} type="file" accept={ACCEPTED} onChange={onFile} className="hidden" />
+      <Input ref={inputRef} type="file" accept={ACCEPTED} onChange={onFile} className="hidden" />
       <Button
         onClick={onClick}
         disabled={isPending || authPending}

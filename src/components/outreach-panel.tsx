@@ -1,5 +1,9 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useEffect, useState, useTransition } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
@@ -109,32 +113,34 @@ export function OutreachPanel({ job, serverResume, existingEmail }: OutreachPane
       )}
 
       <div className="flex items-center gap-3">
-        <button
+        <Button
+          variant="default"
           type="button"
           onClick={handleGenerate}
           disabled={isLoading || !resume}
           className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:opacity-90 disabled:opacity-40"
         >
           {generating ? 'Drafting…' : hasDraft ? 'Redraft outreach email' : 'Draft outreach email'}
-        </button>
+        </Button>
       </div>
 
       {hasDraft && (
         <div className="space-y-3">
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
+              <Label className="text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
                 Subject
-              </label>
-              <button
+              </Label>
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => copy('subject', subject)}
                 className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               >
                 {copied === 'subject' ? 'Copied' : 'Copy'}
-              </button>
+              </Button>
             </div>
-            <input
+            <Input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -143,18 +149,19 @@ export function OutreachPanel({ job, serverResume, existingEmail }: OutreachPane
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
+              <Label className="text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
                 Body
-              </label>
-              <button
+              </Label>
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => copy('body', body)}
                 className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               >
                 {copied === 'body' ? 'Copied' : 'Copy'}
-              </button>
+              </Button>
             </div>
-            <textarea
+            <Textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={10}

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { AlertCircle, BarChart3, CalendarCheck, Target } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -143,13 +144,14 @@ export function ApplicationCampaignTracker({
                     </div>
                   )}
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => onOpenDetails(action.jobId)}
                       className="rounded-md border border-current/20 px-2 py-1 text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-80"
                     >
                       Details
-                    </button>
+                    </Button>
                     <a
                       href={action.recruiterSearchUrl}
                       target="_blank"

@@ -1,4 +1,5 @@
 'use client';
+import { NativeDisclosure, NativeSummary } from '@saas-maker/ui/components/native-controls';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@saas-maker/ui/components/button';
@@ -52,13 +53,15 @@ export function ArchivedCareerProfiles() {
     }
   }
   return (
-    <details
+    <NativeDisclosure
       className="space-y-3 rounded-xl border bg-card p-4 md:p-6"
       onToggle={(e) => {
         if (e.currentTarget.open) void load();
       }}
     >
-      <summary className="cursor-pointer text-sm font-medium">Archived career profiles</summary>
+      <NativeSummary className="cursor-pointer text-sm font-medium">
+        Archived career profiles
+      </NativeSummary>
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -93,6 +96,6 @@ export function ArchivedCareerProfiles() {
           Load more
         </Button>
       )}
-    </details>
+    </NativeDisclosure>
   );
 }

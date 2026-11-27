@@ -1,3 +1,6 @@
+import { Input } from '@saas-maker/ui/components/input';
+import { Button } from '@saas-maker/ui/components/button';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import type { TrueHireProofItem, TrueHireRoleFitRequirement } from '@/lib/truehire-proof';
 import type { useTrueHireProofPreviewSourceState } from './truehire-proof-preview';
 
@@ -143,20 +146,21 @@ export function TrueHireProofPreviewView(
             onSubmit={view.loadPreview}
             className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row"
           >
-            <input
+            <Input
               value={view.handle}
               onChange={(event) => view.setHandle(event.target.value)}
               placeholder="@github-handle"
               aria-label="TrueHire handle"
               className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)]"
             />
-            <button
+            <Button
+              variant="ghost"
               type="submit"
               disabled={view.isLoading}
               className="min-h-[44px] rounded-lg bg-[var(--accent)] px-4 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent)]/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {view.isLoading ? 'Previewing...' : 'Preview'}
-            </button>
+            </Button>
           </form>
         </div>
 
@@ -187,7 +191,8 @@ export function TrueHireProofPreviewView(
                   >
                     Open TrueHire profile
                   </a>
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={view.importPreview}
                     disabled={
@@ -196,7 +201,7 @@ export function TrueHireProofPreviewView(
                     className="mt-3 inline-flex min-h-[40px] items-center justify-center rounded-lg border border-[var(--border)] px-3 text-sm font-semibold text-foreground transition-colors hover:bg-[var(--muted)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {view.isImporting ? 'Importing...' : 'Import to evidence'}
-                  </button>
+                  </Button>
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-black text-foreground">
@@ -251,7 +256,7 @@ export function TrueHireProofPreviewView(
             </div>
 
             <form onSubmit={view.loadRoleFit} className="space-y-3">
-              <textarea
+              <Textarea
                 value={view.jobDescription}
                 onChange={(event) => view.setJobDescription(event.target.value)}
                 rows={5}
@@ -264,13 +269,14 @@ export function TrueHireProofPreviewView(
                 <p className="text-xs leading-5 text-[var(--muted-foreground)]">
                   Uses the handle above. No application packet changes are made.
                 </p>
-                <button
+                <Button
+                  variant="ghost"
                   type="submit"
                   disabled={view.isRoleFitLoading}
                   className="min-h-[44px] rounded-lg border border-[var(--border)] px-4 text-sm font-semibold text-foreground transition-colors hover:bg-[var(--muted)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {view.isRoleFitLoading ? 'Analyzing...' : 'Analyze role fit'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

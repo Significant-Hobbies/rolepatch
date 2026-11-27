@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@saas-maker/ui/components/button';
 import { authClient } from '@/lib/auth-client';
 import { captureAuthFailure } from '@/lib/foundry-monitoring';
 
@@ -44,7 +44,12 @@ export function UserMenu({
         );
     }
     return (
-      <Button variant="outline" disabled={isPending} onClick={handleSignIn}>
+      <Button
+        variant="outline"
+        className={sidebar ? 'w-full' : undefined}
+        disabled={isPending}
+        onClick={handleSignIn}
+      >
         Sign in
       </Button>
     );

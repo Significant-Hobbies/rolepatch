@@ -1,5 +1,11 @@
 'use client';
 
+import {
+  NativeDisclosure,
+  NativeSummary,
+  NativeSelect,
+} from '@saas-maker/ui/components/native-controls';
+import { Label } from '@saas-maker/ui/components/label';
 import { Badge } from '@saas-maker/ui/components/badge';
 import { Button } from '@saas-maker/ui/components/button';
 import { Input } from '@saas-maker/ui/components/input';
@@ -118,14 +124,14 @@ function RecordForm({
     <form onSubmit={submit} className="space-y-4 rounded-lg border p-4">
       <h3 className="font-semibold">{record ? 'Edit application' : 'Add application'}</h3>
       <TrackerFields fields={mainFields} record={initial} />
-      <details>
-        <summary className="cursor-pointer text-sm font-medium">
+      <NativeDisclosure>
+        <NativeSummary className="cursor-pointer text-sm font-medium">
           Compensation, dates and more
-        </summary>
+        </NativeSummary>
         <div className="pt-4">
           <TrackerFields fields={detailFields} record={initial} />
         </div>
-      </details>
+      </NativeDisclosure>
       <div className="flex flex-wrap gap-2">
         <Button type="submit">Save application</Button>
         <Button type="button" variant="ghost" onClick={cancel}>
@@ -146,8 +152,8 @@ function Removal({
 }) {
   const [confirm, setConfirm] = useState('');
   return (
-    <details className="text-sm">
-      <summary className="cursor-pointer font-medium">Archive or delete {kind}</summary>
+    <NativeDisclosure className="text-sm">
+      <NativeSummary className="cursor-pointer font-medium">Archive or delete {kind}</NativeSummary>
       <div className="mt-3 grid gap-3 rounded-md border p-3">
         <Button
           type="button"
@@ -157,10 +163,10 @@ function Removal({
         >
           Archive {kind}
         </Button>
-        <label className="grid gap-1">
-          To permanently delete, type the ID <code className="break-all">{row.id}</code>
+        <Label className="grid gap-1">
+          To permanently delete, type the ID <code className="break-all select-text">{row.id}</code>
           <Input value={confirm} autoComplete="off" onChange={(e) => setConfirm(e.target.value)} />
-        </label>
+        </Label>
         <Button
           type="button"
           variant="destructive"
@@ -171,7 +177,7 @@ function Removal({
           Delete permanently
         </Button>
       </div>
-    </details>
+    </NativeDisclosure>
   );
 }
 function MaterialForm({
@@ -211,22 +217,26 @@ function MaterialForm({
         ]}
         record={row}
       />
-      <label className="grid gap-1 text-sm font-medium">
+      <Label className="grid gap-1 text-sm font-medium">
         Source
-        <select className={choiceClass} value={source} onChange={(e) => setSource(e.target.value)}>
+        <NativeSelect
+          className={choiceClass}
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+        >
           <option value="text">Text</option>
           <option value="tailored_resume">Saved tailored resume</option>
           <option value="resume_version">Career resume version</option>
           <option value="cover_letter">Saved cover letter</option>
-        </select>
-      </label>
+        </NativeSelect>
+      </Label>
       {source === 'text' ? (
-        <label className="grid gap-1 text-sm font-medium">
+        <Label className="grid gap-1 text-sm font-medium">
           Material text
           <Textarea required name="content" defaultValue={String(row?.content ?? '')} rows={4} />
-        </label>
+        </Label>
       ) : (
-        <label className="grid gap-1 text-sm font-medium">
+        <Label className="grid gap-1 text-sm font-medium">
           Document ID
           <Input
             name="reference_id"
@@ -240,7 +250,7 @@ function MaterialForm({
               </option>
             ))}
           </datalist>
-        </label>
+        </Label>
       )}
       <div className="flex gap-2">
         <Button type="submit">Save material</Button>
@@ -387,9 +397,14 @@ export function ApplicationTracker({
   return (
     <section aria-labelledby="application-tracker-heading" className="min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <h2 id="application-tracker-heading" className="text-xl font-semibold tracking-tight">
-          Application tracker
-        </h2>
+        <div>
+          <h2 id="application-tracker-heading" className="text-xl font-semibold tracking-tight">
+            Application tracker
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Use Add application to record a job you’ve already applied for.
+          </p>
+        </div>
         {view === 'applications' && (
           <Button
             type="button"
@@ -508,7 +523,7 @@ export function ApplicationTracker({
                     className="pl-9"
                   />
                 </div>
-                <select
+                <NativeSelect
                   name="status"
                   aria-label="Filter by status"
                   defaultValue={String(filter.status ?? '')}
@@ -520,15 +535,15 @@ export function ApplicationTracker({
                       {displayChoice(stage)}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
                 <Button type="submit" variant="outline">
                   Filter
                 </Button>
               </div>
-              <details>
-                <summary className="w-fit cursor-pointer py-1 text-sm text-muted-foreground">
+              <NativeDisclosure>
+                <NativeSummary className="w-fit cursor-pointer py-1 text-sm text-muted-foreground">
                   More filters
-                </summary>
+                </NativeSummary>
                 <div className="max-w-3xl pt-3">
                   <TrackerFields
                     fields={filterFields.slice(2)}
@@ -542,7 +557,7 @@ export function ApplicationTracker({
                     }
                   />
                 </div>
-              </details>
+              </NativeDisclosure>
             </form>
             <div
               className={
@@ -813,7 +828,7 @@ export function ApplicationTracker({
                                   });
                                 }}
                               >
-                                <label>
+                                <Label>
                                   View revision
                                   <Input
                                     name="revision"
@@ -822,7 +837,7 @@ export function ApplicationTracker({
                                     required
                                     defaultValue={Number(material.revision)}
                                   />
-                                </label>
+                                </Label>
                                 <Button type="submit" variant="outline">
                                   View
                                 </Button>
@@ -887,7 +902,8 @@ export function ApplicationTracker({
                               )}
                               {JSON.parse(String(ev.material_versions)).map(
                                 (ref: { id: string; revision: number }) => (
-                                  <button
+                                  <Button
+                                    variant="ghost"
                                     type="button"
                                     key={ref.id}
                                     className="mr-3 underline"
@@ -902,7 +918,7 @@ export function ApplicationTracker({
                                     {materials.items?.find((m) => m.id === ref.id)?.title ??
                                       'Attached material'}{' '}
                                     · revision {ref.revision}
-                                  </button>
+                                  </Button>
                                 )
                               )}
                             </li>
@@ -969,14 +985,14 @@ export function ApplicationTracker({
                               {materials.items
                                 .filter((m) => !m.archived)
                                 .map((m) => (
-                                  <label key={m.id} className="flex items-center gap-2 text-sm">
-                                    <input
+                                  <Label key={m.id} className="flex items-center gap-2 text-sm">
+                                    <Input
                                       type="checkbox"
                                       name="material_version"
                                       value={JSON.stringify({ id: m.id, revision: m.revision })}
                                     />
                                     {m.title} · revision {m.revision}
-                                  </label>
+                                  </Label>
                                 ))}
                             </fieldset>
                           )}
@@ -1005,8 +1021,10 @@ export function ApplicationTracker({
                 </aside>
               )}
             </div>
-            <details>
-              <summary className="cursor-pointer text-sm font-medium">Import applications</summary>
+            <NativeDisclosure>
+              <NativeSummary className="cursor-pointer text-sm font-medium">
+                Import applications
+              </NativeSummary>
               <form
                 className="mt-3 grid gap-2"
                 onSubmit={(e) => {
@@ -1024,7 +1042,7 @@ export function ApplicationTracker({
                   });
                 }}
               >
-                <label className="grid gap-1 text-sm">
+                <Label className="grid gap-1 text-sm">
                   Applications as a JSON array
                   <Textarea
                     name="items"
@@ -1033,7 +1051,7 @@ export function ApplicationTracker({
                       '[{"request_id":"job-1","manual_id":"job-1","company":"Acme","role":"Engineer"}]'
                     }
                   />
-                </label>
+                </Label>
                 <Button type="submit" variant="outline" className="justify-self-start">
                   Import jobs
                 </Button>
@@ -1043,7 +1061,7 @@ export function ApplicationTracker({
                   <li key={line}>{line}</li>
                 ))}
               </ul>
-            </details>
+            </NativeDisclosure>
           </fieldset>
         </TabsContent>
       </Tabs>

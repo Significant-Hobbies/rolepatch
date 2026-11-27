@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { useEffect } from 'react';
 
 import { captureError } from '@/lib/foundry-monitoring';
@@ -26,15 +27,20 @@ export default function Error({
           happening, come back in a few minutes.
         </p>
         <div className="flex gap-3 justify-center">
-          <button onClick={retry} className="px-4 py-2 rounded border hover:opacity-80">
+          <Button
+            variant="ghost"
+            onClick={retry}
+            className="px-4 py-2 rounded border hover:opacity-80"
+          >
             Try again
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => window.location.replace('/')}
             className="px-4 py-2 rounded border hover:opacity-80"
           >
             Home
-          </button>
+          </Button>
         </div>
         {error.digest ? <p className="mt-6 text-xs opacity-40">Reference: {error.digest}</p> : null}
       </div>

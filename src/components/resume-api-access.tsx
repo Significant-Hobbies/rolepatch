@@ -1,5 +1,9 @@
 'use client';
 
+import { NativeDisclosure, NativeSummary } from '@saas-maker/ui/components/native-controls';
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
 import { useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import {
@@ -67,8 +71,10 @@ function AccessControls({ signedIn, authPending }: { signedIn: boolean; authPend
   }
 
   return (
-    <details className="border border-[var(--border)] rounded-xl p-6 bg-[var(--card)]/30">
-      <summary className="font-semibold cursor-pointer">Connect your resume API</summary>
+    <NativeDisclosure className="border border-[var(--border)] rounded-xl p-6 bg-[var(--card)]/30">
+      <NativeSummary className="font-semibold cursor-pointer">
+        Connect your resume API
+      </NativeSummary>
       <div className="space-y-4 mt-4 text-sm">
         <p>
           Send a job description or a public job reference and get a complete resume from your saved
@@ -87,23 +93,25 @@ function AccessControls({ signedIn, authPending }: { signedIn: boolean; authPend
           </p>
         )}
         <div className="flex flex-wrap gap-3">
-          <button
+          <Button
+            variant="default"
             type="button"
             className="product-primary-action px-5 py-2.5 rounded-lg font-medium disabled:opacity-40"
             disabled={!signedIn || authPending || pending}
             onClick={create}
           >
             {pending ? 'Working…' : 'Create API token'}
-          </button>
+          </Button>
           {signedIn && (
-            <button
+            <Button
+              variant="ghost"
               type="button"
               className="px-3 py-2.5 rounded-lg border border-[var(--border)] font-medium disabled:opacity-40"
               disabled={pending}
               onClick={disconnect}
             >
               Disconnect and sign out
-            </button>
+            </Button>
           )}
         </div>
         {signedIn && (
@@ -114,10 +122,10 @@ function AccessControls({ signedIn, authPending }: { signedIn: boolean; authPend
         )}
         {access && (
           <div className="space-y-3">
-            <label className="block font-medium" htmlFor="resume-api-token">
+            <Label className="block font-medium" htmlFor="resume-api-token">
               API token
-            </label>
-            <input
+            </Label>
+            <Input
               id="resume-api-token"
               className="input-base w-full font-mono text-sm"
               type={revealed ? 'text' : 'password'}
@@ -127,20 +135,22 @@ function AccessControls({ signedIn, authPending }: { signedIn: boolean; authPend
               spellCheck={false}
             />
             <div className="flex flex-wrap gap-3">
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 className="px-3 py-2.5 rounded-lg border border-[var(--border)]"
                 onClick={() => setRevealed(!revealed)}
               >
                 {revealed ? 'Hide token' : 'Show token'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 type="button"
                 className="px-3 py-2.5 rounded-lg border border-[var(--border)]"
                 onClick={copy}
               >
                 Copy token
-              </button>
+              </Button>
             </div>
             <p>
               Expires {new Date(access.expires_at).toLocaleString()}. This page does not store the
@@ -175,6 +185,6 @@ function AccessControls({ signedIn, authPending }: { signedIn: boolean; authPend
           </p>
         )}
       </div>
-    </details>
+    </NativeDisclosure>
   );
 }

@@ -1,3 +1,5 @@
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
+import { Button } from '@saas-maker/ui/components/button';
 import type { ApplicationAnalytics, ApplicationAnalyticsRange } from '@/lib/tracker-store';
 import { displayChoice } from './application-tracker-fields';
 
@@ -34,7 +36,7 @@ export function ApplicationAnalyticsSummary({
           <h3 className="font-semibold">Application analytics</h3>
           <p className="text-sm text-muted-foreground">Based on submission dates and receipts.</p>
         </div>
-        <select
+        <NativeSelect
           aria-label="Analytics date range"
           className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           value={days}
@@ -48,16 +50,21 @@ export function ApplicationAnalyticsSummary({
               Last {range} days
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
       {error && (
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <p role="alert" className="text-destructive">
             {error}
           </p>
-          <button type="button" className="underline underline-offset-4" onClick={onRetry}>
+          <Button
+            variant="ghost"
+            type="button"
+            className="underline underline-offset-4"
+            onClick={onRetry}
+          >
             Retry
-          </button>
+          </Button>
         </div>
       )}
       {data && (

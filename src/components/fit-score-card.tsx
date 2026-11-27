@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { useState } from 'react';
 
 import type { FitScore } from '@/lib/types';
@@ -52,10 +53,12 @@ export function FitScoreCard({ fitScore }: FitScoreCardProps) {
   return (
     <div className={`rounded-xl border ${color.border} ${color.bg} overflow-hidden`}>
       {/* Header */}
-      <button
+      <Button
+        variant="ghost"
+        size="content"
         aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:brightness-110 transition-all"
+        className="flex w-full items-center justify-between px-4 py-3 transition-all hover:brightness-110"
       >
         <div className="flex items-center gap-3">
           <div
@@ -82,7 +85,7 @@ export function FitScoreCard({ fitScore }: FitScoreCardProps) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
 
       {/* Expanded breakdown */}
       {expanded && (

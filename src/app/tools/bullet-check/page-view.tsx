@@ -1,3 +1,4 @@
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import type { useBulletCheckPageSourceState } from './page-state';
@@ -28,7 +29,7 @@ export function BulletCheckPageView(view: ReturnType<typeof useBulletCheckPageSo
         </p>
       </header>
 
-      <textarea
+      <Textarea
         value={view.text}
         onChange={(e) => view.setText(e.target.value)}
         rows={6}

@@ -1,3 +1,4 @@
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import type { buildProofPacketPreview } from '@/lib/achievement-evidence';
 import type { useProofPacketPreviewSourceState } from './proof-packet-preview';
@@ -90,7 +91,8 @@ export function ProofPacketPreviewView(view: ReturnType<typeof useProofPacketPre
           <div className="flex flex-wrap gap-2">
             <ProofMetric label="Shareable" value={view.shareableCount} />
             <ProofMetric label="Needs work" value={view.needsWorkCount} />
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={view.copyProofProfile}
               disabled={view.shareableCount === 0}
@@ -101,7 +103,7 @@ export function ProofPacketPreviewView(view: ReturnType<typeof useProofPacketPre
                 : view.copyState === 'failed'
                   ? 'Copy failed'
                   : 'Copy proof profile'}
-            </button>
+            </Button>
           </div>
         </div>
 

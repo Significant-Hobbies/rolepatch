@@ -16,7 +16,7 @@
 @source "../components/pricing-cards-view.tsx";
 @source "../components/saasmaker-feedback.tsx";
 @source "../components/saasmaker-feedback-widget.tsx";
-@source "../components/ui/button.tsx";
+@source "../../node_modules/@saas-maker/ui/src/lib/native-primitives.ts";
 
 :root {
   color-scheme: dark;
@@ -49,6 +49,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Explicit line counts on a shared textarea reserve room for the answer. */
+textarea[data-slot="textarea"][rows] {
+  field-sizing: fixed;
 }
 
 .font-serif {

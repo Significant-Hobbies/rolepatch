@@ -5,8 +5,8 @@ import '@/app/workspace.css';
 
 import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@saas-maker/ui/components/avatar';
+import { Button } from '@saas-maker/ui/components/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+} from '@saas-maker/ui/components/dropdown-menu';
 import { authClient } from '@/lib/auth-client';
+import { useWorkspaceTheme } from '@/components/workspace-theme';
 
 export function SignedInUserMenu({
   user,
@@ -26,6 +26,7 @@ export function SignedInUserMenu({
   sidebar: boolean;
 }) {
   const { name, email, image } = user;
+  const theme = useWorkspaceTheme();
   const avatar = (
     <Avatar className="h-8 w-8 rounded-lg">
       <AvatarImage src={image ?? undefined} alt="" />
@@ -38,25 +39,34 @@ export function SignedInUserMenu({
       </AvatarFallback>
     </Avatar>
   );
-  const menu = (
+  return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {sidebar ? (
-          <SidebarMenuButton size="lg" aria-label="Account menu">
+          <Button
+            variant="ghost"
+            className="h-12 w-full justify-start overflow-hidden"
+            aria-label="Account menu"
+          >
             {avatar}
             <span className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{name}</span>
               <span className="truncate text-xs">Personal account</span>
             </span>
             <ChevronsUpDown className="ml-auto size-4" />
-          </SidebarMenuButton>
+          </Button>
         ) : (
           <Button variant="ghost" size="icon" aria-label="Account menu">
             {avatar}
           </Button>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" side={sidebar ? 'top' : 'bottom'}>
+      <DropdownMenuContent
+        className="rolepatch-workspace w-56"
+        data-workspace-theme={theme?.resolved ?? 'light'}
+        align="end"
+        side={sidebar ? 'top' : 'bottom'}
+      >
         <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -76,12 +86,5 @@ export function SignedInUserMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-  return sidebar ? (
-    <SidebarMenu>
-      <SidebarMenuItem>{menu}</SidebarMenuItem>
-    </SidebarMenu>
-  ) : (
-    menu
   );
 }

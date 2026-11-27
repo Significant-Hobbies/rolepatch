@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { useState } from 'react';
 
 interface ATSScoreBadgeProps {
@@ -47,7 +48,9 @@ export function ATSScoreBadge({
 
   return (
     <div className="keyword-score-wrapper relative">
-      <button
+      <Button
+        variant="ghost"
+        size="content"
         aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
         className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${color.bg} border ${color.border} hover:brightness-110 transition-all`}
@@ -75,7 +78,7 @@ export function ATSScoreBadge({
           )}
           <p className={`text-sm font-bold ${color.text} leading-tight`}>{score}/100</p>
         </div>
-      </button>
+      </Button>
 
       {/* Expanded keyword panel */}
       {expanded && (
@@ -84,12 +87,13 @@ export function ATSScoreBadge({
             <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">
               Weighted keyword analysis
             </h4>
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setExpanded(false)}
               className="text-[var(--muted-foreground)] hover:text-foreground text-xs min-h-11 px-2"
             >
               Close
-            </button>
+            </Button>
           </div>
 
           <p className="text-xs text-[var(--muted-foreground)] mb-3">

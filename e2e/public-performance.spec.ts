@@ -32,7 +32,7 @@ test('account menu becomes usable after a synthetic session loads its account-on
       await page.getByRole('button', { name: 'Toggle Sidebar', exact: true }).click();
     }
     if (path === '/resume-builder') {
-      await expect(page.locator('[data-sidebar="sidebar"]')).toHaveCSS(
+      await expect(page.locator('[data-sidebar="sidebar"]').filter({ visible: true })).toHaveCSS(
         'background-color',
         'oklch(0.985 0 0)'
       );
@@ -83,10 +83,11 @@ test('tools keeps all cards and loads the selected tool on navigation', async ({
       prefetched.push(request.url());
   });
   await page.goto('/tools');
-  await expect(page.getByRole('link', { name: /Use tool/ })).toHaveCount(6);
+  const toolLinks = page.getByRole('main').locator('a[href^="/tools/"]');
+  await expect(toolLinks).toHaveCount(6);
   await page.waitForLoadState('networkidle');
   expect(prefetched).toEqual([]);
-  await page.getByRole('link', { name: /ATS Keyword Checker/ }).click();
+  await page.getByRole('main').locator('a[href="/tools/keywords"]').click();
   await expect(page).toHaveURL(/\/tools\/keywords$/);
   await expect(page.locator('textarea').first()).toBeVisible();
   await expect(page.locator('textarea').nth(1)).toBeVisible();
