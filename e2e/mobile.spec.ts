@@ -14,16 +14,24 @@ async function expectNoHorizontalScroll(page: Page) {
 }
 
 test.describe('mobile (390px)', () => {
-  test('dashboard has no horizontal scroll and a working hamburger', async ({ page }) => {
-    await page.goto('/dashboard');
-    await expect(page.getByRole('link', { name: /create|new resume/i })).toBeVisible();
+  test('Jobs has visible primary links and an accessible workspace menu', async ({ page }) => {
+    await page.goto('/jobs');
+    const primary = page.getByRole('navigation', { name: 'Primary', exact: true });
+    await expect(primary.getByRole('link')).toHaveCount(3);
+    await expect(primary.getByRole('link', { name: 'Jobs', exact: true })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
     await expectNoHorizontalScroll(page);
 
-    // Desktop nav links are hidden; the hamburger reveals them.
-    const hamburger = page.getByRole('button', { name: /open menu/i });
+    const hamburger = page.getByRole('button', { name: 'Toggle Sidebar' });
     await expect(hamburger).toBeVisible();
     await hamburger.click();
-    await expect(page.getByRole('link', { name: 'Pricing' })).toBeVisible();
+    const drawer = page.getByRole('dialog', { name: 'Workspace menu' });
+    await expect(drawer.getByRole('link', { name: 'History' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeHidden();
+    await expect(hamburger).toBeFocused();
   });
 
   test('pricing cards stack to a single column', async ({ page }) => {
@@ -34,8 +42,22 @@ test.describe('mobile (390px)', () => {
   });
 
   test('resume editor is usable at mobile width', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.getByRole('link', { name: /create|new resume/i }).click();
+    await page.goto('/resume-builder');
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'rt-resumes',
+        JSON.stringify([
+          {
+            id: 'mobile-editor',
+            name: 'Mobile editor sample',
+            source: '# Alex Morgan\n\n## Experience\n- Wrote clear docs.\n',
+            created_at: 1,
+            updated_at: 1,
+          },
+        ])
+      );
+    });
+    await page.goto('/editor/mobile-editor');
 
     // CodeMirror editor mounts and is reachable.
     await expect(page.locator('.cm-editor')).toBeVisible({ timeout: 10000 });
