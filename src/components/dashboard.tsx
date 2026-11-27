@@ -1,12 +1,12 @@
 'use client';
 
-import { AlertCircle, ArrowRight, Calendar, Globe, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@saas-maker/ui/components/button';
+import { Badge } from '@saas-maker/ui/components/badge';
+import { Input } from '@saas-maker/ui/components/input';
+import { Skeleton } from '@saas-maker/ui/components/skeleton';
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@saas-maker/ui/components/table';
 
 import { ApplyAgentCommandCenter } from '@/components/apply-agent-command-center';
 import { ApplicationTracker } from '@/components/application-tracker';
@@ -30,6 +30,7 @@ import { ResumeImportButton } from '@/components/resume-import-button';
 import { masterResumeReadiness } from '@/lib/master-resume';
 import { NewJobButton } from '@/components/new-job-button';
 import { RecruiterReplyRoutingCard } from '@/components/recruiter-reply-routing-card';
+import { WorkspaceSectionNav } from '@/components/workspace-section-nav';
 import {
   bulkUpdateApplicationQueueStatus,
   listApplicationPackets,
@@ -178,8 +179,32 @@ type DashboardJob = Pick<
   | 'rejection_reason'
 > & { jd_text?: string };
 
+const jobsPages = {
+  tracker: {
+    href: '/jobs',
+    label: 'Tracker',
+    title: 'Jobs',
+    description: 'Track your applications and see how they’re progressing.',
+  },
+  discover: {
+    href: '/jobs/discover',
+    label: 'Find jobs',
+    title: 'Find jobs',
+    description:
+      'Search LinkedIn, browse recent roles, or add a URL from Ashby, Greenhouse, Lever, or another job board.',
+  },
+  queue: {
+    href: '/jobs/queue',
+    label: 'Apply queue',
+    title: 'Apply queue',
+    description: 'Prepare applications for review and manage your follow-ups.',
+  },
+} as const;
+
+type JobsView = keyof typeof jobsPages;
+
 interface DashboardProps {
-  historyOnly?: boolean;
+  view?: JobsView | 'history';
   serverHistory?: TailoredResume[];
   serverResumes: Resume[];
   serverJobs: JobApplication[];
@@ -222,25 +247,30 @@ function timeAgo(unixSeconds: number): string {
   });
 }
 
-function DashboardHeader({ isGuest, resumes }: { isGuest: boolean; resumes: Resume[] }) {
+function DashboardHeader({ view, resumes }: { view: JobsView; resumes: Resume[] }) {
+  const { href, title, description } = jobsPages[view];
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 id="jobs-heading" className="text-3xl font-bold tracking-tight">
-          Jobs
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          {isGuest
-            ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
-            : 'Add a job, review your tailored resume, and track your application.'}
-        </p>
+    <header className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1
+            id={view === 'tracker' ? 'jobs-heading' : undefined}
+            className="text-3xl font-bold tracking-tight"
+          >
+            {title}
+          </h1>
+          <p className="mt-2 text-muted-foreground">{description}</p>
+        </div>
+        {view !== 'queue' && (
+          <NewJobButton
+            resumes={resumes
+              .filter((r) => masterResumeReadiness(r.source).ready)
+              .map((r) => ({ id: r.id, name: r.name }))}
+          />
+        )}
       </div>
-      <NewJobButton
-        resumes={resumes
-          .filter((r) => masterResumeReadiness(r.source).ready)
-          .map((r) => ({ id: r.id, name: r.name }))}
-      />
-    </div>
+      <WorkspaceSectionNav label="Jobs sections" items={Object.values(jobsPages)} current={href} />
+    </header>
   );
 }
 
@@ -274,7 +304,7 @@ function DashboardLoading({ historyOnly }: { historyOnly: boolean }) {
 
 export function Dashboard(props: DashboardProps) {
   const {
-    historyOnly = false,
+    view = 'tracker',
     serverResumes,
     serverJobs,
     serverFitScores,
@@ -288,6 +318,7 @@ export function Dashboard(props: DashboardProps) {
     serverRecruiterReplyEvents = [],
     serverHistory = [],
   } = props;
+  const historyOnly = view === 'history';
   const { isGuest, isPending: authPending } = useAuth();
   const [localDataReady, setLocalDataReady] = useState(false);
   const dataPending = authPending || (isGuest && !localDataReady);
@@ -337,7 +368,7 @@ export function Dashboard(props: DashboardProps) {
       setJobs(localListJobs());
       setHistory(localListResumeHistory());
       setApplicationReceipts(localListApplicationReceipts());
-      if (!historyOnly) {
+      if (view === 'queue') {
         setApplicationQueue(localListApplicationQueue());
         setApplicationPackets(localListApplicationPackets());
         setProfileAnswers(localListProfileAnswers());
@@ -346,7 +377,7 @@ export function Dashboard(props: DashboardProps) {
       setLocalDataReady(true);
       /* eslint-enable react-hooks/set-state-in-effect */
     }
-  }, [authPending, historyOnly, isGuest]);
+  }, [authPending, view, isGuest]);
 
   // Capture a stable "now" for alerts (client-only to avoid impure render)
   useEffect(() => {
@@ -707,24 +738,14 @@ export function Dashboard(props: DashboardProps) {
     };
   }, [activeDetailsJob]);
 
-  if (dataPending) {
-    return (
-      <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
-        <MigrationBanner />
-        {!historyOnly && <DashboardHeader isGuest={isGuest} resumes={resumes} />}
-        <DashboardLoading historyOnly={historyOnly} />
-      </main>
-    );
-  }
-
   return (
     <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
       <MigrationBanner />
+      {!historyOnly && <DashboardHeader view={view} resumes={resumes} />}
+      {dataPending && <DashboardLoading historyOnly={historyOnly} />}
 
-      {!historyOnly && (
+      {!dataPending && view === 'tracker' && (
         <>
-          <DashboardHeader isGuest={isGuest} resumes={resumes} />
-
           {/* Alerts — interviews this week, overdue follow-ups */}
           {(alerts.interviewsThisWeek > 0 || alerts.overdueFollowUps > 0) && (
             <div className="mb-8 flex flex-wrap gap-3">
@@ -783,7 +804,7 @@ export function Dashboard(props: DashboardProps) {
         </>
       )}
 
-      {historyOnly && (
+      {!dataPending && historyOnly && (
         <section id="history" aria-labelledby="history-heading">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -927,80 +948,57 @@ export function Dashboard(props: DashboardProps) {
         </section>
       )}
 
-      {!historyOnly && (
+      {!dataPending && view === 'discover' && (
         <>
-          <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
-            <summary className="cursor-pointer text-lg font-bold">Find more jobs</summary>
-            {/* Stats bar — only show when there are jobs */}
-            {/* Discover jobs section */}
-            <section className="mb-16">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">Discover jobs</h2>
-                  <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-100">
-                    Search LinkedIn or paste any ATS job URL — Ashby, Greenhouse, Lever, and more
-                  </p>
-                </div>
-              </div>
-              <JobDiscovery
-                resumes={resumes.map((r) => ({ id: r.id, name: r.name, source: r.source }))}
-                onQueueDiscoveredJob={handleQueueDiscoveredJob}
-              />
-              <div className="mt-4">
-                <JobSearchTips />
-              </div>
-            </section>
-
-            {browseContent}
-          </details>
-          <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
-            <summary className="cursor-pointer text-lg font-bold">
-              Application preparation & follow-ups
-            </summary>
-            <div className="pt-6">
-              <ApplicationCampaignTracker jobs={jobs} onOpenDetails={setDetailsJobId} />
-
-              {!isGuest && (
-                <RecruiterReplyRoutingCard
-                  address={serverReplyRoutingAddress}
-                  events={serverRecruiterReplyEvents}
-                />
-              )}
-
-              <ApplyAgentCommandCenter
-                jobs={jobs}
-                resumeCount={resumes.length}
-                fitScores={fitScores}
-                queue={applicationQueue}
-                receipts={applicationReceipts}
-                packets={applicationPackets}
-                profileAnswers={profileAnswers}
-                discoveryAlerts={jobDiscoveryAlerts}
-                onQueueApplication={handleQueueApplication}
-                onQueueDiscoveryAlert={handleQueueDiscoveryAlert}
-                onQueueDiscoveryAlerts={handleQueueDiscoveryAlerts}
-                onQueueReadyApplications={handleQueueReadyApplications}
-                onRefreshReadiness={handleRefreshReadiness}
-                onUpdateQueueStatus={handleUpdateQueueStatus}
-                onBulkUpdateQueueStatus={handleBulkUpdateQueueStatus}
-                onRetryQueueEntry={handleRetryQueueEntry}
-                onRecordManualReceipt={handleRecordManualReceipt}
-                onRunBrowserCheck={handleRunBrowserCheck}
-                onRunBrowserCheckBatch={handleRunBrowserCheckBatch}
-                onRunGuardedSubmit={handleRunGuardedSubmit}
-                onRunGuardedSubmitBatch={handleRunGuardedSubmitBatch}
-                onSaveProfileAnswer={handleSaveProfileAnswer}
-                onDeleteProfileAnswer={handleDeleteProfileAnswer}
-              />
-            </div>
-          </details>
+          <section aria-label="Search for jobs" className="space-y-4">
+            <JobDiscovery
+              resumes={resumes.map((r) => ({ id: r.id, name: r.name, source: r.source }))}
+              onQueueDiscoveredJob={handleQueueDiscoveredJob}
+            />
+            <JobSearchTips />
+          </section>
+          {browseContent}
         </>
       )}
 
-      {detailsInitial && activeDetailsJob && (
+      {!dataPending && view === 'queue' && (
+        <>
+          <ApplyAgentCommandCenter
+            jobs={jobs}
+            resumeCount={resumes.length}
+            fitScores={fitScores}
+            queue={applicationQueue}
+            receipts={applicationReceipts}
+            packets={applicationPackets}
+            profileAnswers={profileAnswers}
+            discoveryAlerts={jobDiscoveryAlerts}
+            onQueueApplication={handleQueueApplication}
+            onQueueDiscoveryAlert={handleQueueDiscoveryAlert}
+            onQueueDiscoveryAlerts={handleQueueDiscoveryAlerts}
+            onQueueReadyApplications={handleQueueReadyApplications}
+            onRefreshReadiness={handleRefreshReadiness}
+            onUpdateQueueStatus={handleUpdateQueueStatus}
+            onBulkUpdateQueueStatus={handleBulkUpdateQueueStatus}
+            onRetryQueueEntry={handleRetryQueueEntry}
+            onRecordManualReceipt={handleRecordManualReceipt}
+            onRunBrowserCheck={handleRunBrowserCheck}
+            onRunBrowserCheckBatch={handleRunBrowserCheckBatch}
+            onRunGuardedSubmit={handleRunGuardedSubmit}
+            onRunGuardedSubmitBatch={handleRunGuardedSubmitBatch}
+            onSaveProfileAnswer={handleSaveProfileAnswer}
+            onDeleteProfileAnswer={handleDeleteProfileAnswer}
+          />
+          <ApplicationCampaignTracker jobs={jobs} onOpenDetails={setDetailsJobId} />
+          {!isGuest && (
+            <RecruiterReplyRoutingCard
+              address={serverReplyRoutingAddress}
+              events={serverRecruiterReplyEvents}
+            />
+          )}
+        </>
+      )}
+
+      {!dataPending && detailsInitial && activeDetailsJob && (
         <JobDetailsModal
           open={detailsJobId !== null}
           jobTitle={activeDetailsJob.role}

@@ -40,7 +40,7 @@ function logoUrlForCompany(company: string | null | undefined): string | null {
 }
 
 function pageHref(page: number): string {
-  return page <= 1 ? '/jobs' : `/jobs?page=${page}`;
+  return page <= 1 ? '/jobs/discover' : `/jobs/discover?page=${page}`;
 }
 
 interface JobsPageProps {

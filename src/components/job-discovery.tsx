@@ -1,5 +1,8 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Label } from '@saas-maker/ui/components/label';
 import {
   Bell,
   Bookmark,
@@ -678,7 +681,77 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 md:grid-cols-4">
+      <form
+        onSubmit={handleSearch}
+        className="grid grid-cols-1 items-end gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 xl:grid-cols-[1.4fr_1fr_auto_auto]"
+      >
+        <div>
+          <Label htmlFor="job-search-query" className="mb-2">
+            Role or keywords
+          </Label>
+          <Input
+            id="job-search-query"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="python engineer, staff PM, ..."
+          />
+        </div>
+        <div>
+          <Label htmlFor="job-search-location" className="mb-2">
+            Location (optional)
+          </Label>
+          <Input
+            id="job-search-location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="San Francisco, Remote, ..."
+          />
+        </div>
+        <label className="inline-flex items-center gap-2 px-3 py-2 text-sm text-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={remote}
+            onChange={(e) => setRemote(e.target.checked)}
+            className="accent-[var(--primary)]"
+          />
+          Remote
+        </label>
+        <Button
+          type="submit"
+          disabled={loading || !query.trim() || needsResume || !turnstileToken}
+          className="justify-self-start sm:justify-self-end"
+        >
+          {loading ? 'Searching…' : 'Discover jobs'}
+        </Button>
+        <div className="col-span-full empty:hidden">
+          <TurnstileWidget
+            siteKey={TURNSTILE_SITE_KEY}
+            action="turnstile-spin-v2"
+            resetSignal={turnstileResetSignal}
+            onTokenChange={setTurnstileToken}
+          />
+        </div>
+      </form>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+          Quick searches
+        </span>
+        {QUICK_SEARCHES.map((search) => (
+          <Button
+            key={search.label}
+            type="button"
+            onClick={() => handleQuickSearch(search)}
+            disabled={loading || needsResume || !turnstileToken}
+            variant="outline"
+            size="sm"
+          >
+            {search.label}
+          </Button>
+        ))}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-[var(--border)]/60 bg-[var(--card)] p-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
             Active searches
@@ -751,83 +824,6 @@ export function JobDiscovery({ resumes, onQueueDiscoveredJob }: JobDiscoveryProp
           </div>
         </div>
       )}
-
-      <form
-        onSubmit={handleSearch}
-        className="bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl p-5 grid grid-cols-1 md:grid-cols-[1.4fr_1fr_auto_auto] gap-3 items-end"
-      >
-        <div>
-          <label
-            htmlFor="job-search-query"
-            className="block text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1.5"
-          >
-            Role or keywords
-          </label>
-          <input
-            id="job-search-query"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="python engineer, staff PM, ..."
-            className="input-base"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="job-search-location"
-            className="block text-[10px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1.5"
-          >
-            Location (optional)
-          </label>
-          <input
-            id="job-search-location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="San Francisco, Remote, ..."
-            className="input-base"
-          />
-        </div>
-        <label className="inline-flex items-center gap-2 px-3 py-2 text-sm text-foreground cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={remote}
-            onChange={(e) => setRemote(e.target.checked)}
-            className="accent-[var(--primary)]"
-          />
-          Remote
-        </label>
-        <button
-          type="submit"
-          disabled={loading || !query.trim() || needsResume || !turnstileToken}
-          className="px-5 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity whitespace-nowrap"
-        >
-          {loading ? 'Searching…' : 'Discover jobs'}
-        </button>
-        <div className="md:col-span-4">
-          <TurnstileWidget
-            siteKey={TURNSTILE_SITE_KEY}
-            action="turnstile-spin-v2"
-            resetSignal={turnstileResetSignal}
-            onTokenChange={setTurnstileToken}
-          />
-        </div>
-      </form>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-          Quick searches
-        </span>
-        {QUICK_SEARCHES.map((search) => (
-          <button
-            key={search.label}
-            type="button"
-            onClick={() => handleQuickSearch(search)}
-            disabled={loading || needsResume || !turnstileToken}
-            className="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
-          >
-            {search.label}
-          </button>
-        ))}
-      </div>
 
       {resumes.length > 1 && (
         <label className="block max-w-sm">

@@ -38,8 +38,24 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
     .fill('TypeScript · https://example.org/console');
   await projects.getByLabel('Achievement 1', { exact: true }).fill('Released an API console.');
   await projects.getByRole('button', { name: 'Add to master' }).click();
+  const builderSections = page.getByRole('navigation', { name: 'Resume Builder sections' });
+  await builderSections.getByRole('link', { name: 'Evidence', exact: true }).click();
+  await expect(page).toHaveURL(/\/resume-builder$/);
+  await expect(page.getByRole('status')).toContainText('Save your changes before leaving');
+  const unexpectedNavigation = expect(
+    page.waitForURL(/\/resume-builder\/evidence/, { timeout: 750 })
+  ).rejects.toThrow('Timeout');
+  await page.evaluate(() => {
+    window.location.hash = 'sources';
+  });
+  await unexpectedNavigation;
+  await expect(page).toHaveURL(/\/resume-builder#sources$/);
+  await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeVisible();
+  await page.evaluate(() => {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  });
   await page.reload();
   await expect(
     page.getByRole('checkbox', { name: 'Always include: Built accessible React screens.' })
@@ -72,12 +88,20 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
     .getByRole('link', { name: 'Resume Builder', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
+  await builderSections.getByRole('link', { name: 'Evidence', exact: true }).click();
+  await expect(page).toHaveURL(/resume-builder\/evidence\?resume=outline-master/);
+  await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+  await builderSections.getByRole('link', { name: 'Master résumé', exact: true }).click();
+  await expect(page.getByLabel('Master resume')).toHaveValue('outline-master');
   await page.goto('/evidence');
-  await page.waitForURL(/resume-builder#sources/);
+  await page.waitForURL(/resume-builder\/evidence#sources/);
   await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toBeVisible();
   await page.goto('/stash');
-  await page.waitForURL(/resume-builder#extra-experience/);
+  await page.waitForURL(/resume-builder\/evidence#extra-experience/);
   await expect(page.getByRole('heading', { name: 'Extra experience' })).toBeVisible();
+  await page.goto('/resume-builder?resume=outline-master#sources');
+  await expect(page).toHaveURL(/resume-builder\/evidence\?resume=outline-master#sources/);
   await page.goto('/jobs');
   await expect(page.getByRole('heading', { name: 'Jobs', exact: true })).toBeVisible();
   const nav = page.getByRole('navigation', { name: 'Primary', exact: true });

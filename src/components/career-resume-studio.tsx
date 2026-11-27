@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { callCareerResume } from '@/lib/actions/career-resume';
 
 type Response = Awaited<ReturnType<typeof callCareerResume>>;
@@ -140,12 +140,9 @@ function Studio({ profileId }: { profileId: string }) {
       className="space-y-5 rounded-xl border bg-card p-4 sm:p-6"
     >
       <div>
-        <h3 id="career-resume-heading" className="text-lg font-semibold">
-          Generate a resume
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Use this profile for a general resume, or add a job description to tailor it.
-        </p>
+        <h2 id="career-resume-heading" className="text-lg font-semibold">
+          Résumé options
+        </h2>
       </div>
       <form
         className="space-y-3"

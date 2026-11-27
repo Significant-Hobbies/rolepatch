@@ -97,6 +97,18 @@ it('opens a newly requested master when creation navigates within the builder pa
   expect(screen.getByRole('heading', { name: 'Grace' })).toBeVisible();
 });
 
+it('restores a nondefault guest master when returning from a workspace subpage', () => {
+  const other = { ...resume, id: 'r2', name: 'Other', source: source.replace('Ada', 'Grace') };
+  vi.mocked(localListResumes).mockReturnValue([resume, other]);
+  render(<ResumeBuilder serverResumes={[]} requestedResume="r2" />);
+  expect(screen.getByLabelText('Master resume')).toHaveValue('r2');
+  expect(screen.getByRole('heading', { name: 'Grace' })).toBeVisible();
+  expect(screen.getByRole('link', { name: 'Evidence' })).toHaveAttribute(
+    'href',
+    '/resume-builder/evidence?resume=r2'
+  );
+});
+
 it('shows readable details and cancels a focused edit without changing the imported master', () => {
   render(<ResumeBuilder {...props} />);
   expect(screen.queryByLabelText('Full name')).not.toBeInTheDocument();

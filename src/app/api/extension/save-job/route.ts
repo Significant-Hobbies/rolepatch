@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       job_id: jobId,
       queue_id: queueId,
       existing,
-      redirect_url: shouldQueue ? '/dashboard' : `/tailor/${jobId}`,
+      redirect_url: shouldQueue ? '/jobs/queue' : `/tailor/${jobId}`,
     },
     { status: existing ? 200 : 201, headers }
   );

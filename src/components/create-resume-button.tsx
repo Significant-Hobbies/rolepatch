@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@saas-maker/ui/components/tabs';
 import {
   Sheet,
   SheetContent,

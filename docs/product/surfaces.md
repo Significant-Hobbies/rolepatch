@@ -34,15 +34,20 @@ when a route is added or removed.
 
 | Route | Purpose |
 | --- | --- |
-| `/resume-builder` | Continuous master-resume outline: edit original facts, pin points, add roles/projects, manage achievements/sources and extra experience. |
+| `/resume-builder` | Master résumé outline for editing experience, projects, education, and points to include when tailoring. |
+| `/resume-builder/evidence` | Achievements, sources, and extra experience. |
+| `/resume-builder/profile` | Signed-in career records, application answers, and archived profiles. |
+| `/resume-builder/generate` | Signed-in résumé generation for a general profile or specific job. |
 | `/dashboard` | Compatibility alias for the Jobs workspace. |
 | `/editor/[id]` | Markdown resume editor with live preview (CodeMirror). Autosaves drafts to localStorage. |
 | `/tailor/[jobId]` | Job description → AI tailor → document preview, explained changes and editable diff. Signed-in generation: 1 token. |
 | `/cover-letter/[jobId]` | Cover letter generation with company research. 1 token. |
 | `/interview-prep/[jobId]` | STAR+R story generation. |
-| `/evidence` | Compatibility redirect to `/resume-builder#sources`; the existing evidence bank retains D1/localStorage persistence. |
-| `/stash` | Compatibility redirect to `/resume-builder#extra-experience`; the existing extra-content pool is preserved. |
-| `/jobs` | Job intake, application tracking and analytics. Job discovery and reviewed application preparation are available here. |
+| `/evidence` | Compatibility redirect to `/resume-builder/evidence#sources`. |
+| `/stash` | Compatibility redirect to `/resume-builder/evidence#extra-experience`. |
+| `/jobs` | Job intake, application tracking, and analytics. |
+| `/jobs/discover` | LinkedIn search, ATS search tips, and recent roles from the observed feed. |
+| `/jobs/queue` | Review-first application preparation, follow-ups, and recruiter replies. |
 | `/history` | Past job records and saved tailored résumé versions, with options to reopen or download the exact version. |
 | `/settings` | Account-menu settings: AI provider config and apply-agent readiness. |
 

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@saas-maker/ui/components/button';
 import { useAuth } from '@/components/auth-provider';
 import { importResumeFromFile } from '@/lib/actions/import-action';
 import { localCreateResume } from '@/lib/local-storage';

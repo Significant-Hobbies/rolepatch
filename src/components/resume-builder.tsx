@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Check, FileText, Pencil } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@saas-maker/ui/components/button';
 import {
   Card,
   CardContent,
@@ -13,11 +11,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@saas-maker/ui/components/card';
+import { Checkbox } from '@saas-maker/ui/components/checkbox';
+import { Input } from '@saas-maker/ui/components/input';
+import { Label } from '@saas-maker/ui/components/label';
+import { Skeleton } from '@saas-maker/ui/components/skeleton';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useWorkspaceOutline } from '@/components/workspace-outline';
 import { AchievementEvidenceBank } from '@/components/achievement-evidence-bank';
 import { useAuth } from '@/components/auth-provider';
@@ -30,125 +29,284 @@ import { ResumeImportButton } from '@/components/resume-import-button';
 import { StashList } from '@/components/stash-list';
 import { ResumeContent, ResumeContentBlock } from '@/components/resume-content-block';
 import { AchievementInputs } from '@/components/achievement-inputs';
+import { UserMenu } from '@/components/user-menu';
+import { WorkspaceSectionNav } from '@/components/workspace-section-nav';
 import { updateResume } from '@/lib/actions/resume-actions';
 import { localListResumes, localUpdateResume } from '@/lib/local-storage';
 import { masterResumeEntry } from '@/lib/master-resume';
-import { replaceResumeRange, resumeOutline } from '@/lib/resume-outline';
+import { replaceResumeRange, resumeOutline, type ResumeSection } from '@/lib/resume-outline';
 import { listResumePoints, setResumePointPinned } from '@/lib/resume-pins';
 import type { AchievementEvidence, Resume, StashEntry } from '@/lib/types';
 
+const builderPages = {
+  master: {
+    href: '/resume-builder',
+    label: 'Master résumé',
+    title: 'Resume Builder',
+    description: 'Edit the master résumé you use to tailor applications.',
+  },
+  evidence: {
+    href: '/resume-builder/evidence',
+    label: 'Evidence',
+    title: 'Evidence',
+    description: 'Keep achievements, source links, and extra experience to draw on when tailoring.',
+  },
+  profile: {
+    href: '/resume-builder/profile',
+    label: 'Career profile',
+    title: 'Career profile',
+    description: 'Manage the career records and application answers for this profile.',
+  },
+  generate: {
+    href: '/resume-builder/generate',
+    label: 'Generate',
+    title: 'Generate a résumé',
+    description: 'Create a general résumé or tailor one to a specific role.',
+  },
+} as const;
+
 export function ResumeBuilder({
   serverResumes,
-  serverEvidence,
-  serverStash,
+  serverEvidence = [],
+  serverStash = [],
   requestedResume,
+  view = 'master',
 }: {
   serverResumes: Resume[];
-  serverEvidence: AchievementEvidence[];
-  serverStash: StashEntry[];
+  serverEvidence?: AchievementEvidence[];
+  serverStash?: StashEntry[];
   requestedResume?: string;
+  view?: keyof typeof builderPages;
 }) {
   const { isGuest, isPending } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
   const [dirty, setDirty] = useState(false);
-  const [selected, setSelected] = useState(requestedResume ?? serverResumes[0]?.id ?? '');
+  const [selected, setSelected] = useState(
+    serverResumes.find((item) => item.id === requestedResume)?.id ?? serverResumes[0]?.id ?? ''
+  );
   const previousRequest = useRef(requestedResume);
   useEffect(() => {
     if (isPending) return;
     const items = isGuest ? localListResumes() : serverResumes;
     setResumes(items);
-    if (requestedResume !== previousRequest.current) {
-      previousRequest.current = requestedResume;
-      if (items.some((item) => item.id === requestedResume)) {
-        setSelected(requestedResume ?? '');
-        return;
+    const requestChanged = requestedResume !== previousRequest.current;
+    previousRequest.current = requestedResume;
+    setSelected((current) => {
+      if ((requestChanged || !current) && items.some((item) => item.id === requestedResume)) {
+        return requestedResume ?? '';
       }
-    }
-    setSelected((current) =>
-      items.some((item) => item.id === current) ? current : (items[0]?.id ?? '')
-    );
+      return items.some((item) => item.id === current) ? current : (items[0]?.id ?? '');
+    });
   }, [isGuest, isPending, serverResumes, requestedResume]);
   const resume = resumes.find((item) => item.id === selected);
+  const { title, description, href } = builderPages[view];
+  const editMaster = view === 'master';
+  const useProfile = view === 'profile' || view === 'generate';
+  const masterPicker = (
+    <MasterResumePicker
+      resumes={resumes}
+      selected={selected}
+      dirty={dirty}
+      onSelect={setSelected}
+    />
+  );
   return (
-    <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
+    <main className="w-full min-w-0 max-w-6xl flex-1 space-y-6 p-4 md:p-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resume Builder</h1>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Your complete history, in one place. Refine your points once and reuse them for every
-            job.
-          </p>
+          <h1 id={`resume-builder-${view}-heading`} className="text-3xl font-bold tracking-tight">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-xl text-muted-foreground">{description}</p>
         </div>
-        <fieldset disabled={dirty} className="flex flex-wrap gap-2">
-          <ResumeImportButton />
-          <CreateResumeButton destination="builder" />
-        </fieldset>
+        {editMaster && (
+          <fieldset disabled={dirty} className="flex flex-wrap gap-2">
+            <ResumeImportButton />
+            <CreateResumeButton destination="builder" />
+          </fieldset>
+        )}
       </header>
-      {resumes.length > 0 && (
-        <div className="max-w-md space-y-2">
-          <label htmlFor="master-selection" className="block text-sm font-semibold mb-2">
-            Master resume
-          </label>
-          <select
-            id="master-selection"
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-            disabled={dirty}
-            value={selected}
-            onChange={(event) => setSelected(event.target.value)}
-          >
-            {resumes.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          {dirty && (
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Save your changes before switching resumes.
-            </p>
-          )}
-        </div>
-      )}
-      {resume ? (
-        <OutlineEditor
-          key={resume.id}
+      <WorkspaceSectionNav
+        label="Resume Builder sections"
+        items={Object.values(builderPages)}
+        current={href}
+        resumeId={selected || requestedResume}
+      />
+      {editMaster && (
+        <MasterWorkspaceContent
+          masterPicker={masterPicker}
           resume={resume}
           isGuest={isGuest}
-          disabled={isPending}
+          isPending={isPending}
           onDirty={setDirty}
-          onSaved={(source) =>
+          onSaved={(id, source) =>
             setResumes((items) =>
-              items.map((item) => (item.id === resume.id ? { ...item, source } : item))
+              items.map((item) => (item.id === id ? { ...item, source } : item))
             )
           }
         />
-      ) : (
-        <div className="rounded-xl border border-[var(--border)] p-8 mb-10">
-          <h2 className="text-xl font-bold">Start with your complete master resume</h2>
-          <p className="mt-3 text-[var(--muted-foreground)]">
+      )}
+      {useProfile && (
+        <CareerWorkspaceContent
+          view={view}
+          resumeId={resume?.id}
+          masterPicker={masterPicker}
+          isGuest={isGuest}
+          isPending={isPending}
+        />
+      )}
+      {view === 'evidence' && (
+        <>
+          <section id="sources" className="rounded-xl border bg-card p-4 sm:p-6">
+            <AchievementEvidenceBank serverEntries={serverEvidence} embedded />
+          </section>
+          <section id="extra-experience" className="rounded-xl border bg-card p-4 sm:p-6">
+            <h2 className="text-base font-semibold">Extra experience</h2>
+            <p className="mt-2 mb-6 text-muted-foreground">
+              Keep additional projects, skills and achievements here for relevant applications.
+            </p>
+            <StashList serverEntries={serverStash} />
+          </section>
+        </>
+      )}
+    </main>
+  );
+}
+
+function MasterWorkspaceContent({
+  masterPicker,
+  resume,
+  isGuest,
+  isPending,
+  onDirty,
+  onSaved,
+}: {
+  masterPicker: ReactNode;
+  resume: Resume | undefined;
+  isGuest: boolean;
+  isPending: boolean;
+  onDirty: (value: boolean) => void;
+  onSaved: (id: string, source: string) => void;
+}) {
+  if (!resume) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Start with your complete master resume</CardTitle>
+          <CardDescription>
             Import a resume or choose New Resume to add your roles, products, education and skills.
             You can save a draft and finish later.
-          </p>
-        </div>
-      )}
-      {!isGuest && !isPending && resume && (
-        <div key={resume.id} className="space-y-6">
-          <CareerProfilePanel profileId={resume.id} />
-          <CareerResumeStudio profileId={resume.id} />
-        </div>
-      )}
-      {!isGuest && !isPending && <ArchivedCareerProfiles />}
-      <section id="sources" className="scroll-mt-6 rounded-xl border bg-card p-6">
-        <AchievementEvidenceBank serverEntries={serverEvidence} embedded />
-      </section>
-      <section id="extra-experience" className="scroll-mt-6 rounded-xl border bg-card p-6">
-        <h2 className="text-base font-semibold">Extra experience</h2>
-        <p className="mt-2 mb-6 text-[var(--muted-foreground)]">
-          Keep additional projects, skills and achievements here for relevant applications.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+  return (
+    <>
+      {masterPicker}
+      <OutlineEditor
+        key={resume.id}
+        resume={resume}
+        isGuest={isGuest}
+        disabled={isPending}
+        onDirty={onDirty}
+        onSaved={(source) => onSaved(resume.id, source)}
+      />
+    </>
+  );
+}
+
+function MasterResumePicker({
+  resumes,
+  selected,
+  dirty,
+  onSelect,
+}: {
+  resumes: Resume[];
+  selected: string;
+  dirty: boolean;
+  onSelect: (id: string) => void;
+}) {
+  if (resumes.length === 0) return null;
+  return (
+    <div className="max-w-md space-y-2">
+      <label htmlFor="master-selection" className="block text-sm font-semibold mb-2">
+        Master resume
+      </label>
+      <select
+        id="master-selection"
+        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+        disabled={dirty}
+        value={selected}
+        onChange={(event) => onSelect(event.target.value)}
+      >
+        {resumes.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.name}
+          </option>
+        ))}
+      </select>
+      {dirty && (
+        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+          Save your changes before switching resumes.
         </p>
-        <StashList serverEntries={serverStash} />
-      </section>
-    </main>
+      )}
+    </div>
+  );
+}
+
+function CareerWorkspaceContent({
+  view,
+  resumeId,
+  masterPicker,
+  isGuest,
+  isPending,
+}: {
+  view: 'profile' | 'generate';
+  resumeId?: string;
+  masterPicker: ReactNode;
+  isGuest: boolean;
+  isPending: boolean;
+}) {
+  if (isPending) return <Skeleton aria-label="Loading career profile" className="h-40" />;
+  if (isGuest) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Sign in to use your career profile</CardTitle>
+          <CardDescription>
+            Career records and generated résumés are saved to your account.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <UserMenu callbackURL={builderPages[view].href} />
+        </CardFooter>
+      </Card>
+    );
+  }
+  return (
+    <div className="space-y-6">
+      {masterPicker}
+      {resumeId ? (
+        view === 'profile' ? (
+          <CareerProfilePanel key={resumeId} profileId={resumeId} />
+        ) : (
+          <CareerResumeStudio key={resumeId} profileId={resumeId} />
+        )
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Start with a master résumé</CardTitle>
+          </CardHeader>
+          <CardFooter>
+            <Button asChild variant="outline">
+              <Link href="/resume-builder">Open master résumé</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+      {view === 'profile' && <ArchivedCareerProfiles />}
+    </div>
   );
 }
 
@@ -175,24 +333,10 @@ function OutlineEditor({
   const sections = useMemo(() => resumeOutline(source), [source]);
   const outline = useWorkspaceOutline();
   const setSections = outline?.setSections;
-  const navigation = useMemo(
-    () => [
-      ...sections.map(({ id, title }) => ({ id, title })),
-      ...(!isGuest
-        ? [
-            { id: 'career-records', title: 'Career profile' },
-            { id: 'career-resume-heading', title: 'Generate a resume' },
-          ]
-        : []),
-      { id: 'sources', title: 'Achievements & sources' },
-      { id: 'extra-experience', title: 'Extra experience' },
-    ],
-    [sections, isGuest]
-  );
   useEffect(() => {
-    setSections?.(navigation);
+    setSections?.(sections.map(({ id, title }) => ({ id, title })));
     return () => setSections?.([]);
-  }, [setSections, navigation]);
+  }, [setSections, sections]);
   const points = listResumePoints(source);
   async function save() {
     const snapshot = source;
@@ -258,12 +402,6 @@ function OutlineEditor({
                 {section.title}
               </a>
             ))}
-            <a className="outline-link" href="#sources">
-              Achievements & sources
-            </a>
-            <a className="outline-link" href="#extra-experience">
-              Extra experience
-            </a>
           </div>
         </aside>
       )}
@@ -288,140 +426,19 @@ function OutlineEditor({
             </Button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-6">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>
-                {(source.match(/^#\s+(.+)$/m)?.[1] ?? resume.name).slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">
-                {source.match(/^#\s+(.+)$/m)?.[1] ?? resume.name}
-              </p>
-              <p className="text-sm text-muted-foreground">Master resume</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">
-              {points.length} {points.length === 1 ? 'point' : 'points'}
-            </Badge>
-            {sections.some((section) => /projects?|products?/i.test(section.title)) && (
-              <Badge variant="secondary">Projects included</Badge>
-            )}
-            <Badge variant="outline">
-              {sections.some((section) => /education/i.test(section.title))
-                ? 'Education included'
-                : 'Add education'}
-            </Badge>
-          </div>
-        </div>
         <MasterResumeGuide source={source} onChange={setSource} />
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
           <fieldset className="min-w-0 space-y-6" disabled={saving || disabled}>
-            {sections.map((section) => {
-              const sectionPoints = points.filter(
-                (point) => point.start >= section.contentStart && point.end <= section.end
-              );
-              let cursor = section.contentStart;
-              const pieces: React.ReactNode[] = [];
-              function details(start: number, end: number, suffix: string) {
-                if (!source.slice(start, end).trim() && sectionPoints.length) return;
-                const content = source.slice(start, end);
-                const editStart = start + (content.match(/^\s*/)?.[0].length ?? 0);
-                const editEnd = Math.max(editStart, end - (content.match(/\s*$/)?.[0].length ?? 0));
-                pieces.push(
-                  <ResumeContentBlock
-                    key={`details-${suffix}`}
-                    id={`${section.id}-${suffix}`}
-                    label={
-                      sectionPoints.length
-                        ? `${section.title} ${suffix === 'end' ? 'additional details' : `details ${Number(suffix) + 1}`}`
-                        : section.title
-                    }
-                    section={section.title}
-                    onEditing={editingChanged}
-                    value={source.slice(editStart, editEnd)}
-                    onChange={(value) =>
-                      setSource(replaceResumeRange(source, editStart, editEnd, value))
-                    }
-                  />
-                );
-              }
-              for (const [index, point] of sectionPoints.entries()) {
-                details(cursor, point.start, String(index));
-                pieces.push(
-                  <Achievement
-                    key={point.id}
-                    id={`${section.id}-${point.id}`}
-                    number={index + 1}
-                    text={point.label}
-                    pinned={point.pinned}
-                    onEditing={editingChanged}
-                    onPin={(pinned) => setSource(setResumePointPinned(source, point.id, pinned))}
-                    onChange={(value) => {
-                      const prefix = point.text.match(/^\s*[-+*]\s+/)?.[0] ?? '- ';
-                      const marker = point.pinned ? ' <!-- rolepatch:always-include -->' : '';
-                      const newline = value.indexOf('\n');
-                      const updated =
-                        newline < 0
-                          ? prefix + value + marker
-                          : prefix + value.slice(0, newline) + marker + value.slice(newline);
-                      setSource(replaceResumeRange(source, point.start, point.end, updated));
-                    }}
-                  />
-                );
-                cursor = point.end;
-              }
-              if (cursor < section.end || !sectionPoints.length)
-                details(cursor, section.end, 'end');
-              return (
-                <section id={section.id} key={section.id} className="scroll-mt-20">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>
-                        <h2>{section.title}</h2>
-                      </CardTitle>
-                      <CardDescription>
-                        {/experience|employment|work history/i.test(section.title)
-                          ? 'Keep every role and achievement here. Edit only the point you want to improve.'
-                          : /projects?|products?/i.test(section.title)
-                            ? 'Your complete products and projects. Each job ranks these alongside your experience.'
-                            : /education/i.test(section.title)
-                              ? 'Your qualifications stay in every tailored resume.'
-                              : /skills/i.test(section.title)
-                                ? 'Only skills you have supplied appear in your resumes.'
-                                : 'Review your details, then choose Edit to make a change.'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/education/i.test(section.title) && (
-                        <div className="flex items-center gap-2">
-                          <Checkbox id={`education-${section.id}`} checked disabled />
-                          <Label htmlFor={`education-${section.id}`}>
-                            Education · always included
-                          </Label>
-                        </div>
-                      )}
-                      <div className="space-y-5">{pieces}</div>
-                      {/experience|employment|work history|projects?|products?/i.test(
-                        section.title
-                      ) && (
-                        <AddEntry
-                          key={section.id}
-                          project={/projects?|products?/i.test(section.title)}
-                          onAdd={(entry) =>
-                            setSource(
-                              replaceResumeRange(source, section.end, section.end, `\n${entry}\n\n`)
-                            )
-                          }
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                </section>
-              );
-            })}
+            {sections.map((section) => (
+              <ResumeOutlineSection
+                key={section.id}
+                section={section}
+                source={source}
+                points={points}
+                onChange={setSource}
+                onEditing={editingChanged}
+              />
+            ))}
           </fieldset>
           <Card className="xl:sticky xl:top-20">
             <CardHeader>
@@ -473,6 +490,113 @@ function OutlineEditor({
         </div>
       </div>
     </div>
+  );
+}
+
+function ResumeOutlineSection({
+  section,
+  source,
+  points,
+  onChange,
+  onEditing,
+}: {
+  section: ResumeSection;
+  source: string;
+  points: ReturnType<typeof listResumePoints>;
+  onChange: (source: string) => void;
+  onEditing: (editing: boolean) => void;
+}) {
+  const sectionPoints = points.filter(
+    (point) => point.start >= section.contentStart && point.end <= section.end
+  );
+  let cursor = section.contentStart;
+  const pieces: React.ReactNode[] = [];
+  const addDetails = (start: number, end: number, suffix: string) => {
+    if (!source.slice(start, end).trim() && sectionPoints.length) return;
+    const content = source.slice(start, end);
+    const editStart = start + (content.match(/^\s*/)?.[0].length ?? 0);
+    const editEnd = Math.max(editStart, end - (content.match(/\s*$/)?.[0].length ?? 0));
+    pieces.push(
+      <ResumeContentBlock
+        key={`details-${suffix}`}
+        id={`${section.id}-${suffix}`}
+        label={
+          sectionPoints.length
+            ? `${section.title} ${suffix === 'end' ? 'additional details' : `details ${Number(suffix) + 1}`}`
+            : section.title
+        }
+        section={section.title}
+        onEditing={onEditing}
+        value={source.slice(editStart, editEnd)}
+        onChange={(value) => onChange(replaceResumeRange(source, editStart, editEnd, value))}
+      />
+    );
+  };
+  for (const [index, point] of sectionPoints.entries()) {
+    addDetails(cursor, point.start, String(index));
+    pieces.push(
+      <Achievement
+        key={point.id}
+        id={`${section.id}-${point.id}`}
+        number={index + 1}
+        text={point.label}
+        pinned={point.pinned}
+        onEditing={onEditing}
+        onPin={(pinned) => onChange(setResumePointPinned(source, point.id, pinned))}
+        onChange={(value) => {
+          const prefix = point.text.match(/^\s*[-+*]\s+/)?.[0] ?? '- ';
+          const marker = point.pinned ? ' <!-- rolepatch:always-include -->' : '';
+          const newline = value.indexOf('\n');
+          const updated =
+            newline < 0
+              ? prefix + value + marker
+              : prefix + value.slice(0, newline) + marker + value.slice(newline);
+          onChange(replaceResumeRange(source, point.start, point.end, updated));
+        }}
+      />
+    );
+    cursor = point.end;
+  }
+  if (cursor < section.end || !sectionPoints.length) addDetails(cursor, section.end, 'end');
+  return (
+    <section id={section.id} className="scroll-mt-20">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2>{section.title}</h2>
+          </CardTitle>
+          <CardDescription>
+            {/experience|employment|work history/i.test(section.title)
+              ? 'Keep every role and achievement here. Edit only the point you want to improve.'
+              : /projects?|products?/i.test(section.title)
+                ? 'Your complete products and projects. Each job ranks these alongside your experience.'
+                : /education/i.test(section.title)
+                  ? 'Your qualifications stay in every tailored resume.'
+                  : /skills/i.test(section.title)
+                    ? 'Only skills you have supplied appear in your resumes.'
+                    : 'Review your details, then choose Edit to make a change.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/education/i.test(section.title) && (
+            <div className="flex items-center gap-2">
+              <Checkbox id={`education-${section.id}`} checked disabled />
+              <Label htmlFor={`education-${section.id}`}>Education · always included</Label>
+            </div>
+          )}
+          <div className="space-y-5">{pieces}</div>
+          {/experience|employment|work history|projects?|products?/i.test(section.title) && (
+            <AddEntry
+              key={section.id}
+              project={/projects?|products?/i.test(section.title)}
+              onAdd={(entry) =>
+                onChange(replaceResumeRange(source, section.end, section.end, `\n${entry}\n\n`))
+              }
+            />
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }
 
