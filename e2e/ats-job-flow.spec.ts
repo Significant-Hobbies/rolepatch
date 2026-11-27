@@ -394,7 +394,7 @@ test.describe('Tailor page (guest mode with pre-seeded job)', () => {
     await expect(page.getByRole('link', { name: /boards\.greenhouse\.io\/acme/i })).toBeVisible();
   });
 
-  test('shows back link to dashboard from tailor page', async ({ page }) => {
+  test('returns to standalone History from the tailor page', async ({ page }) => {
     await page.goto('/dashboard');
     await page.evaluate(() => {
       const now = Math.floor(Date.now() / 1000);
@@ -439,7 +439,9 @@ test.describe('Tailor page (guest mode with pre-seeded job)', () => {
     await expect(page.locator('pre').filter({ hasText: /Job description/i })).toBeVisible({
       timeout: 15000,
     });
-    await expect(page.getByRole('link', { name: /back/i })).toBeVisible();
+    await page.getByRole('main').getByRole('link', { name: 'History', exact: true }).click();
+    await expect(page).toHaveURL(/\/history$/);
+    await expect(page.getByRole('button', { name: 'Engineer', exact: true })).toBeVisible();
   });
 });
 
