@@ -51,7 +51,7 @@ function WorkspaceSidebar({
   page: WorkspacePage;
   sections: WorkspaceSection[];
 }) {
-  const { setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   return (
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
@@ -72,7 +72,7 @@ function WorkspaceSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <nav aria-label="Primary">
+          <nav aria-label={isMobile ? 'Workspace menu' : 'Primary'}>
             <SidebarMenu>
               {links.map(({ href, label, icon: Icon }) => (
                 <SidebarMenuItem key={href}>
