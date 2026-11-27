@@ -67,8 +67,6 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   }
   await page.getByRole('link', { name: 'Preview', exact: true }).click();
   await page.waitForURL(/editor\/outline-master/);
-  if (testInfo.project.name === 'mobile')
-    await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
   await page
     .getByRole('navigation', { name: 'Primary', exact: true })
     .getByRole('link', { name: 'Resume Builder', exact: true })
@@ -82,8 +80,6 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   await expect(page.getByRole('heading', { name: 'Extra experience' })).toBeVisible();
   await page.goto('/jobs');
   await expect(page.getByRole('heading', { name: 'Jobs', exact: true })).toBeVisible();
-  if (testInfo.project.name === 'mobile')
-    await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
   const nav = page.getByRole('navigation', { name: 'Primary', exact: true });
   await expect(nav.getByRole('link', { name: 'Resume Builder', exact: true })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Jobs', exact: true })).toBeVisible();

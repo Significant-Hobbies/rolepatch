@@ -628,7 +628,7 @@ function VersionHistoryBar({
         ))}
       </select>
       <Link
-        href="/dashboard#history"
+        href="/history"
         className="min-h-11 inline-flex items-center font-medium text-primary hover:underline"
       >
         Back to History

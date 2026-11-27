@@ -179,6 +179,7 @@ type DashboardJob = Pick<
 > & { jd_text?: string };
 
 interface DashboardProps {
+  historyOnly?: boolean;
   serverHistory?: TailoredResume[];
   serverResumes: Resume[];
   serverJobs: JobApplication[];
@@ -225,7 +226,9 @@ function DashboardHeader({ isGuest, resumes }: { isGuest: boolean; resumes: Resu
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>
+        <h1 id="jobs-heading" className="text-3xl font-bold tracking-tight">
+          Jobs
+        </h1>
         <p className="mt-2 text-muted-foreground">
           {isGuest
             ? 'Add a job, review your tailored resume, and track your application. Guest work stays in this browser.'
@@ -241,12 +244,23 @@ function DashboardHeader({ isGuest, resumes }: { isGuest: boolean; resumes: Resu
   );
 }
 
-function DashboardLoading() {
+function DashboardLoading({ historyOnly }: { historyOnly: boolean }) {
   return (
-    <section aria-label="History" aria-busy="true" className="min-h-128 space-y-4">
-      <h2 className="text-base font-semibold">History</h2>
-      <div role="status" aria-label="Loading job history" className="space-y-4">
-        <span className="sr-only">Loading job history</span>
+    <section
+      aria-label={historyOnly ? 'History' : 'Jobs workspace'}
+      aria-busy="true"
+      className="min-h-128 space-y-4"
+    >
+      {historyOnly && (
+        <h1 id="history-heading" className="text-3xl font-bold tracking-tight">
+          History
+        </h1>
+      )}
+      <div
+        role="status"
+        aria-label={historyOnly ? 'Loading job history' : 'Loading jobs'}
+        className="space-y-4"
+      >
         <Skeleton className="h-20 w-full" />
         <div className="space-y-3 rounded-md border p-4">
           <Skeleton className="h-12 w-full" />
@@ -260,6 +274,7 @@ function DashboardLoading() {
 
 export function Dashboard(props: DashboardProps) {
   const {
+    historyOnly = false,
     serverResumes,
     serverJobs,
     serverFitScores,
@@ -321,15 +336,17 @@ export function Dashboard(props: DashboardProps) {
       setResumes(localListResumes());
       setJobs(localListJobs());
       setHistory(localListResumeHistory());
-      setApplicationQueue(localListApplicationQueue());
       setApplicationReceipts(localListApplicationReceipts());
-      setApplicationPackets(localListApplicationPackets());
-      setProfileAnswers(localListProfileAnswers());
-      setJobDiscoveryAlerts(localListJobDiscoveryAlerts());
+      if (!historyOnly) {
+        setApplicationQueue(localListApplicationQueue());
+        setApplicationPackets(localListApplicationPackets());
+        setProfileAnswers(localListProfileAnswers());
+        setJobDiscoveryAlerts(localListJobDiscoveryAlerts());
+      }
       setLocalDataReady(true);
       /* eslint-enable react-hooks/set-state-in-effect */
     }
-  }, [authPending, isGuest]);
+  }, [authPending, historyOnly, isGuest]);
 
   // Capture a stable "now" for alerts (client-only to avoid impure render)
   useEffect(() => {
@@ -694,8 +711,8 @@ export function Dashboard(props: DashboardProps) {
     return (
       <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
         <MigrationBanner />
-        <DashboardHeader isGuest={isGuest} resumes={resumes} />
-        <DashboardLoading />
+        {!historyOnly && <DashboardHeader isGuest={isGuest} resumes={resumes} />}
+        <DashboardLoading historyOnly={historyOnly} />
       </main>
     );
   }
@@ -704,264 +721,284 @@ export function Dashboard(props: DashboardProps) {
     <main className="min-w-0 flex-1 space-y-6 p-4 md:p-6">
       <MigrationBanner />
 
-      <DashboardHeader isGuest={isGuest} resumes={resumes} />
+      {!historyOnly && (
+        <>
+          <DashboardHeader isGuest={isGuest} resumes={resumes} />
 
-      {/* Alerts — interviews this week, overdue follow-ups */}
-      {(alerts.interviewsThisWeek > 0 || alerts.overdueFollowUps > 0) && (
-        <div className="mb-8 flex flex-wrap gap-3">
-          {alerts.interviewsThisWeek > 0 && (
-            <div className="flex items-center gap-2.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] rounded-xl px-4 py-2.5 text-xs font-bold">
-              <Calendar className="w-4 h-4" />
-              <span>
-                {alerts.interviewsThisWeek} interview{alerts.interviewsThisWeek === 1 ? '' : 's'}{' '}
-                this week
-              </span>
+          {/* Alerts — interviews this week, overdue follow-ups */}
+          {(alerts.interviewsThisWeek > 0 || alerts.overdueFollowUps > 0) && (
+            <div className="mb-8 flex flex-wrap gap-3">
+              {alerts.interviewsThisWeek > 0 && (
+                <div className="flex items-center gap-2.5 bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] rounded-xl px-4 py-2.5 text-xs font-bold">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {alerts.interviewsThisWeek} interview
+                    {alerts.interviewsThisWeek === 1 ? '' : 's'} this week
+                  </span>
+                </div>
+              )}
+              {alerts.overdueFollowUps > 0 && (
+                <div className="flex items-center gap-2.5 bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 text-[var(--destructive)] rounded-xl px-4 py-2.5 text-xs font-bold">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>
+                    {alerts.overdueFollowUps} overdue follow-up
+                    {alerts.overdueFollowUps === 1 ? '' : 's'}
+                  </span>
+                </div>
+              )}
             </div>
           )}
-          {alerts.overdueFollowUps > 0 && (
-            <div className="flex items-center gap-2.5 bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 text-[var(--destructive)] rounded-xl px-4 py-2.5 text-xs font-bold">
-              <AlertCircle className="w-4 h-4" />
-              <span>
-                {alerts.overdueFollowUps} overdue follow-up
-                {alerts.overdueFollowUps === 1 ? '' : 's'}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {!isGuest && (
-        <ApplicationTracker
-          documents={history.map((r) => ({
-            id: r.id,
-            label: jobs.find((j) => j.id === r.job_id)?.role || 'Saved resume',
-          }))}
-          onChange={async () => setJobs(await listJobApplications())}
-        />
-      )}
-
-      {!resumes.some((r) => masterResumeReadiness(r.source).ready) && (
-        <div className="mb-8 space-y-4 rounded-lg border border-[var(--border)] p-4">
-          <p>
-            Start by{' '}
-            <Link href="/resume-builder" className="font-semibold underline">
-              completing your master resume
-            </Link>
-            , then add your first job.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <ResumeImportButton />
-            <CreateResumeButton destination="builder" />
-          </div>
-        </div>
-      )}
-
-      {/* Job Applications section */}
-      <section id="history" aria-labelledby="history-heading">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 id="history-heading" className="text-base font-semibold">
-              History
-            </h2>
-            <Badge variant="secondary">
-              {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
-            </Badge>
-          </div>
-          <Input
-            aria-label="Search jobs"
-            placeholder="Search jobs…"
-            className="w-full sm:w-64"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Every job and its saved tailored resumes. Generating a draft does not apply for a job.
-        </p>
-        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
-          {(
-            [
-              { id: 'all', label: `All jobs (${jobs.length})` },
-              { id: 'applied', label: `Applied and later (${appliedJobs.length})` },
-              {
-                id: 'resumes',
-                label: `With resumes (${jobs.filter((job) => historyByJob.has(job.id)).length})`,
-              },
-            ] as const
-          ).map((filter) => (
-            <Button
-              key={filter.id}
-              variant={historyFilter === filter.id ? 'secondary' : 'ghost'}
-              type="button"
-              aria-pressed={historyFilter === filter.id}
-              onClick={() => setHistoryFilter(filter.id)}
-            >
-              {filter.label}
-            </Button>
-          ))}
-        </div>
-        {visibleJobs.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center">
-            <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-md bg-muted">
-              <Globe className="w-8 h-8 text-[var(--muted-foreground)]/30" />
-            </div>
-            <p className="text-sm font-bold text-foreground">
-              {jobs.length ? 'No jobs match this filter' : 'No job history yet'}
-            </p>
-            <p className="text-xs font-medium text-[var(--muted-foreground)] mt-2">
-              Add a job URL or paste its description to tailor your resume.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Role & company</TableHead>
-                  <TableHead>Stage</TableHead>
-                  <TableHead>Resumes</TableHead>
-                  <TableHead>Added</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Open job</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleJobs.map((job) => (
-                  <Fragment key={job.id}>
-                    <TableRow>
-                      <TableCell>
-                        <button
-                          type="button"
-                          className="text-left font-medium hover:underline"
-                          onClick={(event) => {
-                            detailsTrigger.current = event.currentTarget;
-                            setDetailsJobId(job.id);
-                          }}
-                        >
-                          {job.role || 'Untitled Role'}
-                        </button>
-                        <div className="text-sm text-muted-foreground">
-                          {job.company || 'Unknown Company'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <select
-                          aria-label={`Application status for ${job.role || 'Untitled Role'}`}
-                          value={job.status}
-                          onChange={(event) => handleStatusChange(job.id, event.target.value)}
-                          className="h-8 rounded-md border border-input bg-transparent px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {STATUS_OPTIONS.map((status) => (
-                            <option key={status} value={status}>
-                              {statusConfig[status]?.label ?? status}
-                            </option>
-                          ))}
-                        </select>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{historyByJob.get(job.id)?.length ?? 0}</Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {timeAgo(job.created_at)}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link
-                            href={`/tailor/${job.id}`}
-                            aria-label="Open tailor"
-                            prefetch={false}
-                          >
-                            <ArrowRight />
-                          </Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={5}>
-                        <JobResumeHistory
-                          role={job.role || 'Job description'}
-                          company={job.company}
-                          versions={historyByJob.get(job.id) ?? []}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  </Fragment>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </section>
-
-      <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
-        <summary className="cursor-pointer text-lg font-bold">Find more jobs</summary>
-        {/* Stats bar — only show when there are jobs */}
-        {/* Discover jobs section */}
-        <section className="mb-16">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Discover jobs</h2>
-              <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-100">
-                Search LinkedIn or paste any ATS job URL — Ashby, Greenhouse, Lever, and more
-              </p>
-            </div>
-          </div>
-          <JobDiscovery
-            resumes={resumes.map((r) => ({ id: r.id, name: r.name, source: r.source }))}
-            onQueueDiscoveredJob={handleQueueDiscoveredJob}
-          />
-          <div className="mt-4">
-            <JobSearchTips />
-          </div>
-        </section>
-
-        {browseContent}
-      </details>
-      <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
-        <summary className="cursor-pointer text-lg font-bold">
-          Application preparation & follow-ups
-        </summary>
-        <div className="pt-6">
-          <ApplicationCampaignTracker jobs={jobs} onOpenDetails={setDetailsJobId} />
 
           {!isGuest && (
-            <RecruiterReplyRoutingCard
-              address={serverReplyRoutingAddress}
-              events={serverRecruiterReplyEvents}
+            <ApplicationTracker
+              documents={history.map((r) => ({
+                id: r.id,
+                label: jobs.find((j) => j.id === r.job_id)?.role || 'Saved resume',
+              }))}
+              onChange={async () => setJobs(await listJobApplications())}
             />
           )}
 
-          <ApplyAgentCommandCenter
-            jobs={jobs}
-            resumeCount={resumes.length}
-            fitScores={fitScores}
-            queue={applicationQueue}
-            receipts={applicationReceipts}
-            packets={applicationPackets}
-            profileAnswers={profileAnswers}
-            discoveryAlerts={jobDiscoveryAlerts}
-            onQueueApplication={handleQueueApplication}
-            onQueueDiscoveryAlert={handleQueueDiscoveryAlert}
-            onQueueDiscoveryAlerts={handleQueueDiscoveryAlerts}
-            onQueueReadyApplications={handleQueueReadyApplications}
-            onRefreshReadiness={handleRefreshReadiness}
-            onUpdateQueueStatus={handleUpdateQueueStatus}
-            onBulkUpdateQueueStatus={handleBulkUpdateQueueStatus}
-            onRetryQueueEntry={handleRetryQueueEntry}
-            onRecordManualReceipt={handleRecordManualReceipt}
-            onRunBrowserCheck={handleRunBrowserCheck}
-            onRunBrowserCheckBatch={handleRunBrowserCheckBatch}
-            onRunGuardedSubmit={handleRunGuardedSubmit}
-            onRunGuardedSubmitBatch={handleRunGuardedSubmitBatch}
-            onSaveProfileAnswer={handleSaveProfileAnswer}
-            onDeleteProfileAnswer={handleDeleteProfileAnswer}
-          />
-        </div>
-      </details>
+          {!resumes.some((r) => masterResumeReadiness(r.source).ready) && (
+            <div className="mb-8 space-y-4 rounded-lg border border-[var(--border)] p-4">
+              <p>
+                Start by{' '}
+                <Link href="/resume-builder" className="font-semibold underline">
+                  completing your master resume
+                </Link>
+                , then add your first job.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <ResumeImportButton />
+                <CreateResumeButton destination="builder" />
+              </div>
+            </div>
+          )}
+
+          {isGuest && (
+            <Link href="/history" className="text-sm font-medium text-primary hover:underline">
+              View job history
+            </Link>
+          )}
+        </>
+      )}
+
+      {historyOnly && (
+        <section id="history" aria-labelledby="history-heading">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 id="history-heading" className="text-3xl font-bold tracking-tight">
+                History
+              </h1>
+              <Badge variant="secondary">
+                {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
+              </Badge>
+            </div>
+            <Input
+              aria-label="Search jobs"
+              placeholder="Search jobs…"
+              className="w-full sm:w-64"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Jobs and their saved tailored résumés.
+          </p>
+          <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
+            {(
+              [
+                { id: 'all', label: `All jobs (${jobs.length})` },
+                { id: 'applied', label: `Applied and later (${appliedJobs.length})` },
+                {
+                  id: 'resumes',
+                  label: `With resumes (${jobs.filter((job) => historyByJob.has(job.id)).length})`,
+                },
+              ] as const
+            ).map((filter) => (
+              <Button
+                key={filter.id}
+                variant={historyFilter === filter.id ? 'secondary' : 'ghost'}
+                type="button"
+                aria-pressed={historyFilter === filter.id}
+                onClick={() => setHistoryFilter(filter.id)}
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+          {visibleJobs.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-8 text-center">
+              <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-md bg-muted">
+                <Globe className="w-8 h-8 text-[var(--muted-foreground)]/30" />
+              </div>
+              <p className="text-sm font-bold text-foreground">
+                {jobs.length ? 'No jobs match this filter' : 'No job history yet'}
+              </p>
+              {jobs.length === 0 && (
+                <Button asChild variant="outline" className="mt-3">
+                  <Link href="/jobs">Go to Jobs</Link>
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role & company</TableHead>
+                    <TableHead>Stage</TableHead>
+                    <TableHead>Resumes</TableHead>
+                    <TableHead className="hidden sm:table-cell">Added</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Open job</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleJobs.map((job) => (
+                    <Fragment key={job.id}>
+                      <TableRow>
+                        <TableCell>
+                          <button
+                            type="button"
+                            className="text-left font-medium hover:underline"
+                            onClick={(event) => {
+                              detailsTrigger.current = event.currentTarget;
+                              setDetailsJobId(job.id);
+                            }}
+                          >
+                            {job.role || 'Untitled Role'}
+                          </button>
+                          <div className="text-sm text-muted-foreground">
+                            {job.company || 'Unknown Company'}
+                          </div>
+                          <div className="text-xs text-muted-foreground sm:hidden">
+                            {timeAgo(job.created_at)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <select
+                            aria-label={`Application status for ${job.role || 'Untitled Role'}`}
+                            value={job.status}
+                            onChange={(event) => handleStatusChange(job.id, event.target.value)}
+                            className="h-8 rounded-md border border-input bg-transparent px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {STATUS_OPTIONS.map((status) => (
+                              <option key={status} value={status}>
+                                {statusConfig[status]?.label ?? status}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{historyByJob.get(job.id)?.length ?? 0}</Badge>
+                        </TableCell>
+                        <TableCell className="hidden text-muted-foreground sm:table-cell">
+                          {timeAgo(job.created_at)}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link
+                              href={`/tailor/${job.id}`}
+                              aria-label="Open tailor"
+                              prefetch={false}
+                            >
+                              <ArrowRight />
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5}>
+                          <JobResumeHistory
+                            role={job.role || 'Job description'}
+                            company={job.company}
+                            versions={historyByJob.get(job.id) ?? []}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    </Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {!historyOnly && (
+        <>
+          <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
+            <summary className="cursor-pointer text-lg font-bold">Find more jobs</summary>
+            {/* Stats bar — only show when there are jobs */}
+            {/* Discover jobs section */}
+            <section className="mb-16">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/5 flex items-center justify-center text-[var(--primary)] shadow-sm">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Discover jobs</h2>
+                  <p className="text-xs font-medium text-[var(--muted-foreground)] opacity-100">
+                    Search LinkedIn or paste any ATS job URL — Ashby, Greenhouse, Lever, and more
+                  </p>
+                </div>
+              </div>
+              <JobDiscovery
+                resumes={resumes.map((r) => ({ id: r.id, name: r.name, source: r.source }))}
+                onQueueDiscoveredJob={handleQueueDiscoveredJob}
+              />
+              <div className="mt-4">
+                <JobSearchTips />
+              </div>
+            </section>
+
+            {browseContent}
+          </details>
+          <details className="mt-8 mb-8 border-t border-[var(--border)] pt-6">
+            <summary className="cursor-pointer text-lg font-bold">
+              Application preparation & follow-ups
+            </summary>
+            <div className="pt-6">
+              <ApplicationCampaignTracker jobs={jobs} onOpenDetails={setDetailsJobId} />
+
+              {!isGuest && (
+                <RecruiterReplyRoutingCard
+                  address={serverReplyRoutingAddress}
+                  events={serverRecruiterReplyEvents}
+                />
+              )}
+
+              <ApplyAgentCommandCenter
+                jobs={jobs}
+                resumeCount={resumes.length}
+                fitScores={fitScores}
+                queue={applicationQueue}
+                receipts={applicationReceipts}
+                packets={applicationPackets}
+                profileAnswers={profileAnswers}
+                discoveryAlerts={jobDiscoveryAlerts}
+                onQueueApplication={handleQueueApplication}
+                onQueueDiscoveryAlert={handleQueueDiscoveryAlert}
+                onQueueDiscoveryAlerts={handleQueueDiscoveryAlerts}
+                onQueueReadyApplications={handleQueueReadyApplications}
+                onRefreshReadiness={handleRefreshReadiness}
+                onUpdateQueueStatus={handleUpdateQueueStatus}
+                onBulkUpdateQueueStatus={handleBulkUpdateQueueStatus}
+                onRetryQueueEntry={handleRetryQueueEntry}
+                onRecordManualReceipt={handleRecordManualReceipt}
+                onRunBrowserCheck={handleRunBrowserCheck}
+                onRunBrowserCheckBatch={handleRunBrowserCheckBatch}
+                onRunGuardedSubmit={handleRunGuardedSubmit}
+                onRunGuardedSubmitBatch={handleRunGuardedSubmitBatch}
+                onSaveProfileAnswer={handleSaveProfileAnswer}
+                onDeleteProfileAnswer={handleDeleteProfileAnswer}
+              />
+            </div>
+          </details>
+        </>
+      )}
 
       {detailsInitial && activeDetailsJob && (
         <JobDetailsModal
