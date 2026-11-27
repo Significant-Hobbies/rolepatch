@@ -42,10 +42,11 @@ when a route is added or removed.
 | `/interview-prep/[jobId]` | STAR+R story generation. |
 | `/evidence` | Compatibility redirect to `/resume-builder#sources`; the existing evidence bank retains D1/localStorage persistence. |
 | `/stash` | Compatibility redirect to `/resume-builder#extra-experience`; the existing extra-content pool is preserved. |
-| `/jobs` | Job intake, status and exact tailored-resume History; search/observed feed and reviewed application preparation are contextual disclosures. |
+| `/jobs` | Job intake, application tracking and analytics. Job discovery and reviewed application preparation are available here. |
+| `/history` | Past job records and saved tailored résumé versions, with options to reopen or download the exact version. |
 | `/settings` | Account-menu settings: AI provider config and apply-agent readiness. |
 
-The primary app navigation contains **Resume Builder** and **Jobs** only.
+The primary app navigation contains **Resume Builder**, **Jobs**, and **History**.
 Settings lives in the account menu. The credit balance is informational; purchase
 links remain at an insufficient-credit/action cost state or explicit billing intent.
 Public marketing and tool routes remain available.

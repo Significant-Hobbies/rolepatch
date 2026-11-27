@@ -1,6 +1,20 @@
 # resume-tailor — PROJECT STATUS
 
-Last updated: 2026-11-26
+Last updated: 2026-11-27
+
+## Three-page workspace release — 27 November
+
+PR #57 shipped `acf8702` on Worker `7a0f7c7c-b67a-4402-8144-ae8403e54daf`
+at 100% traffic. Résumé Builder, Jobs, and History have separate URLs and
+visible primary navigation on desktop and phones. Old Jobs and Dashboard
+History bookmarks open the standalone History page. No migration was required.
+
+All eight production smoke checks and 38 release browser checks passed.
+Signed-in production checks confirmed the selected master résumé, tracker
+rows, History records, the old Jobs bookmark, and phone navigation. Saved
+résumé reopening and downloads passed against browser fixtures. The optional
+authenticated apply-agent smoke was outside this release check.
+[Production deployment](https://github.com/Significant-Hobbies/rolepatch/actions/runs/45955827418)
 
 ## Application desk production release — 26 November
 
