@@ -138,7 +138,7 @@ test('history filters applied jobs and reopens the exact old resume after reload
   await history.getByRole('textbox', { name: 'Search jobs' }).fill('');
 
   await expect(history).toBeVisible();
-  await history.getByRole('button', { name: 'Applied and later (1)' }).click();
+  await history.getByRole('button', { name: 'Applied jobs (1)' }).click();
   await expect(history.getByRole('button', { name: 'Agents Engineer', exact: true })).toBeVisible();
   await expect(history.getByRole('button', { name: 'Frontend Engineer', exact: true })).toHaveCount(
     0

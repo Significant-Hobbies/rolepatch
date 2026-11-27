@@ -1,9 +1,10 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { careerCredentialIssue } from '@/lib/career-data-privacy';
 import { localCorrectResume } from '@/lib/local-storage';
 import type { Resume } from '@/lib/types';
@@ -66,7 +67,7 @@ export function LocalResumeCorrection({ resume, index, onOpen, onRefresh }: Prop
       data-clarity-mask=""
       className="mt-2 grid w-full gap-3"
     >
-      <label className="grid gap-1 text-sm font-medium">
+      <Label className="grid gap-1 text-sm font-medium">
         Local resume name
         <Input
           value={draft.name}
@@ -75,8 +76,8 @@ export function LocalResumeCorrection({ resume, index, onOpen, onRefresh }: Prop
           spellCheck={false}
           onChange={(e) => setDraft({ ...draft, name: e.target.value })}
         />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
+      </Label>
+      <Label className="grid gap-1 text-sm font-medium">
         Local resume Markdown
         <Textarea
           rows={9}
@@ -86,7 +87,7 @@ export function LocalResumeCorrection({ resume, index, onOpen, onRefresh }: Prop
           className="font-mono"
           onChange={(e) => setDraft({ ...draft, source: e.target.value })}
         />
-      </label>
+      </Label>
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

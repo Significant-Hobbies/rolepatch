@@ -1,5 +1,6 @@
 'use client';
 
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
 import { AlertCircle, ArrowRight, Calendar, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -184,20 +185,21 @@ const jobsPages = {
     href: '/jobs',
     label: 'Tracker',
     title: 'Jobs',
-    description: 'Track your applications and see how they’re progressing.',
+    description: 'Track where you’ve applied. Add a job link to make a resume for that role.',
   },
   discover: {
     href: '/jobs/discover',
     label: 'Find jobs',
     title: 'Find jobs',
     description:
-      'Search LinkedIn, browse recent roles, or add a URL from Ashby, Greenhouse, Lever, or another job board.',
+      'Search LinkedIn or paste a job link from Ashby, Greenhouse, Lever, or another job board.',
   },
   queue: {
     href: '/jobs/queue',
     label: 'Apply queue',
     title: 'Apply queue',
-    description: 'Prepare applications for review and manage your follow-ups.',
+    description:
+      'Review your resume and answers for each job before you submit. Manage follow-ups here too.',
   },
 } as const;
 
@@ -824,13 +826,13 @@ export function Dashboard(props: DashboardProps) {
             />
           </div>
           <p className="mb-4 text-sm text-muted-foreground">
-            Jobs and their saved tailored résumés.
+            Review past jobs and download the tailored resumes you saved for them.
           </p>
           <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter history">
             {(
               [
                 { id: 'all', label: `All jobs (${jobs.length})` },
-                { id: 'applied', label: `Applied and later (${appliedJobs.length})` },
+                { id: 'applied', label: `Applied jobs (${appliedJobs.length})` },
                 {
                   id: 'resumes',
                   label: `With resumes (${jobs.filter((job) => historyByJob.has(job.id)).length})`,
@@ -881,7 +883,8 @@ export function Dashboard(props: DashboardProps) {
                     <Fragment key={job.id}>
                       <TableRow>
                         <TableCell>
-                          <button
+                          <Button
+                            variant="ghost"
                             type="button"
                             className="text-left font-medium hover:underline"
                             onClick={(event) => {
@@ -890,7 +893,7 @@ export function Dashboard(props: DashboardProps) {
                             }}
                           >
                             {job.role || 'Untitled Role'}
-                          </button>
+                          </Button>
                           <div className="text-sm text-muted-foreground">
                             {job.company || 'Unknown Company'}
                           </div>
@@ -899,7 +902,7 @@ export function Dashboard(props: DashboardProps) {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <select
+                          <NativeSelect
                             aria-label={`Application status for ${job.role || 'Untitled Role'}`}
                             value={job.status}
                             onChange={(event) => handleStatusChange(job.id, event.target.value)}
@@ -910,7 +913,7 @@ export function Dashboard(props: DashboardProps) {
                                 {statusConfig[status]?.label ?? status}
                               </option>
                             ))}
-                          </select>
+                          </NativeSelect>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">{historyByJob.get(job.id)?.length ?? 0}</Badge>

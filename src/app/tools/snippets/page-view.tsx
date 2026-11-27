@@ -1,3 +1,6 @@
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import type { useSnippetsPageSourceState } from './page-state';
 
@@ -18,29 +21,31 @@ export function SnippetsPageView(view: ReturnType<typeof useSnippetsPageSourceSt
         <p className="text-xs uppercase tracking-wide text-stone-500">
           {view.editingId ? 'Edit snippet' : 'New snippet'}
         </p>
-        <input
+        <Input
           value={view.title}
           onChange={(e) => view.setTitle(e.target.value)}
           placeholder="Title — e.g. 'Why I ship — generic open'"
           className="mt-3 w-full rounded-md border border-stone-300 px-3 py-2 text-sm"
         />
-        <textarea
+        <Textarea
           value={view.body}
           onChange={(e) => view.setBody(e.target.value)}
           placeholder="Body — the actual paragraph or bullet block."
           className="mt-3 h-40 w-full resize-y rounded-md border border-stone-300 p-3 font-mono text-xs"
         />
         <div className="mt-3 flex gap-2">
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={view.submit}
             disabled={!view.title.trim() || !view.body.trim()}
             className="rounded-md bg-stone-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-40"
           >
             {view.editingId ? 'Save edits' : 'Save snippet'}
-          </button>
+          </Button>
           {view.editingId && (
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => {
                 view.setEditingId(null);
@@ -50,7 +55,7 @@ export function SnippetsPageView(view: ReturnType<typeof useSnippetsPageSourceSt
               className="rounded-md border border-stone-300 px-4 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
             >
               Cancel
-            </button>
+            </Button>
           )}
         </div>
       </section>
@@ -64,27 +69,30 @@ export function SnippetsPageView(view: ReturnType<typeof useSnippetsPageSourceSt
               <header className="flex items-center justify-between gap-3">
                 <h2 className="text-sm font-medium text-stone-900">{s.title}</h2>
                 <div className="flex items-center gap-3 text-xs text-stone-500">
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={() => view.copy(s)}
                     className="hover:text-emerald-600"
                   >
                     {view.copiedId === s.id ? 'copied' : 'copy'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={() => view.edit(s)}
                     className="hover:text-stone-900"
                   >
                     edit
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={() => view.remove(s.id)}
                     className="hover:text-rose-600"
                   >
                     delete
-                  </button>
+                  </Button>
                 </div>
               </header>
               <pre className="mt-2 whitespace-pre-wrap font-mono text-xs text-stone-700">

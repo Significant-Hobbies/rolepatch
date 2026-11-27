@@ -1,9 +1,22 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@saas-maker/ui/components/dialog';
 
 import { useAuth } from '@/components/auth-provider';
+import { useWorkspaceTheme } from '@/components/workspace-theme';
 import { createStashEntry, deleteStashEntry, updateStashEntry } from '@/lib/actions/stash-actions';
 import {
   localCreateStashEntry,
@@ -41,6 +54,9 @@ interface StashListProps {
 export function StashList({ serverEntries }: StashListProps) {
   const router = useRouter();
   const { isGuest, isPending } = useAuth();
+  const theme = useWorkspaceTheme();
+  const addButton = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef<HTMLButtonElement>(null);
   const [entries, setEntries] = useState(serverEntries);
 
   useEffect(() => {
@@ -54,23 +70,14 @@ export function StashList({ serverEntries }: StashListProps) {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const close = useCallback(() => {
+  function close() {
     if (loading) return;
     setModalOpen(false);
     setEditing(null);
     setCategory(CATEGORIES[0]);
     setLabel('');
     setContent('');
-  }, [loading]);
-
-  useEffect(() => {
-    if (!modalOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [modalOpen, close]);
+  }
 
   function openNew() {
     setEditing(null);
@@ -144,12 +151,17 @@ export function StashList({ serverEntries }: StashListProps) {
   return (
     <>
       <div className="flex justify-end mb-6">
-        <button
-          onClick={openNew}
+        <Button
+          variant="default"
+          ref={addButton}
+          onClick={(event) => {
+            returnFocus.current = event.currentTarget;
+            openNew();
+          }}
           className="product-primary-action px-4 py-2 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground transition-colors"
         >
           + Add experience
-        </button>
+        </Button>
       </div>
 
       {entries.length === 0 ? (
@@ -191,11 +203,16 @@ export function StashList({ serverEntries }: StashListProps) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {items.map((entry) => (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="content"
                     type="button"
                     key={entry.id}
-                    onClick={() => openEdit(entry)}
-                    className="group text-left border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)]/50 hover:bg-[var(--card)]/50 transition-all cursor-pointer"
+                    onClick={(event) => {
+                      returnFocus.current = event.currentTarget;
+                      openEdit(entry);
+                    }}
+                    className="group text-left border border-[var(--border)] rounded-xl p-4 hover:border-[var(--accent)]/50 hover:bg-[var(--card)]/50 transition-all cursor-pointer flex-col items-start justify-start"
                   >
                     <h3 className="font-medium text-sm text-foreground group-hover:text-[var(--accent)] transition-colors">
                       {entry.label}
@@ -203,7 +220,7 @@ export function StashList({ serverEntries }: StashListProps) {
                     <p className="text-xs text-[var(--muted-foreground)] line-clamp-3 whitespace-pre-line mt-2 leading-relaxed">
                       {stripMarkdown(entry.content)}
                     </p>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </section>
@@ -211,111 +228,127 @@ export function StashList({ serverEntries }: StashListProps) {
         </div>
       )}
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 modal-backdrop" onClick={close} />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="experience-dialog-title"
-            className="relative bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 modal-content"
-          >
-            <h2 id="experience-dialog-title" className="text-lg font-semibold mb-5">
-              {editing ? 'Edit experience' : 'Add experience'}
-            </h2>
+      <Dialog
+        open={modalOpen}
+        onOpenChange={(next) => {
+          if (!next) close();
+        }}
+      >
+        <DialogContent
+          data-workspace-theme={theme?.resolved ?? 'light'}
+          className="rolepatch-workspace max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            (returnFocus.current?.isConnected ? returnFocus.current : addButton.current)?.focus();
+          }}
+          onEscapeKeyDown={(event) => {
+            if (loading) event.preventDefault();
+          }}
+          onInteractOutside={(event) => {
+            if (loading) event.preventDefault();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Edit experience' : 'Add experience'}</DialogTitle>
+            <DialogDescription>
+              Save a project or achievement to reuse in future applications.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <Label
+                htmlFor="experience-category"
+                className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
+              >
+                Category
+              </Label>
+              <NativeSelect
+                id="experience-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="input-base"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {CATEGORY_ICONS[cat]} {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+
+            <div>
+              <Label
+                htmlFor="experience-title"
+                className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
+              >
+                Title
+              </Label>
+              <Input
+                id="experience-title"
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="e.g. Customer onboarding redesign"
+                className="input-base"
+              />
+            </div>
+
+            <div>
+              <Label
+                htmlFor="experience-content"
+                className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
+              >
+                Your contribution and result
+              </Label>
+              <Textarea
+                id="experience-content"
+                rows={6}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Describe what you did and what changed as a result."
+                className="input-base resize-none"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
               <div>
-                <label
-                  htmlFor="experience-category"
-                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
-                >
-                  Category
-                </label>
-                <select
-                  id="experience-category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="input-base"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {CATEGORY_ICONS[cat]} {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="experience-title"
-                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
-                >
-                  Title
-                </label>
-                <input
-                  id="experience-title"
-                  type="text"
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  placeholder="e.g. Customer onboarding redesign"
-                  className="input-base"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="experience-content"
-                  className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 uppercase tracking-wider"
-                >
-                  Your contribution and result
-                </label>
-                <textarea
-                  id="experience-content"
-                  rows={6}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Describe what you did and what changed as a result."
-                  className="input-base resize-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <div>
-                  {editing && (
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      disabled={loading}
-                      className="px-3 py-2 text-xs font-medium rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
-                    >
-                      {loading ? 'Deleting...' : 'Delete'}
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
+                {editing && (
+                  <Button
+                    variant="ghost"
                     type="button"
-                    onClick={close}
+                    onClick={handleDelete}
                     disabled={loading}
-                    className="px-4 py-2 text-sm font-medium text-[var(--muted-foreground)] hover:text-foreground transition-colors"
+                    className="px-3 py-2 text-xs font-medium rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={loading || !label.trim() || !content.trim()}
-                    className="product-primary-action px-4 py-2 text-sm font-medium rounded-lg disabled:opacity-40 transition-colors"
-                  >
-                    {loading ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
+                    {loading ? 'Deleting...' : 'Delete'}
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={close}
+                  disabled={loading}
+                  className="px-4 py-2 text-sm font-medium text-[var(--muted-foreground)] hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  type="button"
+                  onClick={handleSave}
+                  disabled={loading || !label.trim() || !content.trim()}
+                  className="product-primary-action px-4 py-2 text-sm font-medium rounded-lg disabled:opacity-40 transition-colors"
+                >
+                  {loading ? 'Saving...' : 'Save'}
+                </Button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

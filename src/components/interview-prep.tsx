@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 
@@ -19,10 +20,12 @@ function StoryCard({ story, index }: { story: InterviewStory; index: number }) {
 
   return (
     <div className="bg-[var(--card)] border border-[var(--border)]/60 rounded-xl overflow-hidden">
-      <button
+      <Button
+        variant="ghost"
+        size="content"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="w-full px-5 py-4 flex items-start gap-4 text-left hover:bg-muted/10 transition-colors"
+        className="w-full px-5 py-4 flex items-start gap-4 text-left hover:bg-muted/10 transition-colors flex-col justify-start"
       >
         <span className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-xs font-black text-[var(--primary)] shrink-0 mt-0.5">
           {index + 1}
@@ -42,7 +45,7 @@ function StoryCard({ story, index }: { story: InterviewStory; index: number }) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
 
       {open && (
         <div className="px-5 pb-5 space-y-3 border-t border-[var(--border)]/30">
@@ -158,7 +161,8 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
           >
             Back to resume
           </Link>
-          <button
+          <Button
+            variant="default"
             onClick={handleGenerate}
             disabled={isPending || !resume}
             className="product-primary-action px-4 py-1.5 text-sm font-medium rounded-lg disabled:opacity-40 transition-colors"
@@ -168,7 +172,7 @@ export function InterviewPrep({ job, resume, existingStories }: InterviewPrepPro
               : stories.length > 0
                 ? 'Regenerate Stories'
                 : 'Generate Stories'}
-          </button>
+          </Button>
         </div>
       </div>
 

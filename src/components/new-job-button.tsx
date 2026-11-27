@@ -1,5 +1,7 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -13,8 +15,9 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
+} from '@saas-maker/ui/components/sheet';
 import { useAuth } from '@/components/auth-provider';
+import { useWorkspaceTheme } from '@/components/workspace-theme';
 import { createJobApplication } from '@/lib/actions/job-actions';
 import { scrapeJobUrlSafe } from '@/lib/actions/scrape-action';
 import { masterResumeReadiness } from '@/lib/master-resume';
@@ -25,6 +28,7 @@ interface NewJobButtonProps {
 }
 
 export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
+  const workspaceTheme = useWorkspaceTheme();
   const router = useRouter();
   const { isGuest, isPending: authPending } = useAuth();
   const [resumes, setResumes] = useState(serverResumes);
@@ -193,7 +197,8 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
       )}
 
       <SheetContent
-        className="overflow-y-auto"
+        data-workspace-theme={workspaceTheme?.resolved ?? 'light'}
+        className="rolepatch-workspace overflow-y-auto"
         onEscapeKeyDown={(event) => {
           if (loading) event.preventDefault();
         }}
@@ -210,10 +215,10 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {resumes.length > 0 && (
               <div>
-                <label htmlFor="new-job-resume" className="mb-2 block text-sm font-medium">
+                <Label htmlFor="new-job-resume" className="mb-2 block text-sm font-medium">
                   Master resume
-                </label>
-                <select
+                </Label>
+                <NativeSelect
                   id="new-job-resume"
                   value={resumeId}
                   onChange={(e) => setResumeId(e.target.value)}
@@ -225,14 +230,14 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
                       {r.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
             )}
 
             <div>
-              <label htmlFor="new-job-url" className="mb-2 block text-sm font-medium">
+              <Label htmlFor="new-job-url" className="mb-2 block text-sm font-medium">
                 {manualMode ? 'Job URL (optional)' : 'Job URL'}
-              </label>
+              </Label>
               <Input
                 id="new-job-url"
                 ref={inputRef}
@@ -260,9 +265,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
               <div className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="new-job-company" className="mb-2 block text-sm font-medium">
+                    <Label htmlFor="new-job-company" className="mb-2 block text-sm font-medium">
                       Company
-                    </label>
+                    </Label>
                     <Input
                       id="new-job-company"
                       value={manualCompany}
@@ -272,9 +277,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
                     />
                   </div>
                   <div>
-                    <label htmlFor="new-job-role" className="mb-2 block text-sm font-medium">
+                    <Label htmlFor="new-job-role" className="mb-2 block text-sm font-medium">
                       Role
-                    </label>
+                    </Label>
                     <Input
                       id="new-job-role"
                       value={manualRole}
@@ -285,9 +290,9 @@ export function NewJobButton({ resumes: serverResumes }: NewJobButtonProps) {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="new-job-jd" className="mb-2 block text-sm font-medium">
+                  <Label htmlFor="new-job-jd" className="mb-2 block text-sm font-medium">
                     Job description
-                  </label>
+                  </Label>
                   <Textarea
                     id="new-job-jd"
                     value={manualJd}

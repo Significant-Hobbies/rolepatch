@@ -1,5 +1,11 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
+import {
+  NativeSelect,
+  NativeDisclosure,
+  NativeSummary,
+} from '@saas-maker/ui/components/native-controls';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@saas-maker/ui/components/button';
@@ -28,14 +34,14 @@ export function CareerProfilePanel({ profileId }: { profileId: string }) {
       <p className="text-sm text-muted-foreground">
         Keep career facts, approved wording and source links for future applications.
       </p>
-      <label className="flex items-center gap-2 text-sm">
-        <input
+      <Label className="flex items-center gap-2 text-sm">
+        <Input
           type="checkbox"
           checked={sensitive}
           onChange={(e) => setSensitive(e.target.checked)}
         />
         Include sensitive answers
-      </label>
+      </Label>
       <ProfileDetails
         key={profileId + String(sensitive)}
         profileId={profileId}
@@ -199,9 +205,14 @@ function ProfileDetails(selection: ProfileSelection) {
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}{' '}
-          <button type="button" className="underline" onClick={() => setAfter(page.after)}>
+          <Button
+            variant="ghost"
+            type="button"
+            className="underline"
+            onClick={() => setAfter(page.after)}
+          >
             Reload
-          </button>
+          </Button>
         </p>
       )}
       {notice && (
@@ -300,7 +311,7 @@ function ProfileSettings({
             });
           }}
         >
-          <label className="text-sm">
+          <Label className="text-sm">
             Profile name
             <Input
               value={name}
@@ -308,7 +319,7 @@ function ProfileSettings({
               required
               onChange={(e) => setName(e.target.value)}
             />
-          </label>
+          </Label>
           <Button size="sm" disabled={pending}>
             Save name
           </Button>
@@ -343,7 +354,7 @@ function RecordFilters({ controls }: { controls: ProfileControls }) {
   return (
     <>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="min-w-0 basis-full space-y-1 text-sm font-medium sm:flex-1">
+        <Label className="min-w-0 basis-full space-y-1 text-sm font-medium sm:flex-1">
           Search records
           <Input
             type="search"
@@ -353,10 +364,10 @@ function RecordFilters({ controls }: { controls: ProfileControls }) {
               setQuery(e.target.value);
             }}
           />
-        </label>
-        <label className="space-y-1 text-sm font-medium">
+        </Label>
+        <Label className="space-y-1 text-sm font-medium">
           Type
-          <select
+          <NativeSelect
             className="block h-9 w-full rounded-md border border-input bg-background px-2"
             value={kind}
             onChange={(e) => {
@@ -370,14 +381,14 @@ function RecordFilters({ controls }: { controls: ProfileControls }) {
                 {k}
               </option>
             ))}
-          </select>
-        </label>
+          </NativeSelect>
+        </Label>
         <Button disabled={pending} onClick={() => setEditor('new')}>
           Add record
         </Button>
       </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input
+      <Label className="flex items-center gap-2 text-sm">
+        <Input
           type="checkbox"
           checked={archived}
           onChange={(e) => {
@@ -386,7 +397,7 @@ function RecordFilters({ controls }: { controls: ProfileControls }) {
           }}
         />
         Include archived records
-      </label>
+      </Label>
     </>
   );
 }
@@ -412,8 +423,8 @@ function CareerRecordRow({
       {(record.data.approved_wording || record.data.value) && (
         <p className="break-words text-sm">{record.data.approved_wording || record.data.value}</p>
       )}
-      <details className="text-sm">
-        <summary className="cursor-pointer">Record details</summary>
+      <NativeDisclosure className="text-sm">
+        <NativeSummary className="cursor-pointer">Record details</NativeSummary>
         <dl className="mt-2 space-y-2">
           <div>
             <dt className="text-muted-foreground">Record ID</dt>
@@ -428,7 +439,7 @@ function CareerRecordRow({
             </div>
           ))}
         </dl>
-      </details>
+      </NativeDisclosure>
       <div className="flex flex-wrap gap-2">
         {record.archived_at ? (
           <Button
@@ -492,9 +503,9 @@ function RecordImport({ controls }: { controls: ProfileControls }) {
   const { pending, sensitive, bulkResult, setError, mutate } = controls;
   const [bulk, setBulk] = useState('');
   return (
-    <details className="space-y-3 border-t pt-3 text-sm">
-      <summary className="cursor-pointer font-medium">Import career records</summary>
-      <label className="block space-y-1">
+    <NativeDisclosure className="space-y-3 border-t pt-3 text-sm">
+      <NativeSummary className="cursor-pointer font-medium">Import career records</NativeSummary>
+      <Label className="block space-y-1">
         Records as a JSON array
         <Textarea
           value={bulk}
@@ -503,7 +514,7 @@ function RecordImport({ controls }: { controls: ProfileControls }) {
             '[{"id":"role-1","kind":"employment","title":"Engineer","data":{"employer":"Example"}}]'
           }
         />
-      </label>
+      </Label>
       <Button
         variant="outline"
         size="sm"
@@ -529,6 +540,6 @@ function RecordImport({ controls }: { controls: ProfileControls }) {
           ))}
         </ul>
       )}
-    </details>
+    </NativeDisclosure>
   );
 }

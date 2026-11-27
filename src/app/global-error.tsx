@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { useEffect } from 'react';
 
 import { captureError } from '@/lib/foundry-monitoring';
@@ -43,7 +44,8 @@ export default function GlobalError({
             The app failed to load. Please reload the page — if it keeps happening, try again in a
             few minutes.
           </p>
-          <button
+          <Button
+            variant="ghost"
             onClick={retry}
             style={{
               padding: '0.5rem 1rem',
@@ -55,7 +57,7 @@ export default function GlobalError({
             }}
           >
             Reload
-          </button>
+          </Button>
           {error.digest ? (
             <p style={{ marginTop: 24, fontSize: '0.75rem', opacity: 0.4 }}>
               Reference: {error.digest}

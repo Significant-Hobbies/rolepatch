@@ -1,3 +1,6 @@
+import { Label } from '@saas-maker/ui/components/label';
+import { Textarea } from '@saas-maker/ui/components/textarea';
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import type { useKeywordsToolPageSourceState } from './page-state';
 
@@ -58,10 +61,10 @@ export function KeywordsToolPageView(view: ReturnType<typeof useKeywordsToolPage
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="space-y-2">
-          <label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
+          <Label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
             Your Resume
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             value={view.resumeText}
             onChange={(e) => {
               view.setResumeText(e.target.value);
@@ -72,10 +75,10 @@ export function KeywordsToolPageView(view: ReturnType<typeof useKeywordsToolPage
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
+          <Label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
             Job Description
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             value={view.jdText}
             onChange={(e) => {
               view.setJdText(e.target.value);
@@ -88,13 +91,14 @@ export function KeywordsToolPageView(view: ReturnType<typeof useKeywordsToolPage
       </div>
 
       <div className="flex justify-center mb-10">
-        <button
+        <Button
+          variant="ghost"
           onClick={view.handleAnalyze}
           disabled={!view.canAnalyze}
           className="bg-[var(--accent)] hover:bg-[var(--accent)]/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-3 rounded-xl text-lg transition-colors"
         >
           Analyze
-        </button>
+        </Button>
       </div>
 
       {view.result && (

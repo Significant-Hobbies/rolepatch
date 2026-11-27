@@ -1,3 +1,6 @@
+import { Label } from '@saas-maker/ui/components/label';
+import { Textarea } from '@saas-maker/ui/components/textarea';
+import { Button } from '@saas-maker/ui/components/button';
 import Link from 'next/link';
 import { ResumeDiffView } from '@/components/resume-diff-view';
 import type { useDiffToolPageSourceState } from './page-state';
@@ -49,10 +52,10 @@ export function DiffToolPageView(view: ReturnType<typeof useDiffToolPageSourceSt
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="space-y-2">
-          <label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
+          <Label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
             Version A
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             value={view.versionA}
             onChange={(e) => {
               view.setVersionA(e.target.value);
@@ -63,10 +66,10 @@ export function DiffToolPageView(view: ReturnType<typeof useDiffToolPageSourceSt
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
+          <Label className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest">
             Version B
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             value={view.versionB}
             onChange={(e) => {
               view.setVersionB(e.target.value);
@@ -79,13 +82,14 @@ export function DiffToolPageView(view: ReturnType<typeof useDiffToolPageSourceSt
       </div>
 
       <div className="flex justify-center mb-10">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => view.setCompared(true)}
           disabled={!view.canCompare}
           className="bg-[var(--accent)] hover:bg-[var(--accent)]/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-3 rounded-xl text-lg transition-colors"
         >
           Compare
-        </button>
+        </Button>
       </div>
 
       {view.compared && (
@@ -95,12 +99,13 @@ export function DiffToolPageView(view: ReturnType<typeof useDiffToolPageSourceSt
               <span className="text-[var(--accent)] font-bold">+{view.additions} additions</span>
               <span className="text-red-400 font-bold">-{view.removals} removals</span>
             </div>
-            <button
+            <Button
+              variant="ghost"
               onClick={() => view.setSplitView(!view.splitView)}
               className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--muted-foreground)] hover:text-foreground hover:border-[var(--muted-foreground)] transition-colors"
             >
               {view.splitView ? 'Inline view' : 'Split view'}
-            </button>
+            </Button>
           </div>
           <div className="overflow-auto">
             <ResumeDiffView

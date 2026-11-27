@@ -1,8 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@saas-maker/ui/components/label';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useId } from 'react';
 import { AchievementInputs } from '@/components/achievement-inputs';
 import type { MasterResumeData, MasterResumeEntry } from '@/lib/master-resume';
@@ -34,9 +35,9 @@ export function MasterResumeFields({
     };
     return (
       <div>
-        <label htmlFor={id} className="block text-sm font-semibold mb-2">
+        <Label htmlFor={id} className="block text-sm font-semibold mb-2">
           {label}
-        </label>
+        </Label>
         {multiline ? <Textarea {...props} rows={3} /> : <Input {...props} />}
         {help && (
           <p id={`${id}-help`} className="mt-2 text-sm text-[var(--muted-foreground)]">
@@ -83,9 +84,9 @@ export function MasterResumeFields({
               };
               return (
                 <div key={part}>
-                  <label htmlFor={id} className="block text-sm font-semibold mb-2">
+                  <Label htmlFor={id} className="block text-sm font-semibold mb-2">
                     {labelText} {index + 1}
-                  </label>
+                  </Label>
                   <Input {...props} />
                 </div>
               );

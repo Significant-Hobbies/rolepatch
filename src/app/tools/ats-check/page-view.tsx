@@ -1,3 +1,4 @@
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import Link from 'next/link';
 import type { useAtsCheckPageSourceState } from './page-state';
 
@@ -16,7 +17,7 @@ export function AtsCheckPageView(view: ReturnType<typeof useAtsCheckPageSourceSt
         applicant-tracking system will accept your resume.
       </p>
 
-      <textarea
+      <Textarea
         value={view.text}
         onChange={(e) => view.setText(e.target.value)}
         placeholder="# Jane Doe&#10;jane@example.com · +1 555 123 4567 · linkedin.com/in/jane&#10;&#10;## Experience&#10;### Staff Engineer · Acme · 2022 – present&#10;- Led migration cutting p99 latency by 40%..."

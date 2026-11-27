@@ -1,9 +1,13 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import {
   AlertCircle,
   BarChart3,
-  Bot,
   Check,
   CheckCircle2,
   ClipboardCheck,
@@ -1221,22 +1225,19 @@ export function ApplyAgentCommandCenter({
     <section className="mb-12 rounded-2xl border border-[var(--border)]/60 bg-[var(--card)] p-6 shadow-sm">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-accent">
-            <Bot className="h-3.5 w-3.5" />
-            Apply agent
-          </div>
           <h2 className="text-2xl font-bold">Review applications</h2>
-          <p className="mt-1 max-w-2xl text-xs font-medium text-[var(--muted-foreground)]">
-            Prepare your materials, check missing answers and review each application before
-            submitting.
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Review each application before submitting. See what’s ready and what still needs work.
           </p>
         </div>
-        <Link
-          href="/tools"
-          className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
-        >
-          Review tools
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <a href="#application-queue">Go to queued jobs</a>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href="/tools">Review tools</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -1315,22 +1316,24 @@ export function ApplyAgentCommandCenter({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <button
+        <Button
+          variant="default"
           type="button"
           onClick={() => void onQueueReadyApplications()}
           disabled={queueableReadyCount === 0}
           className="rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-bold text-[var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-40"
         >
           Queue ready jobs ({queueableReadyCount})
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => void onRefreshReadiness()}
           className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Check missing items
-        </button>
+        </Button>
       </div>
 
       {queue.length > 0 && (
@@ -1406,14 +1409,15 @@ export function ApplyAgentCommandCenter({
                   >
                     Tailor
                   </Link>
-                  <button
+                  <Button
+                    variant="default"
                     type="button"
                     onClick={() => void onQueueApplication(job.id)}
                     disabled={queuedJobIds.has(job.id)}
                     className="rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-bold text-[var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-40"
                   >
                     {queuedJobIds.has(job.id) ? 'Queued' : 'Queue'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -1431,7 +1435,8 @@ export function ApplyAgentCommandCenter({
               <span className="hidden text-[10px] font-black uppercase tracking-widest text-[var(--primary)] sm:inline">
                 Queue from saved searches
               </span>
-              <button
+              <Button
+                variant="default"
                 type="button"
                 onClick={() => void handleQueueDiscoveryAlertBatch()}
                 disabled={queueableDiscoveryAlerts.length === 0 || queueingDiscoveryAlerts}
@@ -1442,7 +1447,7 @@ export function ApplyAgentCommandCenter({
                   : queueableDiscoveryAlerts.length > 0
                     ? `Queue ${queueableDiscoveryAlerts.length} alerts`
                     : 'Alerts queued'}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="grid gap-3 p-4 md:grid-cols-2">
@@ -1481,14 +1486,15 @@ export function ApplyAgentCommandCenter({
                         Open
                       </a>
                     )}
-                    <button
+                    <Button
+                      variant="default"
                       type="button"
                       onClick={() => void onQueueDiscoveryAlert(alert)}
                       disabled={alreadyQueued}
                       className="rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-bold text-[var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-40"
                     >
                       {alreadyQueued ? 'Queued' : 'Add to queue'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -1604,31 +1610,35 @@ export function ApplyAgentCommandCenter({
                 <p className="mt-1 line-clamp-2 text-xs text-[var(--muted-foreground)]">
                   Blocked on {prompt.provider} for {prompt.jobLabel}.
                 </p>
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={() => handleAnswerGapPrompt(prompt.label)}
                   className="mt-3 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 transition-opacity hover:opacity-90"
                 >
                   Use prompt
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="mt-4 rounded-xl border border-[var(--border)]/60">
+      <div
+        id="application-queue"
+        tabIndex={-1}
+        className="mt-4 rounded-xl border border-[var(--border)]/60"
+      >
         <div className="flex items-center justify-between border-b border-[var(--border)]/60 px-4 py-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-            Application queue
-          </p>
+          <h3 className="text-sm font-semibold">Application queue</h3>
           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
             {plural(queue.length, 'entry', 'entries')}
           </span>
         </div>
         <div className="flex flex-wrap gap-2 border-b border-[var(--border)]/60 px-4 py-3">
           {queueFilters.map((filter) => (
-            <button
+            <Button
+              variant="default"
               key={filter.key}
               type="button"
               onClick={() => setQueueFilter(filter.key)}
@@ -1639,62 +1649,68 @@ export function ApplyAgentCommandCenter({
               }`}
             >
               {filter.label} {filter.count}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)]/60 px-4 py-3">
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={toggleVisibleQueueSelection}
             disabled={visibleQueueIds.length === 0}
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
           >
             {allVisibleSelected ? 'Clear visible' : 'Select visible'}
-          </button>
+          </Button>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
               {plural(selectedQueueCount, 'selected', 'selected')}
             </span>
-            <button
+            <Button
+              variant="secondary"
               type="button"
               onClick={() => void handleBulkStatus('ready_to_submit')}
               disabled={selectedQueueCount === 0 || checkingBatch}
               className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-bold text-accent transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               Mark ready
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="default"
               type="button"
               onClick={() => void handleBrowserCheckBatch()}
               disabled={selectedQueueCount === 0 || checkingBatch || submittingBatch}
               className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-3 py-2 text-xs font-bold text-[var(--primary)] transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               {checkingBatch ? 'Checking...' : 'Run checks'}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="default"
               type="button"
               onClick={() => void handleGuardedSubmitBatch()}
               disabled={selectedQueueCount === 0 || submittingBatch}
               className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-3 py-2 text-xs font-bold text-[var(--primary)] transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               {submittingBatch ? 'Running...' : 'Guarded submit'}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => void handleBulkStatus('skipped')}
               disabled={selectedQueueCount === 0}
               className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
             >
               Skip
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => void handleBulkStatus('failed')}
               disabled={selectedQueueCount === 0}
               className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-bold text-destructive transition-opacity hover:opacity-90 disabled:opacity-40"
             >
               Mark failed
-            </button>
+            </Button>
           </div>
         </div>
         {browserCheckError && (
@@ -1730,8 +1746,8 @@ export function ApplyAgentCommandCenter({
                 <div key={entry.id} className="px-4 py-4">
                   <div className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
                     <div className="min-w-0">
-                      <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
-                        <input
+                      <Label className="mb-2 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--muted-foreground)]">
+                        <Input
                           type="checkbox"
                           checked={selectedQueueIds.has(entry.id)}
                           onChange={() => toggleQueueSelection(entry.id)}
@@ -1739,7 +1755,7 @@ export function ApplyAgentCommandCenter({
                           aria-label={`Select ${job?.role || 'queued role'}`}
                         />
                         Select
-                      </label>
+                      </Label>
                       <p className="truncate text-sm font-bold text-foreground">
                         {job?.role || 'Queued role'}
                       </p>
@@ -1801,14 +1817,15 @@ export function ApplyAgentCommandCenter({
                                 {warning.missingCategories?.length ? (
                                   <div className="mt-2 flex flex-wrap gap-1.5">
                                     {warning.missingCategories.map((category) => (
-                                      <button
+                                      <Button
+                                        variant="ghost"
                                         key={category}
                                         type="button"
                                         onClick={() => handleRequiredSafetyAnswerPrompt(category)}
                                         className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-200 transition-opacity hover:opacity-90"
                                       >
                                         Add {profileCategoryLabel(category)}
-                                      </button>
+                                      </Button>
                                     ))}
                                   </div>
                                 ) : null}
@@ -1887,7 +1904,8 @@ export function ApplyAgentCommandCenter({
                             );
                           })()}
                           {receipt.fields.length > 0 && (
-                            <button
+                            <Button
+                              variant="ghost"
                               type="button"
                               onClick={() =>
                                 setReceiptDetailId(
@@ -1897,15 +1915,16 @@ export function ApplyAgentCommandCenter({
                               className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                             >
                               {receiptDetailId === receipt.id ? 'Hide fields' : 'Fields'}
-                            </button>
+                            </Button>
                           )}
-                          <button
+                          <Button
+                            variant="ghost"
                             type="button"
                             onClick={() => void handleCopyReceiptAudit(receipt, job)}
                             className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                           >
                             {copiedReceiptId === receipt.id ? 'Copied receipt' : 'Copy receipt'}
-                          </button>
+                          </Button>
                           {remediation && (
                             <p className="text-xs text-[var(--muted-foreground)]">
                               Next: {remediation.title} — {remediation.detail}
@@ -1971,7 +1990,7 @@ export function ApplyAgentCommandCenter({
                         </div>
                       )}
                     </div>
-                    <select
+                    <NativeSelect
                       value={entry.status}
                       onChange={(event) =>
                         void onUpdateQueueStatus(
@@ -1986,43 +2005,48 @@ export function ApplyAgentCommandCenter({
                           {queueStatusLabel(status)}
                         </option>
                       ))}
-                    </select>
+                    </NativeSelect>
                     <div className="flex items-center gap-2 md:justify-end">
                       {!queuedJobIds.has(entry.job_id) && (
-                        <button
+                        <Button
+                          variant="ghost"
                           type="button"
                           onClick={() => void onQueueApplication(entry.job_id)}
                           className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)]"
                         >
                           Queue
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
+                        variant="secondary"
                         type="button"
                         onClick={() => void onRecordManualReceipt(entry.id)}
                         disabled={entry.status === 'submitted'}
                         className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs font-bold text-accent transition-opacity hover:opacity-90 disabled:opacity-40"
                       >
                         Mark submitted
-                      </button>
+                      </Button>
                       {entry.status !== 'submitted' && (
-                        <button
+                        <Button
+                          variant="ghost"
                           type="button"
                           onClick={() => void onRetryQueueEntry(entry.id)}
                           className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                         >
                           Retry
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
+                        variant="ghost"
                         type="button"
                         onClick={() => void handleBrowserCheck(entry.id)}
                         disabled={entry.status === 'submitted' || checkingQueueId === entry.id}
                         className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
                       >
                         {checkingQueueId === entry.id ? 'Checking...' : 'Browser check'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="default"
                         type="button"
                         onClick={() => void handleGuardedSubmit(entry.id)}
                         disabled={
@@ -2033,8 +2057,9 @@ export function ApplyAgentCommandCenter({
                         className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-3 py-2 text-xs font-bold text-[var(--primary)] transition-opacity hover:opacity-90 disabled:opacity-40"
                       >
                         {submittingQueueId === entry.id ? 'Running...' : 'Guarded submit'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
                         type="button"
                         onClick={() =>
                           setPacketJobId(packetJobId === entry.job_id ? null : entry.job_id)
@@ -2042,7 +2067,7 @@ export function ApplyAgentCommandCenter({
                         className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] hover:bg-muted hover:text-foreground"
                       >
                         Packet
-                      </button>
+                      </Button>
                     </div>
                   </div>
                   {packetJobId === entry.job_id && job && (
@@ -2134,7 +2159,8 @@ export function ApplyAgentCommandCenter({
                               Optional proof points
                             </p>
                             <div className="flex items-center gap-2">
-                              <button
+                              <Button
+                                variant="ghost"
                                 type="button"
                                 onClick={() => void handleCopyProofPacket(packet, job)}
                                 className="text-[11px] font-bold text-[var(--primary)] hover:underline"
@@ -2142,7 +2168,7 @@ export function ApplyAgentCommandCenter({
                                 {copiedProofPacketJobId === packet.job_id
                                   ? 'Copied proof'
                                   : 'Copy proof packet'}
-                              </button>
+                              </Button>
                               <Link
                                 href="/proof"
                                 className="text-[11px] font-bold text-[var(--primary)] hover:underline"
@@ -2235,7 +2261,7 @@ export function ApplyAgentCommandCenter({
             </span>
           </div>
           <div className="grid gap-3 md:grid-cols-[160px_1fr]">
-            <select
+            <NativeSelect
               value={profileCategory}
               onChange={(event) => setProfileCategory(event.target.value as ProfileAnswerCategory)}
               className="h-10 rounded-lg border border-[var(--border)] bg-background px-3 text-xs font-bold text-foreground"
@@ -2245,41 +2271,43 @@ export function ApplyAgentCommandCenter({
                   {category.label}
                 </option>
               ))}
-            </select>
-            <input
+            </NativeSelect>
+            <Input
               value={profileLabel}
               onChange={(event) => setProfileLabel(event.target.value)}
               placeholder="ATS question label"
               className="input-base"
             />
           </div>
-          <textarea
+          <Textarea
             value={profileAnswer}
             onChange={(event) => setProfileAnswer(event.target.value)}
             placeholder="Answer exactly how it should be used in applications"
             className="input-base mt-3 min-h-20"
           />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <label className="inline-flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-              <input
+            <Label className="inline-flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+              <Input
                 type="checkbox"
                 checked={profileSensitive}
                 onChange={(event) => setProfileSensitive(event.target.checked)}
                 className="accent-[var(--primary)]"
               />
               Require review before use
-            </label>
+            </Label>
             <div className="flex items-center gap-2">
               {editingProfileAnswerId && (
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={handleCancelProfileEdit}
                   className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                 >
                   Cancel edit
-                </button>
+                </Button>
               )}
-              <button
+              <Button
+                variant="default"
                 type="submit"
                 disabled={savingProfile || !profileLabel.trim() || !profileAnswer.trim()}
                 className="rounded-lg bg-[var(--primary)] px-3 py-2 text-xs font-bold text-[var(--primary-foreground)] transition-opacity hover:opacity-90 disabled:opacity-40"
@@ -2289,7 +2317,7 @@ export function ApplyAgentCommandCenter({
                   : editingProfileAnswerId
                     ? 'Update answer'
                     : 'Save answer'}
-              </button>
+              </Button>
             </div>
           </div>
         </form>
@@ -2309,13 +2337,14 @@ export function ApplyAgentCommandCenter({
                       : 'Add companies that should never be submitted by guarded workflows.'}
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={handleExcludedCompaniesPrompt}
                   className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {exclusionProfileAnswer ? 'Edit exclusions' : 'Add exclusions'}
-                </button>
+                </Button>
               </div>
               {excludedCompanyTerms.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
@@ -2337,13 +2366,14 @@ export function ApplyAgentCommandCenter({
                       Guarded submit blocks roles below {minimumFitScore}.
                     </p>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={handleMinimumFitPrompt}
                     className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {minimumFitProfileAnswer ? 'Edit threshold' : 'Set threshold'}
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="border-t border-[var(--border)]/50 pt-3">
@@ -2355,13 +2385,14 @@ export function ApplyAgentCommandCenter({
                       {remainingGuardedSubmitsToday} remaining.
                     </p>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={handleDailyGuardedCapPrompt}
                     className="shrink-0 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted-foreground)] transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {dailyGuardedCapProfileAnswer ? 'Edit cap' : 'Set cap'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -2434,20 +2465,22 @@ export function ApplyAgentCommandCenter({
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      <button
+                      <Button
+                        variant="ghost"
                         type="button"
                         onClick={() => handleEditProfileAnswer(answer)}
                         className="text-xs font-bold text-[var(--muted-foreground)] hover:text-foreground"
                       >
                         Edit
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
                         type="button"
                         onClick={() => void onDeleteProfileAnswer(answer.id)}
                         className="text-xs font-bold text-[var(--muted-foreground)] hover:text-destructive"
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

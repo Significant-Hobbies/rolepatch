@@ -1,9 +1,11 @@
 'use client';
 
+import { NativeDisclosure, NativeSummary } from '@saas-maker/ui/components/native-controls';
+import { Label } from '@saas-maker/ui/components/label';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useId, useState } from 'react';
 import { appendMasterSection, masterResumeReadiness, prependMasterName } from '@/lib/master-resume';
 
@@ -25,13 +27,13 @@ export function MasterResumeGuide({
     (!readiness.projects && projects.trim()) ||
     (!readiness.education && education.trim());
   return (
-    <details
+    <NativeDisclosure
       open={!readiness.ready}
       className="border-b border-[var(--border)] bg-[var(--card)] px-4 py-3"
     >
-      <summary className="cursor-pointer text-sm font-semibold">
+      <NativeSummary className="cursor-pointer text-sm font-semibold">
         Master resume · {readiness.ready ? 'ready for a job' : 'add missing details'}
-      </summary>
+      </NativeSummary>
       <div className="mt-3 max-h-64 overflow-y-auto space-y-3 pr-2 text-sm">
         <p className="text-[var(--muted-foreground)]">
           Keep every relevant role, achievement, project and skill here. These are your approved
@@ -47,9 +49,9 @@ export function MasterResumeGuide({
         </ul>
         {!readiness.hasName && (
           <div>
-            <label htmlFor={`${prefix}-name`} className="block font-semibold mb-2">
+            <Label htmlFor={`${prefix}-name`} className="block font-semibold mb-2">
               Full name
-            </label>
+            </Label>
             <Input
               id={`${prefix}-name`}
               value={name}
@@ -60,9 +62,9 @@ export function MasterResumeGuide({
         {!readiness.projects && (
           <>
             <div>
-              <label htmlFor={`${prefix}-project-name`} className="block font-semibold mb-2">
+              <Label htmlFor={`${prefix}-project-name`} className="block font-semibold mb-2">
                 Project or product name
-              </label>
+              </Label>
               <Input
                 id={`${prefix}-project-name`}
                 value={projectName}
@@ -70,9 +72,9 @@ export function MasterResumeGuide({
               />
             </div>
             <div>
-              <label htmlFor={`${prefix}-projects`} className="block font-semibold mb-2">
+              <Label htmlFor={`${prefix}-projects`} className="block font-semibold mb-2">
                 Project achievements — one point per line
-              </label>
+              </Label>
               <Textarea
                 id={`${prefix}-projects`}
                 rows={3}
@@ -84,9 +86,9 @@ export function MasterResumeGuide({
         )}
         {!readiness.education && (
           <div>
-            <label htmlFor={`${prefix}-education`} className="block font-semibold mb-2">
+            <Label htmlFor={`${prefix}-education`} className="block font-semibold mb-2">
               Education
-            </label>
+            </Label>
             <Textarea
               id={`${prefix}-education`}
               rows={3}
@@ -139,6 +141,6 @@ export function MasterResumeGuide({
           </p>
         )}
       </div>
-    </details>
+    </NativeDisclosure>
   );
 }

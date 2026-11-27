@@ -1,5 +1,8 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Input } from '@saas-maker/ui/components/input';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 
@@ -128,13 +131,14 @@ export function SkillsRoadmapPanel({ job, resume }: SkillsRoadmapProps) {
             A prioritized plan of what to learn to close the gap for this role.
           </p>
         </div>
-        <button
+        <Button
+          variant="ghost"
           onClick={handleGenerate}
           disabled={isPending || !resume}
           className="px-3 py-1.5 text-sm font-medium rounded-lg border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-40 transition-colors shrink-0"
         >
           {isPending ? 'Planning...' : roadmap ? 'Regenerate' : 'Plan my learning'}
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -205,15 +209,15 @@ export function SkillsRoadmapPanel({ job, resume }: SkillsRoadmapProps) {
                         } p-4`}
                       >
                         <div className="flex items-start gap-3">
-                          <label className="flex items-center pt-0.5 cursor-pointer select-none">
-                            <input
+                          <Label className="flex items-center pt-0.5 cursor-pointer select-none">
+                            <Input
                               type="checkbox"
                               checked={done}
                               onChange={() => toggleDone(item.skill)}
                               className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
                               aria-label={`Mark ${item.skill} as done`}
                             />
-                          </label>
+                          </Label>
                           <div className="flex-1 min-w-0 space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
                               <h4

@@ -1,5 +1,11 @@
 'use client';
 
+import { Label } from '@saas-maker/ui/components/label';
+import {
+  NativeSelect,
+  NativeDisclosure,
+  NativeSummary,
+} from '@saas-maker/ui/components/native-controls';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@saas-maker/ui/components/button';
 import { Input } from '@saas-maker/ui/components/input';
@@ -165,69 +171,69 @@ function Studio({ profileId }: { profileId: string }) {
           );
         }}
       >
-        <label className={fieldClass}>
+        <Label className={fieldClass}>
           Job description{' '}
           <Textarea name="jd_text" placeholder="Optional for a general resume" rows={3} />
-        </label>
+        </Label>
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className={fieldClass}>
+          <Label className={fieldClass}>
             Wording
-            <select className={selectClass} name="mode">
+            <NativeSelect className={selectClass} name="mode">
               <option value="fixed_wording">Keep approved wording · free</option>
               <option value="grounded_rewrite">
                 Rewrite from my contributions · up to 1 credit
               </option>
-            </select>
-          </label>
-          <label className={fieldClass}>
+            </NativeSelect>
+          </Label>
+          <Label className={fieldClass}>
             Target length
-            <select className={selectClass} name="target_pages">
+            <NativeSelect className={selectClass} name="target_pages">
               <option value="1">One page</option>
               <option value="2">Two pages</option>
-            </select>
-          </label>
+            </NativeSelect>
+          </Label>
         </div>
-        <details>
-          <summary className="cursor-pointer text-sm font-medium">
+        <NativeDisclosure>
+          <NativeSummary className="cursor-pointer text-sm font-medium">
             Job, emphasis and record selection
-          </summary>
+          </NativeSummary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <label className={fieldClass}>
+            <Label className={fieldClass}>
               Job URL
               <Input name="job_url" type="url" />
-            </label>
-            <label className={fieldClass}>
+            </Label>
+            <Label className={fieldClass}>
               Application ID
               <Input name="application_id" />
-            </label>
-            <label className={fieldClass}>
+            </Label>
+            <Label className={fieldClass}>
               Emphasis
               <Input name="emphasis" />
-            </label>
-            <label className={fieldClass}>
+            </Label>
+            <Label className={fieldClass}>
               Pin record IDs
               <Input name="pin_ids" placeholder="Comma-separated IDs" />
-            </label>
-            <label className={fieldClass}>
+            </Label>
+            <Label className={fieldClass}>
               Exclude record IDs
               <Input name="exclude_ids" placeholder="Comma-separated IDs" />
-            </label>
+            </Label>
           </div>
-        </details>
+        </NativeDisclosure>
         <Button type="submit" disabled={pending}>
           Generate draft
         </Button>
       </form>
       {draft && (
         <div className="space-y-3 border-t pt-4">
-          <label className={fieldClass}>
+          <Label className={fieldClass}>
             Resume Markdown
             <Textarea
               className="min-h-48 font-mono text-sm"
               value={markdown}
               onChange={(e) => setMarkdown(e.target.value)}
             />
-          </label>
+          </Label>
           <p className="text-sm text-muted-foreground">
             {draft.saved
               ? `Revision ${draft.revision} · ${draft.approved ? 'Approved' : 'Draft'}`
@@ -238,8 +244,8 @@ function Studio({ profileId }: { profileId: string }) {
               {w}
             </p>
           ))}
-          <details>
-            <summary className="cursor-pointer text-sm">Sources and changes</summary>
+          <NativeDisclosure>
+            <NativeSummary className="cursor-pointer text-sm">Sources and changes</NativeSummary>
             <ul className="mt-2 space-y-1 break-words text-xs">
               {draft.changes.map((c) => (
                 <li key={c.record_id}>
@@ -247,7 +253,7 @@ function Studio({ profileId }: { profileId: string }) {
                 </li>
               ))}
             </ul>
-          </details>
+          </NativeDisclosure>
           <div className="flex flex-wrap gap-2">
             <Button
               disabled={pending || draft.archived}
@@ -295,14 +301,14 @@ function Studio({ profileId }: { profileId: string }) {
       <div className="space-y-2 border-t pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h4 className="font-medium">Saved versions</h4>
-          <label className="flex items-center gap-2 text-sm">
-            <input
+          <Label className="flex items-center gap-2 text-sm">
+            <Input
               type="checkbox"
               checked={archived}
               onChange={(e) => setArchived(e.target.checked)}
             />
             Include archived
-          </label>
+          </Label>
         </div>
         {history.length === 0 ? (
           <p className="text-sm text-muted-foreground">No saved versions for this profile.</p>
@@ -310,7 +316,8 @@ function Studio({ profileId }: { profileId: string }) {
           <ul className="divide-y">
             {history.map((row) => (
               <li key={row.id}>
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   disabled={pending}
                   className="flex w-full flex-wrap justify-between gap-2 py-2 text-left text-sm"
@@ -331,7 +338,7 @@ function Studio({ profileId }: { profileId: string }) {
                   <span className="text-muted-foreground">
                     {new Date(row.created_at * 1000).toLocaleString()}
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

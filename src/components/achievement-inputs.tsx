@@ -2,9 +2,9 @@
 
 import { useId } from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 
 export function AchievementInputs({
   value,

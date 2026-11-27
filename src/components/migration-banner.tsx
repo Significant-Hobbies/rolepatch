@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth-provider';
@@ -123,12 +124,13 @@ export function MigrationBanner() {
     return (
       <div className="mb-4 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p className="text-sm text-foreground">{parts.join(', ')} moved to your account.</p>
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setAutoResult(null)}
           className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] transition-colors shrink-0"
         >
           Dismiss
-        </button>
+        </Button>
       </div>
     );
   }
@@ -197,20 +199,22 @@ export function MigrationBanner() {
         )}
       </div>
       <div className="flex gap-2 shrink-0">
-        <button
+        <Button
+          variant="ghost"
           onClick={handleImport}
           disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-black hover:bg-neutral-200 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Importing...' : error || localStatus ? 'Retry' : 'Import'}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={handleDismiss}
           disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-50 transition-colors"
         >
           Dismiss
-        </button>
+        </Button>
       </div>
     </div>
   );

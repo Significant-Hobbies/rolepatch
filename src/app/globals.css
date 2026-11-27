@@ -16,7 +16,7 @@
 @source "../components/pricing-cards-view.tsx";
 @source "../components/saasmaker-feedback.tsx";
 @source "../components/saasmaker-feedback-widget.tsx";
-@source "../components/ui/button.tsx";
+@source "../../node_modules/@saas-maker/ui/src/lib/native-primitives.ts";
 
 :root {
   color-scheme: dark;

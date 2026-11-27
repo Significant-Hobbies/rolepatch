@@ -1,5 +1,7 @@
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@saas-maker/ui/components/label';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 
 export type TrackerRow = Record<string, string | number | null>;
 export interface TrackerField {
@@ -64,20 +66,20 @@ export function TrackerFields({ fields, record }: { fields: TrackerField[]; reco
           required: field.required,
         };
         return (
-          <label
+          <Label
             key={field.key}
             className={`grid min-w-0 gap-1.5 text-sm font-medium ${field.type === 'long' ? 'sm:col-span-2' : ''}`}
           >
             {field.label}
             {field.choices ? (
-              <select {...props} className={choiceClass}>
+              <NativeSelect {...props} className={choiceClass}>
                 <option value="">Select…</option>
                 {field.choices.map((choice) => (
                   <option key={choice} value={choice}>
                     {displayChoice(choice)}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             ) : field.type === 'long' ? (
               <Textarea {...props} rows={3} />
             ) : (
@@ -88,7 +90,7 @@ export function TrackerFields({ fields, record }: { fields: TrackerField[]; reco
                 step={field.type === 'number' ? 'any' : undefined}
               />
             )}
-          </label>
+          </Label>
         );
       })}
     </div>

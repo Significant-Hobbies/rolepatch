@@ -1,14 +1,15 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import styles from './saasmaker-feedback.module.css';
 
 function FeedbackPlaceholder() {
   return (
-    <button disabled className={styles.trigger}>
+    <Button variant="ghost" disabled className={styles.trigger}>
       Send feedback
-    </button>
+    </Button>
   );
 }
 

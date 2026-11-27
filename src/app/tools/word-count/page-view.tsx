@@ -1,3 +1,4 @@
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import Link from 'next/link';
 import type { useWordCountPageSourceState } from './page-state';
 
@@ -34,7 +35,7 @@ export function WordCountPageView(view: ReturnType<typeof useWordCountPageSource
         counts and an estimated recruiter-skim time. Local only; no network call.
       </p>
 
-      <textarea
+      <Textarea
         value={view.text}
         onChange={(e) => view.setText(e.target.value)}
         placeholder="Paste text here…"

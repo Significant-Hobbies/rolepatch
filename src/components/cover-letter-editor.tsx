@@ -1,5 +1,9 @@
 'use client';
 
+import { ToggleGroup, ToggleGroupItem } from '@saas-maker/ui/components/toggle-group';
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 
@@ -243,7 +247,8 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
 
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-3">
-        <button
+        <Button
+          variant="ghost"
           onClick={handleGenerate}
           disabled={isLoading}
           className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40"
@@ -253,10 +258,11 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
           }}
         >
           {generating ? 'Generating...' : content ? 'Regenerate' : 'Generate Cover Letter'}
-        </button>
+        </Button>
 
         {content && (
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setShowFeedback((v) => !v)}
             disabled={isLoading}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 border"
@@ -267,11 +273,12 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
             }}
           >
             {showFeedback ? 'Cancel feedback' : 'Regenerate with feedback'}
-          </button>
+          </Button>
         )}
 
         {content && letterId && (
-          <button
+          <Button
+            variant="ghost"
             onClick={handleSave}
             disabled={isLoading}
             className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40"
@@ -282,7 +289,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
             }}
           >
             {saving ? 'Saving...' : 'Save'}
-          </button>
+          </Button>
         )}
 
         {saveMessage && <span className="text-sm text-[var(--accent)]">{saveMessage}</span>}
@@ -298,13 +305,13 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
       {/* Feedback textarea */}
       {showFeedback && (
         <div className="space-y-2">
-          <label
+          <Label
             htmlFor="cover-letter-feedback"
             className="block text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide"
           >
             What should change?
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             id="cover-letter-feedback"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
@@ -317,7 +324,8 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
             }}
           />
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="ghost"
               onClick={handleRegenerateWithFeedback}
               disabled={isLoading || !feedback.trim()}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40"
@@ -327,7 +335,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
               }}
             >
               {generating ? 'Regenerating...' : 'Apply feedback'}
-            </button>
+            </Button>
             <span className="text-xs text-[var(--muted-foreground)]">
               Uses your current draft as context.
             </span>
@@ -337,7 +345,7 @@ export function CoverLetterEditor({ job, serverResume, existingLetter }: CoverLe
 
       {/* Cover letter textarea */}
       {content ? (
-        <textarea
+        <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="w-full h-[60vh] px-6 py-5 rounded-lg border bg-transparent text-base leading-relaxed font-serif resize-none focus:outline-none focus:ring-2"
@@ -381,36 +389,24 @@ function SegmentedGroup<T extends string>({
       <span className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">
         {label}
       </span>
-      <div
-        role="radiogroup"
+      <ToggleGroup
+        type="single"
+        value={value}
         aria-label={label}
-        className="inline-flex rounded-lg border overflow-hidden"
-        style={{ borderColor: 'var(--border)' }}
+        disabled={disabled}
+        className="flex flex-wrap border"
+        onValueChange={(choice) => {
+          const option = options.find((opt) => opt.value === choice);
+          if (option) onChange(option.value);
+        }}
       >
-        {options.map((opt) => {
-          const active = opt.value === value;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(opt.value)}
-              disabled={disabled}
-              className="px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-inset"
-              style={{
-                background: active ? 'var(--secondary)' : 'transparent',
-                color: active ? 'var(--secondary-foreground)' : 'var(--muted-foreground)',
-              }}
-            >
-              {opt.label}
-              {opt.hint && (
-                <span className="block sm:inline sm:ml-1 text-[10px] opacity-70">{opt.hint}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        {options.map((opt) => (
+          <ToggleGroupItem key={opt.value} value={opt.value} className="px-2 text-xs sm:px-3">
+            {opt.label}
+            {opt.hint && <span className="text-xs text-muted-foreground">{opt.hint}</span>}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
     </div>
   );
 }

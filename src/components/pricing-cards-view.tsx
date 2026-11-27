@@ -1,3 +1,4 @@
+import { Button } from '@saas-maker/ui/components/button';
 import type { usePricingCardsSourceState } from './pricing-cards';
 
 const TOKEN_PACKS = [
@@ -100,14 +101,16 @@ export function PricingCardsView(view: ReturnType<typeof usePricingCardsSourceSt
             <div className="mt-6 flex-1" />
 
             {view.isGuest ? (
-              <button
+              <Button
+                variant="ghost"
                 onClick={view.handleGuestSignIn}
                 className="w-full min-h-[44px] py-2.5 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--muted-foreground)] hover:text-foreground transition-colors"
               >
                 Sign in to purchase
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => view.handleBuy(pack.id)}
                 disabled={view.loadingPack !== null}
                 className={`w-full min-h-[44px] py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 ${
@@ -117,7 +120,7 @@ export function PricingCardsView(view: ReturnType<typeof usePricingCardsSourceSt
                 }`}
               >
                 {view.loadingPack === pack.id ? 'Redirecting...' : 'Buy'}
-              </button>
+              </Button>
             )}
           </div>
         ))}

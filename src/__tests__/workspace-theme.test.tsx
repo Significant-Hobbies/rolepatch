@@ -1,9 +1,9 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { WorkspaceThemeProvider } from '@/components/workspace-theme';
+import { WorkspaceThemeProvider, useWorkspaceTheme } from '@/components/workspace-theme';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@saas-maker/ui/components/sheet';
 
 let mediaListener: (() => void) | undefined;
 let mediaDark = false;
@@ -27,16 +27,22 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+function FormSheet() {
+  const theme = useWorkspaceTheme();
+  return (
+    <Sheet>
+      <SheetTrigger>Open form</SheetTrigger>
+      <SheetContent data-workspace-theme={theme?.resolved}>
+        <SheetTitle>Resume details</SheetTitle>
+      </SheetContent>
+    </Sheet>
+  );
+}
 function fixture() {
   return (
     <WorkspaceThemeProvider>
       <ThemeToggle />
-      <Sheet>
-        <SheetTrigger>Open form</SheetTrigger>
-        <SheetContent>
-          <SheetTitle>Resume details</SheetTitle>
-        </SheetContent>
-      </Sheet>
+      <FormSheet />
     </WorkspaceThemeProvider>
   );
 }

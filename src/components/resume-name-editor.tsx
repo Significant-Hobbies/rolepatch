@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Input } from '@saas-maker/ui/components/input';
 import { useState } from 'react';
 import { renameResume } from '@/lib/actions/resume-actions';
 import { localRenameResume } from '@/lib/local-storage';
@@ -43,16 +45,17 @@ export function ResumeNameEditor({ resumeId, name, isGuest, onSaved, onError }: 
     }
   }
   return draft === null ? (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={() => setDraft(name)}
       className="text-sm font-medium text-gray-700 truncate hover:text-blue-600 transition-colors"
       title="Click to rename"
     >
       {name}
-    </button>
+    </Button>
   ) : (
-    <input
+    <Input
       aria-label="Resume name"
       ref={(el) => el?.focus()}
       value={draft}

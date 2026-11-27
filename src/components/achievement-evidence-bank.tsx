@@ -1,5 +1,10 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Label } from '@saas-maker/ui/components/label';
+import { NativeSelect } from '@saas-maker/ui/components/native-controls';
+import { Input } from '@saas-maker/ui/components/input';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { Clipboard, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -199,14 +204,15 @@ export function AchievementEvidenceBank({
             </p>
           )}
         </div>
-        <button
+        <Button
+          variant="default"
           type="button"
           onClick={openNew}
           className="product-primary-action inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-[var(--border)] px-3 text-sm font-medium"
         >
           <Plus className="h-4 w-4" />
           Add achievement
-        </button>
+        </Button>
       </div>
 
       {visibleEntries.length === 0 ? (
@@ -310,22 +316,24 @@ export function AchievementEvidenceBank({
                     ))}
                   </div>
                   <div className="mt-4 flex justify-end gap-2">
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => copyBullet(entry)}
                       className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-foreground"
                     >
                       <Clipboard className="h-3.5 w-3.5" />
                       {copiedId === entry.id ? 'Copied' : 'Copy'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => openEdit(entry)}
                       className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-foreground"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                       Edit
-                    </button>
+                    </Button>
                   </div>
                 </article>
               );
@@ -360,11 +368,11 @@ export function AchievementEvidenceBank({
                 onChange={(scope) => setForm((prev) => ({ ...prev, scope }))}
                 placeholder="12-person team, 2M requests/day"
               />
-              <label className="block">
+              <Label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
                   Impact
                 </span>
-                <select
+                <NativeSelect
                   value={form.impact_type}
                   onChange={(event) =>
                     setForm((prev) => ({
@@ -379,8 +387,8 @@ export function AchievementEvidenceBank({
                       {option}
                     </option>
                   ))}
-                </select>
-              </label>
+                </NativeSelect>
+              </Label>
               <Field
                 label="Skills"
                 value={form.skills}
@@ -414,7 +422,8 @@ export function AchievementEvidenceBank({
             <div className="mt-6 flex items-center justify-between">
               <div>
                 {editing && (
-                  <button
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={remove}
                     disabled={saving}
@@ -422,26 +431,28 @@ export function AchievementEvidenceBank({
                   >
                     <Trash2 className="h-4 w-4" />
                     Delete
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={close}
                   disabled={saving}
                   className="h-9 rounded-lg px-4 text-sm font-medium text-[var(--muted-foreground)] hover:text-foreground"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="default"
                   type="button"
                   onClick={save}
                   disabled={saving || !form.title.trim() || !form.result.trim()}
                   className="product-primary-action h-9 rounded-lg px-4 text-sm font-medium disabled:opacity-40"
                 >
                   {saving ? 'Saving...' : 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -496,17 +507,17 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="block">
+    <Label className="block">
       <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
         {label}
       </span>
-      <input
+      <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         className="input-base"
       />
-    </label>
+    </Label>
   );
 }
 
@@ -520,16 +531,16 @@ function LongField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block">
+    <Label className="block">
       <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
         {label}
       </span>
-      <textarea
+      <Textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={3}
         className="input-base resize-y"
       />
-    </label>
+    </Label>
   );
 }

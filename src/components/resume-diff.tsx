@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@saas-maker/ui/components/button';
+import { Textarea } from '@saas-maker/ui/components/textarea';
 import { useEffect, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 
@@ -95,22 +97,25 @@ export function ResumeDiff({ original, modified, onModifiedChange, changes = [] 
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {hasRationale && (
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setRationaleOpen((v) => !v)}
                 className="text-xs px-3 min-h-[36px] md:min-h-0 md:py-1 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:text-foreground hover:border-[var(--muted-foreground)] transition-colors"
                 aria-expanded={rationaleOpen}
               >
                 {rationaleOpen ? 'Hide rationale' : `Why these changes? (${changes.length})`}
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setSplitView(!splitView)}
               className="text-xs px-3 min-h-[36px] md:min-h-0 md:py-1 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:text-foreground hover:border-[var(--muted-foreground)] transition-colors"
             >
               {splitView ? 'Inline' : 'Split'}
-            </button>
+            </Button>
             {!editing ? (
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => {
                   setEditContent(modified);
                   setEditing(true);
@@ -118,21 +123,23 @@ export function ResumeDiff({ original, modified, onModifiedChange, changes = [] 
                 className="text-xs px-3 min-h-[36px] md:min-h-0 md:py-1 rounded border border-[var(--border)] text-[var(--muted-foreground)] hover:text-foreground hover:border-[var(--muted-foreground)] transition-colors"
               >
                 Edit
-              </button>
+              </Button>
             ) : (
               <>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={handleCancelEdit}
                   className="text-xs px-3 min-h-[36px] md:min-h-0 md:py-1 rounded text-[var(--muted-foreground)] hover:text-foreground transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={handleSaveEdit}
                   className="text-xs px-3 min-h-[36px] md:min-h-0 md:py-1 rounded bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90 transition-colors"
                 >
                   Apply
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -141,7 +148,7 @@ export function ResumeDiff({ original, modified, onModifiedChange, changes = [] 
         {/* Content */}
         <div className="flex-1 overflow-auto">
           {editing ? (
-            <textarea
+            <Textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               className="w-full h-full p-4 bg-[var(--background)] text-foreground text-sm font-mono resize-none focus:outline-none"
