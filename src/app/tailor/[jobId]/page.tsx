@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { TailorFlow } from '@/components/tailor-flow';
 import { listAchievementEvidence } from '@/lib/actions/achievement-evidence-actions';
@@ -9,14 +10,33 @@ import { getJobApplication, getTailoredResumes } from '@/lib/actions/job-actions
 import { listResumes } from '@/lib/actions/resume-actions';
 import { listStashEntries } from '@/lib/actions/stash-actions';
 
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+import TailorLoading from './tailor-loading';
+
 export default async function TailorPage({
   params,
   searchParams,
 }: {
   params: Promise<{ jobId: string }>;
-  searchParams: Promise<{ version?: string | string[] }>;
+  searchParams: WorkspaceSearchParams;
 }) {
   const { jobId } = await params;
+  await requireWorkspaceSignIn(`/tailor/${encodeURIComponent(jobId)}`, searchParams);
+
+  return (
+    <Suspense fallback={<TailorLoading />}>
+      <TailorContent jobId={jobId} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function TailorContent({
+  jobId,
+  searchParams,
+}: {
+  jobId: string;
+  searchParams: WorkspaceSearchParams;
+}) {
   const version = (await searchParams).version;
   const job = await getJobApplication(jobId);
 

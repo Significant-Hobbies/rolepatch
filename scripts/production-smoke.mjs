@@ -22,25 +22,25 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       requiredHeaders: { 'content-security-policy': CONTENT_SECURITY_POLICY },
     },
     {
-      name: 'jobs workspace',
+      name: 'jobs requires sign-in',
       method: 'GET',
       path: '/jobs',
-      expectStatus: 200,
-      requiredText: ['id="jobs-heading"'],
+      expectStatus: 307,
+      redirectTo: '/sign-in?returnTo=%2Fjobs',
     },
     {
-      name: 'history workspace',
+      name: 'history requires sign-in',
       method: 'GET',
       path: '/history',
-      expectStatus: 200,
-      requiredText: ['id="history-heading"'],
+      expectStatus: 307,
+      redirectTo: '/sign-in?returnTo=%2Fhistory',
     },
     {
-      name: 'resume builder',
+      name: 'resume builder requires sign-in',
       method: 'GET',
       path: '/resume-builder',
-      expectStatus: 200,
-      requiredText: ['id="resume-builder-master-heading"'],
+      expectStatus: 307,
+      redirectTo: '/sign-in?returnTo=%2Fresume-builder',
     },
     {
       name: 'pricing',
@@ -64,15 +64,29 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       jsonKeys: ['ok', 'error'],
     },
     {
-      name: 'settings readiness',
+      name: 'settings requires sign-in',
       method: 'GET',
       path: '/settings',
+      expectStatus: 307,
+      redirectTo: '/sign-in?returnTo=%2Fsettings',
+    },
+    {
+      name: 'workspace sign-in',
+      method: 'GET',
+      path: '/sign-in',
       expectStatus: 200,
-      requiredText: ['Feature availability', 'Chrome extension'],
+      requiredText: ['Sign in to RolePatch', 'Continue with Google'],
     },
   ];
 
   const authChecks = [
+    {
+      name: 'signed-in workspace',
+      method: 'GET',
+      path: '/resume-builder',
+      expectStatus: 200,
+      requiredText: ['id="resume-builder-master-heading"'],
+    },
     {
       name: 'apply queue api',
       method: 'GET',
@@ -95,6 +109,7 @@ export function buildSmokeChecks({ hasSessionCookie = false } = {}) {
       jsonKeys: ['receipts'],
     },
   ];
+  for (const check of authChecks) check.authenticated = true;
 
   return hasSessionCookie ? [...publicChecks, ...authChecks] : publicChecks;
 }
@@ -117,6 +132,7 @@ async function runCheck(baseUrl, check, sessionCookie, timeoutMs = DEFAULT_TIMEO
   try {
     res = await fetch(`${baseUrl}${check.path}`, {
       method: check.method,
+      redirect: check.redirectTo ? 'manual' : 'follow',
       headers: {
         accept: check.jsonKeys ? 'application/json' : 'text/html,application/json',
         ...(sessionCookie ? { cookie: sessionCookie } : {}),
@@ -140,6 +156,9 @@ async function runCheck(baseUrl, check, sessionCookie, timeoutMs = DEFAULT_TIMEO
   const errors = [];
   if (res.status !== check.expectStatus) {
     errors.push(`expected HTTP ${check.expectStatus}, got ${res.status}`);
+  }
+  if (check.redirectTo && res.headers.get('location') !== check.redirectTo) {
+    errors.push(`expected redirect to ${check.redirectTo}`);
   }
   for (const [name, expectedValue] of Object.entries(check.requiredHeaders ?? {})) {
     const actualValue = res.headers.get(name);
@@ -188,7 +207,14 @@ export async function runProductionSmoke({
     const checks = buildSmokeChecks({ hasSessionCookie: Boolean(sessionCookie.trim()) });
     const results = [];
     for (const check of checks) {
-      results.push(await runCheck(normalizedBaseUrl, check, sessionCookie, timeoutMs));
+      results.push(
+        await runCheck(
+          normalizedBaseUrl,
+          check,
+          check.authenticated ? sessionCookie : '',
+          timeoutMs
+        )
+      );
     }
     return {
       baseUrl: normalizedBaseUrl,

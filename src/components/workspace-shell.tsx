@@ -61,7 +61,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         <WorkspaceInterior page={workspacePage}>{children}</WorkspaceInterior>
       ) : (
         <>
-          <SiteNav />
+          {pathname !== '/sign-in' && <SiteNav />}
           {children}
         </>
       )}

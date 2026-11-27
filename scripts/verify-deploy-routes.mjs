@@ -14,6 +14,7 @@ export const REQUIRED_DEPLOY_ROUTES = [
   '/proof',
   '/pricing',
   '/settings',
+  '/sign-in',
   '/dashboard',
   '/resume-builder',
   '/resume-builder/evidence',

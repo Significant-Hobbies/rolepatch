@@ -1,117 +1,76 @@
-import { expect, test } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
+import { expect, test, type WorkspaceFixture } from './fixtures/workspace';
 import { readFile } from 'node:fs/promises';
 
-async function seedHistory(page: import('@playwright/test').Page) {
-  await page.goto('/history');
-  await page.evaluate(() => {
-    const now = Math.floor(Date.now() / 1000);
-    const master =
-      '# Alex Morgan\n\n## Projects\n### Reader\n- Built a reading queue.\n\n## Education\nBSc, Example University.\n';
-    localStorage.setItem(
-      'rt-resumes',
-      JSON.stringify([
-        {
-          id: 'history-master',
-          name: 'Master resume',
-          source: master,
-          created_at: now,
-          updated_at: now,
-        },
-      ])
+test.beforeEach(async ({ workspace }) => workspace.signIn());
+
+function seedHistory(workspace: WorkspaceFixture) {
+  const { query, userId } = workspace;
+  const master =
+    '# Alex Morgan\n\n## Projects\n### Reader\n- Built a reading queue.\n\n## Education\nBSc, Example University.\n';
+  const resume = workspace.seedResume(master);
+  const frontend = randomUUID();
+  const agents = randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+  for (const [id, company, role, status, jd, age] of [
+    [
+      frontend,
+      'Example Co',
+      'Frontend Engineer',
+      'tailored',
+      'Build React and TypeScript interfaces.',
+      0,
+    ],
+    [
+      agents,
+      'Example Labs',
+      'Agents Engineer',
+      'applied',
+      'Build tool-calling systems and RAG assistants.',
+      100,
+    ],
+    [randomUUID(), 'Example Studio', 'Fullstack Engineer', 'draft', 'Build and release APIs.', 200],
+  ] as const) {
+    query(
+      'INSERT INTO job_applications (id, user_id, resume_id, company, role, status, jd_text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      id,
+      userId,
+      resume,
+      company,
+      role,
+      status,
+      jd,
+      now - age,
+      now
     );
-    localStorage.setItem(
-      'rt-jobs',
-      JSON.stringify([
-        {
-          id: 'history-frontend',
-          resume_id: 'history-master',
-          company: 'Example Co',
-          role: 'Frontend Engineer',
-          status: 'tailored',
-          jd_text:
-            'Build React and TypeScript web interfaces and improve the experience of our customers. Ship frontend features and tests.',
-          url: '',
-          created_at: now,
-          updated_at: now,
-        },
-        {
-          id: 'history-agents',
-          resume_id: 'history-master',
-          company: 'Example Labs',
-          role: 'Agents Engineer',
-          status: 'applied',
-          jd_text:
-            'Build tool-calling systems and RAG assistants using TypeScript and Python. Evaluate generated answers and ship developer tools.',
-          url: '',
-          created_at: now - 100,
-          updated_at: now,
-        },
-        {
-          id: 'history-draft',
-          resume_id: 'history-master',
-          company: 'Example Studio',
-          role: 'Fullstack Engineer',
-          status: 'draft',
-          jd_text:
-            'Build frontend interfaces and backend services, release APIs, and maintain customer applications using TypeScript and Go.',
-          url: '',
-          created_at: now - 200,
-          updated_at: now,
-        },
-      ])
+  }
+  const oldVersion = randomUUID();
+  const newVersion = randomUUID();
+  for (const [id, job, summary, age] of [
+    [oldVersion, frontend, 'Earlier frontend summary for the saved history version.', 80],
+    [newVersion, frontend, 'Latest frontend summary for the saved history version.', 0],
+    [randomUUID(), agents, 'Agents resume from supplied project evidence.', 50],
+  ] as const) {
+    query(
+      'INSERT INTO tailored_resumes (id, user_id, job_id, resume_id, source, updated_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      id,
+      userId,
+      job,
+      resume,
+      master.replace('## Projects', `## Summary\n${summary}\n\n## Projects`),
+      now - age,
+      now - age
     );
-    localStorage.setItem(
-      'rt-tailored',
-      JSON.stringify([
-        {
-          id: 'version-old',
-          job_id: 'history-frontend',
-          resume_id: 'history-master',
-          source: master.replace(
-            '## Projects',
-            '## Summary\nEarlier frontend summary for the saved history version.\n\n## Projects'
-          ),
-          changes: [],
-          accepted: 0,
-          created_at: now - 80,
-          updated_at: now - 80,
-        },
-        {
-          id: 'version-new',
-          job_id: 'history-frontend',
-          resume_id: 'history-master',
-          source: master.replace(
-            '## Projects',
-            '## Summary\nLatest frontend summary for the saved history version.\n\n## Projects'
-          ),
-          changes: [],
-          accepted: 0,
-          created_at: now,
-          updated_at: now,
-        },
-        {
-          id: 'version-agents',
-          job_id: 'history-agents',
-          resume_id: 'history-master',
-          source: master.replace(
-            '## Projects',
-            '## Summary\nAgents resume from supplied project evidence.\n\n## Projects'
-          ),
-          changes: [],
-          accepted: 0,
-          created_at: now - 50,
-          updated_at: now - 50,
-        },
-      ])
-    );
-  });
-  await page.reload();
+  }
+  return { oldVersion, newVersion };
 }
 
 test('history filters applied jobs and reopens the exact old resume after reload', async ({
   page,
+  workspace,
 }, testInfo) => {
-  await seedHistory(page);
+  const { oldVersion, newVersion } = seedHistory(workspace);
+  await page.goto('/history');
   const history = page.getByRole('region', { name: 'History', exact: true });
   const job = page.getByRole('button', { name: 'Frontend Engineer', exact: true });
   await job.click();
@@ -145,7 +104,7 @@ test('history filters applied jobs and reopens the exact old resume after reload
   );
   await history.getByRole('button', { name: 'All jobs (3)' }).click();
   await history.getByLabel('2 saved resumes for Frontend Engineer at Example Co').click();
-  const versionLink = history.locator('a[href*="version=version-old"]');
+  const versionLink = history.locator(`a[href*="version=${oldVersion}"]`);
   const downloadPromise = page.waitForEvent('download');
   await history.getByRole('button', { name: 'Download Markdown', exact: true }).nth(1).click();
   const download = await downloadPromise;
@@ -167,8 +126,8 @@ test('history filters applied jobs and reopens the exact old resume after reload
     }
   }
   await versionLink.click();
-  await page.waitForURL(/version=version-old/);
-  await expect(page.getByLabel('Saved resume version')).toHaveValue('version-old');
+  await page.waitForURL(`**?version=${oldVersion}`);
+  await expect(page.getByLabel('Saved resume version')).toHaveValue(oldVersion);
   await expect(
     page
       .frameLocator('iframe[title="Resume document preview"]')
@@ -180,7 +139,7 @@ test('history filters applied jobs and reopens the exact old resume after reload
       .frameLocator('iframe[title="Resume document preview"]')
       .getByText('Earlier frontend summary for the saved history version.', { exact: true })
   ).toBeVisible();
-  await page.getByLabel('Saved resume version').selectOption('version-new');
+  await page.getByLabel('Saved resume version').selectOption(newVersion);
   await expect(
     page
       .frameLocator('iframe[title="Resume document preview"]')

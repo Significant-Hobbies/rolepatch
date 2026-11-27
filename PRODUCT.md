@@ -20,7 +20,7 @@ The differentiator is a review-first application packet and receipt trail: users
 
 ## Capabilities and Constraints
 
-- Guest workflows use local browser storage; signed-in workflows can persist to the service.
+- The web workspace requires Google sign-in. Public resume tools remain available to visitors.
 - Browser-assisted submit refuses CAPTCHA, missing required answers, outstanding uploads, excluded companies, duplicate URLs, low fit, and daily-cap violations.
 - Production deploys are manual.
 - Product claims must preserve the boundary between assisted fill and unattended automation.

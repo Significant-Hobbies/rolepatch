@@ -11,8 +11,17 @@ import { getOutreachEmail } from '@/lib/actions/outreach-action';
 import { getResume } from '@/lib/actions/resume-actions';
 import { getCurrentUserId } from '@/lib/auth-utils';
 
-export default async function CoverLetterPage({ params }: { params: Promise<{ jobId: string }> }) {
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+
+export default async function CoverLetterPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ jobId: string }>;
+  searchParams: WorkspaceSearchParams;
+}) {
   const { jobId } = await params;
+  await requireWorkspaceSignIn(`/cover-letter/${encodeURIComponent(jobId)}`, searchParams);
   if (!(await getCurrentUserId())) return <GuestCoverLetter jobId={jobId} />;
   const job = await getJobApplication(jobId);
   if (!job) notFound();

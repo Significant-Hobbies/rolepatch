@@ -1,4 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
+
+test.beforeEach(async ({ workspace }) => workspace.signIn());
 
 test('the experience form is reachable by keyboard and restores focus when closed', async ({
   page,
@@ -25,22 +27,12 @@ test('the experience form is reachable by keyboard and restores focus when close
 
 test('Outline edits, pins and added projects survive reload and legacy links open the same workspace', async ({
   page,
+  workspace,
 }, testInfo) => {
-  await page.goto('/resume-builder');
-  await expect(page.getByRole('button', { name: '+ New Resume' })).toBeEnabled();
   const source =
     '# Ada\n\n[Portfolio](https://example.org)\n\n## Experience\n\n### Acme · 2022\n\n- Built React screens.\n\n## Projects\n\n### Reader\n\n- Released Reader.\n\n## Education\n\nBSc, Example University.\n\n## Skills\n\nReact, TypeScript.\n';
-  await page.evaluate(
-    (source) =>
-      localStorage.setItem(
-        'rt-resumes',
-        JSON.stringify([
-          { id: 'outline-master', name: 'Master', source, created_at: 1, updated_at: 1 },
-        ])
-      ),
-    source
-  );
-  await page.reload();
+  const id = workspace.seedResume(source, 'Master');
+  await page.goto('/resume-builder');
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
   if (testInfo.project.name === 'mobile') {
     await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
@@ -91,9 +83,7 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
   await expect(
     page.getByRole('checkbox', { name: 'Always include: Built accessible React screens.' })
   ).toBeChecked();
-  const stored = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
-  );
+  const stored = String(workspace.query('SELECT source FROM resumes WHERE id = ?', id)[0].source);
   expect(stored).toContain('[Portfolio](https://example.org)');
   expect(stored).toContain('### Acme · 2022');
   expect(stored).toContain('## Education\n\nBSc, Example University.');
@@ -113,26 +103,26 @@ test('Outline edits, pins and added projects survive reload and legacy links ope
     }
   }
   await page.getByRole('link', { name: 'Preview', exact: true }).click();
-  await page.waitForURL(/editor\/outline-master/);
+  await page.waitForURL(`**/editor/${id}`);
   await page
     .getByRole('navigation', { name: 'Primary', exact: true })
     .getByRole('link', { name: 'Resume Builder', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Resume Builder', exact: true })).toBeVisible();
   await builderSections.getByRole('link', { name: 'Evidence', exact: true }).click();
-  await expect(page).toHaveURL(/resume-builder\/evidence\?resume=outline-master/);
+  await expect(page).toHaveURL(`**/resume-builder/evidence?resume=${id}`);
   await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
   await builderSections.getByRole('link', { name: 'Master résumé', exact: true }).click();
-  await expect(page.getByLabel('Master resume')).toHaveValue('outline-master');
+  await expect(page.getByLabel('Master resume')).toHaveValue(id);
   await page.goto('/evidence');
   await page.waitForURL(/resume-builder\/evidence#sources/);
   await expect(page.getByRole('heading', { name: 'Achievements & sources' })).toBeVisible();
   await page.goto('/stash');
   await page.waitForURL(/resume-builder\/evidence#extra-experience/);
   await expect(page.getByRole('heading', { name: 'Extra experience' })).toBeVisible();
-  await page.goto('/resume-builder?resume=outline-master#sources');
-  await expect(page).toHaveURL(/resume-builder\/evidence\?resume=outline-master#sources/);
+  await page.goto(`/resume-builder?resume=${id}#sources`);
+  await expect(page).toHaveURL(`**/resume-builder/evidence?resume=${id}#sources`);
   await page.goto('/jobs');
   await expect(page.getByRole('heading', { name: 'Jobs', exact: true })).toBeVisible();
   const nav = page.getByRole('navigation', { name: 'Primary', exact: true });

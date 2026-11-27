@@ -5,9 +5,16 @@ import { ResumeApiAccess } from '@/components/resume-api-access';
 import { ResumeOAuthConsent } from '@/components/resume-oauth-consent';
 import { getOperationalReadiness } from '@/lib/operational-readiness';
 
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+
 export const dynamic = 'force-dynamic';
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: WorkspaceSearchParams;
+}) {
+  await requireWorkspaceSignIn('/settings', searchParams);
   const readiness = await getOperationalReadiness();
 
   return (

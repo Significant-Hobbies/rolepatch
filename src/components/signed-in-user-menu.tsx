@@ -78,7 +78,9 @@ export function SignedInUserMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() => {
-            authClient.signOut();
+            void authClient.signOut({
+              fetchOptions: { onSuccess: () => window.location.replace('/sign-in') },
+            });
           }}
         >
           <LogOut />

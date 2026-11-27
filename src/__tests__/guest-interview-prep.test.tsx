@@ -8,6 +8,7 @@ import { getJobApplication } from '@/lib/actions/job-actions';
 import { getResume } from '@/lib/actions/resume-actions';
 import { getCurrentUserId } from '@/lib/auth-utils';
 import { localCreateResume, localGetJob, localSaveJob } from '@/lib/local-storage';
+import { requireWorkspaceSignIn } from '@/lib/workspace-access';
 
 const auth = vi.hoisted(() => ({ isGuest: true }));
 vi.mock('@/components/auth-provider', () => ({ useAuth: () => auth }));
@@ -17,6 +18,7 @@ vi.mock('next/navigation', () => ({
   },
 }));
 vi.mock('@/lib/auth-utils', () => ({ getCurrentUserId: vi.fn() }));
+vi.mock('@/lib/workspace-access', () => ({ requireWorkspaceSignIn: vi.fn() }));
 vi.mock('@/lib/actions/job-actions', () => ({ getJobApplication: vi.fn() }));
 vi.mock('@/lib/actions/resume-actions', () => ({ getResume: vi.fn() }));
 vi.mock('@/lib/actions/interview-prep-action', () => ({
@@ -45,13 +47,16 @@ function saveGuestJob(resumeId: string) {
 }
 
 describe('guest interview preparation', () => {
-  it('opens a browser-saved job without querying cloud job, resume or story storage', async () => {
+  it('stops signed-out requests before querying cloud job, resume or story storage', async () => {
     const resumeId = localCreateResume('Base', '# Alex Morgan\nTypeScript engineer.');
     saveGuestJob(resumeId);
-    render(await InterviewPrepPage({ params: Promise.resolve({ jobId: 'guest-job' }) }));
-
-    expect(await screen.findByText('Platform Engineer')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Generate Stories' })).toBeEnabled();
+    vi.mocked(requireWorkspaceSignIn).mockRejectedValue(new Error('SIGN_IN'));
+    await expect(
+      InterviewPrepPage({
+        params: Promise.resolve({ jobId: 'guest-job' }),
+        searchParams: Promise.resolve({}),
+      })
+    ).rejects.toThrow('SIGN_IN');
     expect(getJobApplication).not.toHaveBeenCalled();
     expect(getResume).not.toHaveBeenCalled();
     expect(getInterviewStories).not.toHaveBeenCalled();
@@ -85,7 +90,10 @@ describe('guest interview preparation', () => {
     vi.mocked(getCurrentUserId).mockResolvedValue('account-owner');
     vi.mocked(getJobApplication).mockResolvedValue(null);
     await expect(
-      InterviewPrepPage({ params: Promise.resolve({ jobId: 'guest-job' }) })
+      InterviewPrepPage({
+        params: Promise.resolve({ jobId: 'guest-job' }),
+        searchParams: Promise.resolve({}),
+      })
     ).rejects.toThrow('NOT_FOUND');
     expect(getJobApplication).toHaveBeenCalledWith('guest-job');
     expect(getResume).not.toHaveBeenCalled();

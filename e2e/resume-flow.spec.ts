@@ -1,36 +1,23 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
 
-test.describe('Resume flow (guest mode)', () => {
-  test('can create a resume and see the editor', async ({ page }) => {
-    // Navigate to dashboard
-    await page.goto('/dashboard');
-
-    // Click create resume button (opens a modal)
-    const createButton = page.getByRole('button', { name: /\+ new resume/i });
-    await expect(createButton).toBeVisible();
-    await createButton.click();
-
-    // Fill in the name and submit
-    const nameInput = page.getByPlaceholder(/e\.g\. AI Profile/i);
-    await expect(nameInput).toBeVisible();
-    await nameInput.fill('Test Resume');
-    await page.getByRole('button', { name: /^create$/i }).click();
-
-    // Verify editor loads (CodeMirror uses .cm-editor class)
-    await expect(page.locator('.cm-editor')).toBeVisible({ timeout: 10000 });
-
-    // Type some Markdown content into the editor
-    const editor = page.locator('.cm-content');
-    await editor.click();
-    await editor.pressSequentially('## Experience');
-
-    // Verify the content was typed
-    await expect(editor).toContainText('## Experience');
-
-    // Verify content persists in localStorage (guest mode)
-    const storageData = await page.evaluate(() => localStorage.getItem('rt-resumes'));
-    expect(storageData).toBeTruthy();
-    const resumes = JSON.parse(storageData!);
-    expect(resumes.length).toBeGreaterThan(0);
-  });
+test('can create and edit a signed-in resume', async ({ page, workspace }) => {
+  await workspace.signIn();
+  await page.goto('/resume-builder');
+  await page.getByRole('button', { name: '+ New Resume', exact: true }).click();
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await expect(page).toHaveURL(/resume-builder\?resume=/);
+  const [resume] = workspace.query('SELECT id FROM resumes WHERE user_id = ?', workspace.userId);
+  await page.goto(`/editor/${resume.id}`);
+  const editor = page.locator('.cm-content');
+  await editor.click();
+  await editor.pressSequentially('Updated profile');
+  await expect(editor).toContainText('Updated profile');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect
+    .poll(
+      () => workspace.query('SELECT source FROM resumes WHERE id = ?', String(resume.id))[0].source
+    )
+    .toContain('Updated profile');
+  await page.reload();
+  await expect(editor).toContainText('Updated profile');
 });

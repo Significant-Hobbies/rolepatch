@@ -1,8 +1,13 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
+import { expect, test, type WorkspaceFixture } from './fixtures/workspace';
+
+test.beforeEach(async ({ workspace }) => workspace.signIn());
 
 test('master onboarding preserves every role, project and education on reload', async ({
   page,
+  workspace,
 }) => {
   await page.goto('/resume-builder');
   await page.getByRole('button', { name: '+ New Resume', exact: true }).click();
@@ -45,8 +50,8 @@ test('master onboarding preserves every role, project and education on reload', 
   await expect(page.getByText('Master resume · ready for a job', { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByText('Master resume · ready for a job', { exact: true })).toBeVisible();
-  const source = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
+  const source = String(
+    workspace.query('SELECT source FROM resumes WHERE user_id = ?', workspace.userId)[0].source
   );
   for (const point of [
     'Built React screens.',
@@ -76,6 +81,7 @@ test('master onboarding preserves every role, project and education on reload', 
 
 test('imported incomplete master can be completed without changing its original points', async ({
   page,
+  workspace,
 }) => {
   await page.goto('/resume-builder');
   await expect(page.getByRole('button', { name: 'Import Resume', exact: true })).toBeEnabled();
@@ -101,8 +107,8 @@ test('imported incomplete master can be completed without changing its original 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await page.reload();
   await expect(page.getByText('Master resume · ready for a job', { exact: true })).toBeVisible();
-  const source = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
+  const source = String(
+    workspace.query('SELECT source FROM resumes WHERE user_id = ?', workspace.userId)[0].source
   );
   expect(source).toContain('- Built React screens.\n- Released APIs.');
   expect(source).toContain('### Reader');
@@ -111,25 +117,13 @@ test('imported incomplete master can be completed without changing its original 
 
 test('Always include selections persist with the base resume and education stays selected', async ({
   page,
+  workspace,
 }) => {
-  await page.goto('/dashboard');
-  await page.evaluate(() => {
-    const now = Math.floor(Date.now() / 1000);
-    localStorage.setItem(
-      'rt-resumes',
-      JSON.stringify([
-        {
-          id: 'pins-resume',
-          name: 'Pinned base',
-          source:
-            '# Candidate\n\n## Experience\n\n### Acme\n\n- Shipped customer APIs.\n- Improved reliability.\n\n## Projects\n\n### Widget\n\n- Released Widget.\n\n## Education\n\nB.Tech, University.\n',
-          created_at: now,
-          updated_at: now,
-        },
-      ])
-    );
-  });
-  await page.goto('/editor/pins-resume');
+  const id = workspace.seedResume(
+    '# Candidate\n\n## Experience\n\n### Acme\n\n- Shipped customer APIs.\n- Improved reliability.\n\n## Projects\n\n### Widget\n\n- Released Widget.\n\n## Education\n\nB.Tech, University.\n',
+    'Pinned base'
+  );
+  await page.goto(`/editor/${id}`);
   await page.getByText('Always include · 0 points', { exact: true }).click();
   const education = page.getByRole('checkbox', { name: 'Education · always included' });
   await expect(education).toBeChecked();
@@ -151,9 +145,7 @@ test('Always include selections persist with the base resume and education stays
     page.getByRole('checkbox', { name: 'Always include: Released Widget.', exact: true })
   ).toBeChecked();
   await expect(page.locator('#resume-print-target')).not.toContainText('rolepatch:always-include');
-  const saved = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('rt-resumes') ?? '[]')[0].source
-  );
+  const saved = String(workspace.query('SELECT source FROM resumes WHERE id = ?', id)[0].source);
   expect(saved.match(/rolepatch:always-include/g)).toHaveLength(2);
   await page
     .getByRole('checkbox', { name: 'Always include: Shipped customer APIs.', exact: true })
@@ -168,7 +160,7 @@ test('Always include selections persist with the base resume and education stays
  * Tests the manual technique: Google site: queries → copy ATS URL →
  * paste into "Add Job" → scrape → tailor.
  *
- * Guest mode is used throughout (localStorage) to avoid auth dependencies.
+ * A local signed-in account exercises owner-scoped storage.
  * The actual scrape network call is not exercised here (covered by unit
  * tests); instead we pre-seed a guest job to verify the tailor page renders.
  */
@@ -263,24 +255,14 @@ test.describe('Job search tips', () => {
   });
 });
 
-async function seedReadyMaster(page: Page) {
-  const source = await readFile('__tests__/fixtures/resume-import/synthetic.md', 'utf8');
+async function seedReadyMaster(page: Page, workspace: WorkspaceFixture) {
+  workspace.seedResume(await readFile('__tests__/fixtures/resume-import/synthetic.md', 'utf8'));
   await page.goto('/dashboard');
-  await page.evaluate((source) => {
-    const now = Math.floor(Date.now() / 1000);
-    localStorage.setItem(
-      'rt-resumes',
-      JSON.stringify([
-        { id: 'ready-master', name: 'Master resume', source, created_at: now, updated_at: now },
-      ])
-    );
-  }, source);
-  await page.reload();
 }
 
-test.describe('Add Job modal (guest mode)', () => {
-  test('opens and accepts an ATS board URL', async ({ page }) => {
-    await seedReadyMaster(page);
+test.describe('Add Job modal', () => {
+  test('opens and accepts an ATS board URL', async ({ page, workspace }) => {
+    await seedReadyMaster(page, workspace);
 
     // Click Add Job
     const addJobButton = page.getByRole('button', { name: /\+ Add Job/i });
@@ -302,8 +284,9 @@ test.describe('Add Job modal (guest mode)', () => {
 
   test('falls back to manual JD paste and opens tailor page when scrape cannot read URL', async ({
     page,
+    workspace,
   }) => {
-    await seedReadyMaster(page);
+    await seedReadyMaster(page, workspace);
 
     await page.getByRole('button', { name: /\+ Add Job/i }).click();
     await page.getByLabel('Job URL', { exact: true }).fill('http://127.0.0.1/job');
@@ -327,7 +310,10 @@ test.describe('Add Job modal (guest mode)', () => {
       timeout: 15000,
     });
 
-    const jobs = await page.evaluate(() => JSON.parse(localStorage.getItem('rt-jobs') ?? '[]'));
+    const jobs = workspace.query(
+      'SELECT * FROM job_applications WHERE user_id = ?',
+      workspace.userId
+    );
     expect(jobs).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -354,51 +340,49 @@ test.describe('Add Job modal (guest mode)', () => {
   });
 });
 
-test.describe('Tailor page (guest mode with pre-seeded job)', () => {
-  test('renders the tailor page with a scraped ATS job', async ({ page }) => {
-    // Seed localStorage with a resume and a job (simulating a completed scrape
-    // of a Greenhouse posting)
-    await page.goto('/dashboard');
-    await page.evaluate(() => {
-      const now = Math.floor(Date.now() / 1000);
-      const resumes = [
-        {
-          id: 'resume-1',
-          name: 'Base Resume',
-          source:
-            '\\documentclass{article}\\begin{document}\\section{Experience}Software Engineer at Acme\\end{document}',
-          created_at: now,
-          updated_at: now,
-        },
-      ];
-      const jobs = [
-        {
-          id: 'job-ats-1',
-          company: 'Acme',
-          role: 'Product Manager',
-          resume_id: 'resume-1',
-          url: 'https://boards.greenhouse.io/acme/jobs/12345',
-          jd_raw: 'We are looking for a Product Manager to drive our platform vision.',
-          jd_text: 'We are looking for a Product Manager to drive our platform vision.',
-          status: 'draft',
-          created_at: now,
-          updated_at: now,
-        },
-      ];
-      localStorage.setItem('rt-resumes', JSON.stringify(resumes));
-      localStorage.setItem('rt-jobs', JSON.stringify(jobs));
-    });
+function seedJob(
+  workspace: WorkspaceFixture,
+  resume: string,
+  company: string,
+  role: string,
+  url: string,
+  description: string,
+  status = 'draft'
+) {
+  const id = randomUUID();
+  workspace.query(
+    'INSERT INTO job_applications (id, user_id, resume_id, company, role, url, jd_raw, jd_text, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    id,
+    workspace.userId,
+    resume,
+    company,
+    role,
+    url,
+    description,
+    description,
+    status
+  );
+  return id;
+}
 
-    // Navigate to the tailor page for this job
-    await page.goto('/tailor/job-ats-1');
+test.describe('Tailor page', () => {
+  test('renders the tailor page with a scraped ATS job', async ({ page, workspace }) => {
+    const resume = workspace.seedResume(
+      '# Alex Morgan\n\n## Experience\n- Built platform tooling.'
+    );
+    const job = seedJob(
+      workspace,
+      resume,
+      'Acme',
+      'Product Manager',
+      'https://boards.greenhouse.io/acme/jobs/12345',
+      'We are looking for a Product Manager to drive our platform vision.'
+    );
+    await page.goto(`/tailor/${job}`);
     await expect(page.getByRole('region', { name: 'Target job' })).toBeVisible();
     const jobToggle = page.getByRole('button', { name: 'View job description and preparation' });
     if (await jobToggle.isVisible()) await jobToggle.click();
 
-    // The server-rendered header shows the job title (from getJobApplication
-    // for signed-in users). For guests, the TailorFlow client component
-    // hydrates activeJob from localStorage via useEffect — so we wait for
-    // the JD text which only renders once activeJob is set.
     // Use the <pre> element that contains the JD text to avoid matching
     // the "Job Description" heading.
     await expect(page.locator('pre').filter({ hasText: /platform vision/i })).toBeVisible({
@@ -408,46 +392,22 @@ test.describe('Tailor page (guest mode with pre-seeded job)', () => {
     await expect(page.getByRole('link', { name: /boards\.greenhouse\.io\/acme/i })).toBeVisible();
   });
 
-  test('returns to standalone History from the tailor page', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.evaluate(() => {
-      const now = Math.floor(Date.now() / 1000);
-      localStorage.setItem(
-        'rt-resumes',
-        JSON.stringify([
-          {
-            id: 'r1',
-            name: 'Resume',
-            source: 'test',
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.setItem(
-        'rt-jobs',
-        JSON.stringify([
-          {
-            id: 'j1',
-            company: 'TestCo',
-            role: 'Engineer',
-            resume_id: 'r1',
-            url: 'https://jobs.ashbyhq.com/testco/engineer',
-            jd_raw: 'Job description',
-            jd_text: 'Job description',
-            status: 'draft',
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-    });
-
-    await page.goto('/tailor/j1');
+  test('returns to standalone History from the tailor page', async ({ page, workspace }) => {
+    const resume = workspace.seedResume(
+      '# Alex Morgan\n\n## Experience\n- Built platform tooling.'
+    );
+    const job = seedJob(
+      workspace,
+      resume,
+      'TestCo',
+      'Engineer',
+      'https://jobs.ashbyhq.com/testco/engineer',
+      'Job description'
+    );
+    await page.goto(`/tailor/${job}`);
     await expect(page.getByRole('region', { name: 'Target job' })).toBeVisible();
     const jobToggle = page.getByRole('button', { name: 'View job description and preparation' });
     if (await jobToggle.isVisible()) await jobToggle.click();
-    // Wait for client hydration (guest job loads from localStorage)
     // Use the <pre> element that contains the JD text to avoid matching
     // the "Job Description" heading.
     await expect(page.locator('pre').filter({ hasText: /Job description/i })).toBeVisible({
@@ -459,111 +419,67 @@ test.describe('Tailor page (guest mode with pre-seeded job)', () => {
   });
 });
 
-test.describe('Apply-agent queue receipts (guest mode)', () => {
-  test('records a manual receipt from a queued guest application', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.evaluate(() => {
-      const now = Math.floor(Date.now() / 1000);
-      localStorage.setItem(
-        'rt-resumes',
-        JSON.stringify([
-          {
-            id: 'receipt-resume-1',
-            name: 'Receipt Resume',
-            source:
-              '\\documentclass{article}\\begin{document}\\section{Experience}Built reliable apply workflows.\\end{document}',
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.setItem(
-        'rt-jobs',
-        JSON.stringify([
-          {
-            id: 'receipt-job-1',
-            company: 'ReceiptCo',
-            role: 'Platform Engineer',
-            resume_id: 'receipt-resume-1',
-            url: 'https://jobs.lever.co/receiptco/123',
-            jd_raw: 'Build a transparent application workflow with receipts.',
-            jd_text: 'Build a transparent application workflow with receipts.',
-            status: 'tailored',
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.setItem(
-        'rt-tailored',
-        JSON.stringify([
-          {
-            id: 'tailored-receipt-1',
-            job_id: 'receipt-job-1',
-            resume_id: 'receipt-resume-1',
-            source: 'Tailored resume content',
-            accepted: 0,
-            changes: [],
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.setItem(
-        'rt-cover-letters',
-        JSON.stringify([
-          {
-            id: 'cover-receipt-1',
-            job_id: 'receipt-job-1',
-            resume_id: 'receipt-resume-1',
-            content: 'Cover letter content',
-            company_research: 'ReceiptCo research',
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.setItem(
-        'rt-profile-answers',
-        JSON.stringify([
-          {
-            id: 'profile-receipt-1',
-            category: 'work_authorization',
-            label: 'Work authorization',
-            answer: 'Yes, authorized to work in the United States.',
-            sensitive: true,
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.setItem(
-        'rt-application-queue',
-        JSON.stringify([
-          {
-            id: 'queue-receipt-1',
-            job_id: 'receipt-job-1',
-            status: 'ready_to_submit',
-            readiness: {
-              status: 'ready_for_review',
-              summary: 'Tailored materials and profile answers are ready for final review.',
-              missing: [],
-              checks: {
-                resume: true,
-                tailored_resume: true,
-                cover_letter: true,
-                profile_answers: true,
-                receipt: false,
-              },
-            },
-            created_at: now,
-            updated_at: now,
-          },
-        ])
-      );
-      localStorage.removeItem('rt-application-receipts');
-    });
-    await page.reload();
+test.describe('Apply-agent queue receipts', () => {
+  test('records a manual receipt from a queued application', async ({ page, workspace }) => {
+    const { query, userId } = workspace;
+    const resume = workspace.seedResume(
+      '# Alex Morgan\n\n## Experience\n- Built reliable apply workflows.'
+    );
+    const jobId = seedJob(
+      workspace,
+      resume,
+      'ReceiptCo',
+      'Platform Engineer',
+      'https://jobs.lever.co/receiptco/123',
+      'Build a transparent application workflow with receipts.',
+      'tailored'
+    );
+    const queueId = randomUUID();
+    query(
+      'INSERT INTO tailored_resumes (id, user_id, job_id, resume_id, source) VALUES (?, ?, ?, ?, ?)',
+      randomUUID(),
+      userId,
+      jobId,
+      resume,
+      'Tailored resume content'
+    );
+    query(
+      'INSERT INTO cover_letters (id, user_id, job_id, resume_id, content) VALUES (?, ?, ?, ?, ?)',
+      randomUUID(),
+      userId,
+      jobId,
+      resume,
+      'Cover letter content'
+    );
+    query(
+      'INSERT INTO profile_answers (id, user_id, category, label, answer, sensitive) VALUES (?, ?, ?, ?, ?, ?)',
+      randomUUID(),
+      userId,
+      'work_authorization',
+      'Work authorization',
+      'Yes',
+      1
+    );
+    query(
+      'INSERT INTO application_queue (id, user_id, job_id, status, readiness_json) VALUES (?, ?, ?, ?, ?)',
+      queueId,
+      userId,
+      jobId,
+      'ready_to_submit',
+      JSON.stringify({
+        status: 'ready_for_review',
+        summary: 'Tailored materials and profile answers are ready for final review.',
+        missing: [],
+        checks: {
+          resume: true,
+          tailored_resume: true,
+          cover_letter: true,
+          profile_answers: true,
+          receipt: false,
+        },
+      })
+    );
+    await page.goto('/jobs');
 
     await page
       .getByRole('navigation', { name: 'Jobs sections' })
@@ -577,20 +493,21 @@ test.describe('Apply-agent queue receipts (guest mode)', () => {
     await expect(page.getByText(/Receipt: lever/i)).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Marked submitted manually in RolePatch/i)).toBeVisible();
 
-    const state = await page.evaluate(() => ({
-      jobs: JSON.parse(localStorage.getItem('rt-jobs') ?? '[]'),
-      queue: JSON.parse(localStorage.getItem('rt-application-queue') ?? '[]'),
-      receipts: JSON.parse(localStorage.getItem('rt-application-receipts') ?? '[]'),
-    }));
-
-    expect(state.jobs[0].status).toBe('applied');
-    expect(state.queue[0].status).toBe('submitted');
-    expect(state.queue[0].readiness.checks.receipt).toBe(true);
-    expect(state.receipts).toEqual(
+    expect(query('SELECT status FROM job_applications WHERE id = ?', jobId)[0].status).toBe(
+      'applied'
+    );
+    const queue = query(
+      'SELECT status, readiness_json FROM application_queue WHERE id = ?',
+      queueId
+    )[0];
+    expect(queue.status).toBe('submitted');
+    expect(JSON.parse(String(queue.readiness_json)).checks.receipt).toBe(true);
+    const receipts = query('SELECT * FROM application_receipts WHERE job_id = ?', jobId);
+    expect(receipts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          job_id: 'receipt-job-1',
-          queue_id: 'queue-receipt-1',
+          job_id: jobId,
+          queue_id: queueId,
           provider: 'lever',
           status: 'submitted',
           confirmation_text: 'Marked submitted manually in RolePatch.',

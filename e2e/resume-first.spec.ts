@@ -1,9 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures/workspace';
 import { resolve } from 'node:path';
 
-test('guest import unlocks Add Job only after a ready master survives reload', async ({ page }) => {
+test('import unlocks Add Job only after a ready master survives reload', async ({
+  page,
+  workspace,
+}) => {
+  await workspace.signIn();
   await page.goto('/jobs');
   await expect(page.getByRole('button', { name: '+ Add Job', exact: true })).toBeDisabled();
+  await page.goto('/resume-builder');
   await page.getByRole('button', { name: '+ New Resume', exact: true }).click();
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await expect(page).toHaveURL(/resume-builder\?resume=/);
@@ -25,7 +30,9 @@ test('guest import unlocks Add Job only after a ready master survives reload', a
 
 test('public and workspace routes fit established responsive layouts', async ({
   page,
+  workspace,
 }, testInfo) => {
+  await workspace.signIn();
   for (const route of ['/', '/pricing', '/tools', '/resume-builder', '/jobs']) {
     await page.goto(route);
     await expect(page.locator('main')).toBeVisible();

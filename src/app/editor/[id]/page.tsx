@@ -1,10 +1,30 @@
 export const dynamic = 'force-dynamic';
 
+import { Suspense } from 'react';
 import { ResumeEditor } from '@/components/resume-editor';
 import { getResume } from '@/lib/actions/resume-actions';
 
-export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+import EditorLoading from './editor-loading';
+
+export default async function EditorPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: WorkspaceSearchParams;
+}) {
   const { id } = await params;
+  await requireWorkspaceSignIn(`/editor/${encodeURIComponent(id)}`, searchParams);
+
+  return (
+    <Suspense fallback={<EditorLoading />}>
+      <EditorContent id={id} />
+    </Suspense>
+  );
+}
+
+async function EditorContent({ id }: { id: string }) {
   const resume = await getResume(id);
 
   return (

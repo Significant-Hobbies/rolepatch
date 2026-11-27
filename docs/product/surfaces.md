@@ -30,7 +30,10 @@ when a route is added or removed.
 | `/llms.txt`, `/llms-full.txt`, `/index.md`, `/api/ai` | Agent-indexing surfaces served by `agent-edge.mjs`. |
 | `/.well-known/security.txt` | Static trust surface (`public/.well-known/security.txt`). |
 
-## App (auth-aware, guest works via localStorage)
+## Web workspace
+
+Workspace pages require a valid Google sign-in session. The `/sign-in` page
+returns visitors to their requested workspace page after sign-in.
 
 | Route | Purpose |
 | --- | --- |

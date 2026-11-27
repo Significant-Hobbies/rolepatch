@@ -1,22 +1,21 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('public pages load', () => {
-  test('landing page renders', async ({ page }) => {
+  test('landing entry leads to workspace sign-in', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/RolePatch|Resume/i);
-    await page
-      .getByRole('link', { name: /Tailor my resume/i })
-      .first()
-      .click();
-    await expect(page).toHaveURL(/resume-builder/);
-    await expect(page.getByRole('button', { name: 'Import Resume', exact: true })).toBeEnabled();
+    const cta = page.getByRole('link', { name: /Tailor my resume/i }).first();
+    if (await cta.isVisible()) await cta.click();
+    await expect(page.getByRole('heading', { name: 'Sign in to RolePatch' })).toBeVisible();
   });
 
-  test('dashboard is reachable in guest mode', async ({ page }) => {
-    await page.goto('/dashboard');
-    await expect(page.getByRole('button', { name: /create|new resume/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Import Resume', exact: true })).toBeEnabled();
-    await expect(page.getByRole('button', { name: '+ Add Job', exact: true })).toBeDisabled();
+  test('an in-app link opens sign-in without rendering the dashboard', async ({ page }) => {
+    await page.goto('/pricing');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    const hamburger = nav.getByRole('button', { name: 'Open menu' });
+    if (await hamburger.isVisible()) await hamburger.click();
+    await nav.getByRole('link', { name: 'Jobs', exact: true }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(/\/sign-in\?/);
+    await expect(page.locator('#workspace-content')).toHaveCount(0);
   });
 
   test('pricing page renders', async ({ page }) => {
@@ -56,9 +55,10 @@ test.describe('tools (no auth)', () => {
   });
 });
 
-test.describe('guest stash', () => {
-  test('stash page renders empty state', async ({ page }) => {
+test.describe('legacy stash', () => {
+  test('stash link preserves the sign-in destination', async ({ page }) => {
     await page.goto('/stash');
-    await expect(page.locator('body')).not.toBeEmpty();
+    await expect(page.getByRole('heading', { name: 'Sign in to RolePatch' })).toBeVisible();
+    expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/resume-builder/evidence');
   });
 });

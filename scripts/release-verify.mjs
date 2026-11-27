@@ -29,6 +29,7 @@ export const FOCUSED_E2E_ARGS = [
   'e2e/settings-readiness.spec.ts',
   'e2e/history.spec.ts',
   'e2e/resume-builder.spec.ts',
+  'e2e/workspace-access.spec.ts',
   '--workers=1',
 ];
 
@@ -69,21 +70,21 @@ async function withBuiltServer(fn) {
     cpSync(source, destination, { recursive: true });
   }
   const [command, args] = BUILT_SERVER_COMMAND;
+  const { workspaceTestEnv } = await import('../e2e/fixtures/environment.mjs');
+  const testEnv = workspaceTestEnv(baseUrl);
   const server = spawn(command, args, {
     cwd: process.cwd(),
     env: {
       ...process.env,
       PORT: String(port),
-      BETTER_AUTH_SECRET:
-        process.env.BETTER_AUTH_SECRET ?? 'rolepatch-local-release-verify-secret-32',
-      BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? baseUrl,
+      ...testEnv,
     },
     stdio: 'inherit',
   });
 
   try {
     await waitForServer(baseUrl);
-    await fn(baseUrl);
+    await fn(baseUrl, testEnv);
   } finally {
     server.kill('SIGTERM');
   }
@@ -94,9 +95,12 @@ export async function main() {
     run(command, args);
   }
 
-  await withBuiltServer(async (baseUrl) => {
+  await withBuiltServer(async (baseUrl, testEnv) => {
     run('pnpm', ['smoke:prod'], {
       env: {
+        ROLEPATCH_E2E_DB_PATH: testEnv.ROLEPATCH_E2E_DB_PATH,
+        ROLEPATCH_E2E_AUTH_SECRET: testEnv.ROLEPATCH_E2E_AUTH_SECRET,
+        ROLEPATCH_E2E_REUSE_SERVER: '1',
         ROLEPATCH_SMOKE_BASE_URL: baseUrl,
       },
     });

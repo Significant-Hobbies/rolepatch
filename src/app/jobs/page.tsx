@@ -4,14 +4,13 @@ import { listJobApplications } from '@/lib/actions/job-actions';
 import { listResumes } from '@/lib/actions/resume-actions';
 import { listResumeHistory } from '@/lib/actions/resume-history-actions';
 
+import { requireWorkspaceSignIn, type WorkspaceSearchParams } from '@/lib/workspace-access';
+
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Jobs' };
 
-export default async function JobsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string | string[] }>;
-}) {
+export default async function JobsPage({ searchParams }: { searchParams: WorkspaceSearchParams }) {
+  await requireWorkspaceSignIn('/jobs', searchParams);
   const params = await searchParams;
   const legacyFeedPage = Array.isArray(params.page) ? params.page[0] : params.page;
   if (legacyFeedPage) redirect(`/jobs/discover?page=${encodeURIComponent(legacyFeedPage)}`);
