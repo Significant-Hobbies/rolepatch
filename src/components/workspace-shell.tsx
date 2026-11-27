@@ -37,7 +37,13 @@ function useEndedWorkspaceSession(pathname: string) {
   return sessionEnded;
 }
 
-export function WorkspaceShell({ children }: { children: ReactNode }) {
+export function WorkspaceShell({
+  children,
+  publicFooter,
+}: {
+  children: ReactNode;
+  publicFooter: ReactNode;
+}) {
   const pathname = usePathname() ?? '';
   const router = useRouter();
   const sessionEnded = useEndedWorkspaceSession(pathname);
@@ -89,6 +95,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         <>
           {pathname !== '/sign-in' && <SiteNav />}
           {children}
+          {!isWorkspacePath(pathname) && publicFooter}
         </>
       )}
     </>

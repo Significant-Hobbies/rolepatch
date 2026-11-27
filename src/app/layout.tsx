@@ -133,13 +133,18 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AnalyticsProvider>
           <AuthProvider>
-            <WorkspaceShell>{children}</WorkspaceShell>
-            <footer className="border-t border-border/60 px-6 py-6 text-sm text-muted-foreground">
-              <SaaSMakerFeedback />
-              <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-                <span>RolePatch</span>
-              </div>
-            </footer>
+            <WorkspaceShell
+              publicFooter={
+                <footer className="border-t border-border/60 px-6 py-6 text-sm text-muted-foreground">
+                  <SaaSMakerFeedback />
+                  <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+                    <span>RolePatch</span>
+                  </div>
+                </footer>
+              }
+            >
+              {children}
+            </WorkspaceShell>
           </AuthProvider>
           <VitalsReporter />
         </AnalyticsProvider>

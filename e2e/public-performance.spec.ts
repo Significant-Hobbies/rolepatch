@@ -41,6 +41,9 @@ for (const route of ['/pricing', '/tools']) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(
+      page.getByRole('contentinfo').getByRole('heading', { name: 'Help shape RolePatch.' })
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
     await page.getByRole('button', { name: 'Open menu' }).click();
     await expect(page.getByRole('button', { name: 'Close menu' })).toHaveAttribute(
