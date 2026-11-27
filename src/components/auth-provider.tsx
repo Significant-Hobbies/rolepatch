@@ -10,12 +10,14 @@ interface AuthContextValue {
   userId: string | null;
   isGuest: boolean;
   isPending: boolean;
+  isSessionError: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   userId: null,
   isGuest: true,
   isPending: true,
+  isSessionError: false,
 });
 
 // localStorage key recording every userId this browser has seen signed in.
@@ -32,7 +34,7 @@ function readSeenUsers(): string[] {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending, error } = authClient.useSession();
   const userId = session?.user?.id ?? null;
 
   // Fire `signup` once, on the first session we ever see for this account.
@@ -49,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   return (
-    <AuthContext.Provider value={{ isGuest: !userId, userId, isPending }}>
+    <AuthContext.Provider value={{ isGuest: !userId, userId, isPending, isSessionError: !!error }}>
       <TokenBalanceProvider userId={userId}>{children}</TokenBalanceProvider>
     </AuthContext.Provider>
   );

@@ -106,6 +106,8 @@ test('a returning guest can choose to bring a browser-saved résumé into their 
     updated_at: 1,
   };
   await page.addInitScript((resume) => {
+    localStorage.setItem('rt-migrated', '1');
+    localStorage.setItem('rt-jobs', 'incomplete old browser storage');
     localStorage.setItem('rt-resumes', JSON.stringify([resume]));
   }, resume);
   await page.goto(`/resume-builder?resume=${id}`);
@@ -127,7 +129,9 @@ test('a returning guest can choose to bring a browser-saved résumé into their 
 
 test('signing out on a public tool keeps its inputs on screen', async ({ page, workspace }) => {
   await workspace.signIn();
-  await page.goto('/tools/diff');
+  await page.goto('/jobs/queue');
+  await page.getByRole('link', { name: 'Review tools' }).click();
+  await page.locator('a[href="/tools/diff"]').click();
   const original = page.locator('textarea').first();
   await original.fill('Keep this text when signing out');
   await page.getByRole('button', { name: 'Account menu' }).click();
@@ -135,4 +139,9 @@ test('signing out on a public tool keeps its inputs on screen', async ({ page, w
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\/tools\/diff$/);
   await expect(original).toHaveValue('Keep this text when signing out');
+  await page.goBack();
+  await expect(page).toHaveURL(/\/tools$/);
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Sign in to RolePatch' })).toBeVisible();
+  await expect(page.locator('#workspace-content')).toHaveCount(0);
 });

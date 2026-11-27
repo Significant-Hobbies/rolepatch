@@ -21,7 +21,7 @@ const doc = (id: string, source: string) => ({
 beforeEach(() => {
   sql = new DatabaseSync(':memory:');
   sql.exec(
-    'CREATE TABLE resumes(id TEXT PRIMARY KEY,user_id TEXT,name TEXT,source TEXT,updated_at INTEGER,archived_at INTEGER)'
+    'CREATE TABLE resumes(id TEXT PRIMARY KEY,user_id TEXT,name TEXT,source TEXT,created_at INTEGER,updated_at INTEGER,archived_at INTEGER)'
   );
   vi.resetAllMocks();
   vi.mocked(db.execute).mockImplementation(async (input) => {
@@ -76,12 +76,41 @@ it('rejects the complete guest migration before storing any member of the batch'
     stashEntries: [],
   };
   const before = JSON.stringify(data);
-  expect(await migrateGuestData(data)).toMatchObject({
+  expect(await migrateGuestData(data, 'owner')).toMatchObject({
     success: false,
     error: expect.stringContaining('Local resume 2, line 1'),
   });
   expect(JSON.stringify(data)).toBe(before);
   expect(db.execute).not.toHaveBeenCalled();
+});
+
+it('keeps partial browser imports retryable and detects account changes', async () => {
+  const data = {
+    resumes: [doc('mine', '# Master'), doc('theirs', '# Browser copy')],
+    jobs: [],
+    tailoredResumes: [],
+    coverLetters: [],
+    stashEntries: [],
+  };
+  await expect(migrateGuestData(data, 'old-session-user')).resolves.toMatchObject({
+    success: false,
+  });
+  expect(db.execute).not.toHaveBeenCalled();
+  sql
+    .prepare('INSERT INTO resumes (id, user_id, source) VALUES (?, ?, ?)')
+    .run('theirs', 'other', 'Existing content');
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await expect(migrateGuestData(data, 'owner')).resolves.toMatchObject({
+      success: false,
+      counts: { resumes: 1 },
+    });
+  }
+  expect(sql.prepare('SELECT source FROM resumes WHERE id = ?').get('theirs').source).toBe(
+    'Existing content'
+  );
+  expect(sql.prepare('SELECT id FROM resumes WHERE user_id = ?').all('owner')).toEqual([
+    { id: 'mine' },
+  ]);
 });
 it('rejects direct persistence of a new inline master before creating a job, master or version', async () => {
   await expect(

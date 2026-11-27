@@ -34,7 +34,8 @@ when a route is added or removed.
 
 Workspace pages require a valid Google sign-in session. The `/sign-in` page
 returns visitors to their requested workspace page after sign-in. Returning
-visitors can import previously saved browser work after they sign in.
+visitors can import their browser-saved base résumés, saved jobs, tailored
+résumés, cover letters, and extra experience after they sign in.
 
 | Route | Purpose |
 | --- | --- |

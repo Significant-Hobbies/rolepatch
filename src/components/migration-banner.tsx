@@ -7,17 +7,46 @@ import { useAuth } from '@/components/auth-provider';
 import { LocalResumeCorrection } from '@/components/local-resume-correction';
 import { guestMasterProblem } from '@/lib/guest-migration-validation';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
-import { localListJobs, localListResumes, localListStashEntries } from '@/lib/local-storage';
 import type { CoverLetter, JobApplication, Resume, StashEntry, TailoredResume } from '@/lib/types';
 
-const DISMISSED_KEY = 'rt-migration-dismissed';
-// leave localStorage intact as recovery backup
-const MIGRATED_KEY = 'rt-migrated';
-
 function getLocalItems<T>(key: string): T[] {
-  if (typeof window === 'undefined') return [];
-  const raw = localStorage.getItem(key);
-  return raw ? JSON.parse(raw) : [];
+  try {
+    const items = JSON.parse(localStorage.getItem(key) ?? '[]');
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
+function getLocalData() {
+  return {
+    resumes: getLocalItems<Resume>('rt-resumes'),
+    jobs: getLocalItems<JobApplication>('rt-jobs'),
+    tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
+    coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
+    stashEntries: getLocalItems<StashEntry>('rt-stash'),
+  };
+}
+
+function describeLocalData(local: ReturnType<typeof getLocalData>) {
+  const collections = [
+    [local.resumes.length, 'base résumé'],
+    [local.jobs.length, 'job'],
+    [local.tailoredResumes.length, 'tailored résumé'],
+    [local.coverLetters.length, 'cover letter'],
+    [local.stashEntries.length, 'extra experience entry', 'extra experience entries'],
+  ] as const;
+  return collections
+    .filter(([count]) => count > 0)
+    .map(([count, label, plural]) => `${count} ${count === 1 ? label : (plural ?? `${label}s`)}`);
+}
+
+function hasImported(key: string) {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
 }
 
 function firstCorrection(resumes: Resume[]) {
@@ -25,28 +54,19 @@ function firstCorrection(resumes: Resume[]) {
   return issue ? { ...issue, resume: resumes[issue.index] } : null;
 }
 
-async function importLocalData() {
-  const resumes = getLocalItems<Resume>('rt-resumes');
-  const correction = firstCorrection(resumes);
+async function importLocalData(userId: string) {
+  const data = getLocalData();
+  const correction = firstCorrection(data.resumes);
   if (correction) return { success: false, error: correction.error, correction };
-  const result = await migrateGuestData({
-    resumes,
-    jobs: getLocalItems<JobApplication>('rt-jobs'),
-    tailoredResumes: getLocalItems<TailoredResume>('rt-tailored'),
-    coverLetters: getLocalItems<CoverLetter>('rt-cover-letters'),
-    stashEntries: getLocalItems<StashEntry>('rt-stash'),
-  });
+  const result = await migrateGuestData(data, userId);
   return { ...result, correction: null };
 }
 
 export function MigrationBanner() {
-  const { isGuest } = useAuth();
+  const { userId } = useAuth();
+  const importedKey = `rt-migrated:${userId}`;
   const [loading, setLoading] = useState(false);
-  const [dismissed, setDismissed] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      (localStorage.getItem(DISMISSED_KEY) === '1' || localStorage.getItem(MIGRATED_KEY) === '1')
-  );
+  const [dismissed, setDismissed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [correction, setCorrection] = useState<ReturnType<typeof firstCorrection>>(null);
   const [localStatus, setLocalStatus] = useState('');
@@ -65,30 +85,21 @@ export function MigrationBanner() {
     );
   }
 
-  const resumes = !isGuest && !dismissed ? localListResumes() : [];
-  const jobs = !isGuest && !dismissed ? localListJobs() : [];
-  const stash = !isGuest && !dismissed ? localListStashEntries() : [];
-  const total = resumes.length + jobs.length + stash.length;
+  if (!userId || dismissed || hasImported(importedKey)) return null;
+  const parts = describeLocalData(getLocalData());
+  if (parts.length === 0 && !editingCorrection) return null;
 
-  const visible = !isGuest && !dismissed && (total > 0 || editingCorrection);
-  if (!visible) return null;
-
-  const parts: string[] = [];
-  if (resumes.length > 0) parts.push(`${resumes.length} resume${resumes.length > 1 ? 's' : ''}`);
-  if (jobs.length > 0) parts.push(`${jobs.length} job${jobs.length > 1 ? 's' : ''}`);
-  if (stash.length > 0) parts.push(`${stash.length} stash entr${stash.length > 1 ? 'ies' : 'y'}`);
-
-  async function handleImport() {
+  async function handleImport(accountId: string) {
     setLocalStatus('');
     setLoading(true);
     setError(null);
     try {
-      const result = await importLocalData();
+      const result = await importLocalData(accountId);
       setCorrection(result.correction);
 
       if (result.success) {
         // leave localStorage intact as recovery backup
-        localStorage.setItem(MIGRATED_KEY, '1');
+        localStorage.setItem(importedKey, '1');
         window.location.reload();
       } else {
         setError(result.error ?? 'Migration failed');
@@ -98,11 +109,6 @@ export function MigrationBanner() {
       setError(err instanceof Error ? err.message : 'Migration error');
       setLoading(false);
     }
-  }
-
-  function handleDismiss() {
-    localStorage.setItem(DISMISSED_KEY, '1');
-    setDismissed(true);
   }
 
   return (
@@ -136,7 +142,7 @@ export function MigrationBanner() {
       <div className="flex gap-2 shrink-0">
         <Button
           variant="ghost"
-          onClick={handleImport}
+          onClick={() => void handleImport(userId)}
           disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-black hover:bg-neutral-200 disabled:opacity-50 transition-colors"
         >
@@ -144,7 +150,7 @@ export function MigrationBanner() {
         </Button>
         <Button
           variant="ghost"
-          onClick={handleDismiss}
+          onClick={() => setDismissed(true)}
           disabled={loading || editingCorrection}
           className="px-3 py-1.5 text-sm font-medium rounded-md border border-[var(--border)] text-foreground hover:bg-[var(--muted)] disabled:opacity-50 transition-colors"
         >

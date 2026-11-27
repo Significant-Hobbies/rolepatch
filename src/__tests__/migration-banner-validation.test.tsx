@@ -2,7 +2,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { MigrationBanner } from '@/components/migration-banner';
 import { migrateGuestData } from '@/lib/actions/migration-actions';
-vi.mock('@/components/auth-provider', () => ({ useAuth: () => ({ isGuest: false }) }));
+vi.mock('@/components/auth-provider', () => ({
+  useAuth: () => ({ isGuest: false, userId: 'owner' }),
+}));
 vi.mock('@/lib/actions/migration-actions', () => ({ migrateGuestData: vi.fn() }));
 afterEach(() => {
   vi.clearAllMocks();
@@ -28,7 +30,7 @@ it('keeps all guest data available when an explicit import fails preflight', asy
   expect(await screen.findByRole('alert')).toHaveTextContent('Your local data is intact.');
   for (const [key, value] of Object.entries(originals))
     expect(localStorage.getItem(key)).toBe(value);
-  expect(localStorage.getItem('rt-migrated')).toBeNull();
+  expect(localStorage.getItem('rt-migrated:owner')).toBeNull();
   expect(migrateGuestData).not.toHaveBeenCalled();
 });
 
@@ -84,13 +86,16 @@ it('repairs each flagged local resume and sends the whole batch only on explicit
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Synthetic endpoint received the corrected batch.'
   );
-  expect(migrateGuestData).toHaveBeenCalledWith({
-    resumes: corrected,
-    jobs,
-    tailoredResumes: materials,
-    coverLetters: [],
-    stashEntries: [],
-  });
+  expect(migrateGuestData).toHaveBeenCalledWith(
+    {
+      resumes: corrected,
+      jobs,
+      tailoredResumes: materials,
+      coverLetters: [],
+      stashEntries: [],
+    },
+    'owner'
+  );
   expect(localStorage.getItem('rt-jobs')).toBe(JSON.stringify(jobs));
   expect(localStorage.getItem('rt-tailored')).toBe(JSON.stringify(materials));
 });

@@ -3,7 +3,9 @@
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
+import { useAuth } from '@/components/auth-provider';
 import { SiteNav } from '@/components/site-nav';
+import { isWorkspacePath, workspaceReturnPath } from '@/lib/workspace-return';
 
 // Public tools and pricing do not need the editor sidebar and its dependencies.
 const WorkspaceInterior = dynamic(() =>
@@ -13,9 +15,22 @@ const ApplicationStyles = dynamic(() =>
   import('./application-styles').then((module) => module.ApplicationStyles)
 );
 
+function useEndedWorkspaceSession(pathname: string) {
+  const { isGuest, isPending, isSessionError } = useAuth();
+  const sessionEnded = isWorkspacePath(pathname) && !isPending && !isSessionError && isGuest;
+  useEffect(() => {
+    if (!sessionEnded) return;
+    const { pathname, search, hash } = window.location;
+    const returnTo = workspaceReturnPath(pathname + search + hash);
+    window.location.replace(`/sign-in?${new URLSearchParams({ returnTo })}`);
+  }, [sessionEnded]);
+  return sessionEnded;
+}
+
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
   const router = useRouter();
+  const sessionEnded = useEndedWorkspaceSession(pathname);
   useEffect(() => {
     const isJobsRoot = pathname === '/jobs' || pathname === '/dashboard';
     if (!isJobsRoot && pathname !== '/resume-builder') return;
@@ -54,6 +69,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         ? '/jobs'
         : null;
   const catalog = pathname === '/pricing' || pathname === '/tools';
+  if (sessionEnded) return null;
   return (
     <>
       {!catalog && <ApplicationStyles />}
