@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, FileText, Pencil } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@saas-maker/ui/components/avatar';
-import { Badge } from '@saas-maker/ui/components/badge';
 import { Button } from '@saas-maker/ui/components/button';
 import {
   Card,
@@ -349,34 +347,6 @@ function OutlineEditor({
               <Check />
               {saving ? 'Saving…' : 'Save'}
             </Button>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-6">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>
-                {(source.match(/^#\s+(.+)$/m)?.[1] ?? resume.name).slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">
-                {source.match(/^#\s+(.+)$/m)?.[1] ?? resume.name}
-              </p>
-              <p className="text-sm text-muted-foreground">Master resume</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">
-              {points.length} {points.length === 1 ? 'point' : 'points'}
-            </Badge>
-            {sections.some((section) => /projects?|products?/i.test(section.title)) && (
-              <Badge variant="secondary">Projects included</Badge>
-            )}
-            <Badge variant="outline">
-              {sections.some((section) => /education/i.test(section.title))
-                ? 'Education included'
-                : 'Add education'}
-            </Badge>
           </div>
         </div>
         <MasterResumeGuide source={source} onChange={setSource} />

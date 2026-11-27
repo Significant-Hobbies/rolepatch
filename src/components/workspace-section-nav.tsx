@@ -20,7 +20,7 @@ export function WorkspaceSectionNav({
           asChild
           size="sm"
           variant={href === current ? 'secondary' : 'ghost'}
-          className="min-h-10"
+          className="min-h-10 px-2 text-xs sm:px-3 sm:text-sm"
         >
           <Link
             href={resumeId ? { pathname: href, query: { resume: resumeId } } : href}
